@@ -6,53 +6,56 @@ Update this file before starting each new subtask. Keep it narrow.
 
 ## Current Parent Task
 
-B2.2 Upload and simple mockup preview
+B3.1 Cart and checkout with pending order creation
 
 ## Current Subtask
 
-B2.2.7 Order persistence
+B3.1.6 Pending-order creation
 
 ## Current Status
 
-B2.2.6 Cart persistence was completed on 2026-06-19.
+B3.1.1 Cart storage was completed on 2026-06-19.
 
-B2.2.7 Order persistence is the next subtask, but it is blocked until B3.1.6 Pending-order creation is completed.
+B3.1.6 Pending-order creation is now the active subtask.
 
 ## Goal
 
-Persist the public-safe customization snapshot from cart items into order item data once pending-order creation exists.
+Create the pending order before payment starts and keep it compatible with the existing cart snapshot data.
 
 ## Dependencies
 
-- B2.2.6 Cart persistence
-- B3.1.6 Pending-order creation
+- A5.1.7 Shared order/payment domain model
+- B3.1.1 Cart storage
+- B3.1.2 Cart item validation
+- B3.1.3 Price recalculation
+- B3.1.4 Customer and address validation
 
 ## Required Deliverables
 
-- Order item shape that accepts the cart customization snapshot
-- Persistence rules that copy cart item customization into pending order items
-- Validation that order items preserve public product/SKU/customization snapshots
-- Safe response/admin-ready shape for later admin file access
+- Pending order record creation
+- Checkout flow that creates the order before payment attempt creation
+- Validation that the pending order uses the approved shared order/payment shape
+- Safe payload shape for later payment, webhook, and admin order views
 
 ## Acceptance Criteria
 
-- Customization metadata from cart items remains attached to order items.
-- Order item payloads retain public-safe uploaded file and mockup references.
-- Private storage paths remain excluded from customer-facing order payloads.
-- The order structure remains compatible with later admin file access.
+- Checkout creates a pending order before any payment attempt starts.
+- The pending order preserves public-safe cart data and shared order fields.
+- The order structure remains compatible with later payment, webhook, and admin steps.
+- Duplicate checkout protection and failure handling can build on the created order record.
 
 ## Tests Required
 
-- Order persistence tests
-- Cart-to-order customization snapshot tests
-- Public-safe order item payload tests
+- Pending order tests
+- Checkout flow tests
+- Public-safe order payload tests
 
 ## Quality Requirements
 
-- Do not implement B2.2.7 until B3.1.6 Pending-order creation is complete.
-- Do not start admin file access inside this subtask.
-- Reuse the B2.2.5/B2.2.6 customization snapshot shape instead of creating another metadata format.
-- Keep uploaded file references private and public-safe.
+- Follow existing Laravel and shared order conventions.
+- Do not start payment-attempt creation inside this subtask.
+- Keep the cart snapshot compatible with later order item storage.
+- Preserve public-safe shared order data.
 - Run relevant backend tests after implementation.
 
 ## Files Likely Affected
@@ -64,9 +67,11 @@ Persist the public-safe customization snapshot from cart items into order item d
 
 ## Tasks Not Included
 
-- Pending-order creation
-- Admin file access
-- Payment or checkout gateway work
+- Payment-attempt creation
+- Duplicate checkout prevention
+- Failed checkout handling
+- Order item/customization storage
+- Payment webhook handling
 
 ## Reference Details
 
