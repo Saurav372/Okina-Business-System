@@ -22,7 +22,7 @@
 | A4.2 Settings service | A4.4 Notification event definitions | Provides defaults and shared config conventions | High |
 | A4.2 Settings service | A5.3 Payment gateway service contract | Provides payment configuration defaults | High |
 | A4.2 Settings service | B2.2 Upload and simple mockup preview | Provides upload configuration defaults | High |
-| B2.2 Upload and simple mockup preview | B3.1 Cart and checkout with pending order creation | Provides customization upload and preview metadata | High. B2.2.5 now provides the public-safe normalized customization snapshot and B2.2.6 persists it through the cart layer; B2.2.7-B2.2.8 still need order persistence and admin file access before the parent task is complete. |
+| B2.2 Upload and simple mockup preview | B3.1 Cart and checkout with pending order creation | Provides customization upload and preview metadata | High. B2.2.5 now provides the public-safe normalized customization snapshot and B2.2.6 persists it through the cart layer, so B3.1 may proceed. B2.2.7-B2.2.8 are deferred bridge subtasks after order item storage and admin order/file access exist. |
 | A4.2 Settings service | C6.2 Notification implementation | Provides notification configuration defaults | High |
 | A4.2 Settings service | C6.3 Google Sheets backup sync | Provides integration configuration defaults | High |
 | A4.3 Queue, job and retry foundation | A4.4 Notification event definitions | Provides queue and retry foundation | High |
@@ -77,6 +77,17 @@ C1.1 Admin orders
 
 Cashfree or any future gateway must not be treated as the source that creates the order.
 
+
+## Project B/C Build Runway
+
+Use `docs/project-b-c-build-runway.md` before moving between Project B and Project C subtasks.
+
+Important guardrails:
+
+- `B3.1` depends on `B2.2.6`, not all of `B2.2`.
+- `B2.2.7` verifies customization persistence after `B3.1.7` creates order item storage.
+- `B3.1.6` must wait for cart validation, price recalculation, and customer/address validation.
+- Full CRM/quotation work must not block the first bulk checkout decision; `B3.1.5` should return a bulk handoff response and leave full CRM conversion to Project C.
 ## Impact Check Template
 
 Before changing any task, record:

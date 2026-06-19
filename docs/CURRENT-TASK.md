@@ -10,52 +10,51 @@ B3.1 Cart and checkout with pending order creation
 
 ## Current Subtask
 
-B3.1.6 Pending-order creation
+B3.1.2 Cart item validation
 
 ## Current Status
 
 B3.1.1 Cart storage was completed on 2026-06-19.
 
-B3.1.6 Pending-order creation is now the active subtask.
+B3.1.2 Cart item validation is now the active subtask.
 
 ## Goal
 
-Create the pending order before payment starts and keep it compatible with the existing cart snapshot data.
+Validate cart items against current public product, SKU, and customization rules before checkout can continue.
 
 ## Dependencies
 
-- A5.1.7 Shared order/payment domain model
+- A3.2 Shared products, categories, variants and SKUs
+- B2.1 Customization option APIs
 - B3.1.1 Cart storage
-- B3.1.2 Cart item validation
-- B3.1.3 Price recalculation
-- B3.1.4 Customer and address validation
 
 ## Required Deliverables
 
-- Pending order record creation
-- Checkout flow that creates the order before payment attempt creation
-- Validation that the pending order uses the approved shared order/payment shape
-- Safe payload shape for later payment, webhook, and admin order views
+- Checkout/cart validation that rejects unavailable products and SKUs
+- Validation that cart customization options still match the selected SKU/product rules
+- Public-safe validation errors for customer checkout flows
+- Test coverage for invalid SKU, option, quantity, and customization cases
 
 ## Acceptance Criteria
 
-- Checkout creates a pending order before any payment attempt starts.
-- The pending order preserves public-safe cart data and shared order fields.
-- The order structure remains compatible with later payment, webhook, and admin steps.
-- Duplicate checkout protection and failure handling can build on the created order record.
+- Invalid products, SKUs, disabled direct checkout SKUs, and invalid customization selections cannot proceed toward checkout.
+- Valid cart items continue to pass without changing the stored cart snapshot shape.
+- Validation errors are customer-safe and do not expose internal database IDs or private file paths.
+- Later price recalculation and pending-order creation can reuse the validated cart item shape.
 
 ## Tests Required
 
-- Pending order tests
-- Checkout flow tests
-- Public-safe order payload tests
+- Cart validation tests
+- Invalid SKU/product tests
+- Invalid customization option tests
+- Public-safe error payload tests
 
 ## Quality Requirements
 
-- Follow existing Laravel and shared order conventions.
-- Do not start payment-attempt creation inside this subtask.
-- Keep the cart snapshot compatible with later order item storage.
-- Preserve public-safe shared order data.
+- Follow existing Laravel and shared cart/product conventions.
+- Do not start price recalculation, address validation, pending-order creation, payment attempts, or order item storage inside this subtask.
+- Keep uploaded file references private and public-safe.
+- Reuse existing customization validation rules rather than creating a second rule format.
 - Run relevant backend tests after implementation.
 
 ## Files Likely Affected
@@ -64,9 +63,14 @@ Create the pending order before payment starts and keep it compatible with the e
 - `apps/backend/routes/**`
 - `apps/backend/tests/**`
 - `docs/dependency-impact-register.md`
+- `docs/project-b-c-build-runway.md`
 
 ## Tasks Not Included
 
+- Price recalculation
+- Customer and address validation
+- Bulk quantity detection
+- Pending-order creation
 - Payment-attempt creation
 - Duplicate checkout prevention
 - Failed checkout handling
@@ -81,6 +85,7 @@ Use:
 - `docs/task-list.md`
 - `docs/subtask-validation.md`
 - `docs/dependency-impact-register.md`
+- `docs/project-b-c-build-runway.md`
 - `docs/orders-order-items-schema.md`
 - `docs/feature-list.md`
 

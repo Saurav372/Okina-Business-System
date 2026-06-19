@@ -246,7 +246,7 @@ Verification note: completed on 2026-06-18. The implementation adds a public cat
 | B2.2.4 | Placement controls | B2.2.3 | Customer can adjust within allowed print area | UI interaction tests | Website, Mockup | Medium |
 | B2.2.5 | Customization metadata structure | B2.1, B2.2.3 | Metadata stores print position, method, file, placement | Metadata tests | Cart, Orders, Files | High |
 | B2.2.6 | Cart persistence | B2.2.5, B3.1.1 | Customization remains in cart | Cart persistence tests | Cart, Website | High |
-| B2.2.7 | Order persistence | B2.2.6, B3.1.6 | Customization snapshot is saved to order item | Order persistence tests | Orders, Admin | High |
+| B2.2.7 | Order persistence | B2.2.6, B3.1.7 | Customization snapshot is saved to order item | Order persistence tests | Orders, Admin | High |
 | B2.2.8 | Admin file access | A4.1.5, B2.2.7 | Authorized admin can view/download related files | Admin permission tests | Admin, Files | High |
 
 Verification note: B2.2.1 completed on 2026-06-19. The backend now accepts approved design uploads for public products, stores the original privately, returns public-safe file and preview metadata, and exposes a signed preview URL for the mockup step. `php artisan test --filter=DesignUploadFlowTest` passed.
@@ -270,9 +270,9 @@ Verification note: B2.2.6 completed on 2026-06-19. The upload-flow customization
 | B3.1.2 | Cart item validation | A3.2, B2.1 | Invalid SKUs/options cannot proceed | Cart validation tests | Cart, Products | High |
 | B3.1.3 | Price recalculation | A3.2, A5.1.4 | Backend recalculates totals, not frontend | Price tests | Cart, Orders, Finance | High |
 | B3.1.4 | Customer and address validation | A3.1, A2.2 | Checkout requires valid customer/address | Checkout validation tests | Customers, Checkout | High |
-| B3.1.5 | Bulk quantity detection | B3.1.2, B3.1.3 | 25+ routes to bulk enquiry/quotation flow | Bulk flow tests | Checkout, CRM, Quotations | High |
-| B3.1.6 | Pending-order creation | A5.1.7, B3.1.1-B3.1.4 | Pending order created before payment attempt | Pending order tests | Checkout, Orders | High |
-| B3.1.7 | Order item/customization storage | B2.2.7, B3.1.6 | Items preserve SKU, price, quantity, customization snapshot | Order item tests | Orders, Products, Files | High |
+| B3.1.5 | Bulk quantity detection | B3.1.2, B3.1.3 | 25+ returns a bulk handoff response without requiring full CRM/quotation implementation | Bulk flow tests | Checkout, CRM, Quotations | High |
+| B3.1.6 | Pending-order creation | A5.1.4-A5.1.5, B3.1.1-B3.1.4 | Pending order created before payment attempt | Pending order tests | Checkout, Orders | High |
+| B3.1.7 | Order item/customization storage | B2.2.6, B3.1.6 | Items preserve SKU, price, quantity, customization snapshot | Order item tests | Orders, Products, Files | High |
 | B3.1.8 | Payment-attempt creation | A5.3.3, B3.1.6 | Attempt is linked to pending order | Payment attempt tests | Checkout, Payments | High |
 | B3.1.9 | Duplicate checkout prevention | A4.5, B3.1.6, B3.1.8 | Repeated checkout does not duplicate orders/attempts | Idempotency tests | Checkout, Orders, Payments | High |
 | B3.1.10 | Failed checkout handling | B3.1.6, B3.1.8 | Failed checkout leaves traceable pending order/attempt | Failure path tests | Checkout, Orders, Payments | High |
@@ -301,7 +301,7 @@ Verification note: B3.1.1 completed on 2026-06-19. The cart layer now persists d
 | C1.2.2 | Product/SKU selection | A3.2, C1.1 | Staff can select valid product/SKU | Admin product tests | Admin, Products, Orders | Medium |
 | C1.2.3 | Quantity and customization | C1.2.2, B2.2.5 | Staff can enter quantity and customization details | Sales item tests | Orders, Files | Medium |
 | C1.2.4 | Pricing and discount | A5.1.4, C1.2.3 | Totals reflect approved prices/discounts | Pricing tests | Orders, Finance | High |
-| C1.2.5 | Advance/final payment structure | A5.1.8, C1.2.4 | Sales order can track advance and balance | Payment schedule tests | Orders, Payments, Finance | High |
+| C1.2.5 | Advance/final payment structure | A5.3.3, C1.2.4 | Sales order can track advance and balance | Payment schedule tests | Orders, Payments, Finance | High |
 | C1.2.6 | Order creation | C1.2.1-C1.2.5 | Sales order is created with correct status and totals | Sales order creation tests | Orders, Admin | High |
 | C1.2.7 | Order editing rules | C1.2.6, A4.6 | Edits are permissioned and emit audit events; permanent storage is verified by C6.1 integration | Edit/audit-event tests | Orders, Audit | High |
 | C1.2.8 | Order confirmation | C1.2.6, A5.1.2 | Staff can confirm order according to rules | Confirmation tests | Orders, Production | Medium |

@@ -20,6 +20,8 @@ If the user says check, compare, verify, review, inspect, plan, or summarize, us
 
 If `docs/CURRENT-TASK.md` says the current subtask is blocked, do not implement it. Report the blocker and ask which prerequisite should be handled next.
 
+Before moving between Project B and Project C subtasks, read `docs/project-b-c-build-runway.md` and verify that the selected subtask is the next unblocked step. Do not move directly to a later checkout/order/admin step just because it is the next visible row in one parent table.
+
 Copy-ready step files live in `docs/prompt-steps/`. Prefer those files when starting a new AI session so the permission gate is visible in the prompt itself.
 
 ## Mandatory Git Restore Point Gate
@@ -49,7 +51,7 @@ Use this table when deciding what to send next.
 | Code was changed and you want a bug/risk review before calling it done | Sequence 8 | Reviews correctness, tests, Laravel quality, database efficiency, and safety. |
 | Shared behavior changed or the work is close to deployment | Sequence 6 | Looks for regressions in connected flows. |
 | All subtasks under a parent are believed done | Sequence 4 | Checks whether the parent task can actually be marked complete. |
-| You are moving from one subtask to the next | Sequence 5 | Rewrites `CURRENT-TASK.md` for the next narrow scope. |
+| You are moving from one subtask to the next | Sequence 5 | Rewrites `CURRENT-TASK.md` for the next narrow scope. For Project B/C, check the Project B/C build runway first. |
 | A business rule, pricing rule, payment rule, SKU rule, or staff policy is unclear | Sequence 9 | Captures a decision before implementation locks in the wrong behavior. |
 | You need to confirm shared hosting, PHP, Composer, cron, queues, MySQL, storage, or webhooks | Sequence 10 | Checks whether the planned stack can run in the target environment. |
 | Two docs disagree, or a new decision may have made older docs stale | Sequence 11 | Finds conflicts and tells you what must be updated. |
@@ -600,6 +602,7 @@ If no conflicts are found, say that clearly and mention remaining uncertainty.
 
 For most subtasks, use this order:
 
+0. Project B/C runway check: read `docs/project-b-c-build-runway.md` before moving between Project B/C workflow subtasks.
 1. Sequence 5: update `CURRENT-TASK.md`
 2. Sequence 1: start and inspect
 3. Sequence 9: business decision capture, only if a needed decision is unclear
@@ -640,12 +643,14 @@ Code quality review:
 Dependency or cross-module change:
 
 - add `dependency-impact-register.md`
+- add `project-b-c-build-runway.md` when moving between Project B/C workflow subtasks
 
 Parent task completion:
 
 - add `task-list.md`
 - add `subtask-validation.md`
 - add `dependency-impact-register.md`
+- add `project-b-c-build-runway.md` when moving between Project B/C workflow subtasks
 
 Business rule clarification:
 

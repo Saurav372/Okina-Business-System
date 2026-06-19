@@ -204,6 +204,7 @@ Use these detailed documents only when needed:
 - `docs/task-list.md`
 - `docs/subtask-validation.md`
 - `docs/dependency-impact-register.md`
+- `docs/project-b-c-build-runway.md`
 
 Read detailed documents when:
 
@@ -213,6 +214,7 @@ Read detailed documents when:
 - Regression testing is required.
 - A business rule needs verification.
 - The dependency impact of a change is uncertain.
+- Moving between Project B and Project C workflow subtasks.
 
 For most coding sessions, use only:
 
