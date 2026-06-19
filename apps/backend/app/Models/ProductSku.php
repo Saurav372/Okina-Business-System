@@ -47,6 +47,15 @@ class ProductSku extends Model
             'quote_required' => 'boolean',
             'track_stock' => 'boolean',
             'allow_backorder' => 'boolean',
+            'price_minor' => 'integer',
+            'compare_at_price_minor' => 'integer',
+            'stock_quantity' => 'integer',
+            'low_stock_threshold' => 'integer',
+            'weight_grams' => 'integer',
+            'length_mm' => 'integer',
+            'width_mm' => 'integer',
+            'height_mm' => 'integer',
+            'sort_order' => 'integer',
         ];
     }
 

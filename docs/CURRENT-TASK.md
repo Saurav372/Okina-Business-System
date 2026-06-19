@@ -16,11 +16,13 @@ B3.1.3 Price recalculation
 
 B3.1.2 Cart item validation was completed on 2026-06-19.
 
-B3.1.3 Price recalculation is now the active subtask.
+B3.1.3 Price recalculation was completed on 2026-06-19.
 
 ## Goal
 
 Recalculate cart line totals and checkout totals on the backend so pricing cannot be trusted from the client.
+
+B3.1.3 is complete. Move to B3.1.4 Customer and address validation when ready.
 
 ## Dependencies
 

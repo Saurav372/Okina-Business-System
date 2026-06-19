@@ -44,6 +44,7 @@
 | A5.3 Payment gateway service contract | B3.2 Website payment adapter implementation | Requires | Critical |
 | B3.1 Cart and checkout with pending order creation | C1.1 Basic admin order and payment view | Creates shared order | Critical |
 | B3.1.2 Cart item validation | B3.1.3 Price recalculation | Requires | High |
+| B3.1.3 Price recalculation | B3.1.6 Pending-order creation | Provides current server-side subtotal and total fields | High |
 | B3.2 Website payment adapter implementation | B3.3 Payment webhook handling | Requires | Critical |
 | B3.3 Payment webhook handling | C1.1 Basic admin order and payment view | Updates payment state | Critical |
 | C1.1 Basic admin order and payment view | B4.1 Customer dashboard | Provides order data | High |

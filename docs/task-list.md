@@ -252,7 +252,7 @@ Planning note: B2.2.7 and B2.2.8 are deferred bridge subtasks. They must not blo
 |---|---|---|
 | B3.1.1 | Cart storage | Completed |
 | B3.1.2 | Cart item validation | Completed |
-| B3.1.3 | Price recalculation | Not Started |
+| B3.1.3 | Price recalculation | Project B | B3 | Validate cart, recalculate prices, require customer/address, detect bulk quantities, create pending order, create payment attempt, prevent duplicates, and handle failures. | A2.2, A3.1, A3.2, A5.1, B2.2.6 | Payment, admin order display | A/B/C | Critical | Critical | Checkout/idempotency tests | Completed |
 | B3.1.4 | Customer and address validation | Not Started |
 | B3.1.5 | Bulk quantity detection | Not Started |
 | B3.1.6 | Pending-order creation | Not Started |
@@ -264,6 +264,8 @@ Planning note: B2.2.7 and B2.2.8 are deferred bridge subtasks. They must not blo
 Verification note: B3.1.1 completed on 2026-06-19. The database-backed cart layer now stores guest/session carts, attaches optional customer ownership, preserves public-safe customization snapshots, and protects cart ownership through session-scoped tokens. `php artisan test --filter=CartStorageTest` and `./vendor/bin/pint --test app/Support/Products/CustomizationSnapshotBuilder.php app/Services/CartService.php app/Services/CartResponsePresenter.php app/Http/Controllers/Api/CartController.php app/Http/Requests/Cart/StoreCartItemRequest.php app/Http/Requests/Cart/UpdateCartItemRequest.php app/Models/Cart.php app/Models/CartItem.php tests/Feature/CartStorageTest.php` passed.
 
 Verification note: B3.1.2 completed on 2026-06-19. The cart validation endpoint now checks product availability, SKU checkout eligibility, quantity limits, and customization-rule drift while returning a public-safe validation payload. `php artisan test --filter=CartValidationTest`, `php artisan test --filter=CartStorageTest`, `php artisan test --filter=CustomizationOptionApiTest`, and `./vendor/bin/pint --test app/Http/Controllers/Api/CartController.php app/Services/CartValidationService.php routes/api.php tests/Feature/CartValidationTest.php` passed.
+
+Verification note: B3.1.3 completed on 2026-06-19. The backend now recalculates cart line totals and cart summaries from current SKU prices with product base price fallback, returns public-safe pricing fields on cart and validation payloads, and keeps stale browser pricing out of checkout decisions. `php artisan test --filter=CartStorageTest`, `php artisan test --filter=CartValidationTest`, and `./vendor/bin/pint app/Services/CartPricingService.php app/Services/CartResponsePresenter.php app/Models/ProductSku.php tests/Feature/CartStorageTest.php tests/Feature/CartValidationTest.php` passed.
 
 ### B3.3 Payment webhook handling
 

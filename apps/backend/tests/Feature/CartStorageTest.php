@@ -32,7 +32,14 @@ class CartStorageTest extends TestCase
             ->assertJsonPath('data.items.0.product.name', 'Custom Tee')
             ->assertJsonPath('data.items.0.sku.code', 'SKU-CUSTOM-TEE-M')
             ->assertJsonPath('data.items.0.quantity', 2)
+            ->assertJsonPath('data.items.0.pricing.currency', 'INR')
+            ->assertJsonPath('data.items.0.pricing.unit_price_minor', 1899)
+            ->assertJsonPath('data.items.0.pricing.line_subtotal_minor', 3798)
+            ->assertJsonPath('data.items.0.pricing.line_total_minor', 3798)
             ->assertJsonPath('data.items.0.customization.product.slug', 'custom-tee')
+            ->assertJsonPath('data.pricing.currency', 'INR')
+            ->assertJsonPath('data.pricing.subtotal_amount_minor', 3798)
+            ->assertJsonPath('data.pricing.total_amount_minor', 3798)
             ->assertJsonPath('data.items.0.customization.placement.scale', 0.72)
             ->assertJsonMissingPath('data.items.0.product_id')
             ->assertJsonMissingPath('data.items.0.sku_id')
@@ -254,6 +261,43 @@ class CartStorageTest extends TestCase
         $this->assertSame('custom-tee', $item->fresh()->customization_snapshot['product']['slug']);
     }
 
+    public function test_cart_pricing_updates_when_sku_price_changes_and_falls_back_to_product_base_price(): void
+    {
+        $catalog = $this->createCatalog();
+
+        $this->postJson('/api/cart/items', $this->cartPayload($catalog['product'], $catalog['sku'], 2))
+            ->assertOk();
+
+        $this->getJson('/api/cart')
+            ->assertOk()
+            ->assertJsonPath('data.items.0.pricing.unit_price_minor', 1899)
+            ->assertJsonPath('data.items.0.pricing.line_total_minor', 3798)
+            ->assertJsonPath('data.pricing.subtotal_amount_minor', 3798)
+            ->assertJsonPath('data.pricing.total_amount_minor', 3798);
+
+        ProductSku::query()->whereKey($catalog['sku']->id)->update([
+            'price_minor' => 2499,
+        ]);
+
+        $this->getJson('/api/cart')
+            ->assertOk()
+            ->assertJsonPath('data.items.0.pricing.unit_price_minor', 2499)
+            ->assertJsonPath('data.items.0.pricing.line_total_minor', 4998)
+            ->assertJsonPath('data.pricing.subtotal_amount_minor', 4998)
+            ->assertJsonPath('data.pricing.total_amount_minor', 4998);
+
+        ProductSku::query()->whereKey($catalog['sku']->id)->update([
+            'price_minor' => null,
+        ]);
+
+        $this->getJson('/api/cart')
+            ->assertOk()
+            ->assertJsonPath('data.items.0.pricing.unit_price_minor', 1599)
+            ->assertJsonPath('data.items.0.pricing.line_total_minor', 3198)
+            ->assertJsonPath('data.pricing.subtotal_amount_minor', 3198)
+            ->assertJsonPath('data.pricing.total_amount_minor', 3198);
+    }
+
     private function createCatalog(): array
     {
         $category = ProductCategory::factory()->create([
@@ -264,6 +308,7 @@ class CartStorageTest extends TestCase
             'slug' => 'custom-tee',
             'name' => 'Custom Tee',
             'primary_category_id' => $category->id,
+            'base_price_minor' => 1599,
             'customization_mode' => Product::CUSTOMIZATION_REQUIRED,
             'status' => Product::STATUS_ACTIVE,
             'visibility' => Product::VISIBILITY_PUBLIC,
