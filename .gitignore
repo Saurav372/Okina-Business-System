@@ -1,0 +1,40 @@
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Dependencies
+vendor/
+node_modules/
+apps/backend/vendor/
+apps/backend/node_modules/
+apps/frontend/node_modules/
+
+# Build and generated output
+apps/backend/public/build/
+apps/backend/public/hot
+apps/backend/public/storage
+apps/frontend/dist/
+apps/frontend/.astro/
+
+# Laravel runtime files
+apps/backend/storage/*.key
+apps/backend/storage/pail/
+apps/backend/bootstrap/cache/*.php
+apps/backend/.phpunit.cache/
+apps/backend/.phpunit.result.cache
+
+# Tool caches and local artifacts
+.npm-cache/
+.npm-cache-run-*/
+.phpactor.json
+auth.json
+
+# Editor and OS files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.zed/
+.cursor/
+.codex/

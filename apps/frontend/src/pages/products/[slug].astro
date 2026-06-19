@@ -1,0 +1,143 @@
+---
+import CatalogLayout from '../../layouts/CatalogLayout.astro';
+import PlacementPreviewPanel from '../../components/PlacementPreviewPanel.astro';
+import { formatDate, formatMoney, getProductPageData, getProductSlugs, titleCase } from '../../lib/catalog';
+
+export async function getStaticPaths() {
+  const slugs = await getProductSlugs();
+
+  return slugs.map((slug) => ({
+    params: { slug },
+  }));
+}
+
+const { slug } = Astro.params;
+const product = await getProductPageData(slug ?? '');
+
+if (!product) {
+  throw new Error(`Product not found for slug: ${slug ?? ''}`);
+}
+---
+
+<CatalogLayout title={`${product.name} | Okina Craft`} description={product.seo_description ?? product.short_description ?? product.name}>
+  <section class="hero">
+    <p class="summary"><a href="/">Products</a> / {product.name}</p>
+    <h1>{product.name}</h1>
+    <p>{product.short_description ?? product.description ?? 'No public description provided.'}</p>
+    <div class="meta-row">
+      <span class="pill">{product.category?.name ?? 'Uncategorized'}</span>
+      <span class="pill">{titleCase(product.status)}</span>
+      <span class="pill">{titleCase(product.visibility)}</span>
+      <span class="pill">Published {formatDate(product.published_at) ?? 'not set'}</span>
+    </div>
+  </section>
+
+  <div class="detail-layout">
+    <section class="section">
+      <h2>Product details</h2>
+      <p>{product.description ?? 'No public description provided.'}</p>
+      <div class="stack">
+        <div class="panel">
+          <table>
+            <tbody>
+              <tr>
+                <th scope="row">Product type</th>
+                <td>{titleCase(product.product_type)}</td>
+              </tr>
+              <tr>
+                <th scope="row">Customization</th>
+                <td>{titleCase(product.customization_mode)}</td>
+              </tr>
+              <tr>
+                <th scope="row">Fulfillment</th>
+                <td>{titleCase(product.fulfillment_type)}</td>
+              </tr>
+              <tr>
+                <th scope="row">Base price</th>
+                <td>{formatMoney(product.base_price_minor, product.currency)}</td>
+              </tr>
+              <tr>
+                <th scope="row">Order quantity</th>
+                <td>
+                  Minimum {product.min_order_quantity}
+                  {product.max_order_quantity ? `, maximum ${product.max_order_quantity}` : ''}
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">Bulk threshold</th>
+                <td>{product.bulk_threshold_quantity ?? 'Not set'}</td>
+              </tr>
+              <tr>
+                <th scope="row">Checkout</th>
+                <td>{product.direct_checkout_enabled ? 'Enabled' : 'Disabled'}</td>
+              </tr>
+              <tr>
+                <th scope="row">Quote</th>
+                <td>{product.quote_enabled ? 'Enabled' : 'Disabled'}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="panel">
+          <table>
+            <tbody>
+              <tr>
+                <th scope="row">SEO title</th>
+                <td>{product.seo_title ?? 'Not set'}</td>
+              </tr>
+              <tr>
+                <th scope="row">SEO description</th>
+                <td>{product.seo_description ?? 'Not set'}</td>
+              </tr>
+              <tr>
+                <th scope="row">Category</th>
+                <td>{product.category?.name ?? 'Uncategorized'}</td>
+              </tr>
+              <tr>
+                <th scope="row">Variants</th>
+                <td>{product.variants.length}</td>
+              </tr>
+              <tr>
+                <th scope="row">Public SKUs</th>
+                <td>{product.skus.length}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <aside class="section">
+      <h2>Variants and SKUs</h2>
+      <div class="stack">
+        {product.variants.map((variant) => (
+          <article class="card">
+            <h3>{variant.name}</h3>
+            <p class="summary">Code {variant.code} · {titleCase(variant.display_type)}</p>
+            <p class="summary">{variant.is_required ? 'Required option' : 'Optional option'}</p>
+          </article>
+        ))}
+
+        {product.skus.map((sku) => (
+          <article class="card">
+            <h3>{sku.sku_code}</h3>
+            <p class="summary">{sku.name_suffix ?? 'No name suffix'}</p>
+            <p class="summary">{formatMoney(sku.price_minor, product.currency)}</p>
+            <p class="summary">
+              {sku.availability.available_for_checkout ? 'Checkout available' : 'Checkout unavailable'}
+              {sku.availability.requires_quote ? ' · Quote required' : ''}
+            </p>
+            <p class="summary">
+              {sku.availability.is_in_stock ? 'In stock' : 'Out of stock'}
+              {sku.availability.is_low_stock ? ' · Low stock' : ''}
+            </p>
+            <p class="summary">Variant key {sku.variant_key}</p>
+          </article>
+        ))}
+      </div>
+    </aside>
+  </div>
+
+  <PlacementPreviewPanel productSlug={product.slug} productName={product.name} />
+</CatalogLayout>

@@ -1,0 +1,58 @@
+﻿---
+import CatalogLayout from '../layouts/CatalogLayout.astro';
+import { formatDate, formatMoney, getCatalogHomeData, titleCase } from '../lib/catalog';
+
+const { categories, products } = await getCatalogHomeData();
+
+const featuredCategories = categories.slice(0, 6);
+const featuredProducts = products.slice(0, 8);
+---
+
+<CatalogLayout title="Okina Craft Catalog" description="Public catalog of products and categories">
+  <section class="hero">
+    <h1>Okina Craft Catalog</h1>
+    <p>Browse public product collections, compare category groups, and inspect public SKU details that are safe for the customer website.</p>
+    <div class="meta-row">
+      <span class="pill">{categories.length} categories</span>
+      <span class="pill">{products.length} products</span>
+      <span class="pill">Live backend API</span>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <h2>Categories</h2>
+      <a href="/categories">View all categories</a>
+    </div>
+    <div class="grid categories">
+      {featuredCategories.map((category) => (
+        <article class="card">
+          <h3>{category.name}</h3>
+          <p>{category.description ?? 'No description provided.'}</p>
+          <p class="summary">{category.products_count} public products</p>
+          <p class="summary">{formatDate(category.published_at) ?? 'Publishing date not set'}</p>
+          <a class="card-link" href={`/categories/${category.slug}`}>Open category</a>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <h2>Products</h2>
+      <a href="/categories">Browse by category</a>
+    </div>
+    <div class="grid products">
+      {featuredProducts.map((product) => (
+        <article class="card">
+          <p class="summary">{product.category?.name ?? 'Uncategorized'} · {titleCase(product.status)}</p>
+          <h3>{product.name}</h3>
+          <p>{product.short_description ?? product.description ?? 'No public description provided.'}</p>
+          <p class="summary">{product.skus.length} public SKUs</p>
+          <p class="summary">Starting from {formatMoney(product.base_price_minor, product.currency)}</p>
+          <a class="card-link" href={`/products/${product.slug}`}>Open product</a>
+        </article>
+      ))}
+    </div>
+  </section>
+</CatalogLayout>

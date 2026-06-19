@@ -1,0 +1,27 @@
+﻿---
+import CatalogLayout from '../../layouts/CatalogLayout.astro';
+import { formatDate, getCategories } from '../../lib/catalog';
+
+const categories = await getCategories();
+---
+
+<CatalogLayout title="Okina Craft Categories" description="Public category listing">
+  <section class="hero">
+    <h1>Categories</h1>
+    <p>Public category groups are listed here in the same order the backend exposes them.</p>
+  </section>
+
+  <section class="section">
+    <div class="grid categories">
+      {categories.map((category) => (
+        <article class="card">
+          <h3>{category.name}</h3>
+          <p>{category.description ?? 'No public description available.'}</p>
+          <p class="summary">{category.products_count} products</p>
+          <p class="summary">{formatDate(category.published_at) ?? 'Publishing date not set'}</p>
+          <a class="card-link" href={`/categories/${category.slug}`}>Open category</a>
+        </article>
+      ))}
+    </div>
+  </section>
+</CatalogLayout>

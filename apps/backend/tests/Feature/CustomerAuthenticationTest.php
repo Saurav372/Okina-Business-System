@@ -1,0 +1,135 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\CustomerAccount;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
+use Tests\TestCase;
+
+class CustomerAuthenticationTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_guests_are_redirected_to_the_customer_login_page(): void
+    {
+        $this->get(route('customer.account'))
+            ->assertRedirect(route('customer.login'));
+    }
+
+    public function test_customers_can_register_and_access_the_account_area(): void
+    {
+        $this->post(route('customer.register.store'), [
+            'name' => 'Saurav Customer',
+            'email' => 'Customer@Example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ])->assertRedirect(route('customer.account'));
+
+        $account = CustomerAccount::first();
+
+        $this->assertNotNull($account);
+        $this->assertSame('customer@example.com', $account->normalized_email);
+        $this->assertSame('customer@example.com', $account->customer->email);
+        $this->assertAuthenticatedAs($account, 'customer');
+
+        $this->get(route('customer.account'))
+            ->assertOk()
+            ->assertSee('Customer Account')
+            ->assertSee('Saurav Customer');
+    }
+
+    public function test_customer_registration_requires_unique_normalized_email(): void
+    {
+        CustomerAccount::factory()->create([
+            'email' => 'customer@example.com',
+            'normalized_email' => 'customer@example.com',
+        ]);
+
+        $this->post(route('customer.register.store'), [
+            'name' => 'Duplicate Customer',
+            'email' => 'Customer@Example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ])->assertSessionHasErrors('email');
+
+        $this->assertGuest('customer');
+    }
+
+    public function test_active_verified_customers_can_log_in(): void
+    {
+        $account = CustomerAccount::factory()->create([
+            'email' => 'customer@example.com',
+            'normalized_email' => 'customer@example.com',
+            'password' => Hash::make('password123'),
+        ]);
+
+        $this->post(route('customer.login.store'), [
+            'email' => 'CUSTOMER@example.com',
+            'password' => 'password123',
+        ])->assertRedirect(route('customer.account'));
+
+        $this->assertAuthenticatedAs($account, 'customer');
+
+        $account->refresh();
+        $this->assertSame(0, $account->failed_login_attempts);
+        $this->assertNotNull($account->last_login_at);
+    }
+
+    public function test_inactive_customers_cannot_access_customer_account_routes(): void
+    {
+        $account = CustomerAccount::factory()->suspended()->create([
+            'password' => Hash::make('password123'),
+        ]);
+
+        $this->post(route('customer.login.store'), [
+            'email' => $account->email,
+            'password' => 'password123',
+        ])->assertSessionHasErrors('email');
+
+        $this->assertGuest('customer');
+    }
+
+    public function test_unverified_customers_cannot_access_customer_account_routes(): void
+    {
+        $account = CustomerAccount::factory()->pendingVerification()->create([
+            'password' => Hash::make('password123'),
+        ]);
+
+        $this->post(route('customer.login.store'), [
+            'email' => $account->email,
+            'password' => 'password123',
+        ])->assertSessionHasErrors('email');
+
+        $this->assertGuest('customer');
+    }
+
+    public function test_staff_sessions_do_not_grant_customer_account_access(): void
+    {
+        $staff = User::factory()->create();
+
+        $this->actingAs($staff)
+            ->get(route('customer.account'))
+            ->assertRedirect(route('customer.login'));
+
+        $this->assertAuthenticatedAs($staff);
+        $this->assertGuest('customer');
+    }
+
+    public function test_customers_can_log_out_and_lose_account_access(): void
+    {
+        $account = CustomerAccount::factory()->create([
+            'password' => Hash::make('password123'),
+        ]);
+
+        $this->actingAs($account, 'customer')
+            ->post(route('customer.logout'))
+            ->assertRedirect(route('customer.login'));
+
+        $this->assertGuest('customer');
+
+        $this->get(route('customer.account'))
+            ->assertRedirect(route('customer.login'));
+    }
+}

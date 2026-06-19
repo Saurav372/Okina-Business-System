@@ -1,0 +1,50 @@
+﻿---
+import CatalogLayout from '../../layouts/CatalogLayout.astro';
+import { formatDate, formatMoney, getCategoryPageData, getCategorySlugs, titleCase } from '../../lib/catalog';
+
+export async function getStaticPaths() {
+  const slugs = await getCategorySlugs();
+
+  return slugs.map((slug) => ({
+    params: { slug },
+  }));
+}
+
+const { slug } = Astro.params;
+const { category, products } = await getCategoryPageData(slug ?? '');
+
+if (!category) {
+  throw new Error(`Category not found for slug: ${slug ?? ''}`);
+}
+---
+
+<CatalogLayout title={`${category.name} | Okina Craft`} description={category.seo_description ?? category.description ?? category.name}>
+  <section class="hero">
+    <p class="summary"><a href="/categories">Categories</a> / {category.name}</p>
+    <h1>{category.name}</h1>
+    <p>{category.description ?? 'No public description provided.'}</p>
+    <div class="meta-row">
+      <span class="pill">{category.products_count} products</span>
+      <span class="pill">Published {formatDate(category.published_at) ?? 'not set'}</span>
+      <span class="pill">Slug {category.slug}</span>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <h2>Products in this category</h2>
+      <a href="/">Back to all products</a>
+    </div>
+    <div class="grid products">
+      {products.map((product) => (
+        <article class="card">
+          <p class="summary">{titleCase(product.status)} · {product.skus.length} SKUs</p>
+          <h3>{product.name}</h3>
+          <p>{product.short_description ?? product.description ?? 'No public description provided.'}</p>
+          <p class="summary">Starting from {formatMoney(product.base_price_minor, product.currency)}</p>
+          <a class="card-link" href={`/products/${product.slug}`}>Open product</a>
+        </article>
+      ))}
+    </div>
+  </section>
+</CatalogLayout>
