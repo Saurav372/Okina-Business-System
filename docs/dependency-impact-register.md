@@ -219,3 +219,5 @@ A task can be marked complete only when:
 - Regression testing is completed.
 
 
+
+| B3.1.8 Payment-attempt creation | B3.1.9 Duplicate checkout prevention | Provides linked attempt record and idempotency key basis | High |

@@ -58,6 +58,7 @@ class CheckoutPendingOrderTest extends TestCase
             ->assertJsonPath('data.pending_order.customer.public_id', $customer->public_id)
             ->assertJsonPath('data.pending_order.shipping_address.label', 'Home')
             ->assertJsonPath('data.pending_order.billing_address.label', 'Office')
+            ->assertJsonPath('data.pending_order.payment_attempt_public_id', $response->json('data.payment_attempt.id'))
             ->assertJsonPath('data.pending_order.items.0.product.slug', 'custom-tee')
             ->assertJsonPath('data.pending_order.items.0.sku.code', 'SKU-CUSTOM-TEE-M')
             ->assertJsonPath('data.pending_order.items.0.quantity', 2)
@@ -67,19 +68,31 @@ class CheckoutPendingOrderTest extends TestCase
             ->assertJsonPath('data.pending_order.items.0.pricing.price_source', 'sku_price')
             ->assertJsonPath('data.pending_order.items.0.customization.print_method', 'dtf')
             ->assertJsonPath('data.pending_order.items.0.customization.product.slug', 'custom-tee')
+            ->assertJsonPath('data.payment_attempt.order_public_id', $response->json('data.pending_order.public_id'))
+            ->assertJsonPath('data.payment_attempt.status', 'created')
+            ->assertJsonPath('data.payment_attempt.provider', 'cashfree')
+            ->assertJsonPath('data.payment_attempt.attempt_type', 'website_checkout')
+            ->assertJsonPath('data.payment_attempt.amount_minor', 3798)
+            ->assertJsonPath('data.payment_attempt.currency', 'INR')
             ->assertJsonPath('data.pending_order.next_step', 'payment_attempt')
             ->assertJsonPath('data.cart_validation.valid', true)
             ->assertJsonPath('data.bulk_handoff.required', false)
             ->assertJsonMissingPath('data.pending_order.id')
             ->assertJsonMissingPath('data.pending_order.customer.id')
             ->assertJsonMissingPath('data.pending_order.shipping_address.id')
-            ->assertJsonMissingPath('data.pending_order.billing_address.id');
+            ->assertJsonMissingPath('data.pending_order.billing_address.id')
+            ->assertJsonPath('data.payment_attempt.gateway_payment_id', null)
+            ->assertJsonPath('data.payment_attempt.gateway_order_id', null)
+            ->assertJsonPath('data.payment_attempt.gateway_reference', null)
+            ->assertJsonPath('data.payment_attempt.checkout_url', null);
 
         $this->assertDatabaseCount('orders', 1);
         $this->assertDatabaseCount('order_items', 1);
+        $this->assertDatabaseCount('payment_attempts', 1);
 
-        $order = Order::query()->with('items')->firstOrFail();
+        $order = Order::query()->with(['items', 'paymentAttempts'])->firstOrFail();
         $orderItem = $order->items->firstOrFail();
+        $paymentAttempt = $order->paymentAttempts->firstOrFail();
 
         $this->assertSame($customer->id, $order->customer_id);
         $this->assertSame('website_order', $order->order_type);
@@ -105,6 +118,16 @@ class CheckoutPendingOrderTest extends TestCase
         $this->assertSame('Keep centered', $orderItem->customization_snapshot['customer_note']);
         $this->assertSame('dtf', $orderItem->customization_snapshot['print_method']);
         $this->assertSame('custom-tee', $orderItem->customization_snapshot['product']['slug']);
+
+        $this->assertSame($order->id, $paymentAttempt->order_id);
+        $this->assertSame('cashfree', $paymentAttempt->provider);
+        $this->assertSame('website_checkout', $paymentAttempt->attempt_type);
+        $this->assertSame('created', $paymentAttempt->status);
+        $this->assertSame(3798, $paymentAttempt->amount_minor);
+        $this->assertSame('INR', $paymentAttempt->currency);
+        $this->assertStringStartsWith('idempotency:payment_attempt:', $paymentAttempt->idempotency_key);
+        $this->assertStringContainsString(':cashfree:', $paymentAttempt->idempotency_key);
+        $this->assertStringContainsString(':website_checkout', $paymentAttempt->idempotency_key);
     }
 
     public function test_checkout_does_not_create_pending_order_for_bulk_cart(): void
@@ -122,9 +145,12 @@ class CheckoutPendingOrderTest extends TestCase
             ->assertJsonPath('data.valid', false)
             ->assertJsonPath('data.bulk_handoff.required', true)
             ->assertJsonPath('data.bulk_handoff.item_count', 25)
-            ->assertJsonPath('data.pending_order', null);
+            ->assertJsonPath('data.pending_order', null)
+            ->assertJsonPath('data.payment_attempt', null);
 
         $this->assertDatabaseCount('orders', 0);
+        $this->assertDatabaseCount('order_items', 0);
+        $this->assertDatabaseCount('payment_attempts', 0);
     }
 
     private function createCustomerAccount(): array

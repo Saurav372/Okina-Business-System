@@ -4,12 +4,14 @@ namespace App\Services;
 
 use App\Enums\OrderStatus;
 use App\Enums\OrderType;
-use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\CustomerAccount;
 use App\Models\CustomerAddress;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\PaymentAttempt;
+use App\Support\Idempotency\IdempotencyKeyGenerator;
+use App\Support\Payments\PaymentAttemptRules;
 use App\Support\Products\CustomizationSnapshotBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -21,10 +23,12 @@ class CheckoutPendingOrderService
         private readonly CheckoutValidationService $validationService,
         private readonly CartPricingService $pricingService,
         private readonly CustomizationSnapshotBuilder $snapshots,
+        private readonly PaymentAttemptRules $paymentAttemptRules,
+        private readonly IdempotencyKeyGenerator $idempotencyKeys,
     ) {}
 
     /**
-     * @return array{valid: bool, cart: array<string, mixed>, cart_validation: array<string, mixed>, customer: array<string, mixed>, shipping_address: array<string, mixed>|null, billing_address: array<string, mixed>|null, bulk_handoff: array<string, mixed>, pending_order: array<string, mixed>|null, errors: array<int, array<string, mixed>>}
+     * @return array{valid: bool, cart: array<string, mixed>, cart_validation: array<string, mixed>, customer: array<string, mixed>, shipping_address: array<string, mixed>|null, billing_address: array<string, mixed>|null, bulk_handoff: array<string, mixed>, pending_order: array<string, mixed>|null, payment_attempt: array<string, mixed>|null, errors: array<int, array<string, mixed>>}
      */
     public function payload(Request $request, array $input): array
     {
@@ -33,6 +37,7 @@ class CheckoutPendingOrderService
         if (($validation['valid'] ?? false) !== true || ($validation['bulk_handoff']['required'] ?? false)) {
             return $validation + [
                 'pending_order' => null,
+                'payment_attempt' => null,
             ];
         }
 
@@ -61,13 +66,14 @@ class CheckoutPendingOrderService
         if ($cart === null) {
             return $validation + [
                 'pending_order' => null,
+                'payment_attempt' => null,
             ];
         }
 
         $cart->loadMissing(['items.product', 'items.sku']);
         $pricing = $validation['cart']['pricing'] ?? $this->pricingService->summary($cart);
 
-        $order = DB::transaction(function () use ($customer, $shippingAddress, $billingAddress, $validation, $pricing, $cart): Order {
+        [$order, $paymentAttempt] = DB::transaction(function () use ($customer, $shippingAddress, $billingAddress, $validation, $pricing, $cart): array {
             $order = Order::create([
                 'order_type' => OrderType::WebsiteOrder->value(),
                 'order_source' => 'website',
@@ -95,13 +101,20 @@ class CheckoutPendingOrderService
                     ->all(),
             );
 
-            $order->setRelation('items', $orderItems);
+            $paymentAttempt = $order->paymentAttempts()->firstOrCreate(
+                ['idempotency_key' => $this->paymentAttemptIdempotencyKey($order)],
+                $this->paymentAttemptAttributes($order, $pricing),
+            );
 
-            return $order;
+            $order->setRelation('items', $orderItems);
+            $order->setRelation('paymentAttempts', collect([$paymentAttempt]));
+
+            return [$order, $paymentAttempt];
         });
 
         return $validation + [
-            'pending_order' => $this->pendingOrderPayload($order),
+            'pending_order' => $this->pendingOrderPayload($order, $paymentAttempt),
+            'payment_attempt' => $this->paymentAttemptPayload($paymentAttempt, $order),
         ];
     }
 
@@ -142,7 +155,7 @@ class CheckoutPendingOrderService
     /**
      * @return array<string, mixed>
      */
-    private function pendingOrderPayload(Order $order): array
+    private function pendingOrderPayload(Order $order, PaymentAttempt $paymentAttempt): array
     {
         return [
             'public_id' => $order->public_id,
@@ -159,6 +172,7 @@ class CheckoutPendingOrderService
             'customer' => $order->customer_snapshot,
             'shipping_address' => $order->shipping_address_snapshot,
             'billing_address' => $order->billing_address_snapshot,
+            'payment_attempt_public_id' => $paymentAttempt->public_id,
             'items' => $this->orderItemsPayload($order),
             'next_step' => 'payment_attempt',
         ];
@@ -215,6 +229,50 @@ class CheckoutPendingOrderService
             'line_total_minor' => (int) ($pricing['line_total_minor'] ?? 0),
             'currency' => (string) ($pricing['currency'] ?? 'INR'),
             'price_source' => (string) ($pricing['price_source'] ?? 'unpriced'),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function paymentAttemptAttributes(Order $order, array $pricing): array
+    {
+        return [
+            'provider' => $this->paymentAttemptRules->provider(),
+            'attempt_type' => $this->paymentAttemptRules->attemptType(),
+            'status' => 'created',
+            'amount_minor' => (int) ($pricing['total_amount_minor'] ?? 0),
+            'currency' => (string) ($pricing['currency'] ?? 'INR'),
+        ];
+    }
+
+    private function paymentAttemptIdempotencyKey(Order $order): string
+    {
+        return $this->idempotencyKeys->make('payment_attempt', [
+            $order->public_id,
+            $this->paymentAttemptRules->provider(),
+            $this->paymentAttemptRules->attemptType(),
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function paymentAttemptPayload(PaymentAttempt $paymentAttempt, Order $order): array
+    {
+        return [
+            'id' => $paymentAttempt->public_id,
+            'order_public_id' => $order->public_id,
+            'attempt_type' => $paymentAttempt->attempt_type,
+            'provider' => $paymentAttempt->provider,
+            'status' => $paymentAttempt->status,
+            'amount_minor' => $paymentAttempt->amount_minor,
+            'currency' => $paymentAttempt->currency,
+            'idempotency_key' => $paymentAttempt->idempotency_key,
+            'gateway_order_id' => $paymentAttempt->gateway_order_id,
+            'gateway_payment_id' => $paymentAttempt->gateway_payment_id,
+            'gateway_reference' => $paymentAttempt->gateway_reference,
+            'checkout_url' => $paymentAttempt->checkout_url,
         ];
     }
 }
