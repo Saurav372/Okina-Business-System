@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Cart\CheckoutValidationRequest;
 use App\Http\Requests\Cart\StoreCartItemRequest;
 use App\Http\Requests\Cart\UpdateCartItemRequest;
 use App\Services\CartResponsePresenter;
 use App\Services\CartService;
 use App\Services\CartValidationService;
+use App\Services\CheckoutValidationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -45,6 +47,15 @@ class CartController extends Controller
     {
         return response()->json([
             'data' => $validationService->payload($cartService->current($request, false)),
+        ]);
+    }
+
+    public function checkoutValidation(
+        CheckoutValidationRequest $request,
+        CheckoutValidationService $checkoutValidationService,
+    ): JsonResponse {
+        return response()->json([
+            'data' => $checkoutValidationService->payload($request, $request->validated()),
         ]);
     }
 }

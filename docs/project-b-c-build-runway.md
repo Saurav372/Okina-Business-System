@@ -124,7 +124,7 @@ If any check fails, update planning docs before implementation.
 
 The next unblocked implementation subtask is:
 
-`B3.1.3 Price recalculation`
+`B3.1.6 Pending-order creation`
 
 Do not start `B3.1.6 Pending-order creation` until `B3.1.2`, `B3.1.3`, and `B3.1.4` are completed.
 

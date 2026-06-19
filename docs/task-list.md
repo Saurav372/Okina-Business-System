@@ -253,8 +253,8 @@ Planning note: B2.2.7 and B2.2.8 are deferred bridge subtasks. They must not blo
 | B3.1.1 | Cart storage | Completed |
 | B3.1.2 | Cart item validation | Completed |
 | B3.1.3 | Price recalculation | Project B | B3 | Validate cart, recalculate prices, require customer/address, detect bulk quantities, create pending order, create payment attempt, prevent duplicates, and handle failures. | A2.2, A3.1, A3.2, A5.1, B2.2.6 | Payment, admin order display | A/B/C | Critical | Critical | Checkout/idempotency tests | Completed |
-| B3.1.4 | Customer and address validation | Not Started |
-| B3.1.5 | Bulk quantity detection | Not Started |
+| B3.1.4 | Customer and address validation | Completed |
+| B3.1.5 | Bulk quantity detection | Completed |
 | B3.1.6 | Pending-order creation | Not Started |
 | B3.1.7 | Order item/customization storage | Not Started |
 | B3.1.8 | Payment-attempt creation | Not Started |
