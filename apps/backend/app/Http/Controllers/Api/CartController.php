@@ -9,6 +9,7 @@ use App\Http\Requests\Cart\UpdateCartItemRequest;
 use App\Services\CartResponsePresenter;
 use App\Services\CartService;
 use App\Services\CartValidationService;
+use App\Services\CheckoutPendingOrderService;
 use App\Services\CheckoutValidationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -56,6 +57,15 @@ class CartController extends Controller
     ): JsonResponse {
         return response()->json([
             'data' => $checkoutValidationService->payload($request, $request->validated()),
+        ]);
+    }
+
+    public function checkout(
+        CheckoutValidationRequest $request,
+        CheckoutPendingOrderService $checkoutPendingOrderService,
+    ): JsonResponse {
+        return response()->json([
+            'data' => $checkoutPendingOrderService->payload($request, $request->validated()),
         ]);
     }
 }

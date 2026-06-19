@@ -255,7 +255,7 @@ Planning note: B2.2.7 and B2.2.8 are deferred bridge subtasks. They must not blo
 | B3.1.3 | Price recalculation | Project B | B3 | Validate cart, recalculate prices, require customer/address, detect bulk quantities, create pending order, create payment attempt, prevent duplicates, and handle failures. | A2.2, A3.1, A3.2, A5.1, B2.2.6 | Payment, admin order display | A/B/C | Critical | Critical | Checkout/idempotency tests | Completed |
 | B3.1.4 | Customer and address validation | Completed |
 | B3.1.5 | Bulk quantity detection | Completed |
-| B3.1.6 | Pending-order creation | Not Started |
+| B3.1.6 | Pending-order creation | Completed |
 | B3.1.7 | Order item/customization storage | Not Started |
 | B3.1.8 | Payment-attempt creation | Not Started |
 | B3.1.9 | Duplicate checkout prevention | Not Started |
@@ -267,6 +267,7 @@ Verification note: B3.1.2 completed on 2026-06-19. The cart validation endpoint 
 
 Verification note: B3.1.3 completed on 2026-06-19. The backend now recalculates cart line totals and cart summaries from current SKU prices with product base price fallback, returns public-safe pricing fields on cart and validation payloads, and keeps stale browser pricing out of checkout decisions. `php artisan test --filter=CartStorageTest`, `php artisan test --filter=CartValidationTest`, and `./vendor/bin/pint app/Services/CartPricingService.php app/Services/CartResponsePresenter.php app/Models/ProductSku.php tests/Feature/CartStorageTest.php tests/Feature/CartValidationTest.php` passed.
 
+Verification note: B3.1.6 completed on 2026-06-19. The checkout flow now creates a pending website order before payment attempts start, stores customer and address snapshots with public-safe order data, and exposes a checkout handoff payload for the next payment step. `php artisan test --filter=CheckoutPendingOrderTest`, `php artisan test --filter=CheckoutValidationTest`, `php artisan test --filter=CartValidationTest`, `php artisan test --filter=CartStorageTest`, and `./vendor/bin/pint --test app/Http/Controllers/Api/CartController.php app/Models/Order.php app/Services/CheckoutPendingOrderService.php routes/api.php database/factories/OrderFactory.php database/migrations/2026_06_19_000003_create_orders_table.php tests/Feature/CheckoutPendingOrderTest.php` passed.
 ### B3.3 Payment webhook handling
 
 | Subtask ID | Subtask Name | Status |

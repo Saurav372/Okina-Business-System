@@ -1,4 +1,4 @@
-﻿# Current Task
+# Current Task
 
 Use this file as the task-specific context for a coding session.
 
@@ -10,61 +10,61 @@ B3.1 Cart and checkout with pending order creation
 
 ## Current Subtask
 
-B3.1.6 Pending-order creation
+B3.1.7 Order item/customization storage
 
 ## Current Status
 
-B3.1.5 Bulk quantity detection was completed on 2026-06-19.
+B3.1.6 Pending-order creation was completed on 2026-06-19.
 
-B3.1.6 Pending-order creation is now the active subtask.
+B3.1.7 Order item/customization storage is now the active subtask.
 
 ## Goal
 
-Create a backend pending order from the validated checkout state before payment attempt creation.
+Store validated cart items and customization snapshots on the pending order so the order record can carry item-level history before payment attempt creation.
 
 ## Dependencies
 
-- A5.1.4-A5.1.5 Shared order/payment domain model
-- B3.1.1-B3.1.4 Cart storage, cart item validation, price recalculation, and customer/address validation
+- B2.2.6 Cart persistence
+- B3.1.6 Pending-order creation
 
 ## Required Deliverables
 
-- Backend pending-order creation
-- Persistent pending order records created before payment attempts
-- Checkout-to-order handoff payloads
-- Test coverage for successful pending-order creation
+- Backend order item/customization storage
+- Order item records linked to the pending order
+- Item snapshots for SKU, quantity, price, and customization
+- Test coverage for order item storage and customization persistence
 
 ## Acceptance Criteria
 
-- Checkout creates a pending order before any payment attempt is started.
-- The pending order reflects the validated customer, cart, pricing, and address state.
-- Direct checkout flow can hand off cleanly to the next payment step.
-- Later order item storage can reuse the pending-order record.
+- Pending orders persist item rows before payment attempts begin.
+- Order item rows preserve SKU, price, quantity, and customization snapshots.
+- The stored item data is safe for later admin, payment, and tracking flows.
+- Later order and file bridge tasks can reuse the persisted item structure.
 
 ## Tests Required
 
-- Pending-order creation tests
-- Checkout handoff tests
-- Order record shape tests
+- Order item storage tests
+- Customization snapshot persistence tests
+- Pending order handoff regression tests
 
 ## Quality Requirements
 
 - Follow existing Laravel and shared order conventions.
-- Do not start order item/customization storage, payment attempts, duplicate checkout prevention, or failed checkout handling inside this subtask.
-- Keep checkout-to-order handoff data public-safe where exposed.
-- Reuse existing cart, customer, and pricing services instead of creating a parallel checkout model.
+- Do not start payment attempts, duplicate checkout prevention, or failed checkout handling inside this subtask.
+- Keep any exposed item data public-safe where exposed.
+- Reuse the validated cart and pending-order record instead of rebuilding order data from scratch.
 - Run relevant backend tests after implementation.
 
 ## Files Likely Affected
 
 - `apps/backend/app/**`
+- `apps/backend/database/**`
 - `apps/backend/routes/**`
 - `apps/backend/tests/**`
 - `docs/dependency-impact-register.md`
 
 ## Tasks Not Included
 
-- Order item/customization storage
 - Payment-attempt creation
 - Duplicate checkout prevention
 - Failed checkout handling

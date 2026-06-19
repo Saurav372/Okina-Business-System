@@ -30,6 +30,7 @@ Route::middleware('web')->withoutMiddleware(ValidateCsrfToken::class)->prefix('c
     Route::get('/', [CartController::class, 'index']);
     Route::get('/validation', [CartController::class, 'validation']);
     Route::post('/checkout/validation', [CartController::class, 'checkoutValidation'])->middleware('auth:customer');
+    Route::post('/checkout', [CartController::class, 'checkout'])->middleware('auth:customer');
     Route::post('/items', [CartController::class, 'store']);
     Route::patch('/items/{cartItem}', [CartController::class, 'update']);
     Route::delete('/items/{cartItem}', [CartController::class, 'destroy']);
