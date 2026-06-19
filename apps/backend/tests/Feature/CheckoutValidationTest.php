@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Cart;
 use App\Models\Customer;
 use App\Models\CustomerAccount;
 use App\Models\CustomerAddress;
@@ -63,6 +64,26 @@ class CheckoutValidationTest extends TestCase
             ->assertJsonMissingPath('data.customer.id')
             ->assertJsonMissingPath('data.shipping_address.id')
             ->assertJsonMissingPath('data.billing_address.id');
+    }
+
+    public function test_checkout_validation_fails_when_cart_is_empty(): void
+    {
+        [$customerAccount] = $this->createCustomerAccount();
+
+        Cart::create([
+            'customer_id' => $customerAccount->customer_id,
+            'last_activity_at' => now(),
+        ]);
+
+        $response = $this->actingAs($customerAccount, 'customer')->postJson('/api/cart/checkout/validation', []);
+
+        $response->assertOk()
+            ->assertJsonPath('data.valid', false)
+            ->assertJsonPath('data.errors.0.field', 'cart')
+            ->assertJsonPath('data.errors.0.code', 'cart_empty')
+            ->assertJsonPath('data.cart.item_count', 0)
+            ->assertJsonPath('data.shipping_address', null)
+            ->assertJsonPath('data.billing_address', null);
     }
 
     public function test_checkout_validation_fails_when_shipping_address_is_missing(): void

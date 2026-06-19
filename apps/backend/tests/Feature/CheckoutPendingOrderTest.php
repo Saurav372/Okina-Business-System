@@ -58,6 +58,15 @@ class CheckoutPendingOrderTest extends TestCase
             ->assertJsonPath('data.pending_order.customer.public_id', $customer->public_id)
             ->assertJsonPath('data.pending_order.shipping_address.label', 'Home')
             ->assertJsonPath('data.pending_order.billing_address.label', 'Office')
+            ->assertJsonPath('data.pending_order.items.0.product.slug', 'custom-tee')
+            ->assertJsonPath('data.pending_order.items.0.sku.code', 'SKU-CUSTOM-TEE-M')
+            ->assertJsonPath('data.pending_order.items.0.quantity', 2)
+            ->assertJsonPath('data.pending_order.items.0.pricing.currency', 'INR')
+            ->assertJsonPath('data.pending_order.items.0.pricing.unit_price_minor', 1899)
+            ->assertJsonPath('data.pending_order.items.0.pricing.line_total_minor', 3798)
+            ->assertJsonPath('data.pending_order.items.0.pricing.price_source', 'sku_price')
+            ->assertJsonPath('data.pending_order.items.0.customization.print_method', 'dtf')
+            ->assertJsonPath('data.pending_order.items.0.customization.product.slug', 'custom-tee')
             ->assertJsonPath('data.pending_order.next_step', 'payment_attempt')
             ->assertJsonPath('data.cart_validation.valid', true)
             ->assertJsonPath('data.bulk_handoff.required', false)
@@ -67,8 +76,10 @@ class CheckoutPendingOrderTest extends TestCase
             ->assertJsonMissingPath('data.pending_order.billing_address.id');
 
         $this->assertDatabaseCount('orders', 1);
+        $this->assertDatabaseCount('order_items', 1);
 
-        $order = Order::query()->firstOrFail();
+        $order = Order::query()->with('items')->firstOrFail();
+        $orderItem = $order->items->firstOrFail();
 
         $this->assertSame($customer->id, $order->customer_id);
         $this->assertSame('website_order', $order->order_type);
@@ -78,6 +89,22 @@ class CheckoutPendingOrderTest extends TestCase
         $this->assertSame($customer->public_id, $order->customer_snapshot['public_id']);
         $this->assertSame('Home', $order->shipping_address_snapshot['label']);
         $this->assertSame('Office', $order->billing_address_snapshot['label']);
+
+        $this->assertSame($order->id, $orderItem->order_id);
+        $this->assertSame($catalog['product']->id, $orderItem->product_id);
+        $this->assertSame($catalog['sku']->id, $orderItem->sku_id);
+        $this->assertSame(2, $orderItem->quantity);
+        $this->assertSame('custom-tee', $orderItem->product_slug_snapshot);
+        $this->assertSame('Custom Tee', $orderItem->product_name_snapshot);
+        $this->assertSame('SKU-CUSTOM-TEE-M', $orderItem->sku_code_snapshot);
+        $this->assertSame(1899, $orderItem->unit_price_minor);
+        $this->assertSame(3798, $orderItem->line_subtotal_minor);
+        $this->assertSame(3798, $orderItem->line_total_minor);
+        $this->assertSame('INR', $orderItem->currency);
+        $this->assertSame('sku_price', $orderItem->price_source);
+        $this->assertSame('Keep centered', $orderItem->customization_snapshot['customer_note']);
+        $this->assertSame('dtf', $orderItem->customization_snapshot['print_method']);
+        $this->assertSame('custom-tee', $orderItem->customization_snapshot['product']['slug']);
     }
 
     public function test_checkout_does_not_create_pending_order_for_bulk_cart(): void

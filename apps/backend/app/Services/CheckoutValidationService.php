@@ -27,12 +27,34 @@ class CheckoutValidationService
         $cart = $this->cartService->current($request, false);
         $cartValidation = $this->cartValidation->payload($cart);
         $errors = [];
-        $bulkHandoff = $this->bulkHandoffPayload((int) ($cartValidation['cart']['item_count'] ?? 0));
+        $itemCount = (int) ($cartValidation['cart']['item_count'] ?? 0);
+        $bulkHandoff = $this->bulkHandoffPayload($itemCount);
 
         if ($cart === null) {
-            $errors[] = $this->error('cart', 'cart_unavailable', 'An active cart is required for checkout.');
-        } elseif ($cart->customer_id !== null && $cart->customer_id !== $customer->customer_id) {
-            $errors[] = $this->error('cart', 'cart_customer_mismatch', 'The current cart does not belong to the signed-in customer.');
+            return $this->invalidResponse(
+                customer: $customer,
+                cartValidation: $cartValidation,
+                bulkHandoff: $bulkHandoff,
+                errors: [$this->error('cart', 'cart_unavailable', 'An active cart is required for checkout.')],
+            );
+        }
+
+        if ($cart->customer_id !== null && $cart->customer_id !== $customer->customer_id) {
+            return $this->invalidResponse(
+                customer: $customer,
+                cartValidation: $cartValidation,
+                bulkHandoff: $bulkHandoff,
+                errors: [$this->error('cart', 'cart_customer_mismatch', 'The current cart does not belong to the signed-in customer.')],
+            );
+        }
+
+        if ($itemCount === 0) {
+            return $this->invalidResponse(
+                customer: $customer,
+                cartValidation: $cartValidation,
+                bulkHandoff: $bulkHandoff,
+                errors: [$this->error('cart', 'cart_empty', 'At least one cart item is required for checkout.')],
+            );
         }
 
         if ($bulkHandoff['required']) {
@@ -192,7 +214,7 @@ class CheckoutValidationService
     }
 
     /**
-     * @return array<string, string>
+     * @return array<string, mixed>
      */
     private function error(string $field, string $code, string $message): array
     {
@@ -200,6 +222,27 @@ class CheckoutValidationService
             'field' => $field,
             'code' => $code,
             'message' => $message,
+        ];
+    }
+
+    /**
+     * @return array{valid: bool, cart: array<string, mixed>, cart_validation: array<string, mixed>, customer: array<string, mixed>, shipping_address: array<string, mixed>|null, billing_address: array<string, mixed>|null, bulk_handoff: array<string, mixed>, errors: array<int, array<string, mixed>>}
+     */
+    private function invalidResponse(CustomerAccount $customer, array $cartValidation, array $bulkHandoff, array $errors): array
+    {
+        return [
+            'valid' => false,
+            'cart' => $cartValidation['cart'] ?? [],
+            'cart_validation' => [
+                'valid' => $cartValidation['valid'] ?? false,
+                'items' => $cartValidation['items'] ?? [],
+                'errors' => $cartValidation['errors'] ?? [],
+            ],
+            'customer' => $this->customerPayload($customer),
+            'shipping_address' => null,
+            'billing_address' => null,
+            'bulk_handoff' => $bulkHandoff,
+            'errors' => $errors,
         ];
     }
 }

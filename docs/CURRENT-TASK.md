@@ -10,49 +10,49 @@ B3.1 Cart and checkout with pending order creation
 
 ## Current Subtask
 
-B3.1.7 Order item/customization storage
+B3.1.8 Payment-attempt creation
 
 ## Current Status
 
-B3.1.6 Pending-order creation was completed on 2026-06-19.
+B3.1.7 Order item/customization storage was completed on 2026-06-19.
 
-B3.1.7 Order item/customization storage is now the active subtask.
+B3.1.8 Payment-attempt creation is now the active subtask.
 
 ## Goal
 
-Store validated cart items and customization snapshots on the pending order so the order record can carry item-level history before payment attempt creation.
+Create the first payment-attempt record for a pending order so checkout can hand off to the shared payment flow with a traceable payment link.
 
 ## Dependencies
 
-- B2.2.6 Cart persistence
+- A5.3.3 Payment attempt contract and rules
 - B3.1.6 Pending-order creation
 
 ## Required Deliverables
 
-- Backend order item/customization storage
-- Order item records linked to the pending order
-- Item snapshots for SKU, quantity, price, and customization
-- Test coverage for order item storage and customization persistence
+- Backend payment-attempt creation
+- Payment attempt record linked to the pending order
+- Payment-attempt handoff data for checkout
+- Test coverage for linked attempt creation and checkout handoff
 
 ## Acceptance Criteria
 
-- Pending orders persist item rows before payment attempts begin.
-- Order item rows preserve SKU, price, quantity, and customization snapshots.
-- The stored item data is safe for later admin, payment, and tracking flows.
-- Later order and file bridge tasks can reuse the persisted item structure.
+- Checkout creates or prepares a payment attempt after the pending order is created.
+- The payment attempt is linked to the pending order.
+- Checkout can hand off to the shared payment flow without duplicating the order.
+- Later duplicate-prevention and failure-path tasks can reuse the attempt record.
 
 ## Tests Required
 
-- Order item storage tests
-- Customization snapshot persistence tests
-- Pending order handoff regression tests
+- Payment attempt tests
+- Checkout handoff regression tests
+- Pending order linkage tests
 
 ## Quality Requirements
 
-- Follow existing Laravel and shared order conventions.
-- Do not start payment attempts, duplicate checkout prevention, or failed checkout handling inside this subtask.
-- Keep any exposed item data public-safe where exposed.
-- Reuse the validated cart and pending-order record instead of rebuilding order data from scratch.
+- Follow the shared payment-contract and gateway-agnostic rules.
+- Do not implement duplicate checkout prevention, failed checkout handling, or webhook processing inside this subtask.
+- Keep exposed payment-attempt data public-safe where exposed.
+- Reuse the validated pending order record instead of rebuilding order data from scratch.
 - Run relevant backend tests after implementation.
 
 ## Files Likely Affected
@@ -65,10 +65,10 @@ Store validated cart items and customization snapshots on the pending order so t
 
 ## Tasks Not Included
 
-- Payment-attempt creation
 - Duplicate checkout prevention
 - Failed checkout handling
 - Payment webhook handling
+- Payment reconciliation and refund processing
 
 ## Reference Details
 
@@ -79,7 +79,6 @@ Use:
 - `docs/subtask-validation.md`
 - `docs/dependency-impact-register.md`
 - `docs/project-b-c-build-runway.md`
-- `docs/orders-order-items-schema.md`
 - `docs/feature-list.md`
 
 Use `docs/AI-PROMPT-SEQUENCE.md` when deciding whether to inspect, implement, or review.

@@ -4,9 +4,13 @@ namespace App\Services;
 
 use App\Enums\OrderStatus;
 use App\Enums\OrderType;
+use App\Models\Cart;
+use App\Models\CartItem;
 use App\Models\CustomerAccount;
 use App\Models\CustomerAddress;
 use App\Models\Order;
+use App\Models\OrderItem;
+use App\Support\Products\CustomizationSnapshotBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -15,6 +19,8 @@ class CheckoutPendingOrderService
     public function __construct(
         private readonly CartService $cartService,
         private readonly CheckoutValidationService $validationService,
+        private readonly CartPricingService $pricingService,
+        private readonly CustomizationSnapshotBuilder $snapshots,
     ) {}
 
     /**
@@ -51,7 +57,6 @@ class CheckoutPendingOrderService
             : $shippingAddress;
 
         $cart = $this->cartService->current($request, false);
-        $pricing = $validation['cart']['pricing'] ?? [];
 
         if ($cart === null) {
             return $validation + [
@@ -59,8 +64,11 @@ class CheckoutPendingOrderService
             ];
         }
 
-        $order = DB::transaction(function () use ($customer, $shippingAddress, $billingAddress, $validation, $pricing): Order {
-            return Order::create([
+        $cart->loadMissing(['items.product', 'items.sku']);
+        $pricing = $validation['cart']['pricing'] ?? $this->pricingService->summary($cart);
+
+        $order = DB::transaction(function () use ($customer, $shippingAddress, $billingAddress, $validation, $pricing, $cart): Order {
+            $order = Order::create([
                 'order_type' => OrderType::WebsiteOrder->value(),
                 'order_source' => 'website',
                 'status' => OrderStatus::PendingPayment->value(),
@@ -78,6 +86,18 @@ class CheckoutPendingOrderService
                 'currency' => (string) ($pricing['currency'] ?? 'INR'),
                 'placed_at' => now(),
             ]);
+
+            $orderItems = $order->items()->createMany(
+                $cart->items
+                    ->sortBy('id')
+                    ->values()
+                    ->map(fn (CartItem $item): array => $this->orderItemAttributes($item))
+                    ->all(),
+            );
+
+            $order->setRelation('items', $orderItems);
+
+            return $order;
         });
 
         return $validation + [
@@ -139,7 +159,62 @@ class CheckoutPendingOrderService
             'customer' => $order->customer_snapshot,
             'shipping_address' => $order->shipping_address_snapshot,
             'billing_address' => $order->billing_address_snapshot,
+            'items' => $this->orderItemsPayload($order),
             'next_step' => 'payment_attempt',
+        ];
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function orderItemsPayload(Order $order): array
+    {
+        return $order->items
+            ->sortBy('id')
+            ->values()
+            ->map(fn (OrderItem $item): array => [
+                'id' => $item->public_id,
+                'product' => [
+                    'slug' => $item->product_slug_snapshot,
+                    'name' => $item->product_name_snapshot,
+                ],
+                'sku' => [
+                    'code' => $item->sku_code_snapshot,
+                ],
+                'quantity' => $item->quantity,
+                'pricing' => [
+                    'currency' => $item->currency,
+                    'unit_price_minor' => $item->unit_price_minor,
+                    'line_subtotal_minor' => $item->line_subtotal_minor,
+                    'line_total_minor' => $item->line_total_minor,
+                    'price_source' => $item->price_source,
+                ],
+                'customization' => $item->customization_snapshot,
+            ])
+            ->all();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function orderItemAttributes(CartItem $item): array
+    {
+        $pricing = $this->pricingService->lineItem($item);
+
+        return [
+            'product_id' => $item->product_id,
+            'sku_id' => $item->sku_id,
+            'quantity' => $item->quantity,
+            'product_name_snapshot' => $item->product_name_snapshot,
+            'product_slug_snapshot' => $item->product_slug_snapshot,
+            'sku_code_snapshot' => $item->sku_code_snapshot,
+            'customization_fingerprint' => $item->customization_fingerprint,
+            'customization_snapshot' => $this->snapshots->publicCartSnapshot($item->customization_snapshot ?? []),
+            'unit_price_minor' => (int) ($pricing['unit_price_minor'] ?? 0),
+            'line_subtotal_minor' => (int) ($pricing['line_subtotal_minor'] ?? 0),
+            'line_total_minor' => (int) ($pricing['line_total_minor'] ?? 0),
+            'currency' => (string) ($pricing['currency'] ?? 'INR'),
+            'price_source' => (string) ($pricing['price_source'] ?? 'unpriced'),
         ];
     }
 }

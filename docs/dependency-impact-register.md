@@ -47,6 +47,7 @@
 | B3.1.3 Price recalculation | B3.1.6 Pending-order creation | Provides current server-side subtotal and total fields | High |
 | B3.1.6 Pending-order creation | B3.1.7 Order item/customization storage | Provides pending order header and validated checkout snapshot | High |
 | B3.1.6 Pending-order creation | B3.1.8 Payment-attempt creation | Provides order record for payment linkage | Critical |
+| B3.1.7 Order item/customization storage | B3.1.8 Payment-attempt creation | Provides pending order item rows and customization snapshots | High |
 | B3.2 Website payment adapter implementation | B3.3 Payment webhook handling | Requires | Critical |
 | B3.3 Payment webhook handling | C1.1 Basic admin order and payment view | Updates payment state | Critical |
 | C1.1 Basic admin order and payment view | B4.1 Customer dashboard | Provides order data | High |

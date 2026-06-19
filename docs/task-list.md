@@ -256,7 +256,7 @@ Planning note: B2.2.7 and B2.2.8 are deferred bridge subtasks. They must not blo
 | B3.1.4 | Customer and address validation | Completed |
 | B3.1.5 | Bulk quantity detection | Completed |
 | B3.1.6 | Pending-order creation | Completed |
-| B3.1.7 | Order item/customization storage | Not Started |
+| B3.1.7 | Order item/customization storage | Completed |
 | B3.1.8 | Payment-attempt creation | Not Started |
 | B3.1.9 | Duplicate checkout prevention | Not Started |
 | B3.1.10 | Failed checkout handling | Not Started |
@@ -398,3 +398,5 @@ Verification note: completed on 2026-06-19. The implementation adds a customizat
 
 
 
+
+Verification note: B3.1.7 completed on 2026-06-19. The checkout handoff now persists linked order_items rows with SKU, quantity, pricing, and customization snapshots before payment attempts begin, and the checkout feature tests cover item storage, customization persistence, and empty-cart rejection. `php artisan test --filter=CheckoutValidationTest`, `php artisan test --filter=CheckoutPendingOrderTest`, and `./vendor/bin/pint --test app/Models/Order.php app/Models/OrderItem.php app/Services/CheckoutPendingOrderService.php app/Services/CheckoutValidationService.php tests/Feature/CheckoutPendingOrderTest.php tests/Feature/CheckoutValidationTest.php database/migrations/2026_06_19_000004_create_order_items_table.php` passed.
