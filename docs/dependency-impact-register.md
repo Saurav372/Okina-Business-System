@@ -22,7 +22,7 @@
 | A4.2 Settings service | A4.4 Notification event definitions | Provides defaults and shared config conventions | High |
 | A4.2 Settings service | A5.3 Payment gateway service contract | Provides payment configuration defaults | High |
 | A4.2 Settings service | B2.2 Upload and simple mockup preview | Provides upload configuration defaults | High |
-| B2.2 Upload and simple mockup preview | B3.1 Cart and checkout with pending order creation | Provides customization upload and preview metadata | High. B2.2.5 now provides the public-safe normalized customization snapshot; B3.1.1 is complete, so B2.2.6 Cart persistence is unblocked, and B2.2.7-B2.2.8 still need order persistence and admin file access before the parent task is complete. |
+| B2.2 Upload and simple mockup preview | B3.1 Cart and checkout with pending order creation | Provides customization upload and preview metadata | High. B2.2.5 now provides the public-safe normalized customization snapshot and B2.2.6 persists it through the cart layer; B2.2.7-B2.2.8 still need order persistence and admin file access before the parent task is complete. |
 | A4.2 Settings service | C6.2 Notification implementation | Provides notification configuration defaults | High |
 | A4.2 Settings service | C6.3 Google Sheets backup sync | Provides integration configuration defaults | High |
 | A4.3 Queue, job and retry foundation | A4.4 Notification event definitions | Provides queue and retry foundation | High |

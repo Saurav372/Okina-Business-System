@@ -10,49 +10,49 @@ B2.2 Upload and simple mockup preview
 
 ## Current Subtask
 
-B2.2.6 Cart persistence
+B2.2.7 Order persistence
 
 ## Current Status
 
-B3.1.1 Cart storage was completed on 2026-06-19.
+B2.2.6 Cart persistence was completed on 2026-06-19.
 
-B2.2.6 Cart persistence is now the active subtask.
+B2.2.7 Order persistence is the next subtask, but it is blocked until B3.1.6 Pending-order creation is completed.
 
 ## Goal
 
-Persist the safe customization snapshot from the product page/upload flow into cart data without exposing private file paths.
+Persist the public-safe customization snapshot from cart items into order item data once pending-order creation exists.
 
 ## Dependencies
 
-- B2.2.5 Customization metadata structure
-- B3.1.1 Cart storage
+- B2.2.6 Cart persistence
+- B3.1.6 Pending-order creation
 
 ## Required Deliverables
 
-- Cart item shape that accepts the B2.2.5 customization snapshot
-- Cart persistence rules for uploaded file references and mockup metadata
-- Validation that cart items still reference public products/SKUs safely
-- Safe response shape for later checkout and order item persistence
+- Order item shape that accepts the cart customization snapshot
+- Persistence rules that copy cart item customization into pending order items
+- Validation that order items preserve public product/SKU/customization snapshots
+- Safe response/admin-ready shape for later admin file access
 
 ## Acceptance Criteria
 
-- Customization metadata remains attached to cart items across the approved cart storage flow.
-- Cart payloads remain public-safe and avoid raw storage paths.
-- Uploaded file references remain private and resolvable through signed access rules.
-- The cart structure remains compatible with later order item customization snapshots.
+- Customization metadata from cart items remains attached to order items.
+- Order item payloads retain public-safe uploaded file and mockup references.
+- Private storage paths remain excluded from customer-facing order payloads.
+- The order structure remains compatible with later admin file access.
 
 ## Tests Required
 
-- Cart persistence tests
-- Customization snapshot retention tests
-- Public-safe cart payload tests
+- Order persistence tests
+- Cart-to-order customization snapshot tests
+- Public-safe order item payload tests
 
 ## Quality Requirements
 
-- Follow existing Laravel and Astro conventions.
-- Do not start order persistence or admin file access inside this subtask.
+- Do not implement B2.2.7 until B3.1.6 Pending-order creation is complete.
+- Do not start admin file access inside this subtask.
+- Reuse the B2.2.5/B2.2.6 customization snapshot shape instead of creating another metadata format.
 - Keep uploaded file references private and public-safe.
-- Reuse the B2.2.5 customization snapshot shape instead of creating another metadata format.
 - Run relevant backend tests after implementation.
 
 ## Files Likely Affected
@@ -64,7 +64,7 @@ Persist the safe customization snapshot from the product page/upload flow into c
 
 ## Tasks Not Included
 
-- Order persistence
+- Pending-order creation
 - Admin file access
 - Payment or checkout gateway work
 

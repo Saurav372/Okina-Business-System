@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\CartItem;
 use App\Models\CustomerAccount;
 use App\Models\Product;
 use App\Models\ProductCategory;
@@ -196,6 +197,120 @@ class DesignUploadFlowTest extends TestCase
         $this->assertIsString($snapshotJson);
         $this->assertStringNotContainsString($storedFile->storage_path, $snapshotJson);
         $this->assertStringNotContainsString((string) $storedFile->previewPath(), $snapshotJson);
+    }
+
+    public function test_uploaded_customization_snapshot_can_be_persisted_to_cart_public_safely(): void
+    {
+        Storage::fake('private');
+
+        $customerAccount = CustomerAccount::factory()->create([
+            'status' => CustomerAccount::STATUS_ACTIVE,
+            'email_verified_at' => now(),
+        ]);
+
+        $category = ProductCategory::factory()->create([
+            'slug' => 'custom-apparel',
+        ]);
+
+        $product = Product::factory()->create([
+            'slug' => 'custom-tee',
+            'name' => 'Custom Tee',
+            'primary_category_id' => $category->id,
+            'customization_mode' => Product::CUSTOMIZATION_REQUIRED,
+        ]);
+
+        ProductVariant::factory()->create([
+            'product_id' => $product->id,
+            'name' => 'Size',
+            'code' => 'size',
+            'values' => [
+                ['code' => 'm', 'label' => 'Medium', 'sort_order' => 10, 'is_active' => true],
+            ],
+            'is_required' => true,
+        ]);
+
+        ProductSku::factory()->create([
+            'product_id' => $product->id,
+            'sku_code' => 'SKU-CUSTOM-TEE-M',
+            'variant_key' => 'size:m',
+            'option_values' => [
+                ['code' => 'm', 'label' => 'Medium'],
+            ],
+            'price_minor' => 1899,
+        ]);
+
+        $uploadResponse = $this->actingAs($customerAccount, 'customer')->postJson('/api/catalog/products/custom-tee/design-upload', [
+            'design_file' => UploadedFile::fake()->image('logo-design.png', 1200, 1200),
+            'sku_code' => 'SKU-CUSTOM-TEE-M',
+            'selected_options' => [
+                'size' => 'm',
+            ],
+            'print_position' => 'front',
+            'print_method' => 'dtf',
+            'customer_note' => 'Keep it centered',
+            'placement' => [
+                'x' => 42,
+                'y' => 58,
+                'scale' => 0.72,
+                'rotation' => 0,
+            ],
+        ]);
+
+        $uploadResponse->assertOk();
+
+        $fileId = $uploadResponse->json('data.file.public_id');
+        $cartResponse = $this->actingAs($customerAccount, 'customer')->postJson('/api/cart/items', [
+            'product_slug' => 'custom-tee',
+            'sku_code' => 'SKU-CUSTOM-TEE-M',
+            'quantity' => 2,
+            'customization_snapshot' => $uploadResponse->json('data.customization_snapshot'),
+        ]);
+
+        $cartResponse->assertOk()
+            ->assertJsonPath('data.item_count', 2)
+            ->assertJsonPath('data.items.0.product.slug', 'custom-tee')
+            ->assertJsonPath('data.items.0.product.name', 'Custom Tee')
+            ->assertJsonPath('data.items.0.sku.code', 'SKU-CUSTOM-TEE-M')
+            ->assertJsonPath('data.items.0.quantity', 2)
+            ->assertJsonPath('data.items.0.customization.product.slug', 'custom-tee')
+            ->assertJsonPath('data.items.0.customization.selected_options_snapshot.0.option_code', 'size')
+            ->assertJsonPath('data.items.0.customization.selected_options_snapshot.0.value_code', 'm')
+            ->assertJsonPath('data.items.0.customization.selected_options_snapshot.0.value_label', 'Medium')
+            ->assertJsonPath('data.items.0.customization.print_method', 'dtf')
+            ->assertJsonPath('data.items.0.customization.print_position', 'front')
+            ->assertJsonPath('data.items.0.customization.placement.scale', 0.72)
+            ->assertJsonPath('data.items.0.customization.files.0.public_id', $fileId)
+            ->assertJsonPath('data.items.0.customization.files.0.role', 'original_upload')
+            ->assertJsonPath('data.items.0.customization.files.0.has_preview', true)
+            ->assertJsonPath('data.items.0.customization.mockup_preview.source_file_public_id', $fileId)
+            ->assertJsonMissingPath('data.items.0.product_id')
+            ->assertJsonMissingPath('data.items.0.sku_id')
+            ->assertJsonMissingPath('data.items.0.cart_id')
+            ->assertJsonMissingPath('data.items.0.cart_token')
+            ->assertJsonMissingPath('data.items.0.customer_id')
+            ->assertJsonMissingPath('data.items.0.customization.files.0.storage_path')
+            ->assertJsonMissingPath('data.items.0.customization.files.0.storage_disk')
+            ->assertJsonMissingPath('data.items.0.customization.files.0.preview.path')
+            ->assertJsonMissingPath('data.items.0.customization.files.0.preview.storage_disk')
+            ->assertJsonMissingPath('data.items.0.customization.mockup_preview.storage_path');
+
+        $storedFile = StoredFile::query()->where('public_id', $fileId)->firstOrFail();
+        $cartItem = CartItem::query()->firstOrFail();
+        $cartSnapshotJson = json_encode($cartItem->customization_snapshot);
+
+        $this->assertSame($customerAccount->customer_id, $cartItem->cart->customer_id);
+        $this->assertIsString($cartSnapshotJson);
+        $this->assertStringContainsString($fileId, $cartSnapshotJson);
+        $this->assertStringNotContainsString($storedFile->storage_path, $cartSnapshotJson);
+        $this->assertStringNotContainsString((string) $storedFile->previewPath(), $cartSnapshotJson);
+
+        $refreshedCartResponse = $this->actingAs($customerAccount, 'customer')->getJson('/api/cart');
+
+        $refreshedCartResponse->assertOk()
+            ->assertJsonPath('data.item_count', 2)
+            ->assertJsonPath('data.items.0.customization.files.0.public_id', $fileId)
+            ->assertJsonMissingPath('data.items.0.customization.files.0.storage_path')
+            ->assertJsonMissingPath('data.items.0.customization.files.0.preview.path');
     }
 
     public function test_invalid_uploads_are_rejected_before_file_storage(): void

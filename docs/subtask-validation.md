@@ -260,6 +260,8 @@ Verification note: B2.2.4 completed on 2026-06-19. Placement adjustments now flo
 
 Verification note: B2.2.5 completed on 2026-06-19. Customization metadata now has a versioned public-safe snapshot shape with product/SKU selection, normalized placement, safe uploaded-file references, mockup preview metadata, and tests proving private storage paths are excluded from customer/cart/order-facing payloads. `php artisan test`, `./vendor/bin/pint --test app\\Http\\Controllers\\Api\\ProductCustomizationController.php app\\Support\\Products\\CustomizationSnapshotBuilder.php app\\Services\\FileUploadService.php app\\Services\\SettingsService.php tests\\Feature\\DesignUploadFlowTest.php tests\\Feature\\SettingsServiceTest.php`, and `npm run build` passed.
 
+Verification note: B2.2.6 completed on 2026-06-19. The upload-flow customization snapshot is accepted by cart persistence, retained on cart items and reloads, and exposed through a public-safe cart payload without raw storage paths, preview paths, cart tokens, or internal database IDs. `php artisan test --filter=DesignUploadFlowTest`, `php artisan test --filter=CartStorageTest`, and `./vendor/bin/pint --test tests/Feature/DesignUploadFlowTest.php` passed.
+
 ## B3.1 Cart And Checkout With Pending Order Creation
 
 | Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |

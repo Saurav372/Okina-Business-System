@@ -227,7 +227,7 @@ Verification note: A5.3.1 completed on 2026-06-18. The implementation adds a sha
 | B2.2.3 | Product preview | Completed |
 | B2.2.4 | Placement controls | Completed |
 | B2.2.5 | Customization metadata | Completed |
-| B2.2.6 | Cart persistence | Not Started |
+| B2.2.6 | Cart persistence | Completed |
 | B2.2.7 | Order persistence | Not Started |
 | B2.2.8 | Admin file access | Not Started |
 
@@ -241,6 +241,8 @@ Verification note: B2.2.3 completed on 2026-06-19. The preview flow now returns 
 Verification note: B2.2.4 completed on 2026-06-19. The placement controls UI now refreshes a fresh signed mockup preview for uploaded designs, keeps placement values within safe bounds, and preserves the signed-link safety path. `php artisan test --filter=DesignUploadFlowTest` and `npm run build` passed.
 
 Verification note: B2.2.5 completed on 2026-06-19. The implementation adds a reusable customization snapshot builder, normalizes placement metadata, stores public-safe file and mockup preview references without raw storage paths, and keeps the signed preview-link flow compatible with later cart/order persistence. `php artisan test`, `./vendor/bin/pint --test app\\Http\\Controllers\\Api\\ProductCustomizationController.php app\\Support\\Products\\CustomizationSnapshotBuilder.php app\\Services\\FileUploadService.php app\\Services\\SettingsService.php tests\\Feature\\DesignUploadFlowTest.php tests\\Feature\\SettingsServiceTest.php`, and `npm run build` passed.
+
+Verification note: B2.2.6 completed on 2026-06-19. The real design-upload customization snapshot now persists through `/api/cart/items`, remains attached across cart reloads, preserves public file/mockup references, and excludes private storage paths plus internal cart/product/SKU identifiers from customer payloads. `php artisan test --filter=DesignUploadFlowTest`, `php artisan test --filter=CartStorageTest`, and `./vendor/bin/pint --test tests/Feature/DesignUploadFlowTest.php` passed.
 
 ### B3.1 Cart and checkout with pending order creation
 
