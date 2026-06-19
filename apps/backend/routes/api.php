@@ -28,6 +28,7 @@ Route::prefix('catalog')->group(function () {
 
 Route::middleware('web')->withoutMiddleware(ValidateCsrfToken::class)->prefix('cart')->group(function () {
     Route::get('/', [CartController::class, 'index']);
+    Route::get('/validation', [CartController::class, 'validation']);
     Route::post('/items', [CartController::class, 'store']);
     Route::patch('/items/{cartItem}', [CartController::class, 'update']);
     Route::delete('/items/{cartItem}', [CartController::class, 'destroy']);

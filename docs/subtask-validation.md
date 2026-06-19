@@ -279,6 +279,8 @@ Verification note: B2.2.6 completed on 2026-06-19. The upload-flow customization
 
 Verification note: B3.1.1 completed on 2026-06-19. The cart layer now persists database-backed guest and customer carts with public-safe item snapshots, duplicate-item fingerprinting, session-scoped guest ownership, and feature tests covering storage, ownership, snapshot retention, and payload safety. `php artisan test --filter=CartStorageTest` and `./vendor/bin/pint --test app/Support/Products/CustomizationSnapshotBuilder.php app/Services/CartService.php app/Services/CartResponsePresenter.php app/Http/Controllers/Api/CartController.php app/Http/Requests/Cart/StoreCartItemRequest.php app/Http/Requests/Cart/UpdateCartItemRequest.php app/Models/Cart.php app/Models/CartItem.php tests/Feature/CartStorageTest.php` passed.
 
+Verification note: B3.1.2 completed on 2026-06-19. The cart validation endpoint now checks product availability, SKU checkout eligibility, quantity limits, and customization-rule drift while returning a public-safe validation payload. `php artisan test --filter=CartValidationTest`, `php artisan test --filter=CartStorageTest`, `php artisan test --filter=CustomizationOptionApiTest`, and `./vendor/bin/pint --test app/Http/Controllers/Api/CartController.php app/Services/CartValidationService.php routes/api.php tests/Feature/CartValidationTest.php` passed.
+
 ## B3.3 Payment Webhook Handling
 
 | Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |
@@ -395,5 +397,6 @@ Verification note: B3.1.1 completed on 2026-06-19. The cart layer now persists d
 | C6.4.8 | Deployment checklist | A1.2 | Deployment steps, env vars, queues, scheduler are documented | Deployment dry-run | Deployment, All Modules | Medium |
 | C6.4.9 | Regression test checklist | All parent tasks | Critical user/admin/payment/file paths are listed | Regression checklist run | All Modules | High |
 | C6.4.10 | Rollback procedure | C6.4.8 | Rollback steps are documented and safe for migrations/files | Rollback review/test | Deployment, Database | High |
+
 
 

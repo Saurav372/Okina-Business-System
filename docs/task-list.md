@@ -69,7 +69,7 @@ Verification note: completed on 2026-06-18. The implementation adds a public cat
 
 | B2.1 | Customization option APIs | Project B | B2 | Expose size, print position, print method, SKU, and validation rules. | A3.2, A5.1 | Product customization UI | A/B/C | Medium | High | Validation tests | Completed |
 | B2.2 | Upload and simple mockup preview | Project B | B2 | Support design upload, validation, product preview, placement controls, customization metadata, cart/order persistence, and admin file access. | A4.1, B2.1 | Cart/order customization | A/B/C | Medium | High | Upload/preview tests | In Progress |
-| B3.1 | Cart and checkout with pending order creation | Project B | B3 | Validate cart, recalculate prices, require customer/address, detect bulk quantities, create pending order, create payment attempt, prevent duplicates, and handle failures. | A2.2, A3.1, A3.2, A5.1, B2.2.6 | Payment, admin order display | A/B/C | Critical | Critical | Checkout/idempotency tests | Not Started |
+| B3.1 | Cart and checkout with pending order creation | Project B | B3 | Validate cart, recalculate prices, require customer/address, detect bulk quantities, create pending order, create payment attempt, prevent duplicates, and handle failures. | A2.2, A3.1, A3.2, A5.1, B2.2.6 | Payment, admin order display | A/B/C | Critical | Critical | Checkout/idempotency tests | In Progress |
 | B3.2 | Website payment adapter implementation | Project B | B3 | Use shared payment service and gateway adapter to initiate/verify website payment. | A5.3, B3.1 | Paid order flow | A/B/C | High | Critical | Payment attempt tests | Not Started |
 | B3.3 | Payment webhook handling | Project B | B3 | Authenticate webhook, parse events, match attempts, create payment records, prevent duplicates, recalculate payment status, handle failures/refunds, and test logging/retries. | A4.5, A5.3, B3.2 | Finance, tracking | A/B/C | High | Critical | Webhook idempotency tests | Not Started |
 | B4.1 | Customer dashboard | Project B | B4 | Show customer profile, addresses, orders, payments, uploaded designs, and support actions. | B3.1, C1.1 | Customer tracking | B/C | Medium | High | Access control tests | Not Started |
@@ -251,7 +251,7 @@ Planning note: B2.2.7 and B2.2.8 are deferred bridge subtasks. They must not blo
 | Subtask ID | Subtask Name | Status |
 |---|---|---|
 | B3.1.1 | Cart storage | Completed |
-| B3.1.2 | Cart item validation | Not Started |
+| B3.1.2 | Cart item validation | Completed |
 | B3.1.3 | Price recalculation | Not Started |
 | B3.1.4 | Customer and address validation | Not Started |
 | B3.1.5 | Bulk quantity detection | Not Started |
@@ -262,6 +262,8 @@ Planning note: B2.2.7 and B2.2.8 are deferred bridge subtasks. They must not blo
 | B3.1.10 | Failed checkout handling | Not Started |
 
 Verification note: B3.1.1 completed on 2026-06-19. The database-backed cart layer now stores guest/session carts, attaches optional customer ownership, preserves public-safe customization snapshots, and protects cart ownership through session-scoped tokens. `php artisan test --filter=CartStorageTest` and `./vendor/bin/pint --test app/Support/Products/CustomizationSnapshotBuilder.php app/Services/CartService.php app/Services/CartResponsePresenter.php app/Http/Controllers/Api/CartController.php app/Http/Requests/Cart/StoreCartItemRequest.php app/Http/Requests/Cart/UpdateCartItemRequest.php app/Models/Cart.php app/Models/CartItem.php tests/Feature/CartStorageTest.php` passed.
+
+Verification note: B3.1.2 completed on 2026-06-19. The cart validation endpoint now checks product availability, SKU checkout eligibility, quantity limits, and customization-rule drift while returning a public-safe validation payload. `php artisan test --filter=CartValidationTest`, `php artisan test --filter=CartStorageTest`, `php artisan test --filter=CustomizationOptionApiTest`, and `./vendor/bin/pint --test app/Http/Controllers/Api/CartController.php app/Services/CartValidationService.php routes/api.php tests/Feature/CartValidationTest.php` passed.
 
 ### B3.3 Payment webhook handling
 
@@ -387,6 +389,7 @@ pm run build passed after starting the local backend API on port 8000.
 
 
 Verification note: completed on 2026-06-19. The implementation adds a customization option contract, a customization option catalog, a customization rules service, a public customization-options API route, and feature tests covering public-safe option groups, print option defaults, SKU matching, and invalid customization rejection. php artisan test --filter=CustomizationOptionApiTest passed.
+
 
 
 

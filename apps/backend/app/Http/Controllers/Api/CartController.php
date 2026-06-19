@@ -7,6 +7,7 @@ use App\Http\Requests\Cart\StoreCartItemRequest;
 use App\Http\Requests\Cart\UpdateCartItemRequest;
 use App\Services\CartResponsePresenter;
 use App\Services\CartService;
+use App\Services\CartValidationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -37,6 +38,13 @@ class CartController extends Controller
     {
         return response()->json([
             'data' => $presenter->payload($cartService->removeItem($request, $cartItem)),
+        ]);
+    }
+
+    public function validation(Request $request, CartService $cartService, CartValidationService $validationService): JsonResponse
+    {
+        return response()->json([
+            'data' => $validationService->payload($cartService->current($request, false)),
         ]);
     }
 }

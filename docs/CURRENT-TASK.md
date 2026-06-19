@@ -10,51 +10,51 @@ B3.1 Cart and checkout with pending order creation
 
 ## Current Subtask
 
-B3.1.2 Cart item validation
+B3.1.3 Price recalculation
 
 ## Current Status
 
-B3.1.1 Cart storage was completed on 2026-06-19.
+B3.1.2 Cart item validation was completed on 2026-06-19.
 
-B3.1.2 Cart item validation is now the active subtask.
+B3.1.3 Price recalculation is now the active subtask.
 
 ## Goal
 
-Validate cart items against current public product, SKU, and customization rules before checkout can continue.
+Recalculate cart line totals and checkout totals on the backend so pricing cannot be trusted from the client.
 
 ## Dependencies
 
 - A3.2 Shared products, categories, variants and SKUs
-- B2.1 Customization option APIs
-- B3.1.1 Cart storage
+- A5.1 Shared order/payment domain model
+- B3.1.2 Cart item validation
 
 ## Required Deliverables
 
-- Checkout/cart validation that rejects unavailable products and SKUs
-- Validation that cart customization options still match the selected SKU/product rules
-- Public-safe validation errors for customer checkout flows
-- Test coverage for invalid SKU, option, quantity, and customization cases
+- Backend price recalculation for cart items
+- Server-side subtotal and total calculation based on current product and SKU prices
+- Public-safe price fields in cart and checkout payloads
+- Test coverage for pricing changes, totals, and stale price scenarios
 
 ## Acceptance Criteria
 
-- Invalid products, SKUs, disabled direct checkout SKUs, and invalid customization selections cannot proceed toward checkout.
-- Valid cart items continue to pass without changing the stored cart snapshot shape.
-- Validation errors are customer-safe and do not expose internal database IDs or private file paths.
-- Later price recalculation and pending-order creation can reuse the validated cart item shape.
+- Cart totals are computed by backend rules, not client-supplied values.
+- Price changes in products or SKUs are reflected when the cart is recalculated.
+- Public cart payloads remain safe and do not expose internal identifiers or private file paths.
+- Later customer/address validation, bulk detection, and pending-order creation can reuse the recalculated cart shape.
 
 ## Tests Required
 
-- Cart validation tests
-- Invalid SKU/product tests
-- Invalid customization option tests
-- Public-safe error payload tests
+- Price recalculation tests
+- Cart total tests
+- Stale price and updated price tests
+- Public-safe payload tests
 
 ## Quality Requirements
 
 - Follow existing Laravel and shared cart/product conventions.
-- Do not start price recalculation, address validation, pending-order creation, payment attempts, or order item storage inside this subtask.
+- Do not start customer/address validation, bulk quantity detection, pending-order creation, payment attempts, duplicate checkout prevention, or failed checkout handling inside this subtask.
 - Keep uploaded file references private and public-safe.
-- Reuse existing customization validation rules rather than creating a second rule format.
+- Reuse existing order total support instead of creating a parallel pricing format.
 - Run relevant backend tests after implementation.
 
 ## Files Likely Affected
@@ -67,7 +67,6 @@ Validate cart items against current public product, SKU, and customization rules
 
 ## Tasks Not Included
 
-- Price recalculation
 - Customer and address validation
 - Bulk quantity detection
 - Pending-order creation
@@ -76,7 +75,6 @@ Validate cart items against current public product, SKU, and customization rules
 - Failed checkout handling
 - Order item/customization storage
 - Payment webhook handling
-
 ## Reference Details
 
 Use:
