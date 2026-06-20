@@ -4,10 +4,10 @@ namespace App\Providers;
 
 use App\Contracts\CustomizationOptionContract;
 use App\Contracts\PublicCatalogContract;
-use App\Models\StoredFile;
 use App\Models\Order;
-use App\Policies\StoredFilePolicy;
+use App\Models\StoredFile;
 use App\Policies\OrderPolicy;
+use App\Policies\StoredFilePolicy;
 use App\Support\Products\CustomizationOptionRules;
 use App\Support\Products\PublicCatalogRules;
 use Illuminate\Support\Facades\Gate;

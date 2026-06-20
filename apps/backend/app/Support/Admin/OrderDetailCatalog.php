@@ -3,10 +3,10 @@
 namespace App\Support\Admin;
 
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\PaymentAttempt;
 use App\Models\Refund;
-use App\Models\OrderItem;
 use App\Support\Products\CustomizationSnapshotBuilder;
 
 final class OrderDetailCatalog
@@ -288,7 +288,7 @@ final class OrderDetailCatalog
             return null;
         }
 
-        $builder = new CustomizationSnapshotBuilder();
+        $builder = new CustomizationSnapshotBuilder;
 
         return $builder->publicCartSnapshot($snapshot);
     }
