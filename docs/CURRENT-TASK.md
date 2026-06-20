@@ -8,17 +8,17 @@ Project C Operations Admin
 
 ## Current Subtask
 
-C1.1.5 Order item and customization snapshot presentation
+C1.1.6 Read-only scope guard and regression verification
 
 ## Current Status
 
 Phase C documentation readiness was completed on 2026-06-20.
 
-C1.1.4 was completed on 2026-06-20. C1.1.5 is the next unblocked subtask and requires explicit implementation approval.
+C1.1.5 was completed on 2026-06-20. C1.1.6 is the next unblocked subtask and requires explicit implementation approval.
 
 ## Goal
 
-Create the read-only order item and customization snapshot presentation for the admin order detail view. Do not add payment/refund history, shipping, inventory, CRM, or finance reporting.
+Ensure the admin order detail surface remains strictly read-only and protected by a scope guard, and perform regression verification that the detail presenter does not permit or perform any write mutations to shared order, payment, refund, shipping, inventory, or file records. Provide focused regression tests that assert the read-only UI and server boundaries and verify item/customization snapshots render from stored data only.
 
 ## Dependencies
 
@@ -30,45 +30,51 @@ Create the read-only order item and customization snapshot presentation for the 
 - C1.1.2 Website order index, scopes, and filters
 - C1.1.3 Read-only order detail and customer/address snapshots
 - C1.1.4 Payment, refund, and payment-attempt history
+- C1.1.5 Order item and customization snapshot presentation
 
 ## Required Deliverables
 
-- Read-only order item and customization snapshot source for the admin order detail page
-- Stored item and customization presentation from shared order items and snapshots
-- Focused detail-view tests
+- Read-only scope guard enforcement for the admin order detail Filament resource and supporting presenter(s)
+- Regression test suite verifying no write actions are present or permitted from the admin detail surface (server + UI assertions)
+- Confirmation that `items` and `customization_snapshot` render solely from stored `OrderItem` records
+- Updated or added tests capturing attempted write-action denial
 
 ## Acceptance Criteria
 
-- Only users with the approved order-view permission can reach the detail surface.
-- The detail surface remains read-only with no write actions.
-- Order items and customization snapshots render from stored order-item records, not live product/cart lookups.
-- Shared order/payment records are unchanged.
-- C1.1.6 and later C1.1 slices remain out of scope.
+- Only users with the approved `orders.view` permission can reach the detail surface.
+- No write actions (create/edit/delete/status/payment/refund/shipping) are available in the Filament resource or callable endpoints from the admin detail surface.
+- Server-side scope guard denies unauthorized write attempts with 403 and does not mutate shared order/payment/refund/inventory/file records.
+- `items` and `customization_snapshot` values are rendered from stored `OrderItem` records and sanitized for public-safe output.
+- Existing shared records remain unchanged by detail-view code paths.
+- Tests asserting the above pass locally.
 
 ## Tests Required
 
-- Admin resource access tests
-- Order detail and item snapshot tests
-- Authorization denial tests
-- Shared order/item regression tests
+- Admin resource access tests (permission gating)
+- Detail-view regression tests asserting absence/blocking of write actions (server + integration)
+- Order detail and item snapshot tests (existing coverage to be extended)
+- Authorization denial tests for attempted write requests
+- Full backend test run before completion
 
 ## Quality Requirements
 
 - Keep payment secrets and sensitive finance fields restricted.
 - Do not create a migration or modify shared order/payment data.
-- Run relevant backend tests after implementation.
+- Ensure the scope guard is enforced at both Filament registration and controller/service boundaries.
+- Run targeted and full backend tests after changes.
 
 ## Files Likely Affected
 
 - `apps/backend/app/Filament/Resources/Orders/OrderResource.php`
 - `apps/backend/app/Support/Admin/OrderDetailCatalog.php`
+- `apps/backend/app/Support/Admin/AdminResourceCatalog.php`
 - `apps/backend/tests/Feature/AdminOrderDetailTest.php`
 - `apps/backend/tests/Feature/AdminOrderResourceBoundaryTest.php`
-- Related order item or customization helpers if a shared presenter is required
+- Related order item or customization helpers if a shared presenter is adjusted
 
 ## Tasks Not Included
 
-- C1.1.6 and later C1.1 slices
+- C1.1.7 and later C1.1 slices (shipping, CRM, inventory, finance reporting)
 - Shipping, CRM, inventory, and finance reporting tasks
 
 ## Reference Details
