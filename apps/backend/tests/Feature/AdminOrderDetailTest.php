@@ -11,6 +11,9 @@ use App\Models\Payment;
 use App\Models\PaymentAttempt;
 use App\Models\Permission;
 use App\Models\Refund;
+use App\Models\OrderItem;
+use App\Models\Product;
+use App\Models\ProductSku;
 use App\Models\Role;
 use App\Models\User;
 use App\Support\Admin\OrderDetailCatalog;
@@ -138,6 +141,87 @@ class AdminOrderDetailTest extends TestCase
             'placed_at' => now()->subDay(),
         ]);
 
+        // Create two stored order items to be rendered in the detail snapshot.
+        $product1 = Product::factory()->create([
+            'name' => 'Snapshot Product One',
+            'visibility' => Product::VISIBILITY_PUBLIC,
+            'status' => Product::STATUS_ACTIVE,
+        ]);
+
+        $sku1 = ProductSku::factory()->create([
+            'product_id' => $product1->id,
+            'sku_code' => 'SKU-ONE',
+            'price_minor' => 50000,
+        ]);
+
+        OrderItem::create([
+            'order_id' => $order->id,
+            'product_id' => $product1->id,
+            'sku_id' => $sku1->id,
+            'quantity' => 1,
+            'product_name_snapshot' => 'Snapshot Product One',
+            'product_slug_snapshot' => 'snapshot-product-one',
+            'sku_code_snapshot' => 'SKU-ONE',
+            'customization_fingerprint' => 'FINGERPRINT1',
+            'customization_snapshot' => [
+                'schema_version' => 1,
+                'product' => ['slug' => 'snapshot-product-one', 'name' => 'Snapshot Product One'],
+                'sku_code' => 'SKU-ONE',
+                'selected_options_snapshot' => [
+                    ['option_code' => 'color', 'value_code' => 'red', 'value_label' => 'Red'],
+                ],
+                'print_method' => 'screen',
+                'placement' => ['x' => 50, 'y' => 50, 'scale' => 1.0, 'rotation' => 0],
+                'files' => [],
+                'customer_note' => 'Note',
+            ],
+            'unit_price_minor' => 50000,
+            'line_subtotal_minor' => 50000,
+            'line_total_minor' => 50000,
+            'currency' => 'INR',
+            'price_source' => 'order_snapshot',
+        ]);
+
+        $product2 = Product::factory()->create([
+            'name' => 'Snapshot Product Two',
+            'visibility' => Product::VISIBILITY_PUBLIC,
+            'status' => Product::STATUS_ACTIVE,
+        ]);
+
+        $sku2 = ProductSku::factory()->create([
+            'product_id' => $product2->id,
+            'sku_code' => 'SKU-TWO',
+            'price_minor' => 25000,
+        ]);
+
+        OrderItem::create([
+            'order_id' => $order->id,
+            'product_id' => $product2->id,
+            'sku_id' => $sku2->id,
+            'quantity' => 2,
+            'product_name_snapshot' => 'Snapshot Product Two',
+            'product_slug_snapshot' => 'snapshot-product-two',
+            'sku_code_snapshot' => 'SKU-TWO',
+            'customization_fingerprint' => 'FINGERPRINT2',
+            'customization_snapshot' => [
+                'schema_version' => 1,
+                'product' => ['slug' => 'snapshot-product-two', 'name' => 'Snapshot Product Two'],
+                'sku_code' => 'SKU-TWO',
+                'selected_options_snapshot' => [
+                    ['option_code' => 'size', 'value_code' => 'm', 'value_label' => 'M'],
+                ],
+                'print_method' => 'dtg',
+                'placement' => ['x' => 40, 'y' => 60, 'scale' => 0.9, 'rotation' => 5],
+                'files' => [],
+                'customer_note' => null,
+            ],
+            'unit_price_minor' => 25000,
+            'line_subtotal_minor' => 50000,
+            'line_total_minor' => 50000,
+            'currency' => 'INR',
+            'price_source' => 'order_snapshot',
+        ]);
+
         $attempt = PaymentAttempt::create([
             'order_id' => $order->id,
             'provider' => 'cashfree',
@@ -213,6 +297,17 @@ class AdminOrderDetailTest extends TestCase
         $this->assertSame('customer_request', $summary['refunds'][0]['reason_code']);
         $this->assertSame($attempt->public_id, $summary['payments'][0]['payment_attempt_public_id']);
         $this->assertSame($attempt->public_id, $summary['refunds'][0]['payment_attempt_public_id']);
+
+        // Items snapshot assertions
+        $this->assertArrayHasKey('items', $summary);
+        $this->assertCount(2, $summary['items']);
+        $this->assertSame('SKU-ONE', $summary['items'][0]['sku_code']);
+        $this->assertSame(1, $summary['items'][0]['quantity']);
+        $this->assertSame(50000, $summary['items'][0]['unit_price_minor']);
+        $this->assertArrayHasKey('customization_snapshot', $summary['items'][0]);
+        $this->assertSame('snapshot-product-one', $summary['items'][0]['customization_snapshot']['product']['slug']);
+        $this->assertSame('Snapshot Product One', $summary['items'][0]['customization_snapshot']['product']['name']);
+        $this->assertArrayNotHasKey('raw_payload', $summary['items'][0]['customization_snapshot']);
 
         $this->assertArrayNotHasKey('gateway_fee_minor', $summary['payments'][0]);
         $this->assertArrayNotHasKey('net_amount_minor', $summary['payments'][0]);

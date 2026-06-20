@@ -6,6 +6,8 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\PaymentAttempt;
 use App\Models\Refund;
+use App\Models\OrderItem;
+use App\Support\Products\CustomizationSnapshotBuilder;
 
 final class OrderDetailCatalog
 {
@@ -66,6 +68,12 @@ final class OrderDetailCatalog
                         'billing_address_snapshot',
                     ],
                 ],
+                'items' => [
+                    'label' => 'Order Items',
+                    'fields' => [
+                        'items',
+                    ],
+                ],
                 'payment_attempts' => [
                     'label' => 'Payment Attempt History',
                     'fields' => [
@@ -99,6 +107,7 @@ final class OrderDetailCatalog
             'paymentAttempts',
             'payments.paymentAttempt',
             'refunds.payment.paymentAttempt',
+            'items',
         ]);
 
         return [
@@ -120,6 +129,10 @@ final class OrderDetailCatalog
             'customer_snapshot' => $this->customerSnapshot($order->customer_snapshot),
             'shipping_address_snapshot' => $this->addressSnapshot($order->shipping_address_snapshot),
             'billing_address_snapshot' => $this->addressSnapshot($order->billing_address_snapshot),
+            'items' => $order->items
+                ->values()
+                ->map(fn (OrderItem $item): array => $this->itemSnapshot($item))
+                ->all(),
             'payment_attempts' => $order->paymentAttempts
                 ->sortByDesc(fn (PaymentAttempt $attempt): int => $attempt->initiated_at?->timestamp ?? $attempt->created_at?->timestamp ?? 0)
                 ->values()
@@ -242,5 +255,41 @@ final class OrderDetailCatalog
             'approved_at' => $refund->approved_at?->toIso8601String(),
             'processed_at' => $refund->processed_at?->toIso8601String(),
         ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function itemSnapshot(OrderItem $item): array
+    {
+        return [
+            'public_id' => $item->public_id,
+            'product_name' => $item->product_name_snapshot,
+            'product_slug' => $item->product_slug_snapshot,
+            'sku_code' => $item->sku_code_snapshot,
+            'quantity' => $item->quantity,
+            'unit_price_minor' => $item->unit_price_minor,
+            'line_subtotal_minor' => $item->line_subtotal_minor,
+            'line_total_minor' => $item->line_total_minor,
+            'currency' => $item->currency,
+            'price_source' => $item->price_source,
+            'customization_fingerprint' => $item->customization_fingerprint,
+            'customization_snapshot' => $this->formatCustomizationSnapshot($item->customization_snapshot),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $snapshot
+     * @return array<string, mixed>|null
+     */
+    private function formatCustomizationSnapshot(?array $snapshot): ?array
+    {
+        if ($snapshot === null) {
+            return null;
+        }
+
+        $builder = new CustomizationSnapshotBuilder();
+
+        return $builder->publicCartSnapshot($snapshot);
     }
 }
