@@ -4,73 +4,64 @@ Use this file as the task-specific context for a coding session. Update it befor
 
 ## Current Parent Task
 
-Project C Operations Admin
-
 ## Current Subtask
 
-C1.1.7 Authorized admin design-file access bridge
+C1.2 Sales order creation
 
 ## Current Status
 
-Phase C documentation readiness was completed on 2026-06-20.
-
-C1.1.5 was completed on 2026-06-20. C1.1.7 is the next unblocked subtask and is approved to proceed.
+Ready to start — C1.1.7 (admin design-file access bridge) was implemented and committed locally (commit 8349d2d). Static analysis and tests were run and are currently green. Awaiting confirmation to begin implementation work for C1.2.
 
 ## Goal
 
-Provide an authorized admin design-file access bridge so Filament admin users with the correct permission can view order-linked design uploads and their public-safe previews. Ensure access uses signed, time-limited URLs or a permission-checked proxy endpoint so private storage paths and originals remain protected. Keep the admin order detail surface strictly read-only and verify no write mutations are possible from file access paths.
+Allow authorized staff to create sales orders: select or create a customer, choose product/SKU, set quantities and customization, apply pricing/discounts, and record advance/final payment structure. Persist order items with stored customization snapshots. Keep creation permission-gated and transaction-safe.
 
 ## Dependencies
 
 - A2.1 Admin authentication
 - A2.3 Role and permission model
-- A4.1 File upload service (private storage + signed preview flow)
-- B2.2.6/7 Customization snapshot persistence and order item storage
-- C1.1.3 Read-only order detail and customer/address snapshots
-- C1.1.5 Order item and customization snapshot presentation
+- A3.2 Shared products, variants and SKUs
+- A5.1 Shared order/payment domain model
+- B2.2.7 Order persistence (order item/customization storage)
+- C1.1 Basic admin order and payment view (completed)
 
 ## Required Deliverables
 
-- Secure admin file-access bridge that delivers public-safe previews for design files linked to orders (signed URLs or permission-checked proxy)
-- Permission gating so only authorized staff (e.g. `files.view` or `orders.view`) can request previews
-- Regression test suite verifying file access does not expose private storage paths or allow file-mutation (download of originals must require elevated privileges)
-- Confirmation that `items` and `customization_snapshot` still render solely from stored `OrderItem` records and that preview links are generated from snapshots, not live storage paths
-- Updated tests: `AdminDesignFileAccessTest`, enhancements to `AdminOrderDetailTest` to assert preview links and permission checks
+- Staff-facing Filament page or protected controller to create sales orders
+- Server-side validation and pricing calculation consistent with `CartPricingService`
+- Persisted order items that include stored customization snapshots (no live storage paths leaked)
+- Support for advance/final payment scheduling fields and tests
+- Feature tests: `AdminSalesOrderCreationTest` and related authorization/validation tests
 
 ## Acceptance Criteria
 
-- Only users with the approved `orders.view` and/or `files.view` permission can request preview access for design files from the admin UI.
-- Preview links served to the admin are time-limited signed URLs or served through a permission-checked proxy endpoint that never reveals raw private storage paths.
-- No file upload, modification, or deletion is possible from the admin preview surface; attempts to mutate must return 403.
-- `items` and `customization_snapshot` continue to render solely from stored `OrderItem` records; preview generation uses stored snapshot metadata.
-- Regression tests for permission gating and file-access privacy pass locally.
+- Authorized staff can create sales orders with valid customers and SKUs
+- Pricing and discounts are calculated server-side and reflected in stored order totals
+- Customization snapshots are persisted on order items; previews are derived from stored snapshot metadata
+- No direct payment gateway processing is performed during order creation (advance/final scheduling only)
+- All regression tests pass locally
 
 ## Tests Required
 
-- Admin file-access tests (permission gating for preview/proxy endpoints)
-- Detail-view regression tests asserting no write actions and safe preview rendering
-- Order detail and item snapshot tests (assert preview links generated from sanitized snapshot metadata)
-- Authorization denial tests for attempted file/mutation requests
-- Full backend test run before completion
+- `AdminSalesOrderCreationTest` (feature)
+- Unit tests for pricing/discount edge cases
+- Authorization denial tests for unauthorized roles
+- Full backend test run before marking the subtask complete
 
 ## Quality Requirements
 
-- Keep payment secrets and sensitive finance fields restricted.
-- Do not create a migration or modify shared order/payment data.
-- Ensure the scope guard is enforced at both Filament registration and controller/service boundaries.
-- Run targeted and full backend tests after changes.
+- Avoid adding migrations that modify shared order/payment tables without review
+- Keep creation flows transaction-safe and idempotent where relevant
+- Enforce input validation and controller/service authorization boundaries
+- Run `./vendor/bin/pint --test`, `./vendor/bin/phpstan analyse`, and `php artisan test` before committing
 
 ## Files Likely Affected
 
 - `apps/backend/app/Filament/Resources/Orders/OrderResource.php`
-- `apps/backend/app/Support/Admin/OrderDetailCatalog.php`
-- `apps/backend/app/Services/FileAccessService.php` (new or existing proxy)
-- `apps/backend/app/Support/Products/CustomizationSnapshotBuilder.php` (preview link helper)
-- `apps/backend/tests/Feature/AdminDesignFileAccessTest.php`
-- `apps/backend/tests/Feature/AdminOrderDetailTest.php` (enhancements)
-- Related order item or customization helpers if a shared presenter is adjusted
-
-## Tasks Not Included
+- `apps/backend/app/Http/Controllers/Admin/SalesOrderController.php` (new)
+- `apps/backend/app/Services/SalesOrderService.php` (new)
+- `apps/backend/resources/views/admin/orders/create.blade.php` or Filament page
+- `apps/backend/tests/Feature/AdminSalesOrderCreationTest.php`
 
 - C1.1.8 and later C1.1 slices (shipping, CRM, inventory, finance reporting)
 - Shipping, CRM, inventory, and finance reporting tasks
