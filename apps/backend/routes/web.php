@@ -1,9 +1,10 @@
 <?php
 
+use App\Http\Controllers\Admin\OrderDetailController;
+use App\Http\Controllers\Admin\SalesOrderController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\CustomerAuthController;
 use App\Http\Controllers\StoredFileAccessController;
-use App\Http\Controllers\Admin\OrderDetailController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -43,4 +44,5 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     Route::get('/security', [AdminAuthController::class, 'security'])->name('admin.security');
     Route::post('/logout', [AdminAuthController::class, 'destroy'])->name('admin.logout');
     Route::get('/orders/{order:public_id}/detail', [OrderDetailController::class, 'show'])->name('admin.orders.detail');
+    Route::post('/sales-orders', [SalesOrderController::class, 'store'])->name('admin.sales_orders.store');
 });
