@@ -1,8 +1,6 @@
 # Current Task
 
-Use this file as the task-specific context for a coding session.
-
-Update this file before starting each new subtask. Keep it narrow.
+Use this file as the task-specific context for a coding session. Update it before starting each new subtask.
 
 ## Current Parent Task
 
@@ -10,73 +8,62 @@ Project C Operations Admin
 
 ## Current Subtask
 
-C1.1 Basic admin order and payment view
+C1.1.1 Admin order resource and authorization boundary
 
 ## Current Status
 
-B3.3 Payment webhook handling was completed on 2026-06-20.
+Phase C documentation readiness was completed on 2026-06-20.
 
-C1.1 Basic admin order and payment view is now the active subtask.
+C1.1.1 was completed on 2026-06-20. C1.1.2 is the next unblocked subtask when you are ready for the next approval gate.
 
 ## Goal
 
-Show website pending and paid orders, payment records, status, customer data, order items, and uploaded design references for authorized staff.
+Create the permissioned, read-only Filament order-resource boundary for website orders. Do not add operational status changes, payment/refund actions, shipping, inventory, CRM, or finance reporting.
 
 ## Dependencies
 
+- A2.1 Admin authentication
 - A2.3 Role and permission model
-- A5.1 Shared order/payment domain model
-- B3.1 Cart and checkout with pending order creation
-- B3.3 Payment webhook handling
+- B3.1.6 Pending-order creation
+- B3.1 Cart and checkout completion evidence
+- B3.3 Payment webhook completion evidence
 
 ## Required Deliverables
 
-- Admin order and payment view surface
-- Website order/payment summaries for staff
-- Customer, item, and upload visibility in the admin context
-- Public-safe payment and refund record presentation
+- Permissioned admin order resource shell
+- Read-only resource registration with no create, edit, delete, status, payment, refund, or shipping actions
+- Focused authorization and resource-registration tests
 
 ## Acceptance Criteria
 
-- Authorized staff can inspect website orders and their payment history.
-- Payment status is derived from the shared records created by checkout and webhook handling.
-- Restricted finance data stays hidden from unauthorized roles.
-- Admin order and payment views remain consistent with the shared order/payment model.
+- Only users with the approved order-view permission can reach the resource.
+- The resource registers no write actions.
+- Shared order and payment records are unchanged.
+- C1.1.2 through C1.1.6 remain out of scope.
 
 ## Tests Required
 
-- Admin order tests
-- Payment record tests
-- Access control tests
+- Admin resource access tests
+- Authorization denial tests
+- Read-only action-registration tests
 - Shared order/payment regression tests
 
 ## Quality Requirements
 
-- Keep finance and sensitive payment details restricted.
-- Do not start shipping workflow, CRM, inventory, or refund processing tasks yet.
-- Keep shared order/payment data consistent with the website checkout and webhook flows.
+- Keep payment secrets and sensitive finance fields restricted.
+- Do not create a migration or modify shared order/payment data.
 - Run relevant backend tests after implementation.
-
-## Files Likely Affected
-
-- `apps/backend/app/**`
-- `apps/backend/tests/**`
-- admin resources, pages, and view components
 
 ## Tasks Not Included
 
-- Shipping workflow
-- CRM lead and quotation work
-- Inventory movements
-- Refund processing
-- Notifications
+- C1.1.2 and later C1.1 slices
+- Shipping, CRM, inventory, payment, refund, and finance tasks
 
 ## Reference Details
-
-Use:
 
 - `docs/PROJECT-CONTEXT.md`
 - `docs/task-list.md`
 - `docs/subtask-validation.md`
 - `docs/dependency-impact-register.md`
 - `docs/project-b-c-build-runway.md`
+

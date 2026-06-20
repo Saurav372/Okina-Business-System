@@ -69,7 +69,7 @@ Verification note: completed on 2026-06-18. The implementation adds a public cat
 
 | B2.1 | Customization option APIs | Project B | B2 | Expose size, print position, print method, SKU, and validation rules. | A3.2, A5.1 | Product customization UI | A/B/C | Medium | High | Validation tests | Completed |
 | B2.2 | Upload and simple mockup preview | Project B | B2 | Support design upload, validation, product preview, placement controls, customization metadata, cart/order persistence, and admin file access. | A4.1, B2.1 | Cart/order customization | A/B/C | Medium | High | Upload/preview tests | In Progress |
-| B3.1 | Cart and checkout with pending order creation | Project B | B3 | Validate cart, recalculate prices, require customer/address, detect bulk quantities, create pending order, create payment attempt, prevent duplicates, and handle failures. | A2.2, A3.1, A3.2, A5.1, B2.2.6 | Payment, admin order display | A/B/C | Critical | Critical | Checkout/idempotency tests | In Progress |
+| B3.1 | Cart and checkout with pending order creation | Project B | B3 | Validate cart, recalculate prices, require customer/address, detect bulk quantities, create pending order, create payment attempt, prevent duplicates, and handle failures. | A2.2, A3.1, A3.2, A5.1, B2.2.6 | Payment, admin order display | A/B/C | Critical | Critical | Checkout/idempotency tests | Completed |
 | B3.2 | Website payment adapter implementation | Project B | B3 | Use shared payment service and gateway adapter to initiate/verify website payment. | A5.3, B3.1 | Paid order flow | A/B/C | High | Critical | Payment attempt tests | Completed |
 | B3.3 | Payment webhook handling | Project B | B3 | Authenticate webhook, parse events, match attempts, create payment records, prevent duplicates, recalculate payment status, handle failures/refunds, and test logging/retries. | A4.5, A5.3, B3.2 | Finance, tracking | A/B/C | High | Critical | Webhook idempotency tests | Completed |
 
@@ -82,7 +82,7 @@ Verification note: completed on 2026-06-20. The website payment handoff now uses
 
 | Task ID | Task Name | Project | Feature | Description | Depends On | Blocks | Affected Projects | Database Impact | API Impact | Testing Required | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| C1.1 | Basic admin order and payment view | Project C | C1 | Display website pending/paid orders, payment records, status, customer, items, and uploads. | A2.3, A5.1, B3.1 | Tracking, operations | A/B/C | Medium | Medium | Admin order tests | Not Started |
+| C1.1 | Basic admin order and payment view | Project C | C1 | Provide a read-only, permission-safe Filament view of website orders, payment and refund history, customer/address snapshots, items, and linked uploads. Status changes, manual payments, refunds, shipping, CRM, inventory, and reports remain out of scope. | A2.3, A4.1, A5.1, A5.2, B3.1, B3.3 | Tracking, operations, finance views | A/B/C | Medium | Medium | Admin order, payment, file-access, and authorization tests | In Progress |
 | C1.2 | Sales order creation | Project C | C1 | Let staff create sales orders with customer selection, products/SKUs, quantities, customization, pricing, discount, advance/final payment structure, creation, editing rules, and confirmation. | C1.1, A5.1 | Split payments, inventory | A/C | High | Medium | Sales order tests | Not Started |
 | C1.3 | Quotations and bulk-order conversion | Project C | C1 | Support bulk enquiry capture, quotation creation, items/pricing, status, approval, revision, sales-order conversion, and advance-payment recording. | C1.2, C3.1 | Bulk sales workflow | A/B/C | High | Medium | Quotation conversion tests | Not Started |
 | C2.1 | Inventory movements and stock handling | Project C | C2 | Implement SKU stock balance, stock-in, stock-out, manual adjustment, order stock deduction, cancellation reversal, low-stock warning, movement history, and audit. | A3.2, C1.1 | Checkout warnings, production, purchase | A/B/C | High | Medium | Inventory movement tests | Not Started |
@@ -231,7 +231,7 @@ Verification note: A5.3.1 completed on 2026-06-18. The implementation adds a sha
 | B2.2.4 | Placement controls | Completed |
 | B2.2.5 | Customization metadata | Completed |
 | B2.2.6 | Cart persistence | Completed |
-| B2.2.7 | Order persistence | Not Started |
+| B2.2.7 | Order persistence | Completed |
 | B2.2.8 | Admin file access | Not Started |
 
 Verification note: B2.2.1 completed on 2026-06-19. The implementation adds the design upload API flow, private original file storage, public-safe upload metadata, and feature tests covering allowed uploads, validation rejection, and signed preview URL generation. `php artisan test --filter=DesignUploadFlowTest` passed.
@@ -277,16 +277,121 @@ Verification note: B3.1.10 completed on 2026-06-20. The checkout retry path now 
 
 | Subtask ID | Subtask Name | Status |
 |---|---|---|
-| B3.3.1 | Webhook authentication | Not Started |
-| B3.3.2 | Event parsing | Not Started |
-| B3.3.3 | Payment-attempt matching | Not Started |
-| B3.3.4 | Payment record creation | Not Started |
-| B3.3.5 | Duplicate webhook prevention | Not Started |
-| B3.3.6 | Payment-status recalculation | Not Started |
-| B3.3.7 | Failed-payment handling | Not Started |
-| B3.3.8 | Refund webhook handling | Not Started |
-| B3.3.9 | Logging and retry tests | Not Started |
+| B3.3.1 | Webhook authentication | Completed |
+| B3.3.2 | Event parsing | Completed |
+| B3.3.3 | Payment-attempt matching | Completed |
+| B3.3.4 | Payment record creation | Completed |
+| B3.3.5 | Duplicate webhook prevention | Completed |
+| B3.3.6 | Payment-status recalculation | Completed |
+| B3.3.7 | Failed-payment handling | Completed |
+| B3.3.8 | Refund webhook handling | Completed |
+| B3.3.9 | Logging and retry tests | Completed |
 
+### C1.1 Basic admin order and payment view
+
+| Subtask ID | Subtask Name | Status |
+|---|---|---|
+| C1.1.1 | Admin order resource and authorization boundary | Completed |
+| C1.1.2 | Website order index, scopes, and filters | Not Started |
+| C1.1.3 | Read-only order detail and customer/address snapshots | Not Started |
+| C1.1.4 | Payment, refund, and payment-attempt history | Not Started |
+| C1.1.5 | Order item and customization snapshot presentation | Not Started |
+| B2.2.8 | Authorized admin design-file access bridge | Not Started |
+| C1.1.6 | Read-only scope guard and regression verification | Not Started |
+
+Verification note: C1.1.1 completed on 2026-06-20. The boundary adds a read-only order resource shell, a lightweight admin resource catalog, and tests covering permission-gated access plus the blocked write-action set. `php artisan test --filter=AdminOrderResourceBoundaryTest` and `php artisan test` passed.
+
+### C3.1 CRM lead module
+
+| Subtask ID | Subtask Name | Status |
+|---|---|---|
+| C3.1.1 | Lead data model and safe migration | Not Started |
+| C3.1.2 | Manual lead capture | Not Started |
+| C3.1.3 | Website/bulk lead capture endpoint | Not Started |
+| C3.1.4 | Source, referrer, page, and UTM attribution | Not Started |
+| C3.1.5 | Lead lifecycle, ownership, and assignment | Not Started |
+| C3.1.6 | Notes and activity timeline | Not Started |
+| C3.1.7 | Lead authorization, list/detail views, and regression tests | Not Started |
+
+### C3.2 Follow-up workflow
+
+| Subtask ID | Subtask Name | Status |
+|---|---|---|
+| C3.2.1 | Follow-up data model and ownership rules | Not Started |
+| C3.2.2 | Create, reschedule, complete, and cancel follow-ups | Not Started |
+| C3.2.3 | Due-today and overdue staff views | Not Started |
+| C3.2.4 | Reminder event scheduling and notification handoff | Not Started |
+| C3.2.5 | Lead activity timeline integration | Not Started |
+| C3.2.6 | Follow-up permissions and retry-safe regression tests | Not Started |
+
+### C4.1 Simple order processing
+
+| Subtask ID | Subtask Name | Status |
+|---|---|---|
+| C4.1.1 | Operational status transition matrix | Not Started |
+| C4.1.2 | Role and state authorization policies | Not Started |
+| C4.1.3 | Status-change action and validation | Not Started |
+| C4.1.4 | Status history and audit-event emission | Not Started |
+| C4.1.5 | Payment, cancellation, and shipping boundary guards | Not Started |
+| C4.1.6 | Order-status workflow regression tests | Not Started |
+
+### C4.2 Shipping details
+
+| Subtask ID | Subtask Name | Status |
+|---|---|---|
+| C4.2.1 | Shipment data model and migration | Not Started |
+| C4.2.2 | Courier and tracking-detail entry | Not Started |
+| C4.2.3 | Shipping-date and delivery-date validation | Not Started |
+| C4.2.4 | Shipment event and order-history integration | Not Started |
+| C4.2.5 | Customer-safe tracking contract | Not Started |
+| C4.2.6 | Shipping permissions, audit events, and regression tests | Not Started |
+
+### C5.1 Finance payment and balance views
+
+| Subtask ID | Subtask Name | Status |
+|---|---|---|
+| C5.1.1 | Finance access boundary and sensitive-field policy | Not Started |
+| C5.1.2 | Payment and refund ledger list | Not Started |
+| C5.1.3 | Order payment detail and balance panel | Not Started |
+| C5.1.4 | Shared balance calculation presentation | Not Started |
+| C5.1.5 | Finance filters, totals, and pagination | Not Started |
+| C5.1.6 | Finance authorization and calculation regression tests | Not Started |
+
+### C5.4 Financial reports
+
+| Subtask ID | Subtask Name | Status |
+|---|---|---|
+| C5.4.1 | Report scopes, date ranges, and authorization policy | Not Started |
+| C5.4.2 | Payment and outstanding-balance report | Not Started |
+| C5.4.3 | Refund report | Not Started |
+| C5.4.4 | Expense report | Not Started |
+| C5.4.5 | Sales report | Not Started |
+| C5.4.6 | Export and aggregate-data safeguards | Not Started |
+| C5.4.7 | Report accuracy and permission regression tests | Not Started |
+
+### C6.2 Notification implementation
+
+| Subtask ID | Subtask Name | Status |
+|---|---|---|
+| C6.2.1 | Notification persistence and migration | Not Started |
+| C6.2.2 | Template management and safe variable rendering | Not Started |
+| C6.2.3 | Event-to-recipient dispatch rules | Not Started |
+| C6.2.4 | Queued channel delivery adapters | Not Started |
+| C6.2.5 | Retry, idempotency, and provider-failure handling | Not Started |
+| C6.2.6 | Notification log and delivery-attempt operations view | Not Started |
+| C6.2.7 | Notification isolation and regression tests | Not Started |
+
+### C6.3 Google Sheets backup sync
+
+| Subtask ID | Subtask Name | Status |
+|---|---|---|
+| C6.3.1 | Sheets connection configuration and access boundary | Not Started |
+| C6.3.2 | Per-record sheet mapping and safe payload contract | Not Started |
+| C6.3.3 | Source record projection for approved modules | Not Started |
+| C6.3.4 | Post-save sync job enqueueing | Not Started |
+| C6.3.5 | Delivery job, upsert, and provider response handling | Not Started |
+| C6.3.6 | Retry, idempotency, and sync log operations view | Not Started |
+| C6.3.7 | Non-blocking failure, recovery, and security regression tests | Not Started |
 ### C1.2 Sales order creation
 
 | Subtask ID | Subtask Name | Status |
@@ -408,3 +513,4 @@ Verification note: B3.1.7 completed on 2026-06-19. The checkout handoff now pers
 Verification note: B3.1.8 completed on 2026-06-19. The checkout flow now creates and links a traceable payment attempt to the pending order, keeps the response public-safe, and reuses the shared idempotency foundation for the new attempt record. `php artisan test --filter=CheckoutPendingOrderTest`, `php artisan test --filter=CheckoutValidationTest`, and `./vendor/bin/pint --test app/Models/Order.php app/Models/OrderItem.php app/Models/PaymentAttempt.php app/Services/CheckoutPendingOrderService.php tests/Feature/CheckoutPendingOrderTest.php database/migrations/2026_06_19_000005_create_payment_attempts_table.php` passed.
 
 Verification note: B3.1.9 completed on 2026-06-20. Repeated `/api/cart/checkout` submissions now reuse the original pending order, order items, and linked payment attempt through the shared `checkout_submission` idempotency key, while returning the same public-safe handoff identifiers. `php artisan test` (151 tests, 987 assertions), `php artisan test --filter=CheckoutPendingOrderTest`, `php artisan test --filter=CheckoutValidationTest`, `php artisan test --filter=IdempotencyFoundationTest`, and `./vendor/bin/pint --test app/Services/CheckoutPendingOrderService.php tests/Feature/CheckoutPendingOrderTest.php` passed.
+
