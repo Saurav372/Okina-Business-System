@@ -259,7 +259,7 @@ Planning note: B2.2.7 and B2.2.8 are deferred bridge subtasks. They must not blo
 | B3.1.7 | Order item/customization storage | Completed |
 | B3.1.8 | Payment-attempt creation | Completed |
 | B3.1.9 | Duplicate checkout prevention | Completed |
-| B3.1.10 | Failed checkout handling | Not Started |
+| B3.1.10 | Failed checkout handling | Completed |
 
 Verification note: B3.1.1 completed on 2026-06-19. The database-backed cart layer now stores guest/session carts, attaches optional customer ownership, preserves public-safe customization snapshots, and protects cart ownership through session-scoped tokens. `php artisan test --filter=CartStorageTest` and `./vendor/bin/pint --test app/Support/Products/CustomizationSnapshotBuilder.php app/Services/CartService.php app/Services/CartResponsePresenter.php app/Http/Controllers/Api/CartController.php app/Http/Requests/Cart/StoreCartItemRequest.php app/Http/Requests/Cart/UpdateCartItemRequest.php app/Models/Cart.php app/Models/CartItem.php tests/Feature/CartStorageTest.php` passed.
 
@@ -268,6 +268,8 @@ Verification note: B3.1.2 completed on 2026-06-19. The cart validation endpoint 
 Verification note: B3.1.3 completed on 2026-06-19. The backend now recalculates cart line totals and cart summaries from current SKU prices with product base price fallback, returns public-safe pricing fields on cart and validation payloads, and keeps stale browser pricing out of checkout decisions. `php artisan test --filter=CartStorageTest`, `php artisan test --filter=CartValidationTest`, and `./vendor/bin/pint app/Services/CartPricingService.php app/Services/CartResponsePresenter.php app/Models/ProductSku.php tests/Feature/CartStorageTest.php tests/Feature/CartValidationTest.php` passed.
 
 Verification note: B3.1.6 completed on 2026-06-19. The checkout flow now creates a pending website order before payment attempts start, stores customer and address snapshots with public-safe order data, and exposes a checkout handoff payload for the next payment step. `php artisan test --filter=CheckoutPendingOrderTest`, `php artisan test --filter=CheckoutValidationTest`, `php artisan test --filter=CartValidationTest`, `php artisan test --filter=CartStorageTest`, and `./vendor/bin/pint --test app/Http/Controllers/Api/CartController.php app/Models/Order.php app/Services/CheckoutPendingOrderService.php routes/api.php database/factories/OrderFactory.php database/migrations/2026_06_19_000003_create_orders_table.php tests/Feature/CheckoutPendingOrderTest.php` passed.
+Verification note: B3.1.10 completed on 2026-06-20. The checkout retry path now reuses the existing pending order and payment attempt, surfaces a public-safe failed-payment response when the attempt is already terminally failed, and keeps duplicate checkout submissions from creating extra records. `php artisan test --filter=CheckoutPendingOrderTest`, `php artisan test`, and `./vendor/bin/pint app/Services/CheckoutPendingOrderService.php tests/Feature/CheckoutPendingOrderTest.php` passed.
+
 ### B3.3 Payment webhook handling
 
 | Subtask ID | Subtask Name | Status |

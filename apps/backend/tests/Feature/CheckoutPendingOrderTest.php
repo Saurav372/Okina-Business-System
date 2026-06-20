@@ -6,6 +6,7 @@ use App\Models\Customer;
 use App\Models\CustomerAccount;
 use App\Models\CustomerAddress;
 use App\Models\Order;
+use App\Models\PaymentAttempt;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\ProductSku;
@@ -175,6 +176,7 @@ class CheckoutPendingOrderTest extends TestCase
             ->postJson('/api/cart/checkout', $checkoutPayload)
             ->assertOk()
             ->assertJsonPath('data.valid', true)
+            ->assertJsonPath('data.checkout_state', 'payment_pending')
             ->assertJsonPath('data.pending_order.next_step', 'payment_attempt')
             ->assertJsonMissingPath('data.pending_order.id')
             ->assertJsonMissingPath('data.pending_order.customer.id')
@@ -200,6 +202,69 @@ class CheckoutPendingOrderTest extends TestCase
         $order = Order::query()->firstOrFail();
 
         $this->assertStringStartsWith('idempotency:checkout_submission:', $order->idempotency_key);
+    }
+
+    public function test_failed_checkout_reuses_the_pending_order_and_returns_a_public_safe_failure_response(): void
+    {
+        $catalog = $this->createCatalog();
+        [$customerAccount, $customer] = $this->createCustomerAccount();
+        $shippingAddress = $this->createShippingAddress($customer);
+
+        $this->actingAs($customerAccount, 'customer')
+            ->postJson('/api/cart/items', $this->cartPayload($catalog['product'], $catalog['sku'], 2))
+            ->assertOk();
+
+        $checkoutPayload = [
+            'shipping_address_id' => $shippingAddress->id,
+        ];
+
+        $firstResponse = $this->actingAs($customerAccount, 'customer')
+            ->postJson('/api/cart/checkout', $checkoutPayload)
+            ->assertOk();
+
+        $paymentAttempt = PaymentAttempt::query()->firstOrFail();
+        $paymentAttempt->forceFill([
+            'status' => 'failed',
+            'completed_at' => now(),
+        ])->save();
+        $paymentAttempt->refresh();
+
+        $this->assertSame('failed', $paymentAttempt->status);
+        $this->assertSame('failed', PaymentAttempt::query()->firstOrFail()->status);
+
+        $failedResponse = $this->actingAs($customerAccount, 'customer')
+            ->postJson('/api/cart/checkout', $checkoutPayload)
+            ->assertOk()
+            ->assertJsonPath('data.valid', false)
+            ->assertJsonPath('data.checkout_state', 'payment_failed')
+            ->assertJsonPath('data.checkout_message', 'The order was saved, but payment could not be completed. Please retry payment for this order.')
+            ->assertJsonPath('data.pending_order.public_id', $firstResponse->json('data.pending_order.public_id'))
+            ->assertJsonPath('data.pending_order.next_step', 'retry_payment_attempt')
+            ->assertJsonPath('data.payment_attempt.id', $firstResponse->json('data.payment_attempt.id'))
+            ->assertJsonPath('data.payment_attempt.status', 'failed')
+            ->assertJsonPath('data.payment_attempt.next_step', 'retry_payment_attempt')
+            ->assertJsonPath('data.errors.0.field', 'payment_attempt')
+            ->assertJsonPath('data.errors.0.code', 'payment_attempt_failed')
+            ->assertJsonMissingPath('data.pending_order.id')
+            ->assertJsonPath('data.payment_attempt.gateway_order_id', null)
+            ->assertJsonPath('data.payment_attempt.gateway_payment_id', null)
+            ->assertJsonPath('data.payment_attempt.gateway_reference', null)
+            ->assertJsonPath('data.payment_attempt.checkout_url', null);
+
+        $this->assertSame(
+            $firstResponse->json('data.pending_order.public_id'),
+            $failedResponse->json('data.pending_order.public_id'),
+        );
+        $this->assertSame(
+            $firstResponse->json('data.payment_attempt.id'),
+            $failedResponse->json('data.payment_attempt.id'),
+        );
+
+        $this->assertDatabaseCount('orders', 1);
+        $this->assertDatabaseCount('order_items', 1);
+        $this->assertDatabaseCount('payment_attempts', 1);
+
+        $this->assertSame('failed', PaymentAttempt::query()->firstOrFail()->status);
     }
 
     private function createCustomerAccount(): array

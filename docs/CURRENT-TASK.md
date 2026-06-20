@@ -6,66 +6,66 @@ Update this file before starting each new subtask. Keep it narrow.
 
 ## Current Parent Task
 
-B3.1 Cart and checkout with pending order creation
+B3 Cart, checkout and website payment
 
 ## Current Subtask
 
-B3.1.10 Failed checkout handling
+B3.2 Website payment adapter implementation
 
 ## Current Status
 
-B3.1.9 Duplicate checkout prevention was completed on 2026-06-20.
+B3.1.10 Failed checkout handling was completed on 2026-06-20.
 
-B3.1.10 Failed checkout handling is now the active subtask.
+B3.2 Website payment adapter implementation is now the active subtask.
 
 ## Goal
 
-Ensure an unsuccessful checkout handoff leaves a traceable pending order and payment attempt without creating duplicate records or starting payment gateway processing.
+Use the shared payment service and gateway adapter to initiate and verify website payment for the pending order created by B3.1.
 
 ## Dependencies
 
-- B3.1.6 Pending-order creation
-- B3.1.8 Payment-attempt creation
-- B3.1.9 Duplicate checkout prevention
+- A5.3 Payment gateway service contract
+- B3.1 Cart and checkout with pending order creation
 
 ## Required Deliverables
 
-- Traceable failed-checkout state handling for the existing pending order and payment attempt
-- Public-safe failure response behavior
-- Test coverage for the failed-checkout path and retry safety
+- Website payment initiation flow for a pending order
+- Shared payment-service and gateway-adapter integration
+- Public-safe payment attempt response behavior
+- Test coverage for payment attempt creation and gateway handoff
 
 ## Acceptance Criteria
 
-- A failed checkout handoff leaves the pending order and payment attempt traceable.
-- The failure path does not create duplicate orders or payment attempts.
-- The checkout response remains public-safe and actionable for the customer.
-- Later payment-adapter and webhook tasks can build on the recorded failure state.
+- Website payment starts through the shared gateway contract, not a hardcoded provider call.
+- The pending order from B3.1 can be handed off to the gateway adapter.
+- Payment attempt state remains traceable and public-safe.
+- Failure handling can feed into later webhook processing.
 
 ## Tests Required
 
-- Failed checkout path tests
-- Duplicate/retry safety tests
-- Pending order and payment-attempt regression tests
+- Payment attempt tests
+- Gateway adapter contract tests
+- Checkout-to-payment handoff regression tests
 
 ## Quality Requirements
 
-- Reuse the existing pending order, payment-attempt, and idempotency rules.
-- Do not implement payment gateway initiation, webhook processing, refunds, or notification delivery in this subtask.
-- Keep checkout responses public-safe where exposed.
+- Keep gateway logic provider-neutral.
+- Do not start B3.3 webhook handling or refund work.
+- Keep responses public-safe.
 - Run relevant backend tests after implementation.
 
 ## Files Likely Affected
 
 - `apps/backend/app/**`
 - `apps/backend/tests/**`
-- `docs/dependency-impact-register.md`
+- payment adapter classes
 
 ## Tasks Not Included
 
-- Payment gateway initiation
 - Payment webhook handling
 - Refund processing
-- Notification delivery
+- Finance reconciliation
+- Notifications
 
 ## Reference Details
 
@@ -75,7 +75,4 @@ Use:
 - `docs/task-list.md`
 - `docs/subtask-validation.md`
 - `docs/dependency-impact-register.md`
-- `docs/project-b-c-build-runway.md`
-- `docs/feature-list.md`
-
-Use `docs/AI-PROMPT-SEQUENCE.md` when deciding whether to inspect, implement, or review.
+- `docs/AI-PROMPT-SEQUENCE.md`
