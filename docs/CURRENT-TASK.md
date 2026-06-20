@@ -10,60 +10,63 @@ B3 Cart, checkout and website payment
 
 ## Current Subtask
 
-B3.2 Website payment adapter implementation
+B3.3 Payment webhook handling
 
 ## Current Status
 
-B3.1.10 Failed checkout handling was completed on 2026-06-20.
+B3.2 Website payment adapter implementation was completed on 2026-06-20.
 
-B3.2 Website payment adapter implementation is now the active subtask.
+B3.3 Payment webhook handling is now the active subtask.
 
 ## Goal
 
-Use the shared payment service and gateway adapter to initiate and verify website payment for the pending order created by B3.1.
+Authenticate and process webhook events for the initiated website payments created in B3.2.
 
 ## Dependencies
 
+- A4.5 Idempotency foundation
 - A5.3 Payment gateway service contract
-- B3.1 Cart and checkout with pending order creation
+- B3.2 Website payment adapter implementation
 
 ## Required Deliverables
 
-- Website payment initiation flow for a pending order
-- Shared payment-service and gateway-adapter integration
-- Public-safe payment attempt response behavior
-- Test coverage for payment attempt creation and gateway handoff
+- Webhook authentication and event parsing
+- Payment-attempt matching and single-update behavior
+- Public-safe payment-state updates for paid, failed, and refund events
+- Test coverage for webhook idempotency and retry logging
 
 ## Acceptance Criteria
 
-- Website payment starts through the shared gateway contract, not a hardcoded provider call.
-- The pending order from B3.1 can be handed off to the gateway adapter.
-- Payment attempt state remains traceable and public-safe.
-- Failure handling can feed into later webhook processing.
+- Authenticated webhook events update payment state exactly once.
+- Duplicate webhook deliveries do not create duplicate payment records.
+- Failed and refund events stay public-safe and traceable.
+- Retry and logging behavior can support later reconciliation work.
 
 ## Tests Required
 
-- Payment attempt tests
-- Gateway adapter contract tests
-- Checkout-to-payment handoff regression tests
+- Webhook authentication tests
+- Event parsing tests
+- Payment-attempt matching tests
+- Duplicate webhook prevention tests
+- Payment status recalculation tests
+- Failed/refund logging tests
 
 ## Quality Requirements
 
 - Keep gateway logic provider-neutral.
-- Do not start B3.3 webhook handling or refund work.
-- Keep responses public-safe.
+- Keep webhook state transitions public-safe and idempotent.
+- Do not start C1.1 admin payment-view work yet.
 - Run relevant backend tests after implementation.
 
 ## Files Likely Affected
 
 - `apps/backend/app/**`
 - `apps/backend/tests/**`
-- payment adapter classes
+- webhook handler and parser classes
 
 ## Tasks Not Included
 
-- Payment webhook handling
-- Refund processing
+- Admin payment-view work
 - Finance reconciliation
 - Notifications
 

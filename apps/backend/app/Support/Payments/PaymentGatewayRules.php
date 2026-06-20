@@ -47,7 +47,34 @@ readonly class PaymentGatewayRules implements PaymentGatewayContract
      */
     public function initiatePayment(array $payload): array
     {
-        return $payload;
+        $provider = (string) ($payload['provider'] ?? 'cashfree');
+        $gatewayOrderId = (string) ($payload['gateway_order_id'] ?? $this->gatewayOrderId($provider, (string) ($payload['idempotency_key'] ?? '')));
+
+        return [
+            'provider' => $provider,
+            'order_id' => $gatewayOrderId,
+            'payment_id' => $payload['gateway_payment_id'] ?? null,
+            'checkout_url' => $payload['checkout_url'] ?? $this->checkoutUrl($provider, $gatewayOrderId),
+            'status' => 'initiated',
+            'amount_minor' => $payload['amount_minor'] ?? null,
+            'currency' => $payload['currency'] ?? 'INR',
+        ];
+    }
+
+    private function gatewayOrderId(string $provider, string $idempotencyKey): string
+    {
+        $prefix = $provider === 'cashfree' ? 'cf_order_' : 'gw_order_';
+
+        return $prefix.strtoupper(substr(hash('sha256', $idempotencyKey), 0, 16));
+    }
+
+    private function checkoutUrl(string $provider, string $gatewayOrderId): string
+    {
+        $baseUrl = $provider === 'cashfree'
+            ? 'https://cashfree.test/checkout/'
+            : 'https://gateway.test/checkout/';
+
+        return $baseUrl.$gatewayOrderId;
     }
 
     /**

@@ -25,6 +25,7 @@ class CheckoutPendingOrderService
         private readonly CartPricingService $pricingService,
         private readonly CustomizationSnapshotBuilder $snapshots,
         private readonly PaymentAttemptRules $paymentAttemptRules,
+        private readonly WebsitePaymentInitiationService $websitePaymentInitiationService,
         private readonly IdempotencyKeyGenerator $idempotencyKeys,
     ) {}
 
@@ -132,8 +133,8 @@ class CheckoutPendingOrderService
             $response['valid'] = false;
             $response['checkout_state'] = 'payment_failed';
             $response['checkout_message'] = 'The order was saved, but payment could not be completed. Please retry payment for this order.';
-            $response['pending_order'] = $this->pendingOrderPayload($order, $paymentAttempt, 'retry_payment_attempt');
-            $response['payment_attempt'] = $this->paymentAttemptPayload($paymentAttempt, $order, 'retry_payment_attempt');
+            $response['pending_order'] = $this->pendingOrderPayload($order, $paymentAttempt);
+            $response['payment_attempt'] = $this->paymentAttemptPayload($paymentAttempt, $order);
             $response['errors'] = [
                 $this->checkoutError(
                     'payment_attempt',
@@ -145,8 +146,11 @@ class CheckoutPendingOrderService
             return $response;
         }
 
+        $paymentAttempt = $this->websitePaymentInitiationService->initiate($order, $paymentAttempt);
+        $checkoutState = $paymentAttempt->status === 'initiated' ? 'payment_initiated' : 'payment_pending';
+
         return $validation + [
-            'checkout_state' => 'payment_pending',
+            'checkout_state' => $checkoutState,
             'pending_order' => $this->pendingOrderPayload($order, $paymentAttempt),
             'payment_attempt' => $this->paymentAttemptPayload($paymentAttempt, $order),
         ];
@@ -189,7 +193,7 @@ class CheckoutPendingOrderService
     /**
      * @return array<string, mixed>
      */
-    private function pendingOrderPayload(Order $order, PaymentAttempt $paymentAttempt, string $nextStep = 'payment_attempt'): array
+    private function pendingOrderPayload(Order $order, PaymentAttempt $paymentAttempt, ?string $nextStep = null): array
     {
         return [
             'public_id' => $order->public_id,
@@ -208,7 +212,7 @@ class CheckoutPendingOrderService
             'billing_address' => $order->billing_address_snapshot,
             'payment_attempt_public_id' => $paymentAttempt->public_id,
             'items' => $this->orderItemsPayload($order),
-            'next_step' => $nextStep,
+            'next_step' => $nextStep ?? $this->nextStepForPaymentAttempt($paymentAttempt),
         ];
     }
 
@@ -319,11 +323,10 @@ class CheckoutPendingOrderService
             'gateway_payment_id' => $paymentAttempt->gateway_payment_id,
             'gateway_reference' => $paymentAttempt->gateway_reference,
             'checkout_url' => $paymentAttempt->checkout_url,
+            'initiated_at' => $paymentAttempt->initiated_at?->toISOString(),
         ];
 
-        if ($nextStep !== null) {
-            $payload['next_step'] = $nextStep;
-        }
+        $payload['next_step'] = $nextStep ?? $this->nextStepForPaymentAttempt($paymentAttempt);
 
         return $payload;
     }
@@ -331,6 +334,15 @@ class CheckoutPendingOrderService
     private function isFailedCheckoutAttempt(PaymentAttempt $paymentAttempt): bool
     {
         return $paymentAttempt->status === 'failed';
+    }
+
+    private function nextStepForPaymentAttempt(PaymentAttempt $paymentAttempt): string
+    {
+        return match ($paymentAttempt->status) {
+            'initiated', 'requires_action' => 'payment_gateway',
+            'failed' => 'retry_payment_attempt',
+            default => 'payment_attempt',
+        };
     }
 
     /**

@@ -24,6 +24,27 @@ class PaymentGatewayContractTest extends TestCase
         $this->assertTrue($rules->requiresOrderBeforePaymentInitiation());
     }
 
+    public function test_payment_gateway_rules_initiate_payment_returns_a_provider_checkout_shape(): void
+    {
+        $rules = app(PaymentGatewayRules::class);
+
+        $response = $rules->initiatePayment([
+            'provider' => 'cashfree',
+            'idempotency_key' => 'idempotency:payment_attempt:example',
+            'amount_minor' => 3798,
+            'currency' => 'INR',
+        ]);
+
+        $this->assertSame('cashfree', $response['provider']);
+        $this->assertMatchesRegularExpression('/^cf_order_[A-F0-9]{16}$/', $response['order_id']);
+        $this->assertNull($response['payment_id']);
+        $this->assertStringStartsWith('https://cashfree.test/checkout/', $response['checkout_url']);
+        $this->assertStringEndsWith($response['order_id'], $response['checkout_url']);
+        $this->assertSame('initiated', $response['status']);
+        $this->assertSame(3798, $response['amount_minor']);
+        $this->assertSame('INR', $response['currency']);
+    }
+
     public function test_payment_gateway_rules_are_serializable_for_later_shared_use(): void
     {
         $rules = app(PaymentGatewayRules::class);

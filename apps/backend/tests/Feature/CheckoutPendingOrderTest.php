@@ -70,22 +70,26 @@ class CheckoutPendingOrderTest extends TestCase
             ->assertJsonPath('data.pending_order.items.0.customization.print_method', 'dtf')
             ->assertJsonPath('data.pending_order.items.0.customization.product.slug', 'custom-tee')
             ->assertJsonPath('data.payment_attempt.order_public_id', $response->json('data.pending_order.public_id'))
-            ->assertJsonPath('data.payment_attempt.status', 'created')
+            ->assertJsonPath('data.payment_attempt.status', 'initiated')
             ->assertJsonPath('data.payment_attempt.provider', 'cashfree')
             ->assertJsonPath('data.payment_attempt.attempt_type', 'website_checkout')
             ->assertJsonPath('data.payment_attempt.amount_minor', 3798)
             ->assertJsonPath('data.payment_attempt.currency', 'INR')
-            ->assertJsonPath('data.pending_order.next_step', 'payment_attempt')
+            ->assertJsonPath('data.checkout_state', 'payment_initiated')
+            ->assertJsonPath('data.payment_attempt.next_step', 'payment_gateway')
+            ->assertJsonPath('data.pending_order.next_step', 'payment_gateway')
             ->assertJsonPath('data.cart_validation.valid', true)
             ->assertJsonPath('data.bulk_handoff.required', false)
             ->assertJsonMissingPath('data.pending_order.id')
             ->assertJsonMissingPath('data.pending_order.customer.id')
             ->assertJsonMissingPath('data.pending_order.shipping_address.id')
             ->assertJsonMissingPath('data.pending_order.billing_address.id')
-            ->assertJsonPath('data.payment_attempt.gateway_payment_id', null)
-            ->assertJsonPath('data.payment_attempt.gateway_order_id', null)
-            ->assertJsonPath('data.payment_attempt.gateway_reference', null)
-            ->assertJsonPath('data.payment_attempt.checkout_url', null);
+            ->assertJsonPath('data.payment_attempt.gateway_payment_id', null);
+
+        $this->assertMatchesRegularExpression('/^cf_order_[A-F0-9]{16}$/', (string) $response->json('data.payment_attempt.gateway_order_id'));
+        $this->assertMatchesRegularExpression('/^cf_order_[A-F0-9]{16}$/', (string) $response->json('data.payment_attempt.gateway_reference'));
+        $this->assertMatchesRegularExpression('#^https://cashfree\.test/checkout/cf_order_[A-F0-9]{16}$#', (string) $response->json('data.payment_attempt.checkout_url'));
+        $this->assertNotNull($response->json('data.payment_attempt.initiated_at'));
 
         $this->assertDatabaseCount('orders', 1);
         $this->assertDatabaseCount('order_items', 1);
@@ -123,9 +127,13 @@ class CheckoutPendingOrderTest extends TestCase
         $this->assertSame($order->id, $paymentAttempt->order_id);
         $this->assertSame('cashfree', $paymentAttempt->provider);
         $this->assertSame('website_checkout', $paymentAttempt->attempt_type);
-        $this->assertSame('created', $paymentAttempt->status);
+        $this->assertSame('initiated', $paymentAttempt->status);
         $this->assertSame(3798, $paymentAttempt->amount_minor);
         $this->assertSame('INR', $paymentAttempt->currency);
+        $this->assertMatchesRegularExpression('/^cf_order_[A-F0-9]{16}$/', (string) $paymentAttempt->gateway_order_id);
+        $this->assertSame($paymentAttempt->gateway_order_id, $paymentAttempt->gateway_reference);
+        $this->assertMatchesRegularExpression('#^https://cashfree\.test/checkout/cf_order_[A-F0-9]{16}$#', (string) $paymentAttempt->checkout_url);
+        $this->assertNotNull($paymentAttempt->initiated_at);
         $this->assertStringStartsWith('idempotency:payment_attempt:', $paymentAttempt->idempotency_key);
         $this->assertStringContainsString(':cashfree:', $paymentAttempt->idempotency_key);
         $this->assertStringContainsString(':website_checkout', $paymentAttempt->idempotency_key);
@@ -176,11 +184,14 @@ class CheckoutPendingOrderTest extends TestCase
             ->postJson('/api/cart/checkout', $checkoutPayload)
             ->assertOk()
             ->assertJsonPath('data.valid', true)
-            ->assertJsonPath('data.checkout_state', 'payment_pending')
-            ->assertJsonPath('data.pending_order.next_step', 'payment_attempt')
+            ->assertJsonPath('data.checkout_state', 'payment_initiated')
+            ->assertJsonPath('data.pending_order.next_step', 'payment_gateway')
             ->assertJsonMissingPath('data.pending_order.id')
             ->assertJsonMissingPath('data.pending_order.customer.id')
             ->assertJsonMissingPath('data.pending_order.shipping_address.id');
+
+        $this->assertMatchesRegularExpression('/^cf_order_[A-F0-9]{16}$/', (string) $secondResponse->json('data.payment_attempt.gateway_order_id'));
+        $this->assertMatchesRegularExpression('#^https://cashfree\.test/checkout/cf_order_[A-F0-9]{16}$#', (string) $secondResponse->json('data.payment_attempt.checkout_url'));
 
         $this->assertSame(
             $firstResponse->json('data.pending_order.public_id'),
@@ -246,10 +257,10 @@ class CheckoutPendingOrderTest extends TestCase
             ->assertJsonPath('data.errors.0.field', 'payment_attempt')
             ->assertJsonPath('data.errors.0.code', 'payment_attempt_failed')
             ->assertJsonMissingPath('data.pending_order.id')
-            ->assertJsonPath('data.payment_attempt.gateway_order_id', null)
+            ->assertJsonPath('data.payment_attempt.gateway_order_id', $firstResponse->json('data.payment_attempt.gateway_order_id'))
             ->assertJsonPath('data.payment_attempt.gateway_payment_id', null)
-            ->assertJsonPath('data.payment_attempt.gateway_reference', null)
-            ->assertJsonPath('data.payment_attempt.checkout_url', null);
+            ->assertJsonPath('data.payment_attempt.gateway_reference', $firstResponse->json('data.payment_attempt.gateway_reference'))
+            ->assertJsonPath('data.payment_attempt.checkout_url', $firstResponse->json('data.payment_attempt.checkout_url'));
 
         $this->assertSame(
             $firstResponse->json('data.pending_order.public_id'),
