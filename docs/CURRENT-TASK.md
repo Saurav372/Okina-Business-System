@@ -8,52 +8,49 @@ Project C Operations Admin
 
 ## Current Subtask
 
-C1.1.6 Read-only scope guard and regression verification
+C1.1.7 Authorized admin design-file access bridge
 
 ## Current Status
 
 Phase C documentation readiness was completed on 2026-06-20.
 
-C1.1.5 was completed on 2026-06-20. C1.1.6 is the next unblocked subtask and requires explicit implementation approval.
+C1.1.5 was completed on 2026-06-20. C1.1.7 is the next unblocked subtask and is approved to proceed.
 
 ## Goal
 
-Ensure the admin order detail surface remains strictly read-only and protected by a scope guard, and perform regression verification that the detail presenter does not permit or perform any write mutations to shared order, payment, refund, shipping, inventory, or file records. Provide focused regression tests that assert the read-only UI and server boundaries and verify item/customization snapshots render from stored data only.
+Provide an authorized admin design-file access bridge so Filament admin users with the correct permission can view order-linked design uploads and their public-safe previews. Ensure access uses signed, time-limited URLs or a permission-checked proxy endpoint so private storage paths and originals remain protected. Keep the admin order detail surface strictly read-only and verify no write mutations are possible from file access paths.
 
 ## Dependencies
 
 - A2.1 Admin authentication
 - A2.3 Role and permission model
-- B2.2.7 Order persistence
-- B3.1.7 Order item/customization storage
-- C1.1.1 Admin order resource and authorization boundary
-- C1.1.2 Website order index, scopes, and filters
+- A4.1 File upload service (private storage + signed preview flow)
+- B2.2.6/7 Customization snapshot persistence and order item storage
 - C1.1.3 Read-only order detail and customer/address snapshots
-- C1.1.4 Payment, refund, and payment-attempt history
 - C1.1.5 Order item and customization snapshot presentation
 
 ## Required Deliverables
 
-- Read-only scope guard enforcement for the admin order detail Filament resource and supporting presenter(s)
-- Regression test suite verifying no write actions are present or permitted from the admin detail surface (server + UI assertions)
-- Confirmation that `items` and `customization_snapshot` render solely from stored `OrderItem` records
-- Updated or added tests capturing attempted write-action denial
+- Secure admin file-access bridge that delivers public-safe previews for design files linked to orders (signed URLs or permission-checked proxy)
+- Permission gating so only authorized staff (e.g. `files.view` or `orders.view`) can request previews
+- Regression test suite verifying file access does not expose private storage paths or allow file-mutation (download of originals must require elevated privileges)
+- Confirmation that `items` and `customization_snapshot` still render solely from stored `OrderItem` records and that preview links are generated from snapshots, not live storage paths
+- Updated tests: `AdminDesignFileAccessTest`, enhancements to `AdminOrderDetailTest` to assert preview links and permission checks
 
 ## Acceptance Criteria
 
-- Only users with the approved `orders.view` permission can reach the detail surface.
-- No write actions (create/edit/delete/status/payment/refund/shipping) are available in the Filament resource or callable endpoints from the admin detail surface.
-- Server-side scope guard denies unauthorized write attempts with 403 and does not mutate shared order/payment/refund/inventory/file records.
-- `items` and `customization_snapshot` values are rendered from stored `OrderItem` records and sanitized for public-safe output.
-- Existing shared records remain unchanged by detail-view code paths.
-- Tests asserting the above pass locally.
+- Only users with the approved `orders.view` and/or `files.view` permission can request preview access for design files from the admin UI.
+- Preview links served to the admin are time-limited signed URLs or served through a permission-checked proxy endpoint that never reveals raw private storage paths.
+- No file upload, modification, or deletion is possible from the admin preview surface; attempts to mutate must return 403.
+- `items` and `customization_snapshot` continue to render solely from stored `OrderItem` records; preview generation uses stored snapshot metadata.
+- Regression tests for permission gating and file-access privacy pass locally.
 
 ## Tests Required
 
-- Admin resource access tests (permission gating)
-- Detail-view regression tests asserting absence/blocking of write actions (server + integration)
-- Order detail and item snapshot tests (existing coverage to be extended)
-- Authorization denial tests for attempted write requests
+- Admin file-access tests (permission gating for preview/proxy endpoints)
+- Detail-view regression tests asserting no write actions and safe preview rendering
+- Order detail and item snapshot tests (assert preview links generated from sanitized snapshot metadata)
+- Authorization denial tests for attempted file/mutation requests
 - Full backend test run before completion
 
 ## Quality Requirements
@@ -67,14 +64,15 @@ Ensure the admin order detail surface remains strictly read-only and protected b
 
 - `apps/backend/app/Filament/Resources/Orders/OrderResource.php`
 - `apps/backend/app/Support/Admin/OrderDetailCatalog.php`
-- `apps/backend/app/Support/Admin/AdminResourceCatalog.php`
-- `apps/backend/tests/Feature/AdminOrderDetailTest.php`
-- `apps/backend/tests/Feature/AdminOrderResourceBoundaryTest.php`
+- `apps/backend/app/Services/FileAccessService.php` (new or existing proxy)
+- `apps/backend/app/Support/Products/CustomizationSnapshotBuilder.php` (preview link helper)
+- `apps/backend/tests/Feature/AdminDesignFileAccessTest.php`
+- `apps/backend/tests/Feature/AdminOrderDetailTest.php` (enhancements)
 - Related order item or customization helpers if a shared presenter is adjusted
 
 ## Tasks Not Included
 
-- C1.1.7 and later C1.1 slices (shipping, CRM, inventory, finance reporting)
+- C1.1.8 and later C1.1 slices (shipping, CRM, inventory, finance reporting)
 - Shipping, CRM, inventory, and finance reporting tasks
 
 ## Reference Details

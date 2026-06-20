@@ -8,6 +8,7 @@ use App\Models\Payment;
 use App\Models\PaymentAttempt;
 use App\Models\Refund;
 use App\Support\Products\CustomizationSnapshotBuilder;
+use Illuminate\Support\Facades\URL;
 
 final class OrderDetailCatalog
 {
@@ -290,6 +291,31 @@ final class OrderDetailCatalog
 
         $builder = new CustomizationSnapshotBuilder;
 
-        return $builder->publicCartSnapshot($snapshot);
+        $public = $builder->publicCartSnapshot($snapshot);
+
+        if (isset($public['mockup_preview']) && is_array($public['mockup_preview'])) {
+            $routeName = $public['mockup_preview']['route_name'] ?? null;
+            $expires = (int) ($public['mockup_preview']['expires_in_minutes'] ?? 15);
+
+            if ($routeName !== null && isset($public['product']['slug'], $public['files'][0]['public_id'])) {
+                try {
+                    $public['mockup_preview_url'] = URL::temporarySignedRoute(
+                        $routeName,
+                        now()->addMinutes($expires),
+                        [
+                            'product' => $public['product']['slug'],
+                            'preview_file' => $public['files'][0]['public_id'],
+                            'print_position' => $public['print_position'] ?? null,
+                            'print_method' => $public['print_method'] ?? null,
+                            'placement' => $public['placement'] ?? [],
+                        ]
+                    );
+                } catch (\Throwable $e) {
+                    // best-effort: don't break presentation if URL generation fails
+                }
+            }
+        }
+
+        return $public;
     }
 }
