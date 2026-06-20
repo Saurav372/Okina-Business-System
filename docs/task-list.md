@@ -292,7 +292,7 @@ Verification note: B3.1.10 completed on 2026-06-20. The checkout retry path now 
 | Subtask ID | Subtask Name | Status |
 |---|---|---|
 | C1.1.1 | Admin order resource and authorization boundary | Completed |
-| C1.1.2 | Website order index, scopes, and filters | Not Started |
+| C1.1.2 | Website order index, scopes, and filters | Completed |
 | C1.1.3 | Read-only order detail and customer/address snapshots | Not Started |
 | C1.1.4 | Payment, refund, and payment-attempt history | Not Started |
 | C1.1.5 | Order item and customization snapshot presentation | Not Started |
@@ -300,6 +300,7 @@ Verification note: B3.1.10 completed on 2026-06-20. The checkout retry path now 
 | C1.1.6 | Read-only scope guard and regression verification | Not Started |
 
 Verification note: C1.1.1 completed on 2026-06-20. The boundary adds a read-only order resource shell, a lightweight admin resource catalog, and tests covering permission-gated access plus the blocked write-action set. `php artisan test --filter=AdminOrderResourceBoundaryTest` and `php artisan test` passed.
+Verification note: C1.1.2 completed on 2026-06-20. The implementation adds a conservative website-order index definition, website-order query scope, admin order index catalog, approved status/date/design filters, and feature tests covering website-only queries, scope/filter application, safe summaries, and registration metadata. `php artisan test --filter=AdminOrderIndexTest`, `php artisan test --filter=AdminOrderResourceBoundaryTest`, and `php artisan test` passed.
 
 ### C3.1 CRM lead module
 
@@ -513,4 +514,6 @@ Verification note: B3.1.7 completed on 2026-06-19. The checkout handoff now pers
 Verification note: B3.1.8 completed on 2026-06-19. The checkout flow now creates and links a traceable payment attempt to the pending order, keeps the response public-safe, and reuses the shared idempotency foundation for the new attempt record. `php artisan test --filter=CheckoutPendingOrderTest`, `php artisan test --filter=CheckoutValidationTest`, and `./vendor/bin/pint --test app/Models/Order.php app/Models/OrderItem.php app/Models/PaymentAttempt.php app/Services/CheckoutPendingOrderService.php tests/Feature/CheckoutPendingOrderTest.php database/migrations/2026_06_19_000005_create_payment_attempts_table.php` passed.
 
 Verification note: B3.1.9 completed on 2026-06-20. Repeated `/api/cart/checkout` submissions now reuse the original pending order, order items, and linked payment attempt through the shared `checkout_submission` idempotency key, while returning the same public-safe handoff identifiers. `php artisan test` (151 tests, 987 assertions), `php artisan test --filter=CheckoutPendingOrderTest`, `php artisan test --filter=CheckoutValidationTest`, `php artisan test --filter=IdempotencyFoundationTest`, and `./vendor/bin/pint --test app/Services/CheckoutPendingOrderService.php tests/Feature/CheckoutPendingOrderTest.php` passed.
+
+
 

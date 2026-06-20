@@ -7,6 +7,7 @@ use App\Enums\OrderType;
 use Database\Factories\OrderFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -92,6 +93,28 @@ class Order extends Model
     public function getRouteKeyName(): string
     {
         return 'public_id';
+    }
+
+    public function scopeWebsiteOrders(Builder $query): Builder
+    {
+        return $query
+            ->where('order_type', OrderType::WebsiteOrder->value())
+            ->where('order_source', 'website');
+    }
+
+    public function scopePlacedFrom(Builder $query, string $date): Builder
+    {
+        return $query->whereDate('placed_at', '>=', $date);
+    }
+
+    public function scopePlacedUntil(Builder $query, string $date): Builder
+    {
+        return $query->whereDate('placed_at', '<=', $date);
+    }
+
+    public function scopeDesignApproved(Builder $query, bool $approved = true): Builder
+    {
+        return $query->where('design_approved', $approved);
     }
 
     public function customer(): BelongsTo

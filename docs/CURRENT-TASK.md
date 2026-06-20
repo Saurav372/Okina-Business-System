@@ -8,17 +8,17 @@ Project C Operations Admin
 
 ## Current Subtask
 
-C1.1.2 Website order index, scopes, and filters
+C1.1.3 Read-only order detail and customer/address snapshots
 
 ## Current Status
 
 Phase C documentation readiness was completed on 2026-06-20.
 
-C1.1.1 was completed on 2026-06-20. C1.1.2 is the next unblocked subtask and requires explicit implementation approval.
+C1.1.2 was completed on 2026-06-20. C1.1.3 is the next unblocked subtask and requires explicit implementation approval.
 
 ## Goal
 
-Create the website order index layer for the admin order surface, including approved scopes and filters for read-only order browsing. Do not add order detail pages, payment/refund history, shipping, inventory, CRM, or finance reporting.
+Create the read-only order detail surface for the admin order view, including customer and address snapshots. Do not add payment/refund history, shipping, inventory, CRM, or finance reporting.
 
 ## Dependencies
 
@@ -28,25 +28,26 @@ Create the website order index layer for the admin order surface, including appr
 - B3.1 Cart and checkout completion evidence
 - B3.3 Payment webhook completion evidence
 - C1.1.1 Admin order resource and authorization boundary
+- C1.1.2 Website order index, scopes, and filters
 
 ## Required Deliverables
 
-- Read-only order index source for website orders
-- Approved scopes and filters for admin browsing
-- Focused index, scope, and filter tests
+- Read-only order detail source for website orders
+- Customer and address snapshot presentation
+- Focused detail-view tests
 
 ## Acceptance Criteria
 
-- Only users with the approved order-view permission can reach the resource.
-- The index exposes only approved website-order scopes and filters.
-- The surface remains read-only with no write actions.
+- Only users with the approved order-view permission can reach the detail surface.
+- The detail surface remains read-only with no write actions.
+- Customer and address snapshots render from shared order data.
 - Shared order and payment records are unchanged.
-- C1.1.3 through C1.1.6 remain out of scope.
+- C1.1.4 through C1.1.6 remain out of scope.
 
 ## Tests Required
 
 - Admin resource access tests
-- Order index and scope/filter tests
+- Order detail and snapshot tests
 - Authorization denial tests
 - Shared order/payment regression tests
 
@@ -59,14 +60,14 @@ Create the website order index layer for the admin order surface, including appr
 ## Files Likely Affected
 
 - `apps/backend/app/Filament/Resources/Orders/OrderResource.php`
-- `apps/backend/app/Support/Admin/AdminResourceCatalog.php`
-- `apps/backend/tests/Feature/AdminOrderResourceBoundaryTest.php`
+- `apps/backend/app/Support/Admin/OrderIndexCatalog.php`
 - `apps/backend/tests/Feature/AdminOrderIndexTest.php`
-- Related order query or scope helpers if a new shared helper is required
+- `apps/backend/tests/Feature/AdminOrderDetailTest.php`
+- Related order summary or snapshot helpers if a new shared helper is required
 
 ## Tasks Not Included
 
-- C1.1.3 and later C1.1 slices
+- C1.1.4 and later C1.1 slices
 - Shipping, CRM, inventory, payment, refund, and finance tasks
 
 ## Reference Details

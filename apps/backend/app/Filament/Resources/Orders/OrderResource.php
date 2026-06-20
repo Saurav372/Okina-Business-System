@@ -4,11 +4,12 @@ namespace App\Filament\Resources\Orders;
 
 use App\Models\Order;
 use App\Models\User;
+use App\Support\Admin\OrderIndexCatalog;
 
 final class OrderResource
 {
     /**
-     * Keep the resource boundary read-only until later subtasks add the order index and detail pages.
+     * Keep the resource boundary read-only until later subtasks add the order detail pages.
      */
     public static function registration(): array
     {
@@ -31,6 +32,7 @@ final class OrderResource
                 'refund',
                 'shipping',
             ],
+            'index' => (new OrderIndexCatalog)->definition(),
             'pages' => [],
         ];
     }
