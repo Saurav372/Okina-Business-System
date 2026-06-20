@@ -1,4 +1,4 @@
-# Project B/C Build Runway
+﻿# Project B/C Build Runway
 
 Use this document when moving through Project B and Project C tasks.
 
@@ -124,7 +124,6 @@ If any check fails, update planning docs before implementation.
 
 The next unblocked implementation subtask is:
 
-`B3.1.7 Order item/customization storage`
+`C1.1.1 Admin order resource and authorization boundary`
 
-Do not start `B3.1.7 Order item/customization storage` until `B3.1.2`, `B3.1.3`, and `B3.1.4` are completed.
-
+Do not start `C1.1.1` until the documented Project B completion evidence remains green. Keep it read-only; `C1.1.2` through `C1.1.6` follow sequentially, with `B2.2.8` completed between the customization panel and final C1.1 regression verification.

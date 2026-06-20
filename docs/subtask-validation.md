@@ -1,4 +1,4 @@
-# Okina Craft Subtask Validation
+﻿# Okina Craft Subtask Validation
 
 This document validates the subtasks created in `task-list.md`.
 
@@ -32,6 +32,7 @@ Complexity scale:
 | B2.2 Upload and simple mockup preview | Complete only when uploaded design data survives product page, cart, order, and admin review flows. |
 | B3.1 Cart and checkout with pending order creation | Complete only when cart validation, price recalculation, bulk detection, pending order creation, payment attempt creation, idempotency, and failure handling pass together. |
 | B3.3 Payment webhook handling | Complete only when authenticated webhook events update payment state exactly once and failed/refund events are logged and testable. |
+| C1.1 Basic admin order and payment view | Complete only when authorized staff can inspect website orders, payment/refund history, customer and item snapshots, and linked design files without receiving mutation, finance-cost, or private-file access beyond their permissions. |
 | C1.2 Sales order creation | Complete only when sales staff can create, price, edit within rules, confirm, structure payments for sales orders, and emit required audit events. Final parent completion also requires C6.1 audit integration tests to pass when audit storage is implemented. |
 | C1.3 Quotations and bulk-order conversion | Complete only when bulk enquiries become quotations, approved quotations become sales orders, and advance payments are recorded correctly. |
 | C2.1 Inventory movements and stock handling | Complete only when stock balance, stock-in/out, adjustments, order deduction, cancellation reversal, warnings, history, and audit events work together. Final parent completion also requires C6.1 audit integration tests to pass when audit storage is implemented. |
@@ -39,6 +40,14 @@ Complexity scale:
 | C5.2 Refund management | Complete only when refund records, approvals, partial/full refunds, payment recalculation, and audit trail work without deleting original payment history. |
 | C5.3 Expense management | Complete only when expenses are categorized, permission-protected, approved where needed, and available for finance reports. |
 | C6.1 Immutable audit log | Complete only when all sensitive change types are captured, masked, permission-protected, and retained according to policy. |
+| C3.1 CRM lead module | Complete only when website and manual leads preserve source data, follow the approved ownership/status rules, and are visible only to authorized staff. |
+| C3.2 Follow-up workflow | Complete only when follow-ups can be scheduled, completed, surfaced when due/overdue, handed to notifications safely, and recorded in lead activity history. |
+| C4.1 Simple order processing | Complete only when permitted operational state transitions are validated, recorded once, and remain separate from payment, refund, and shipment state. |
+| C4.2 Shipping details | Complete only when authorized staff can manage validated shipment details, customers receive only safe tracking data, and delivery updates remain traceable. |
+| C5.1 Finance payment and balance views | Complete only when protected read-only payment, refund, and balance views use shared financial records and calculations without exposing cost/profit data to unauthorized staff. |
+| C5.4 Financial reports | Complete only when each protected report reconciles with its shared source records, respects date/filter scope, and excludes unauthorized sensitive data. |
+| C6.2 Notification implementation | Complete only when versioned templates, dispatch rules, delivery logs, retries, and deduplication work without blocking the business action that emitted the event. |
+| C6.3 Google Sheets backup sync | Complete only when approved record summaries are queued, deduplicated, retryable, observable, and non-blocking to the source save. |
 | C6.4 Backup, security, and regression gates | Complete only when backup, restore, security reviews, deployment checklist, regression checklist, and rollback procedure are documented and tested. |
 
 ## A1.1 Final ERD And Schema Plan
@@ -247,7 +256,7 @@ Verification note: completed on 2026-06-18. The implementation adds a public cat
 | B2.2.5 | Customization metadata structure | B2.1, B2.2.3 | Metadata stores print position, method, file, placement | Metadata tests | Cart, Orders, Files | High |
 | B2.2.6 | Cart persistence | B2.2.5, B3.1.1 | Customization remains in cart | Cart persistence tests | Cart, Website | High |
 | B2.2.7 | Order persistence | B2.2.6, B3.1.7 | Customization snapshot is saved to order item | Order persistence tests | Orders, Admin | High |
-| B2.2.8 | Admin file access | A4.1.5, B2.2.7 | Authorized admin can view/download related files | Admin permission tests | Admin, Files | High |
+| B2.2.8 | Authorized admin design-file access bridge | A4.1.5, B2.2.7, C1.1.1, C1.1.5 | Authorized staff can view/download order-linked design files through the admin order surface without exposing raw paths or bypassing file policy | Admin file permission tests | Admin, Files, Orders | High |
 
 Verification note: B2.2.1 completed on 2026-06-19. The backend now accepts approved design uploads for public products, stores the original privately, returns public-safe file and preview metadata, and exposes a signed preview URL for the mockup step. `php artisan test --filter=DesignUploadFlowTest` passed.
 
