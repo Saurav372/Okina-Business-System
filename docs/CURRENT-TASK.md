@@ -18,7 +18,7 @@ C1.1.2 was completed on 2026-06-20. C1.1.3 is the next unblocked subtask and req
 
 ## Goal
 
-Create the read-only order detail surface for the admin order view, including customer and address snapshots. Do not add payment/refund history, shipping, inventory, CRM, or finance reporting.
+Create the read-only order detail surface for the admin order view, including stored customer and address snapshots from the order record. Do not add payment/refund history, shipping, inventory, CRM, or finance reporting.
 
 ## Dependencies
 
@@ -33,14 +33,14 @@ Create the read-only order detail surface for the admin order view, including cu
 ## Required Deliverables
 
 - Read-only order detail source for website orders
-- Customer and address snapshot presentation
+- Stored customer and address snapshot presentation from the order record
 - Focused detail-view tests
 
 ## Acceptance Criteria
 
 - Only users with the approved order-view permission can reach the detail surface.
 - The detail surface remains read-only with no write actions.
-- Customer and address snapshots render from shared order data.
+- Customer and address snapshots render from the stored order snapshots, not live relation lookups.
 - Shared order and payment records are unchanged.
 - C1.1.4 through C1.1.6 remain out of scope.
 
@@ -63,6 +63,7 @@ Create the read-only order detail surface for the admin order view, including cu
 - `apps/backend/app/Support/Admin/OrderIndexCatalog.php`
 - `apps/backend/tests/Feature/AdminOrderIndexTest.php`
 - `apps/backend/tests/Feature/AdminOrderDetailTest.php`
+- `apps/backend/app/Support/Admin/OrderDetailCatalog.php`
 - Related order summary or snapshot helpers if a new shared helper is required
 
 ## Tasks Not Included
