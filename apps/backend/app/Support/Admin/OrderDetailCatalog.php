@@ -3,6 +3,9 @@
 namespace App\Support\Admin;
 
 use App\Models\Order;
+use App\Models\Payment;
+use App\Models\PaymentAttempt;
+use App\Models\Refund;
 
 final class OrderDetailCatalog
 {
@@ -63,9 +66,27 @@ final class OrderDetailCatalog
                         'billing_address_snapshot',
                     ],
                 ],
+                'payment_attempts' => [
+                    'label' => 'Payment Attempt History',
+                    'fields' => [
+                        'payment_attempts',
+                    ],
+                ],
+                'payments' => [
+                    'label' => 'Payment History',
+                    'fields' => [
+                        'payments',
+                    ],
+                ],
+                'refunds' => [
+                    'label' => 'Refund History',
+                    'fields' => [
+                        'refunds',
+                    ],
+                ],
             ],
-            'safety_note' => 'The detail surface renders only stored customer and address snapshots from the order record and does not look up live customer or address relations. Payment, refund, shipping, inventory, CRM, and finance histories remain out of scope.',
-            'references' => ['C1.1.1', 'C1.1.2', 'C1.1.3', 'B3.1.6', 'B3.3.6'],
+            'safety_note' => 'The detail surface renders only stored customer, address, payment, refund, and payment-attempt records from the order database and does not look up live customer/address relations or gateway state. Sensitive finance fields, payment secrets, and raw payloads remain out of scope.',
+            'references' => ['C1.1.1', 'C1.1.2', 'C1.1.3', 'C1.1.4', 'B3.1.6', 'B3.3.6'],
         ];
     }
 
@@ -74,6 +95,12 @@ final class OrderDetailCatalog
      */
     public function summarize(Order $order): array
     {
+        $order->loadMissing([
+            'paymentAttempts',
+            'payments.paymentAttempt',
+            'refunds.payment.paymentAttempt',
+        ]);
+
         return [
             'public_id' => $order->public_id,
             'order_type' => $order->order_type,
@@ -93,6 +120,21 @@ final class OrderDetailCatalog
             'customer_snapshot' => $this->customerSnapshot($order->customer_snapshot),
             'shipping_address_snapshot' => $this->addressSnapshot($order->shipping_address_snapshot),
             'billing_address_snapshot' => $this->addressSnapshot($order->billing_address_snapshot),
+            'payment_attempts' => $order->paymentAttempts
+                ->sortByDesc(fn (PaymentAttempt $attempt): int => $attempt->initiated_at?->timestamp ?? $attempt->created_at?->timestamp ?? 0)
+                ->values()
+                ->map(fn (PaymentAttempt $attempt): array => $this->paymentAttemptSnapshot($attempt))
+                ->all(),
+            'payments' => $order->payments
+                ->sortByDesc(fn (Payment $payment): int => $payment->paid_at?->timestamp ?? $payment->created_at?->timestamp ?? 0)
+                ->values()
+                ->map(fn (Payment $payment): array => $this->paymentSnapshot($payment))
+                ->all(),
+            'refunds' => $order->refunds
+                ->sortByDesc(fn (Refund $refund): int => $refund->processed_at?->timestamp ?? $refund->created_at?->timestamp ?? 0)
+                ->values()
+                ->map(fn (Refund $refund): array => $this->refundSnapshot($refund))
+                ->all(),
         ];
     }
 
@@ -137,6 +179,68 @@ final class OrderDetailCatalog
             'postal_code' => data_get($snapshot, 'postal_code'),
             'country_code' => data_get($snapshot, 'country_code'),
             'delivery_notes' => data_get($snapshot, 'delivery_notes'),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function paymentAttemptSnapshot(PaymentAttempt $attempt): array
+    {
+        return [
+            'public_id' => $attempt->public_id,
+            'provider' => $attempt->provider,
+            'attempt_type' => $attempt->attempt_type,
+            'status' => $attempt->status,
+            'amount_minor' => $attempt->amount_minor,
+            'currency' => $attempt->currency,
+            'gateway_order_id' => $attempt->gateway_order_id,
+            'gateway_payment_id' => $attempt->gateway_payment_id,
+            'gateway_reference' => $attempt->gateway_reference,
+            'initiated_at' => $attempt->initiated_at?->toIso8601String(),
+            'completed_at' => $attempt->completed_at?->toIso8601String(),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function paymentSnapshot(Payment $payment): array
+    {
+        return [
+            'provider' => $payment->provider,
+            'payment_type' => $payment->payment_type,
+            'status' => $payment->status,
+            'amount_minor' => $payment->amount_minor,
+            'currency' => $payment->currency,
+            'provider_payment_id' => $payment->provider_payment_id,
+            'provider_order_id' => $payment->provider_order_id,
+            'provider_reference' => $payment->provider_reference,
+            'receipt_number' => $payment->receipt_number,
+            'payment_attempt_public_id' => $payment->paymentAttempt?->public_id,
+            'paid_at' => $payment->paid_at?->toIso8601String(),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function refundSnapshot(Refund $refund): array
+    {
+        return [
+            'provider' => $refund->provider,
+            'refund_type' => $refund->refund_type,
+            'status' => $refund->status,
+            'amount_minor' => $refund->amount_minor,
+            'currency' => $refund->currency,
+            'reason_code' => $refund->reason_code,
+            'provider_refund_id' => $refund->provider_refund_id,
+            'provider_payment_id' => $refund->provider_payment_id,
+            'provider_reference' => $refund->provider_reference,
+            'payment_attempt_public_id' => $refund->payment?->paymentAttempt?->public_id,
+            'requested_at' => $refund->requested_at?->toIso8601String(),
+            'approved_at' => $refund->approved_at?->toIso8601String(),
+            'processed_at' => $refund->processed_at?->toIso8601String(),
         ];
     }
 }

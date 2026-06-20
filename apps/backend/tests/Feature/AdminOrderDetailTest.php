@@ -7,7 +7,10 @@ use App\Filament\Resources\Orders\OrderResource;
 use App\Models\Customer;
 use App\Models\CustomerAddress;
 use App\Models\Order;
+use App\Models\Payment;
+use App\Models\PaymentAttempt;
 use App\Models\Permission;
+use App\Models\Refund;
 use App\Models\Role;
 use App\Models\User;
 use App\Support\Admin\OrderDetailCatalog;
@@ -31,7 +34,10 @@ class AdminOrderDetailTest extends TestCase
         $this->assertSame(['customer_snapshot'], $detail['sections']['customer']['fields']);
         $this->assertSame(['shipping_address_snapshot'], $detail['sections']['shipping_address']['fields']);
         $this->assertSame(['billing_address_snapshot'], $detail['sections']['billing_address']['fields']);
-        $this->assertStringContainsString('stored customer and address snapshots', $detail['safety_note']);
+        $this->assertSame(['payment_attempts'], $detail['sections']['payment_attempts']['fields']);
+        $this->assertSame(['payments'], $detail['sections']['payments']['fields']);
+        $this->assertSame(['refunds'], $detail['sections']['refunds']['fields']);
+        $this->assertStringContainsString('stored customer, address, payment, refund, and payment-attempt records', $detail['safety_note']);
 
         foreach (['create', 'edit', 'delete', 'forceDelete', 'restore', 'replicate', 'status', 'payment', 'refund', 'shipping'] as $blockedAction) {
             $this->assertContains($blockedAction, $detail['blocked_actions']);
@@ -47,7 +53,7 @@ class AdminOrderDetailTest extends TestCase
         $this->assertFalse(OrderResource::canAccess($dashboardOnly));
     }
 
-    public function test_detail_summary_renders_stored_customer_and_address_snapshots_without_live_relation_labels(): void
+    public function test_detail_summary_renders_stored_customer_address_and_payment_histories_without_live_relation_labels(): void
     {
         $customer = Customer::factory()->create([
             'name' => 'Live Customer Name',
@@ -132,6 +138,53 @@ class AdminOrderDetailTest extends TestCase
             'placed_at' => now()->subDay(),
         ]);
 
+        $attempt = PaymentAttempt::create([
+            'order_id' => $order->id,
+            'provider' => 'cashfree',
+            'attempt_type' => 'website_checkout',
+            'status' => 'succeeded',
+            'amount_minor' => 145000,
+            'currency' => 'INR',
+            'idempotency_key' => 'idempotency:payment_attempt:OD-DETAILED',
+            'gateway_order_id' => 'cf_order_DETAIL001',
+            'gateway_payment_id' => 'cf_pay_DETAIL001',
+            'gateway_reference' => 'cf_order_DETAIL001',
+            'initiated_at' => now()->subHour(),
+            'completed_at' => now()->subMinutes(50),
+        ]);
+
+        $payment = Payment::create([
+            'order_id' => $order->id,
+            'payment_attempt_id' => $attempt->id,
+            'payment_type' => 'full',
+            'provider' => 'cashfree',
+            'status' => 'succeeded',
+            'amount_minor' => 145000,
+            'currency' => 'INR',
+            'provider_payment_id' => 'cf_pay_DETAIL001',
+            'provider_order_id' => 'cf_order_DETAIL001',
+            'provider_reference' => 'cf_pay_DETAIL001',
+            'receipt_number' => 'RCPT-145000',
+            'paid_at' => now()->subMinutes(45),
+        ]);
+
+        $refund = Refund::create([
+            'order_id' => $order->id,
+            'payment_id' => $payment->id,
+            'provider' => 'cashfree',
+            'refund_type' => 'full',
+            'status' => 'succeeded',
+            'amount_minor' => 145000,
+            'currency' => 'INR',
+            'reason_code' => 'customer_request',
+            'provider_refund_id' => 'cf_ref_DETAIL001',
+            'provider_payment_id' => 'cf_pay_DETAIL001',
+            'provider_reference' => 'cf_ref_DETAIL001',
+            'requested_at' => now()->subMinutes(20),
+            'approved_at' => now()->subMinutes(15),
+            'processed_at' => now()->subMinutes(10),
+        ]);
+
         $summary = app(OrderDetailCatalog::class)->summarize($order);
 
         $this->assertSame('OD-DETAILED', $summary['public_id']);
@@ -146,8 +199,28 @@ class AdminOrderDetailTest extends TestCase
         $this->assertNotSame($customer->name, $summary['customer_snapshot']['name']);
         $this->assertNotSame($shippingAddress->label, $summary['shipping_address_snapshot']['label']);
         $this->assertNotSame($billingAddress->label, $summary['billing_address_snapshot']['label']);
-        $this->assertArrayNotHasKey('payments', $summary);
-        $this->assertArrayNotHasKey('refunds', $summary);
+
+        $this->assertCount(1, $summary['payment_attempts']);
+        $this->assertCount(1, $summary['payments']);
+        $this->assertCount(1, $summary['refunds']);
+
+        $this->assertSame('cf_order_DETAIL001', $summary['payment_attempts'][0]['gateway_order_id']);
+        $this->assertSame('cf_pay_DETAIL001', $summary['payment_attempts'][0]['gateway_payment_id']);
+        $this->assertSame('succeeded', $summary['payment_attempts'][0]['status']);
+        $this->assertSame('cf_pay_DETAIL001', $summary['payments'][0]['provider_payment_id']);
+        $this->assertSame('RCPT-145000', $summary['payments'][0]['receipt_number']);
+        $this->assertSame('cf_ref_DETAIL001', $summary['refunds'][0]['provider_refund_id']);
+        $this->assertSame('customer_request', $summary['refunds'][0]['reason_code']);
+        $this->assertSame($attempt->public_id, $summary['payments'][0]['payment_attempt_public_id']);
+        $this->assertSame($attempt->public_id, $summary['refunds'][0]['payment_attempt_public_id']);
+
+        $this->assertArrayNotHasKey('gateway_fee_minor', $summary['payments'][0]);
+        $this->assertArrayNotHasKey('net_amount_minor', $summary['payments'][0]);
+        $this->assertArrayNotHasKey('metadata', $summary['payments'][0]);
+        $this->assertArrayNotHasKey('notes', $summary['payments'][0]);
+        $this->assertArrayNotHasKey('metadata', $summary['refunds'][0]);
+        $this->assertArrayNotHasKey('gateway_fee_minor', $summary['refunds'][0]);
+        $this->assertArrayNotHasKey('raw_payload', $summary);
         $this->assertArrayNotHasKey('customer', $summary);
         $this->assertArrayNotHasKey('shippingAddress', $summary);
         $this->assertArrayNotHasKey('billingAddress', $summary);
