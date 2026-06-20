@@ -153,6 +153,55 @@ class CheckoutPendingOrderTest extends TestCase
         $this->assertDatabaseCount('payment_attempts', 0);
     }
 
+    public function test_repeated_checkout_reuses_the_existing_pending_order_and_payment_attempt(): void
+    {
+        $catalog = $this->createCatalog();
+        [$customerAccount, $customer] = $this->createCustomerAccount();
+        $shippingAddress = $this->createShippingAddress($customer);
+
+        $this->actingAs($customerAccount, 'customer')
+            ->postJson('/api/cart/items', $this->cartPayload($catalog['product'], $catalog['sku'], 2))
+            ->assertOk();
+
+        $checkoutPayload = [
+            'shipping_address_id' => $shippingAddress->id,
+        ];
+
+        $firstResponse = $this->actingAs($customerAccount, 'customer')
+            ->postJson('/api/cart/checkout', $checkoutPayload)
+            ->assertOk();
+
+        $secondResponse = $this->actingAs($customerAccount, 'customer')
+            ->postJson('/api/cart/checkout', $checkoutPayload)
+            ->assertOk()
+            ->assertJsonPath('data.valid', true)
+            ->assertJsonPath('data.pending_order.next_step', 'payment_attempt')
+            ->assertJsonMissingPath('data.pending_order.id')
+            ->assertJsonMissingPath('data.pending_order.customer.id')
+            ->assertJsonMissingPath('data.pending_order.shipping_address.id');
+
+        $this->assertSame(
+            $firstResponse->json('data.pending_order.public_id'),
+            $secondResponse->json('data.pending_order.public_id'),
+        );
+        $this->assertSame(
+            $firstResponse->json('data.payment_attempt.id'),
+            $secondResponse->json('data.payment_attempt.id'),
+        );
+        $this->assertSame(
+            $firstResponse->json('data.payment_attempt.order_public_id'),
+            $secondResponse->json('data.payment_attempt.order_public_id'),
+        );
+
+        $this->assertDatabaseCount('orders', 1);
+        $this->assertDatabaseCount('order_items', 1);
+        $this->assertDatabaseCount('payment_attempts', 1);
+
+        $order = Order::query()->firstOrFail();
+
+        $this->assertStringStartsWith('idempotency:checkout_submission:', $order->idempotency_key);
+    }
+
     private function createCustomerAccount(): array
     {
         $customerAccount = CustomerAccount::factory()->create();

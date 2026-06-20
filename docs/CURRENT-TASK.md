@@ -10,66 +10,62 @@ B3.1 Cart and checkout with pending order creation
 
 ## Current Subtask
 
-B3.1.9 Duplicate checkout prevention
+B3.1.10 Failed checkout handling
 
 ## Current Status
 
-B3.1.8 Payment-attempt creation was completed on 2026-06-19.
+B3.1.9 Duplicate checkout prevention was completed on 2026-06-20.
 
-B3.1.9 Duplicate checkout prevention is now the active subtask.
+B3.1.10 Failed checkout handling is now the active subtask.
 
 ## Goal
 
-Prevent repeated checkout submissions from creating duplicate pending orders or duplicate payment attempts.
+Ensure an unsuccessful checkout handoff leaves a traceable pending order and payment attempt without creating duplicate records or starting payment gateway processing.
 
 ## Dependencies
 
-- A4.5 Idempotency foundation
 - B3.1.6 Pending-order creation
 - B3.1.8 Payment-attempt creation
+- B3.1.9 Duplicate checkout prevention
 
 ## Required Deliverables
 
-- Checkout duplicate-submission prevention
-- Reuse of the existing pending order and payment attempt on repeat submissions
-- Public-safe duplicate-checkout response behavior
-- Test coverage for idempotent checkout behavior
+- Traceable failed-checkout state handling for the existing pending order and payment attempt
+- Public-safe failure response behavior
+- Test coverage for the failed-checkout path and retry safety
 
 ## Acceptance Criteria
 
-- Repeated checkout submissions do not create duplicate orders or payment attempts.
-- Existing pending order and payment attempt records are reused or returned.
-- The checkout handoff remains public-safe and stable for the customer.
-- Later failed-checkout handling can build on the idempotent checkout path.
+- A failed checkout handoff leaves the pending order and payment attempt traceable.
+- The failure path does not create duplicate orders or payment attempts.
+- The checkout response remains public-safe and actionable for the customer.
+- Later payment-adapter and webhook tasks can build on the recorded failure state.
 
 ## Tests Required
 
-- Idempotency tests
-- Duplicate checkout submission tests
-- Pending order handoff regression tests
+- Failed checkout path tests
+- Duplicate/retry safety tests
+- Pending order and payment-attempt regression tests
 
 ## Quality Requirements
 
-- Follow the shared idempotency-operation catalog and checkout rules.
-- Do not implement failed checkout handling, webhook processing, or payment gateway initiation inside this subtask.
+- Reuse the existing pending order, payment-attempt, and idempotency rules.
+- Do not implement payment gateway initiation, webhook processing, refunds, or notification delivery in this subtask.
 - Keep checkout responses public-safe where exposed.
-- Preserve the existing pending order and payment attempt records instead of rebuilding them.
 - Run relevant backend tests after implementation.
 
 ## Files Likely Affected
 
 - `apps/backend/app/**`
-- `apps/backend/database/**`
-- `apps/backend/routes/**`
 - `apps/backend/tests/**`
 - `docs/dependency-impact-register.md`
 
 ## Tasks Not Included
 
-- Failed checkout handling
-- Payment webhook handling
 - Payment gateway initiation
+- Payment webhook handling
 - Refund processing
+- Notification delivery
 
 ## Reference Details
 

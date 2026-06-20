@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\OrderStatus;
 use App\Enums\OrderType;
+use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\CustomerAccount;
 use App\Models\CustomerAddress;
@@ -72,41 +73,53 @@ class CheckoutPendingOrderService
 
         $cart->loadMissing(['items.product', 'items.sku']);
         $pricing = $validation['cart']['pricing'] ?? $this->pricingService->summary($cart);
+        $checkoutIdempotencyKey = $this->checkoutSubmissionIdempotencyKey($cart, $customer, $shippingAddress);
 
-        [$order, $paymentAttempt] = DB::transaction(function () use ($customer, $shippingAddress, $billingAddress, $validation, $pricing, $cart): array {
-            $order = Order::create([
-                'order_type' => OrderType::WebsiteOrder->value(),
-                'order_source' => 'website',
-                'status' => OrderStatus::PendingPayment->value(),
-                'customer_id' => $customer->customer_id,
-                'shipping_address_id' => $shippingAddress?->id,
-                'billing_address_id' => $billingAddress?->id,
-                'customer_snapshot' => $validation['customer'],
-                'shipping_address_snapshot' => $validation['shipping_address'],
-                'billing_address_snapshot' => $validation['billing_address'],
-                'subtotal_amount_minor' => (int) ($pricing['subtotal_amount_minor'] ?? 0),
-                'discount_amount_minor' => (int) ($pricing['discount_amount_minor'] ?? 0),
-                'shipping_amount_minor' => (int) ($pricing['shipping_amount_minor'] ?? 0),
-                'tax_amount_minor' => (int) ($pricing['tax_amount_minor'] ?? 0),
-                'total_amount_minor' => (int) ($pricing['total_amount_minor'] ?? 0),
-                'currency' => (string) ($pricing['currency'] ?? 'INR'),
-                'placed_at' => now(),
-            ]);
+        [$order, $paymentAttempt] = DB::transaction(function () use ($customer, $shippingAddress, $billingAddress, $validation, $pricing, $cart, $checkoutIdempotencyKey): array {
+            $order = Order::query()
+                ->where('idempotency_key', $checkoutIdempotencyKey)
+                ->lockForUpdate()
+                ->first();
 
-            $orderItems = $order->items()->createMany(
-                $cart->items
-                    ->sortBy('id')
-                    ->values()
-                    ->map(fn (CartItem $item): array => $this->orderItemAttributes($item))
-                    ->all(),
-            );
+            if ($order === null) {
+                $order = Order::create([
+                    'order_type' => OrderType::WebsiteOrder->value(),
+                    'order_source' => 'website',
+                    'status' => OrderStatus::PendingPayment->value(),
+                    'customer_id' => $customer->customer_id,
+                    'shipping_address_id' => $shippingAddress?->id,
+                    'billing_address_id' => $billingAddress?->id,
+                    'customer_snapshot' => $validation['customer'],
+                    'shipping_address_snapshot' => $validation['shipping_address'],
+                    'billing_address_snapshot' => $validation['billing_address'],
+                    'subtotal_amount_minor' => (int) ($pricing['subtotal_amount_minor'] ?? 0),
+                    'discount_amount_minor' => (int) ($pricing['discount_amount_minor'] ?? 0),
+                    'shipping_amount_minor' => (int) ($pricing['shipping_amount_minor'] ?? 0),
+                    'tax_amount_minor' => (int) ($pricing['tax_amount_minor'] ?? 0),
+                    'total_amount_minor' => (int) ($pricing['total_amount_minor'] ?? 0),
+                    'currency' => (string) ($pricing['currency'] ?? 'INR'),
+                    'placed_at' => now(),
+                    'idempotency_key' => $checkoutIdempotencyKey,
+                ]);
+
+                $orderItems = $order->items()->createMany(
+                    $cart->items
+                        ->sortBy('id')
+                        ->values()
+                        ->map(fn (CartItem $item): array => $this->orderItemAttributes($item))
+                        ->all(),
+                );
+
+                $order->setRelation('items', $orderItems);
+            } else {
+                $order->load('items');
+            }
 
             $paymentAttempt = $order->paymentAttempts()->firstOrCreate(
                 ['idempotency_key' => $this->paymentAttemptIdempotencyKey($order)],
                 $this->paymentAttemptAttributes($order, $pricing),
             );
 
-            $order->setRelation('items', $orderItems);
             $order->setRelation('paymentAttempts', collect([$paymentAttempt]));
 
             return [$order, $paymentAttempt];
@@ -252,6 +265,18 @@ class CheckoutPendingOrderService
             $order->public_id,
             $this->paymentAttemptRules->provider(),
             $this->paymentAttemptRules->attemptType(),
+        ]);
+    }
+
+    private function checkoutSubmissionIdempotencyKey(
+        Cart $cart,
+        CustomerAccount $customer,
+        CustomerAddress $shippingAddress,
+    ): string {
+        return $this->idempotencyKeys->make('checkout_submission', [
+            $cart->id,
+            $customer->customer_id,
+            $shippingAddress->id,
         ]);
     }
 

@@ -221,3 +221,4 @@ A task can be marked complete only when:
 
 
 | B3.1.8 Payment-attempt creation | B3.1.9 Duplicate checkout prevention | Provides linked attempt record and idempotency key basis | High |
+| B3.1.9 Duplicate checkout prevention | B3.1.10 Failed checkout handling | Reuses the stable pending order and payment-attempt path for failure handling | High |
