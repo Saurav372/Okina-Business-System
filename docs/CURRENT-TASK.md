@@ -6,68 +6,69 @@ Update this file before starting each new subtask. Keep it narrow.
 
 ## Current Parent Task
 
-B3 Cart, checkout and website payment
+Project C Operations Admin
 
 ## Current Subtask
 
-B3.3 Payment webhook handling
+C1.1 Basic admin order and payment view
 
 ## Current Status
 
-B3.2 Website payment adapter implementation was completed on 2026-06-20.
+B3.3 Payment webhook handling was completed on 2026-06-20.
 
-B3.3 Payment webhook handling is now the active subtask.
+C1.1 Basic admin order and payment view is now the active subtask.
 
 ## Goal
 
-Authenticate and process webhook events for the initiated website payments created in B3.2.
+Show website pending and paid orders, payment records, status, customer data, order items, and uploaded design references for authorized staff.
 
 ## Dependencies
 
-- A4.5 Idempotency foundation
-- A5.3 Payment gateway service contract
-- B3.2 Website payment adapter implementation
+- A2.3 Role and permission model
+- A5.1 Shared order/payment domain model
+- B3.1 Cart and checkout with pending order creation
+- B3.3 Payment webhook handling
 
 ## Required Deliverables
 
-- Webhook authentication and event parsing
-- Payment-attempt matching and single-update behavior
-- Public-safe payment-state updates for paid, failed, and refund events
-- Test coverage for webhook idempotency and retry logging
+- Admin order and payment view surface
+- Website order/payment summaries for staff
+- Customer, item, and upload visibility in the admin context
+- Public-safe payment and refund record presentation
 
 ## Acceptance Criteria
 
-- Authenticated webhook events update payment state exactly once.
-- Duplicate webhook deliveries do not create duplicate payment records.
-- Failed and refund events stay public-safe and traceable.
-- Retry and logging behavior can support later reconciliation work.
+- Authorized staff can inspect website orders and their payment history.
+- Payment status is derived from the shared records created by checkout and webhook handling.
+- Restricted finance data stays hidden from unauthorized roles.
+- Admin order and payment views remain consistent with the shared order/payment model.
 
 ## Tests Required
 
-- Webhook authentication tests
-- Event parsing tests
-- Payment-attempt matching tests
-- Duplicate webhook prevention tests
-- Payment status recalculation tests
-- Failed/refund logging tests
+- Admin order tests
+- Payment record tests
+- Access control tests
+- Shared order/payment regression tests
 
 ## Quality Requirements
 
-- Keep gateway logic provider-neutral.
-- Keep webhook state transitions public-safe and idempotent.
-- Do not start C1.1 admin payment-view work yet.
+- Keep finance and sensitive payment details restricted.
+- Do not start shipping workflow, CRM, inventory, or refund processing tasks yet.
+- Keep shared order/payment data consistent with the website checkout and webhook flows.
 - Run relevant backend tests after implementation.
 
 ## Files Likely Affected
 
 - `apps/backend/app/**`
 - `apps/backend/tests/**`
-- webhook handler and parser classes
+- admin resources, pages, and view components
 
 ## Tasks Not Included
 
-- Admin payment-view work
-- Finance reconciliation
+- Shipping workflow
+- CRM lead and quotation work
+- Inventory movements
+- Refund processing
 - Notifications
 
 ## Reference Details
@@ -78,4 +79,4 @@ Use:
 - `docs/task-list.md`
 - `docs/subtask-validation.md`
 - `docs/dependency-impact-register.md`
-- `docs/AI-PROMPT-SEQUENCE.md`
+- `docs/project-b-c-build-runway.md`

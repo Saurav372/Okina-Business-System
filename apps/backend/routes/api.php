@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\CartController;
+use App\Http\Controllers\Api\PaymentWebhookController;
 use App\Http\Controllers\Api\ProductCustomizationController;
 use App\Http\Controllers\Api\PublicCatalogController;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
@@ -34,4 +35,8 @@ Route::middleware('web')->withoutMiddleware(ValidateCsrfToken::class)->prefix('c
     Route::post('/items', [CartController::class, 'store']);
     Route::patch('/items/{cartItem}', [CartController::class, 'update']);
     Route::delete('/items/{cartItem}', [CartController::class, 'destroy']);
+});
+
+Route::prefix('webhooks')->group(function () {
+    Route::post('/payments/cashfree', [PaymentWebhookController::class, 'cashfree']);
 });
