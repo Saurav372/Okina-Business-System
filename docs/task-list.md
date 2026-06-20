@@ -293,7 +293,7 @@ Verification note: B3.1.10 completed on 2026-06-20. The checkout retry path now 
 |---|---|---|
 | C1.1.1 | Admin order resource and authorization boundary | Completed |
 | C1.1.2 | Website order index, scopes, and filters | Completed |
-| C1.1.3 | Read-only order detail and customer/address snapshots | Not Started |
+| C1.1.3 | Read-only order detail and customer/address snapshots | Completed |
 | C1.1.4 | Payment, refund, and payment-attempt history | Not Started |
 | C1.1.5 | Order item and customization snapshot presentation | Not Started |
 | B2.2.8 | Authorized admin design-file access bridge | Not Started |
@@ -301,6 +301,7 @@ Verification note: B3.1.10 completed on 2026-06-20. The checkout retry path now 
 
 Verification note: C1.1.1 completed on 2026-06-20. The boundary adds a read-only order resource shell, a lightweight admin resource catalog, and tests covering permission-gated access plus the blocked write-action set. `php artisan test --filter=AdminOrderResourceBoundaryTest` and `php artisan test` passed.
 Verification note: C1.1.2 completed on 2026-06-20. The implementation adds a conservative website-order index definition, website-order query scope, admin order index catalog, approved status/date/design filters, and feature tests covering website-only queries, scope/filter application, safe summaries, and registration metadata. `php artisan test --filter=AdminOrderIndexTest`, `php artisan test --filter=AdminOrderResourceBoundaryTest`, and `php artisan test` passed.
+Verification note: C1.1.3 completed on 2026-06-20. The implementation adds a read-only order detail catalog, snapshot-only customer and address rendering from stored order data, and feature tests covering permission-gated access, read-only registration metadata, and snapshot rendering that stays independent from live customer and address relation labels. `php artisan test --filter=AdminOrderDetailTest`, `php artisan test`, and `./vendor/bin/pint --test app/Filament/Resources/Orders/OrderResource.php app/Support/Admin/OrderDetailCatalog.php tests/Feature/AdminOrderDetailTest.php` passed.
 
 ### C3.1 CRM lead module
 

@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Orders;
 
 use App\Models\Order;
 use App\Models\User;
+use App\Support\Admin\OrderDetailCatalog;
 use App\Support\Admin\OrderIndexCatalog;
 
 final class OrderResource
@@ -33,6 +34,7 @@ final class OrderResource
                 'shipping',
             ],
             'index' => (new OrderIndexCatalog)->definition(),
+            'detail' => (new OrderDetailCatalog)->definition(),
             'pages' => [],
         ];
     }
