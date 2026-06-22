@@ -83,7 +83,7 @@ Verification note: completed on 2026-06-20. The website payment handoff now uses
 | Task ID | Task Name | Project | Feature | Description | Depends On | Blocks | Affected Projects | Database Impact | API Impact | Testing Required | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | C1.1 | Basic admin order and payment view | Project C | C1 | Provide a read-only, permission-safe Filament view of website orders, payment and refund history, customer/address snapshots, items, and linked uploads. Status changes, manual payments, refunds, shipping, CRM, inventory, and reports remain out of scope. | A2.3, A4.1, A5.1, A5.2, B3.1, B3.3 | Tracking, operations, finance views | A/B/C | Medium | Medium | Admin order, payment, file-access, and authorization tests | In Progress |
-| C1.2 | Sales order creation | Project C | C1 | Let staff create sales orders with customer selection, products/SKUs, quantities, customization, pricing, discount, advance/final payment structure, creation, editing rules, and confirmation. | C1.1, A5.1 | Split payments, inventory | A/C | High | Medium | Sales order tests | Not Started |
+| C1.2 | Sales order creation | Project C | C1 | Let staff create sales orders with customer selection, products/SKUs, quantities, customization, pricing, discount, advance/final payment structure, creation, editing rules, and confirmation. | C1.1, A5.1 | Split payments, inventory | A/C | High | Medium | Sales order tests | In Progress |
 | C1.3 | Quotations and bulk-order conversion | Project C | C1 | Support bulk enquiry capture, quotation creation, items/pricing, status, approval, revision, sales-order conversion, and advance-payment recording. | C1.2, C3.1 | Bulk sales workflow | A/B/C | High | Medium | Quotation conversion tests | Not Started |
 | C2.1 | Inventory movements and stock handling | Project C | C2 | Implement SKU stock balance, stock-in, stock-out, manual adjustment, order stock deduction, cancellation reversal, low-stock warning, movement history, and audit. | A3.2, C1.1 | Checkout warnings, production, purchase | A/B/C | High | Medium | Inventory movement tests | Not Started |
 | C2.2 | Vendors and purchases | Project C | C2 | Add vendor management, purchase orders, purchase items, purchase status, receiving, partial receiving, purchase payment tracking, and vendor-order history. | C2.1 | Inventory reports | C | High | Medium | Purchase stock-in tests | Not Started |
@@ -399,12 +399,12 @@ Verification note: C1.1.4 completed on 2026-06-20. The detail surface now includ
 
 | Subtask ID | Subtask Name | Status |
 |---|---|---|
-| C1.2.1 | Customer selection | Not Started |
-| C1.2.2 | Product/SKU selection | Not Started |
-| C1.2.3 | Quantity and customization | Not Started |
-| C1.2.4 | Pricing and discount | Not Started |
-| C1.2.5 | Advance/final payment structure | Not Started |
-| C1.2.6 | Order creation | Not Started |
+| C1.2.1 | Customer selection | Completed |
+| C1.2.2 | Product/SKU selection | Completed |
+| C1.2.3 | Quantity and customization | Completed |
+| C1.2.4 | Pricing and discount | Completed |
+| C1.2.5 | Advance/final payment structure | Completed |
+| C1.2.6 | Order creation | Completed |
 | C1.2.7 | Order editing rules | Not Started |
 | C1.2.8 | Order confirmation | Not Started |
 
