@@ -46,4 +46,5 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     Route::get('/orders/{order:public_id}/detail', [OrderDetailController::class, 'show'])->name('admin.orders.detail');
     Route::get('/sales-orders/create', [SalesOrderController::class, 'create'])->name('admin.sales_orders.create');
     Route::post('/sales-orders', [SalesOrderController::class, 'store'])->name('admin.sales_orders.store');
+    Route::get('/skus/search', [SalesOrderController::class, 'skuSearch'])->name('admin.skus.search');
 });

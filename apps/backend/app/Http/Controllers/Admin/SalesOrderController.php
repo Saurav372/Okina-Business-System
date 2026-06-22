@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\ProductSku;
 use App\Services\SalesOrderService;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Http\Request;
 
 class SalesOrderController extends Controller
 {
@@ -42,5 +43,30 @@ class SalesOrderController extends Controller
             'customers' => $customers,
             'skus' => $skus,
         ]);
+    }
+
+    public function skuSearch(Request $request)
+    {
+        $q = (string) $request->query('q', '');
+
+        $results = ProductSku::query()
+            ->with('product')
+            ->when($q !== '', function ($builder) use ($q) {
+                $builder->where('sku_code', 'like', "%{$q}%")
+                    ->orWhereHas('product', function ($b) use ($q) {
+                        $b->where('name', 'like', "%{$q}%");
+                    });
+            })
+            ->limit(50)
+            ->get(['id', 'sku_code', 'product_id'])
+            ->map(function (ProductSku $sku) {
+                return [
+                    'id' => $sku->id,
+                    'sku_code' => $sku->sku_code,
+                    'label' => $sku->sku_code . ($sku->product ? ' - ' . $sku->product->name : ''),
+                ];
+            });
+
+        return response()->json($results->values());
     }
 }
