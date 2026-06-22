@@ -123,16 +123,45 @@
             }
         }
 
-        // SKU filter across all item selects
-        document.getElementById('sku-filter').addEventListener('input', function (e) {
-            const q = e.target.value.toLowerCase().trim();
-            document.querySelectorAll('#items-container select').forEach(function (sel) {
-                sel.querySelectorAll('option').forEach(function (opt) {
-                    const txt = opt.textContent.toLowerCase();
-                    opt.style.display = txt.includes(q) ? '' : 'none';
+        // SKU autocomplete: query server and repopulate selects (debounced)
+        function debounce(fn, wait) {
+            let t;
+            return function (...args) {
+                clearTimeout(t);
+                t = setTimeout(() => fn.apply(this, args), wait);
+            };
+        }
+
+        async function fetchSkusAndPopulate(query) {
+            try {
+                const res = await fetch('{{ route('admin.skus.search') }}?q=' + encodeURIComponent(query), { headers: { Accept: 'application/json' } });
+                if (!res.ok) return;
+                const list = await res.json();
+                document.querySelectorAll('#items-container select').forEach(function (sel) {
+                    const current = sel.value;
+                    sel.innerHTML = '<option value="">-- select SKU --</option>';
+                    list.forEach(function (r) {
+                        const opt = document.createElement('option');
+                        opt.value = r.sku_code;
+                        opt.text = r.label;
+                        sel.appendChild(opt);
+                    });
+                    // preserve previous selection when possible
+                    if (current) sel.value = current;
                 });
-            });
-        });
+            } catch (err) {
+                // ignore silently
+            }
+        }
+
+        const debouncedFetch = debounce(function (e) {
+            fetchSkusAndPopulate(e.target.value.trim());
+        }, 300);
+
+        document.getElementById('sku-filter').addEventListener('input', debouncedFetch);
+
+        // initial load
+        fetchSkusAndPopulate('');
 
         // AJAX submit with client-side JSON validation and server-side error display
         document.getElementById('sales-order-form').addEventListener('submit', async function (e) {
