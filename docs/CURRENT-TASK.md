@@ -10,7 +10,7 @@ C1.2 Sales order creation
 
 ## Current Status
 
-Ready to start — C1.1.7 (admin design-file access bridge) was implemented and committed locally (commit 8349d2d). Static analysis and tests were run and are currently green. Awaiting confirmation to begin implementation work for C1.2.
+Completed — implementation for C1.2 carried out and committed locally. Relevant static analysis and feature tests ran and passed locally. See Completion Notes below for commits and changed files.
 
 ## Goal
 
@@ -32,6 +32,25 @@ Allow authorized staff to create sales orders: select or create a customer, choo
 - Persisted order items that include stored customization snapshots (no live storage paths leaked)
 - Support for advance/final payment scheduling fields and tests
 - Feature tests: `AdminSalesOrderCreationTest` and related authorization/validation tests
+
+### Completion Notes
+
+- Implementation: server-side `SalesOrderService` now computes and persists order totals using `OrderTotalsCalculator`; controller and a minimal protected admin create view were added.
+- Tests: `AdminSalesOrderCreationTest` passed locally (2 tests). Pint formatting applied and passed.
+- Commits:
+	- `80ee47f` C1.2: Add admin sales order create view, route and controller action
+	- `fe20c19` C1.2: Persist order totals via OrderTotalsCalculator; accept optional discount/shipping/tax inputs
+
+Changed files (selected):
+- `apps/backend/app/Services/SalesOrderService.php`
+- `apps/backend/app/Http/Requests/Admin/SalesOrderCreateRequest.php`
+- `apps/backend/app/Http/Controllers/Admin/SalesOrderController.php`
+- `apps/backend/routes/web.php`
+- `apps/backend/resources/views/admin/orders/create.blade.php`
+- `apps/backend/tests/Feature/AdminSalesOrderCreationTest.php` (existing test exercised)
+
+Notes:
+- The `OrderResource` Filament registration remains read-only; a controller + blade form was implemented instead to satisfy the staff-facing creation requirement. If you prefer a Filament page instead, I can implement that next.
 
 ## Acceptance Criteria
 
