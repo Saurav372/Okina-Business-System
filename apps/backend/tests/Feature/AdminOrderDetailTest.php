@@ -31,7 +31,7 @@ class AdminOrderDetailTest extends TestCase
         $this->assertSame('website_order_detail', $detail['key']);
         $this->assertSame(Order::class, $detail['model']);
         $this->assertTrue($detail['read_only']);
-        $this->assertSame(['view'], $detail['allowed_actions']);
+        $this->assertSame(['view', 'status', 'shipping'], $detail['allowed_actions']);
         $this->assertSame('stored_snapshots_only', $detail['snapshot_policy']);
         $this->assertSame(['public_id', 'order_type', 'order_source', 'status', 'currency', 'amounts', 'design_approved', 'design_approved_at', 'placed_at'], $detail['sections']['summary']['fields']);
         $this->assertSame(['customer_snapshot'], $detail['sections']['customer']['fields']);
@@ -42,7 +42,7 @@ class AdminOrderDetailTest extends TestCase
         $this->assertSame(['refunds'], $detail['sections']['refunds']['fields']);
         $this->assertStringContainsString('stored customer, address, payment, refund, and payment-attempt records', $detail['safety_note']);
 
-        foreach (['create', 'edit', 'delete', 'forceDelete', 'restore', 'replicate', 'status', 'payment', 'refund', 'shipping'] as $blockedAction) {
+        foreach (['create', 'edit', 'delete', 'forceDelete', 'restore', 'replicate', 'payment', 'refund'] as $blockedAction) {
             $this->assertContains($blockedAction, $detail['blocked_actions']);
         }
     }

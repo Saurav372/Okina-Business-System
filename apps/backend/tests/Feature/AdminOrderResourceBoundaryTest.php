@@ -23,10 +23,10 @@ class AdminOrderResourceBoundaryTest extends TestCase
         $this->assertSame(OrderResource::registration(), $resource);
         $this->assertSame('orders.view', $resource['permission']);
         $this->assertTrue($resource['read_only']);
-        $this->assertSame(['view'], $resource['allowed_actions']);
+        $this->assertSame(['view', 'status', 'shipping'], $resource['allowed_actions']);
         $this->assertSame([], $resource['pages']);
 
-        foreach (['create', 'edit', 'delete', 'forceDelete', 'restore', 'replicate', 'status', 'payment', 'refund', 'shipping'] as $blockedAction) {
+        foreach (['create', 'edit', 'delete', 'forceDelete', 'restore', 'replicate', 'payment', 'refund'] as $blockedAction) {
             $this->assertContains($blockedAction, $resource['blocked_actions']);
         }
     }

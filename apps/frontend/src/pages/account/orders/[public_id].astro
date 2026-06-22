@@ -91,6 +91,23 @@ export function getStaticPaths() {
       </div>
     </div>
 
+    <!-- Design Issue Alert Block -->
+    <div id="design-issue-alert" class="card design-issue-card hidden animate-slide-in">
+      <div class="alert-content">
+        <div class="alert-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+        </div>
+        <div class="alert-text">
+          <h3>Action Required: Design Review Issue</h3>
+          <p id="design-issue-message">Please upload a higher resolution file.</p>
+        </div>
+      </div>
+    </div>
+
     <!-- Main Grid -->
     <div class="detail-layout">
       <!-- Left Column: Items and Transactions -->
@@ -152,6 +169,31 @@ export function getStaticPaths() {
 
       <!-- Right Column: Address and Price Snapshot -->
       <div class="stack animate-slide-in">
+        <!-- Shipment Tracking -->
+        <div class="card hidden" id="shipping-tracking-card">
+          <h2>Shipment Tracking</h2>
+          <div class="tracking-details">
+            <div class="tracking-row">
+              <span class="tracking-label">Courier:</span>
+              <span id="tracking-courier" class="tracking-val">-</span>
+            </div>
+            <div class="tracking-row">
+              <span class="tracking-label">Tracking Number:</span>
+              <span id="tracking-number-wrapper" class="tracking-val">
+                <code id="tracking-number">-</code>
+                <a id="tracking-link" href="#" target="_blank" class="tracking-link-btn">
+                  Track Package
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="inline-icon"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                </a>
+              </span>
+            </div>
+            <div class="tracking-row" id="estimated-delivery-row">
+              <span class="tracking-label">Estimated Delivery:</span>
+              <span id="tracking-eta" class="tracking-val">-</span>
+            </div>
+          </div>
+        </div>
+
         <!-- Summary Totals -->
         <div class="card card-summary">
           <h2>Summary</h2>
@@ -411,6 +453,125 @@ export function getStaticPaths() {
     text-align: center;
     font-weight: 700;
     font-size: 1rem;
+  }
+
+  :root {
+    --danger-color: #f44336;
+    --success-color: #4caf50;
+  }
+
+  .timeline-step.warning .step-icon {
+    background: #ff9800;
+    border-color: #ff9800;
+    color: #fff;
+    box-shadow: 0 0 0 5px rgba(255, 152, 0, 0.15);
+  }
+
+  .timeline-step.warning .step-label {
+    color: #ff9800;
+    font-weight: 700;
+  }
+
+  .timeline-step.cancelled .step-icon {
+    background: #f44336;
+    border-color: #f44336;
+    color: #fff;
+    box-shadow: 0 0 0 5px rgba(244, 67, 54, 0.15);
+  }
+
+  .timeline-step.cancelled .step-label {
+    color: #f44336;
+    font-weight: 700;
+  }
+
+  /* Design Issue Alert Card */
+  .design-issue-card {
+    background: #fffdf5;
+    border: 1px solid #ffcc00;
+    border-left: 5px solid #ffcc00;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .alert-content {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .alert-icon {
+    color: #ff9800;
+    flex-shrink: 0;
+  }
+
+  .alert-icon svg {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  .alert-text h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #b78103;
+  }
+
+  .alert-text p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #5c4308;
+    line-height: 1.5;
+  }
+
+  /* Shipment Tracking Card */
+  .tracking-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    font-size: 0.95rem;
+  }
+
+  .tracking-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 0.5rem;
+  }
+
+  .tracking-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .tracking-label {
+    color: var(--muted);
+    font-weight: 550;
+  }
+
+  .tracking-val {
+    font-weight: 600;
+    text-align: right;
+  }
+
+  .tracking-link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--accent);
+    text-decoration: none;
+    margin-left: 0.5rem;
+    font-size: 0.88rem;
+  }
+
+  .tracking-link-btn:hover {
+    text-decoration: underline;
+  }
+
+  .inline-icon {
+    width: 0.85rem;
+    height: 0.85rem;
+    stroke-width: 2.5;
   }
 
   /* Layout grids */
@@ -808,6 +969,7 @@ export function getStaticPaths() {
       // 3. Render layout
       renderOrderHeader();
       renderTimeline();
+      renderShippingTracking();
       renderPricingSummary();
       renderAddresses();
       renderItems();
@@ -850,49 +1012,85 @@ export function getStaticPaths() {
   }
 
   function renderTimeline() {
+    const timeline = document.getElementById('tracking-timeline');
+    const banner = document.getElementById('cancelled-banner');
+
+    if (!timeline) return;
+
     const status = orderData.status;
 
-    // Reset all step classes
-    const steps = ['placed', 'confirmed', 'production', 'ready', 'shipped', 'delivered'];
-    steps.forEach(step => {
-      const el = document.getElementById(`step-${step}`);
-      el?.classList.remove('active', 'completed');
-    });
-
-    const banner = document.getElementById('cancelled-banner');
-    const timeline = document.getElementById('tracking-timeline');
-
     if (status === 'cancelled') {
-      banner?.classList.remove('hidden');
-      timeline?.classList.add('hidden');
-      return;
+      if (banner) {
+        const reasonText = orderData.cancellation_reason ? `: ${orderData.cancellation_reason}` : '';
+        banner.textContent = `This order has been cancelled${reasonText}.`;
+        banner.classList.remove('hidden');
+      }
+    } else {
+      if (banner) banner.classList.add('hidden');
     }
 
-    banner?.classList.add('hidden');
-    timeline?.classList.remove('hidden');
-
-    // Define step active mapping
-    const orderStatusMapping: Record<string, string> = {
-      'pending_payment': 'placed',
-      'confirmed': 'confirmed',
-      'in_production': 'production',
-      'ready_to_ship': 'ready',
-      'shipped': 'shipped',
-      'delivered': 'delivered',
-      'refunded': 'delivered' // show as completed
-    };
-
-    const currentStep = orderStatusMapping[status] || 'placed';
-    const currentIndex = steps.indexOf(currentStep);
-
-    steps.forEach((step, i) => {
-      const el = document.getElementById(`step-${step}`);
-      if (i < currentIndex) {
-        el?.classList.add('completed');
-      } else if (i === currentIndex) {
-        el?.classList.add('active');
+    const steps = orderData.timeline || [];
+    timeline.innerHTML = steps.map((step: any, index: number) => {
+      let statusClass = '';
+      if (step.key === 'cancelled') {
+        statusClass = 'cancelled';
+      } else if (step.status === 'completed') {
+        statusClass = 'completed';
+      } else if (step.status === 'active') {
+        statusClass = 'active';
+      } else if (step.status === 'warning') {
+        statusClass = 'warning';
+      } else {
+        statusClass = 'pending';
       }
-    });
+
+      const stepNum = index + 1;
+      return `
+        <div class="timeline-step ${statusClass}" id="step-${escapeHtml(step.key)}">
+          <div class="step-icon">${stepNum}</div>
+          <div class="step-label">${escapeHtml(step.label)}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderShippingTracking() {
+    const card = document.getElementById('shipping-tracking-card');
+    const courierEl = document.getElementById('tracking-courier');
+    const numberEl = document.getElementById('tracking-number');
+    const linkEl = document.getElementById('tracking-link') as HTMLAnchorElement;
+    const etaRow = document.getElementById('estimated-delivery-row');
+    const etaEl = document.getElementById('tracking-eta');
+
+    if (!card) return;
+
+    if (orderData.tracking_number) {
+      card.classList.remove('hidden');
+      if (courierEl) courierEl.textContent = orderData.courier_name || 'N/A';
+      if (numberEl) numberEl.textContent = orderData.tracking_number;
+      
+      if (linkEl) {
+        if (orderData.tracking_url) {
+          linkEl.href = orderData.tracking_url;
+          linkEl.classList.remove('hidden');
+        } else {
+          linkEl.classList.add('hidden');
+        }
+      }
+
+      if (orderData.estimated_delivery_at) {
+        etaRow?.classList.remove('hidden');
+        if (etaEl) {
+          etaEl.textContent = new Intl.DateTimeFormat('en-IN', {
+            dateStyle: 'medium'
+          }).format(new Date(orderData.estimated_delivery_at));
+        }
+      } else {
+        etaRow?.classList.add('hidden');
+      }
+    } else {
+      card.classList.add('hidden');
+    }
   }
 
   function renderPricingSummary() {
@@ -1046,6 +1244,18 @@ export function getStaticPaths() {
       if (designNotesText) designNotesText.textContent = notes;
     } else {
       designNotesCard?.classList.add('hidden');
+    }
+
+    // Design Issue Alert
+    const designIssueAlert = document.getElementById('design-issue-alert');
+    const designIssueMsg = document.getElementById('design-issue-message');
+    if (orderData.design_status === 'issue_found' && orderData.design_issue_message) {
+      if (designIssueAlert && designIssueMsg) {
+        designIssueMsg.textContent = orderData.design_issue_message;
+        designIssueAlert.classList.remove('hidden');
+      }
+    } else {
+      designIssueAlert?.classList.add('hidden');
     }
   }
 

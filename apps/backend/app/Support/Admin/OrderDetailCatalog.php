@@ -22,7 +22,7 @@ final class OrderDetailCatalog
             'label' => 'Website Order Detail',
             'model' => Order::class,
             'read_only' => true,
-            'allowed_actions' => ['view'],
+            'allowed_actions' => ['view', 'status', 'shipping'],
             'blocked_actions' => [
                 'create',
                 'edit',
@@ -30,10 +30,8 @@ final class OrderDetailCatalog
                 'forceDelete',
                 'restore',
                 'replicate',
-                'status',
                 'payment',
                 'refund',
-                'shipping',
             ],
             'snapshot_policy' => 'stored_snapshots_only',
             'sections' => [
@@ -67,6 +65,28 @@ final class OrderDetailCatalog
                     'label' => 'Billing Address Snapshot',
                     'fields' => [
                         'billing_address_snapshot',
+                    ],
+                ],
+                'shipping_tracking' => [
+                    'label' => 'Shipping & Tracking',
+                    'fields' => [
+                        'shipping_status',
+                        'courier_name',
+                        'tracking_number',
+                        'tracking_url',
+                        'estimated_delivery_at',
+                        'shipped_at',
+                        'delivered_at',
+                    ],
+                ],
+                'process_statuses' => [
+                    'label' => 'Process Statuses',
+                    'fields' => [
+                        'design_status',
+                        'design_issue_message',
+                        'production_status',
+                        'ready_to_ship_at',
+                        'cancellation_reason',
                     ],
                 ],
                 'items' => [

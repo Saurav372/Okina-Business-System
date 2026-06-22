@@ -277,9 +277,9 @@ class AdminOrderItemFileAccessTest extends TestCase
         $def = $catalog->definition();
 
         $this->assertTrue($def['read_only']);
-        $this->assertSame(['view'], $def['allowed_actions']);
+        $this->assertSame(['view', 'status', 'shipping'], $def['allowed_actions']);
 
-        foreach (['create', 'edit', 'delete', 'forceDelete', 'restore', 'replicate', 'status', 'payment', 'refund', 'shipping'] as $blocked) {
+        foreach (['create', 'edit', 'delete', 'forceDelete', 'restore', 'replicate', 'payment', 'refund'] as $blocked) {
             $this->assertContains($blocked, $def['blocked_actions']);
         }
     }

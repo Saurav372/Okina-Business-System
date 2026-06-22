@@ -45,6 +45,18 @@ use Illuminate\Support\Str;
     'created_by_user_id',
     'updated_by_user_id',
     'idempotency_key',
+    'design_status',
+    'design_issue_message',
+    'production_status',
+    'shipping_status',
+    'ready_to_ship_at',
+    'shipped_at',
+    'delivered_at',
+    'courier_name',
+    'tracking_number',
+    'tracking_url',
+    'estimated_delivery_at',
+    'cancellation_reason',
 ])]
 #[Hidden(['deleted_at'])]
 class Order extends Model
@@ -87,6 +99,10 @@ class Order extends Model
             'confirmed_at' => 'datetime',
             'cancelled_at' => 'datetime',
             'refunded_at' => 'datetime',
+            'ready_to_ship_at' => 'datetime',
+            'shipped_at' => 'datetime',
+            'delivered_at' => 'datetime',
+            'estimated_delivery_at' => 'datetime',
         ];
     }
 

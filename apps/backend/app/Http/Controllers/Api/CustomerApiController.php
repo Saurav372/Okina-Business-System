@@ -9,6 +9,7 @@ use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\Refund;
 use App\Services\CartService;
+use App\Services\OrderTimelineService;
 use App\Support\Payments\PaymentStateRecalculationRules;
 use App\Support\Products\CustomizationSnapshotBuilder;
 use Illuminate\Http\JsonResponse;
@@ -24,7 +25,8 @@ class CustomerApiController extends Controller
     public function __construct(
         private readonly PaymentStateRecalculationRules $stateRules,
         private readonly CustomizationSnapshotBuilder $snapshots,
-        private readonly CartService $cartService
+        private readonly CartService $cartService,
+        private readonly OrderTimelineService $timelineService
     ) {}
 
     private function getCustomer()
@@ -369,6 +371,19 @@ class CustomerApiController extends Controller
             'confirmed_at' => $order->confirmed_at?->toIso8601String(),
             'cancelled_at' => $order->cancelled_at?->toIso8601String(),
             'refunded_at' => $order->refunded_at?->toIso8601String(),
+            'ready_to_ship_at' => $order->ready_to_ship_at?->toIso8601String(),
+            'shipped_at' => $order->shipped_at?->toIso8601String(),
+            'delivered_at' => $order->delivered_at?->toIso8601String(),
+            'estimated_delivery_at' => $order->estimated_delivery_at?->toIso8601String(),
+            'design_status' => $order->design_status,
+            'design_issue_message' => $order->design_issue_message,
+            'production_status' => $order->production_status,
+            'shipping_status' => $order->shipping_status,
+            'courier_name' => $order->courier_name,
+            'tracking_number' => $order->tracking_number,
+            'tracking_url' => $order->tracking_url,
+            'cancellation_reason' => $order->cancellation_reason,
+            'timeline' => $this->timelineService->generateTimeline($order),
             'customer_snapshot' => $order->customer_snapshot,
             'shipping_address_snapshot' => $order->shipping_address_snapshot,
             'billing_address_snapshot' => $order->billing_address_snapshot,
