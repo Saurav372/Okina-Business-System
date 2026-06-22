@@ -3,6 +3,8 @@
 namespace App\Support\Admin;
 
 use App\Filament\Resources\Orders\OrderResource;
+use App\Filament\Resources\Products\ProductCategoryResource;
+use App\Filament\Resources\Products\ProductResource;
 
 final class AdminResourceCatalog
 {
@@ -10,6 +12,8 @@ final class AdminResourceCatalog
     {
         return [
             OrderResource::registration(),
+            ProductResource::registration(),
+            ProductCategoryResource::registration(),
         ];
     }
 

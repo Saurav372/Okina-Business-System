@@ -5,8 +5,12 @@ namespace App\Providers;
 use App\Contracts\CustomizationOptionContract;
 use App\Contracts\PublicCatalogContract;
 use App\Models\Order;
+use App\Models\Product;
+use App\Models\ProductCategory;
 use App\Models\StoredFile;
 use App\Policies\OrderPolicy;
+use App\Policies\ProductCategoryPolicy;
+use App\Policies\ProductPolicy;
 use App\Policies\StoredFilePolicy;
 use App\Support\Products\CustomizationOptionRules;
 use App\Support\Products\PublicCatalogRules;
@@ -31,5 +35,7 @@ class AppServiceProvider extends ServiceProvider
     {
         Gate::policy(StoredFile::class, StoredFilePolicy::class);
         Gate::policy(Order::class, OrderPolicy::class);
+        Gate::policy(Product::class, ProductPolicy::class);
+        Gate::policy(ProductCategory::class, ProductCategoryPolicy::class);
     }
 }
