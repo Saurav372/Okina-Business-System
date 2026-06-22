@@ -14,8 +14,10 @@
 <body>
     <h1>Create Sales Order</h1>
 
-    <form method="post" action="{{ route('admin.sales_orders.store') }}">
+    <form id="sales-order-form" method="post" action="{{ route('admin.sales_orders.store') }}">
         @csrf
+
+        <div id="form-errors" style="color: #b00020; margin-bottom: 12px;"></div>
 
         <div class="row">
             <label for="customer_id">Customer</label><br>
@@ -27,6 +29,11 @@
             </select>
         </div>
 
+        <div class="row">
+            <label for="sku-filter">Filter SKUs</label><br>
+            <input id="sku-filter" placeholder="Type to filter SKUs across item selects" style="width: 60%;">
+        </div>
+
         <div class="items">
             <label>Items</label>
             <div id="items-container">
@@ -36,7 +43,7 @@
                         <select name="items[0][sku_code]" required>
                             <option value="">-- select SKU --</option>
                             @foreach ($skus as $s)
-                                <option value="{{ $s->sku_code }}">{{ $s->sku_code }} @if($s->product) - {{ $s->product->name }} @endif</option>
+                                <option value="{{ $s->sku_code }}">{{ $s->sku_code }}@if($s->product) - {{ $s->product->name }}@endif</option>
                             @endforeach
                         </select>
                     </div>
@@ -46,7 +53,7 @@
                     </div>
                     <div>
                         <label>Customization (JSON)</label><br>
-                        <textarea name="items[0][customization_snapshot]" rows="3" cols="60"></textarea>
+                        <textarea name="items[0][customization_snapshot]" rows="3" cols="60" placeholder='e.g. [] or {"placement":{}}'></textarea>
                     </div>
                     <button type="button" class="remove-item" onclick="removeItem(this)">Remove</button>
                 </div>
@@ -82,7 +89,7 @@
         </fieldset>
 
         <div class="row">
-            <button type="submit">Create Order</button>
+            <button type="submit" id="submit-btn">Create Order</button>
         </div>
     </form>
 
@@ -115,6 +122,107 @@
                 item.remove();
             }
         }
+
+        // SKU filter across all item selects
+        document.getElementById('sku-filter').addEventListener('input', function (e) {
+            const q = e.target.value.toLowerCase().trim();
+            document.querySelectorAll('#items-container select').forEach(function (sel) {
+                sel.querySelectorAll('option').forEach(function (opt) {
+                    const txt = opt.textContent.toLowerCase();
+                    opt.style.display = txt.includes(q) ? '' : 'none';
+                });
+            });
+        });
+
+        // AJAX submit with client-side JSON validation and server-side error display
+        document.getElementById('sales-order-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const errorsDiv = document.getElementById('form-errors');
+            errorsDiv.innerHTML = '';
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = true;
+            const originalText = submitBtn.innerText;
+            submitBtn.innerText = 'Creating...';
+
+            try {
+                const token = document.querySelector('input[name="_token"]').value;
+                const customerId = document.getElementById('customer_id').value;
+                if (!customerId) throw new Error('Customer is required.');
+
+                const items = [];
+                const itemEls = document.querySelectorAll('#items-container .item');
+                for (let i = 0; i < itemEls.length; i++) {
+                    const el = itemEls[i];
+                    const skuSelect = el.querySelector('select[name*="sku_code"]');
+                    const skuCode = skuSelect ? skuSelect.value.trim() : '';
+                    if (!skuCode) throw new Error('SKU is required for item ' + (i + 1));
+                    const qtyEl = el.querySelector('input[type="number"]');
+                    const quantity = qtyEl ? Math.max(1, parseInt(qtyEl.value || '1')) : 1;
+                    const custText = el.querySelector('textarea')?.value?.trim() || '';
+                    let customization = [];
+                    if (custText !== '') {
+                        try {
+                            customization = JSON.parse(custText);
+                        } catch (err) {
+                            throw new Error('Invalid JSON in customization for item ' + (i + 1) + ': ' + err.message);
+                        }
+                    }
+                    items.push({ sku_code: skuCode, quantity: quantity, customization_snapshot: customization });
+                }
+
+                const payload = { customer_id: parseInt(customerId), items: items };
+
+                const disc = document.querySelector('input[name="discount_amount_minor"]').value;
+                const ship = document.querySelector('input[name="shipping_amount_minor"]').value;
+                const tax = document.querySelector('input[name="tax_amount_minor"]').value;
+                if (disc) payload.discount_amount_minor = parseInt(disc);
+                if (ship) payload.shipping_amount_minor = parseInt(ship);
+                if (tax) payload.tax_amount_minor = parseInt(tax);
+
+                const advAmt = document.querySelector('input[name="advance_payment[amount_minor]"]').value;
+                const advDue = document.querySelector('input[name="advance_payment[due_date]"]').value;
+                if (advAmt || advDue) {
+                    payload.advance_payment = {};
+                    if (advAmt) payload.advance_payment.amount_minor = parseInt(advAmt);
+                    if (advDue) payload.advance_payment.due_date = advDue;
+                }
+
+                const res = await fetch('{{ route('admin.sales_orders.store') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': token,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload),
+                });
+
+                const data = await res.json().catch(() => ({}));
+                if (res.status === 201) {
+                    // redirect to admin order detail
+                    const publicId = data.public_id;
+                    if (publicId) {
+                        window.location.href = '/admin/orders/' + encodeURIComponent(publicId) + '/detail';
+                        return;
+                    }
+                    errorsDiv.innerText = 'Order created but no redirect information returned.';
+                } else if (res.status === 422 && data.errors) {
+                    let html = '<ul>';
+                    for (const field in data.errors) {
+                        data.errors[field].forEach(msg => { html += '<li>' + field + ': ' + msg + '</li>'; });
+                    }
+                    html += '</ul>';
+                    errorsDiv.innerHTML = html;
+                } else {
+                    errorsDiv.innerText = data.message || 'Unexpected error creating order.';
+                }
+            } catch (err) {
+                document.getElementById('form-errors').innerText = err.message || String(err);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = originalText;
+            }
+        });
     </script>
 </body>
 </html>
