@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminOrderDesignFileController;
 use App\Http\Controllers\Admin\OrderDetailController;
 use App\Http\Controllers\Admin\SalesOrderController;
 use App\Http\Controllers\AdminAuthController;
@@ -47,4 +48,7 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     Route::get('/sales-orders/create', [SalesOrderController::class, 'create'])->name('admin.sales_orders.create');
     Route::post('/sales-orders', [SalesOrderController::class, 'store'])->name('admin.sales_orders.store');
     Route::get('/skus/search', [SalesOrderController::class, 'skuSearch'])->name('admin.skus.search');
+    // B2.2.8 — Admin design-file access bridge (order-scoped, policy-gated)
+    Route::get('/orders/{order:public_id}/files/{file:public_id}/preview', [AdminOrderDesignFileController::class, 'preview'])->name('admin.orders.files.preview')->withoutScopedBindings();
+    Route::get('/orders/{order:public_id}/files/{file:public_id}/download', [AdminOrderDesignFileController::class, 'download'])->name('admin.orders.files.download')->withoutScopedBindings();
 });

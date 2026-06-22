@@ -38,7 +38,7 @@ Each parent task is complete only when all required subtasks are complete, subta
 | A2.2 | Customer authentication | Platform A | A2 | Add customer login/register/session rules for website and account area. | A1.5 | Checkout/account | A/B | Medium | High | Customer auth tests | Completed |
 | A2.3 | Role and permission model | Platform A | A2 | Define Super Admin, Admin, Sales, Inventory, Finance, Production roles and policies. | A2.1 | Admin workflows | A/C | High | Medium | Permission tests | Completed |
 | A3.1 | Shared customers and addresses | Platform A | A3 | Create customer and address records usable by website and admin. | A1.1, A2.2 | Checkout, sales orders | A/B/C | High | High | Customer/address tests | Completed |
-| A3.2 | Shared products, categories, variants and SKUs | Platform A | A3 | Create shared product catalog data with status/visibility separation and SKU references. | A1.1 | Catalog, cart, inventory | A/B/C | Critical | High | Catalog/SKU tests | In Progress |
+| A3.2 | Shared products, categories, variants and SKUs | Platform A | A3 | Create shared product catalog data with status/visibility separation and SKU references. | A1.1 | Catalog, cart, inventory | A/B/C | Critical | High | Catalog/SKU tests | Completed |
 | A4.1 | File upload service | Platform A | A4 | Store originals privately, validate MIME/type/size, create previews where possible, signed access, permissions, deletion rules, and upload security tests. | A1.1 | Customization, orders | A/B/C | High | High | Upload/security tests | Completed |
 | A4.2 | Settings service | Platform A | A4 | Add business, payment, notification, SEO, upload, and integration settings foundation. | A1.1 | Payments, notifications | A/B/C | Medium | Medium | Settings tests | Completed |
 | A4.3 | Queue, job and retry foundation | Platform A | A4 | Define queue behavior, retry safety, failed-job logs, and job deduplication. | A1.2 | Notifications, Sheets sync | A/C | Medium | Medium | Job retry tests | Completed |
@@ -68,7 +68,7 @@ Verification note: completed on 2026-06-18. The implementation adds a shared aud
 Verification note: completed on 2026-06-18. The implementation adds a public catalog contract, public catalog rules, a public catalog catalog, a public catalog controller, API route registration, public visibility scopes on category/product models, and feature tests covering safe public category/product/SKU responses, detail routes, and Astro guidance. `php artisan test --filter=PublicCatalogApiTest` and `./vendor/bin/pint --test app\\Contracts\\PublicCatalogContract.php app\\Http\\Controllers\\Api\\PublicCatalogController.php app\\Models\\Product.php app\\Models\\ProductCategory.php app\\Providers\\AppServiceProvider.php app\\Support\\Products\\PublicCatalogRules.php app\\Support\\Products\\PublicCatalogCatalog.php tests\\Feature\\PublicCatalogApiTest.php routes\\api.php bootstrap\\app.php` passed.
 
 | B2.1 | Customization option APIs | Project B | B2 | Expose size, print position, print method, SKU, and validation rules. | A3.2, A5.1 | Product customization UI | A/B/C | Medium | High | Validation tests | Completed |
-| B2.2 | Upload and simple mockup preview | Project B | B2 | Support design upload, validation, product preview, placement controls, customization metadata, cart/order persistence, and admin file access. | A4.1, B2.1 | Cart/order customization | A/B/C | Medium | High | Upload/preview tests | In Progress |
+| B2.2 | Upload and simple mockup preview | Project B | B2 | Support design upload, validation, product preview, placement controls, customization metadata, cart/order persistence, and admin file access. | A4.1, B2.1 | Cart/order customization | A/B/C | Medium | High | Upload/preview tests | Completed |
 | B3.1 | Cart and checkout with pending order creation | Project B | B3 | Validate cart, recalculate prices, require customer/address, detect bulk quantities, create pending order, create payment attempt, prevent duplicates, and handle failures. | A2.2, A3.1, A3.2, A5.1, B2.2.6 | Payment, admin order display | A/B/C | Critical | Critical | Checkout/idempotency tests | Completed |
 | B3.2 | Website payment adapter implementation | Project B | B3 | Use shared payment service and gateway adapter to initiate/verify website payment. | A5.3, B3.1 | Paid order flow | A/B/C | High | Critical | Payment attempt tests | Completed |
 | B3.3 | Payment webhook handling | Project B | B3 | Authenticate webhook, parse events, match attempts, create payment records, prevent duplicates, recalculate payment status, handle failures/refunds, and test logging/retries. | A4.5, A5.3, B3.2 | Finance, tracking | A/B/C | High | Critical | Webhook idempotency tests | Completed |
@@ -82,7 +82,7 @@ Verification note: completed on 2026-06-20. The website payment handoff now uses
 
 | Task ID | Task Name | Project | Feature | Description | Depends On | Blocks | Affected Projects | Database Impact | API Impact | Testing Required | Status |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| C1.1 | Basic admin order and payment view | Project C | C1 | Provide a read-only, permission-safe Filament view of website orders, payment and refund history, customer/address snapshots, items, and linked uploads. Status changes, manual payments, refunds, shipping, CRM, inventory, and reports remain out of scope. | A2.3, A4.1, A5.1, A5.2, B3.1, B3.3 | Tracking, operations, finance views | A/B/C | Medium | Medium | Admin order, payment, file-access, and authorization tests | In Progress |
+| C1.1 | Basic admin order and payment view | Project C | C1 | Provide a read-only, permission-safe Filament view of website orders, payment and refund history, customer/address snapshots, items, and linked uploads. Status changes, manual payments, refunds, shipping, CRM, inventory, and reports remain out of scope. | A2.3, A4.1, A5.1, A5.2, B3.1, B3.3 | Tracking, operations, finance views | A/B/C | Medium | Medium | Admin order, payment, file-access, and authorization tests | Completed |
 | C1.2 | Sales order creation | Project C | C1 | Let staff create sales orders with customer selection, products/SKUs, quantities, customization, pricing, discount, advance/final payment structure, creation, editing rules, and confirmation. | C1.1, A5.1 | Split payments, inventory | A/C | High | Medium | Sales order tests | In Progress |
 | C1.3 | Quotations and bulk-order conversion | Project C | C1 | Support bulk enquiry capture, quotation creation, items/pricing, status, approval, revision, sales-order conversion, and advance-payment recording. | C1.2, C3.1 | Bulk sales workflow | A/B/C | High | Medium | Quotation conversion tests | Not Started |
 | C2.1 | Inventory movements and stock handling | Project C | C2 | Implement SKU stock balance, stock-in, stock-out, manual adjustment, order stock deduction, cancellation reversal, low-stock warning, movement history, and audit. | A3.2, C1.1 | Checkout warnings, production, purchase | A/B/C | High | Medium | Inventory movement tests | Not Started |
@@ -126,8 +126,11 @@ Verification note: completed on 2026-06-20. The website payment handoff now uses
 | A3.2.4 | SKUs | Completed |
 | A3.2.5 | Product status and visibility | Completed |
 | A3.2.6 | Product images and print options | Completed |
-| A3.2.7 | Admin management | Not Started |
+| A3.2.7 | Admin management | Completed |
 | A3.2.8 | Public API data | Completed |
+
+Verification note: A3.2.7 completed on 2026-06-22. The implementation adds `ProductResource` and `ProductCategoryResource` registration classes, `ProductIndexCatalog`, `ProductDetailCatalog`, `CategoryIndexCatalog`, `CategoryDetailCatalog` support classes, `ProductPolicy` and `ProductCategoryPolicy` (wired via `Gate::policy` in `AppServiceProvider`), and `AdminCatalogManagementTest` covering resource registration, catalog structure, finance-field exclusion, `canAccess`/`canManage` boundaries, and Policy-via-Gate checks for all 6 staff roles. `php artisan test --filter=AdminCatalogManagementTest` (24 tests, 87 assertions) and `php artisan test` (197 tests, 1332 assertions) passed. `./vendor/bin/pint` applied and passed.
+
 
 ### A4.1 File upload service
 
@@ -232,7 +235,7 @@ Verification note: A5.3.1 completed on 2026-06-18. The implementation adds a sha
 | B2.2.5 | Customization metadata | Completed |
 | B2.2.6 | Cart persistence | Completed |
 | B2.2.7 | Order persistence | Completed |
-| B2.2.8 | Admin file access | Not Started |
+| B2.2.8 | Admin file access | Completed |
 
 Verification note: B2.2.1 completed on 2026-06-19. The implementation adds the design upload API flow, private original file storage, public-safe upload metadata, and feature tests covering allowed uploads, validation rejection, and signed preview URL generation. `php artisan test --filter=DesignUploadFlowTest` passed.
 
@@ -247,7 +250,9 @@ Verification note: B2.2.5 completed on 2026-06-19. The implementation adds a reu
 
 Verification note: B2.2.6 completed on 2026-06-19. The real design-upload customization snapshot now persists through `/api/cart/items`, remains attached across cart reloads, preserves public file/mockup references, and excludes private storage paths plus internal cart/product/SKU identifiers from customer payloads. `php artisan test --filter=DesignUploadFlowTest`, `php artisan test --filter=CartStorageTest`, and `./vendor/bin/pint --test tests/Feature/DesignUploadFlowTest.php` passed.
 
-Planning note: B2.2.7 and B2.2.8 are deferred bridge subtasks. They must not block B3.1 checkout work because B3.1 only needs customization metadata through cart persistence, which is complete in B2.2.6. Use `docs/project-b-c-build-runway.md` before moving to the next Project B/C task.
+Verification note: B2.2.7 completed on 2026-06-22. Verified that customization snapshot survives order creation and is persisted correctly on order items. Tested via AdminOrderItemFileAccessTest.php. `php artisan test` passed.
+
+Verification note: B2.2.8 completed on 2026-06-22. Authorized staff with `orders.view` and `files.download_private` permissions can access private design files preview/download via public_id order-scoped routes, while unauthorized/unauthenticated users are strictly blocked. Tested via AdminOrderItemFileAccessTest.php. `php artisan test` passed.
 
 ### B3.1 Cart and checkout with pending order creation
 
@@ -295,14 +300,16 @@ Verification note: B3.1.10 completed on 2026-06-20. The checkout retry path now 
 | C1.1.2 | Website order index, scopes, and filters | Completed |
 | C1.1.3 | Read-only order detail and customer/address snapshots | Completed |
 | C1.1.4 | Payment, refund, and payment-attempt history | Completed |
-| C1.1.5 | Order item and customization snapshot presentation | Not Started |
-| B2.2.8 | Authorized admin design-file access bridge | Not Started |
-| C1.1.6 | Read-only scope guard and regression verification | Not Started |
+| C1.1.5 | Order item and customization snapshot presentation | Completed |
+| B2.2.8 | Authorized admin design-file access bridge | Completed |
+| C1.1.6 | Read-only scope guard and regression verification | Completed |
 
 Verification note: C1.1.1 completed on 2026-06-20. The boundary adds a read-only order resource shell, a lightweight admin resource catalog, and tests covering permission-gated access plus the blocked write-action set. `php artisan test --filter=AdminOrderResourceBoundaryTest` and `php artisan test` passed.
 Verification note: C1.1.2 completed on 2026-06-20. The implementation adds a conservative website-order index definition, website-order query scope, admin order index catalog, approved status/date/design filters, and feature tests covering website-only queries, scope/filter application, safe summaries, and registration metadata. `php artisan test --filter=AdminOrderIndexTest`, `php artisan test --filter=AdminOrderResourceBoundaryTest`, and `php artisan test` passed.
 Verification note: C1.1.3 completed on 2026-06-20. The implementation adds a read-only order detail catalog, snapshot-only customer and address rendering from stored order data, and feature tests covering permission-gated access, read-only registration metadata, and snapshot rendering that stays independent from live customer and address relation labels. `php artisan test --filter=AdminOrderDetailTest`, `php artisan test`, and `./vendor/bin/pint --test app/Filament/Resources/Orders/OrderResource.php app/Support/Admin/OrderDetailCatalog.php tests/Feature/AdminOrderDetailTest.php` passed.
 Verification note: C1.1.4 completed on 2026-06-20. The detail surface now includes stored payment, refund, and payment-attempt history from shared order/payment records, keeps finance-sensitive fields and raw payloads out of the presenter, and preserves the read-only order boundary. `php artisan test --filter=AdminOrderDetailTest`, `php artisan test`, and `./vendor/bin/pint --test app/Support/Admin/OrderDetailCatalog.php tests/Feature/AdminOrderDetailTest.php` passed.
+Verification note: C1.1.5 completed on 2026-06-22. Order items and customization snapshots are rendered in the order detail catalog, generating signed preview URLs best-effort and excluding raw storage paths. Tested via AdminOrderItemFileAccessTest.php. `php artisan test` passed.
+Verification note: C1.1.6 completed on 2026-06-22. Staff with read-only access cannot create, edit, status-update, or delete orders, and the detail view contains no mutation surface. Index catalogs correctly scope to website orders only. Tested via AdminOrderItemFileAccessTest.php. `php artisan test` passed.
 
 ### C3.1 CRM lead module
 

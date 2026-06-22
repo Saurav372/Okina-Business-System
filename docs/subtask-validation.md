@@ -1,4 +1,4 @@
-﻿# Okina Craft Subtask Validation
+# Okina Craft Subtask Validation
 
 This document validates the subtasks created in `task-list.md`.
 
@@ -270,6 +270,10 @@ Verification note: B2.2.4 completed on 2026-06-19. Placement adjustments now flo
 Verification note: B2.2.5 completed on 2026-06-19. Customization metadata now has a versioned public-safe snapshot shape with product/SKU selection, normalized placement, safe uploaded-file references, mockup preview metadata, and tests proving private storage paths are excluded from customer/cart/order-facing payloads. `php artisan test`, `./vendor/bin/pint --test app\\Http\\Controllers\\Api\\ProductCustomizationController.php app\\Support\\Products\\CustomizationSnapshotBuilder.php app\\Services\\FileUploadService.php app\\Services\\SettingsService.php tests\\Feature\\DesignUploadFlowTest.php tests\\Feature\\SettingsServiceTest.php`, and `npm run build` passed.
 
 Verification note: B2.2.6 completed on 2026-06-19. The upload-flow customization snapshot is accepted by cart persistence, retained on cart items and reloads, and exposed through a public-safe cart payload without raw storage paths, preview paths, cart tokens, or internal database IDs. `php artisan test --filter=DesignUploadFlowTest`, `php artisan test --filter=CartStorageTest`, and `./vendor/bin/pint --test tests/Feature/DesignUploadFlowTest.php` passed.
+
+Verification note: B2.2.7 completed on 2026-06-22. Verified that customization snapshot survives order creation and is persisted correctly on order items. Tested via AdminOrderItemFileAccessTest.php. `php artisan test` passed.
+
+Verification note: B2.2.8 completed on 2026-06-22. Authorized staff with `orders.view` and `files.download_private` permissions can access private design files preview/download via public_id order-scoped routes, while unauthorized/unauthenticated users are strictly blocked. Tested via AdminOrderItemFileAccessTest.php. `php artisan test` passed.
 
 ## B3.1 Cart And Checkout With Pending Order Creation
 
