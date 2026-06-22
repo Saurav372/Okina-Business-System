@@ -8,8 +8,8 @@ use App\Models\Customer;
 use App\Models\Order;
 use App\Models\ProductSku;
 use App\Services\SalesOrderService;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class SalesOrderController extends Controller
 {
@@ -63,7 +63,7 @@ class SalesOrderController extends Controller
                 return [
                     'id' => $sku->id,
                     'sku_code' => $sku->sku_code,
-                    'label' => $sku->sku_code . ($sku->product ? ' - ' . $sku->product->name : ''),
+                    'label' => $sku->sku_code.($sku->product ? ' - '.$sku->product->name : ''),
                 ];
             });
 
