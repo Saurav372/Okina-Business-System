@@ -1,0 +1,1190 @@
+---
+import CatalogLayout from '../../layouts/CatalogLayout.astro';
+---
+
+<CatalogLayout title="My Account - Okina Craft" description="Manage your profile, shipping/billing addresses, and view order history">
+  <div class="dashboard-container" id="dashboard-loading">
+    <div class="spinner-container">
+      <div class="spinner"></div>
+      <p>Loading your account...</p>
+    </div>
+  </div>
+
+  <div class="dashboard-container hidden" id="dashboard-wrapper">
+    <header class="dashboard-header animate-fade-in">
+      <div>
+        <span class="welcome-label">Welcome back,</span>
+        <h1 id="header-customer-name">Customer Name</h1>
+      </div>
+      <div class="customer-badge" id="header-customer-type">Individual</div>
+    </header>
+
+    <div class="dashboard-grid">
+      <!-- Sidebar Navigation -->
+      <aside class="dashboard-sidebar animate-slide-in">
+        <nav class="sidebar-nav">
+          <button class="nav-btn active" data-target="profile-tab">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            My Profile
+          </button>
+          <button class="nav-btn" data-target="addresses-tab">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Saved Addresses
+          </button>
+          <button class="nav-btn" data-target="orders-tab">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Order History
+          </button>
+        </nav>
+      </aside>
+
+      <!-- Main Content Cards -->
+      <main class="dashboard-main animate-fade-in">
+        <!-- Toast Notification Banner -->
+        <div id="toast-banner" class="toast hidden">
+          <span id="toast-message">Message text here</span>
+          <button id="toast-close" class="toast-close-btn">&times;</button>
+        </div>
+
+        <!-- Profile Tab -->
+        <section id="profile-tab" class="tab-content">
+          <div class="card card-hero">
+            <h2>Profile Information</h2>
+            <div class="profile-details-grid">
+              <div class="detail-field">
+                <label>Display Name</label>
+                <p id="profile-display-name">-</p>
+              </div>
+              <div class="detail-field">
+                <label>Email Address</label>
+                <p id="profile-email">-</p>
+              </div>
+              <div class="detail-field">
+                <label>Phone Number</label>
+                <p id="profile-phone">-</p>
+              </div>
+              <div class="detail-field">
+                <label>WhatsApp Number</label>
+                <p id="profile-whatsapp">-</p>
+              </div>
+              <div class="detail-field">
+                <label>Company / Organization</label>
+                <p id="profile-company">-</p>
+              </div>
+              <div class="detail-field">
+                <label>Customer Account Type</label>
+                <p id="profile-type" class="capitalize">-</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Addresses Tab -->
+        <section id="addresses-tab" class="tab-content hidden">
+          <div class="card">
+            <div class="card-head">
+              <h2>Saved Addresses</h2>
+              <button id="add-address-btn" class="btn btn-primary">
+                Add New Address
+              </button>
+            </div>
+
+            <!-- Address Form Container (Add / Edit) -->
+            <div id="address-form-container" class="address-form-box hidden animate-slide-in">
+              <h3 id="address-form-title">Add New Address</h3>
+              <form id="address-form" class="address-form">
+                <input type="hidden" name="address_id" id="form-address-id">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="address_type">Address Type</label>
+                    <select name="address_type" id="address_type" required>
+                      <option value="both">Shipping & Billing</option>
+                      <option value="shipping">Shipping Only</option>
+                      <option value="billing">Billing Only</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="label">Address Label (e.g. Home, Office)</label>
+                    <input type="text" name="label" id="label" required placeholder="Home, Office, Headquarters">
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="contact_name">Contact Name</label>
+                    <input type="text" name="contact_name" id="contact_name" required placeholder="John Doe">
+                  </div>
+                  <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="text" name="phone" id="phone" required placeholder="+91 99999 99999">
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="company_name">Company Name (Optional)</label>
+                    <input type="text" name="company_name" id="company_name" placeholder="Acme Corporation">
+                  </div>
+                  <div class="form-group">
+                    <label for="gstin">GSTIN (Optional)</label>
+                    <input type="text" name="gstin" id="gstin" placeholder="22AAAAA0000A1Z5">
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="address_line_1">Street Address Line 1</label>
+                  <input type="text" name="address_line_1" id="address_line_1" required placeholder="Flat, Suite, House no., Building, Street">
+                </div>
+
+                <div class="form-group">
+                  <label for="address_line_2">Street Address Line 2 (Optional)</label>
+                  <input type="text" name="address_line_2" id="address_line_2" placeholder="Landmark, Area, Colony">
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="landmark">Landmark (Optional)</label>
+                    <input type="text" name="landmark" id="landmark" placeholder="Near Railway Station">
+                  </div>
+                  <div class="form-group">
+                    <label for="city">City</label>
+                    <input type="text" name="city" id="city" required placeholder="New Delhi">
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="state">State</label>
+                    <input type="text" name="state" id="state" required placeholder="Delhi">
+                  </div>
+                  <div class="form-group">
+                    <label for="postal_code">Postal Code (PIN)</label>
+                    <input type="text" name="postal_code" id="postal_code" required placeholder="110001">
+                  </div>
+                  <div class="form-group">
+                    <label for="country_code">Country Code</label>
+                    <input type="text" name="country_code" id="country_code" required value="IN" placeholder="IN" maxlength="2">
+                  </div>
+                </div>
+
+                <div class="form-group checkbox-group">
+                  <label class="checkbox-label">
+                    <input type="checkbox" name="is_default_shipping" id="is_default_shipping" value="1">
+                    Set as Default Shipping Address
+                  </label>
+                  <label class="checkbox-label">
+                    <input type="checkbox" name="is_default_billing" id="is_default_billing" value="1">
+                    Set as Default Billing Address
+                  </label>
+                </div>
+
+                <div class="form-group">
+                  <label for="delivery_notes">Delivery Notes / Instructions</label>
+                  <textarea name="delivery_notes" id="delivery_notes" placeholder="Any instructions for courier driver..."></textarea>
+                </div>
+
+                <div class="form-actions">
+                  <button type="submit" class="btn btn-success" id="save-address-btn">Save Address</button>
+                  <button type="button" class="btn btn-muted" id="cancel-address-btn">Cancel</button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Addresses List Grid -->
+            <div class="address-grid" id="addresses-list">
+              <!-- Dynamically populated -->
+              <p class="empty-state">No saved addresses found.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Orders Tab -->
+        <section id="orders-tab" class="tab-content hidden">
+          <div class="card">
+            <h2>Order History</h2>
+            <div class="table-wrap">
+              <table class="orders-table">
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Placed Date</th>
+                    <th>Total Value</th>
+                    <th>Payment Status</th>
+                    <th>Order Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="orders-list">
+                  <!-- Dynamically populated -->
+                  <tr>
+                    <td colspan="6" class="empty-state">No orders found.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</CatalogLayout>
+
+<style>
+  /* Dashboard Styling overrides and custom design values */
+  :root {
+    --accent-vibrant: #ff5722;
+    --success-color: #4caf50;
+    --danger-color: #f44336;
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(216, 210, 198, 0.5);
+  }
+
+  .dashboard-container {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 1rem 0;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  /* Spinner & Loading */
+  .spinner-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 350px;
+    color: var(--muted);
+  }
+
+  .spinner {
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 3px solid var(--line);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Header styles */
+  .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow);
+  }
+
+  .dashboard-header h1 {
+    margin: 0.25rem 0 0;
+    font-size: 1.8rem;
+    font-weight: 750;
+  }
+
+  .welcome-label {
+    font-size: 0.9rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .customer-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 99px;
+    background: var(--surface-muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: 1px solid var(--line);
+    color: var(--accent);
+  }
+
+  /* Grid layout */
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  .dashboard-sidebar {
+    position: sticky;
+    top: 5rem;
+  }
+
+  .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.85rem 1.25rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    color: var(--muted);
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .nav-btn svg {
+    width: 1.1rem;
+    height: 1.1rem;
+    transition: transform 0.2s;
+  }
+
+  .nav-btn:hover {
+    background: var(--surface-muted);
+    color: var(--text);
+    border-color: var(--text);
+  }
+
+  .nav-btn:hover svg {
+    transform: translateX(3px);
+  }
+
+  .nav-btn.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    box-shadow: 0 4px 12px rgba(31, 111, 139, 0.2);
+  }
+
+  /* Main Card Layouts */
+  .card {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    transition: transform 0.25s, box-shadow 0.25s;
+  }
+
+  .card h2 {
+    margin: 0 0 1.5rem;
+    font-size: 1.4rem;
+    font-weight: 700;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 0.75rem;
+  }
+
+  .card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 0.75rem;
+  }
+
+  .card-head h2 {
+    margin: 0;
+    border: none;
+    padding: 0;
+  }
+
+  /* Profile Tab specifics */
+  .profile-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .detail-field {
+    background: var(--surface-muted);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--line);
+  }
+
+  .detail-field label {
+    display: block;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin-bottom: 0.35rem;
+    font-weight: 600;
+  }
+
+  .detail-field p {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  /* Address Tab specifics */
+  .address-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1rem;
+  }
+
+  .address-card {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.2s ease;
+  }
+
+  .address-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+  }
+
+  .address-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .address-label {
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+
+  .address-type-pill {
+    padding: 0.15rem 0.5rem;
+    border-radius: 99px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: var(--surface-muted);
+    border: 1px solid var(--line);
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .default-badge {
+    padding: 0.15rem 0.5rem;
+    border-radius: 99px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: rgba(76, 175, 80, 0.15);
+    color: var(--success-color);
+    border: 1px solid rgba(76, 175, 80, 0.3);
+    text-transform: uppercase;
+  }
+
+  .address-details {
+    font-size: 0.9rem;
+    color: var(--text);
+    line-height: 1.4;
+    margin-bottom: 1rem;
+  }
+
+  .address-details p {
+    margin: 0.15rem 0;
+  }
+
+  .address-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    border-top: 1px solid var(--line);
+    padding-top: 0.75rem;
+    margin-top: auto;
+  }
+
+  /* Form Styles */
+  .address-form-box {
+    background: var(--surface-muted);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .address-form-box h3 {
+    margin: 0 0 1rem;
+  }
+
+  .address-form {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .form-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--muted);
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    padding: 0.65rem;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    font-size: 0.95rem;
+    background: var(--surface);
+    font-family: inherit;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .form-group textarea {
+    min-height: 80px;
+    resize: vertical;
+  }
+
+  .checkbox-group {
+    flex-direction: row;
+    gap: 1.5rem;
+    margin: 0.5rem 0;
+  }
+
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    cursor: pointer;
+  }
+
+  .checkbox-label input {
+    cursor: pointer;
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    margin-top: 1rem;
+  }
+
+  /* Buttons */
+  .btn {
+    padding: 0.55rem 1rem;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .btn-primary:hover {
+    background: #17566d;
+  }
+
+  .btn-success {
+    background: var(--success-color);
+    color: #fff;
+  }
+
+  .btn-success:hover {
+    background: #3e8e41;
+  }
+
+  .btn-danger {
+    background: transparent;
+    color: var(--danger-color);
+    border-color: rgba(244, 67, 54, 0.2);
+  }
+
+  .btn-danger:hover {
+    background: rgba(244, 67, 54, 0.1);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--accent);
+    border-color: rgba(31, 111, 139, 0.2);
+  }
+
+  .btn-secondary:hover {
+    background: rgba(31, 111, 139, 0.05);
+  }
+
+  .btn-muted {
+    background: transparent;
+    color: var(--muted);
+    border-color: var(--line);
+  }
+
+  .btn-muted:hover {
+    background: var(--surface-muted);
+  }
+
+  .btn-sm {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+  }
+
+  /* Table / Order history styles */
+  .orders-table {
+    border: none;
+  }
+
+  .orders-table th {
+    background: var(--surface-muted);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.75rem 1rem;
+  }
+
+  .orders-table td {
+    padding: 1rem;
+    vertical-align: middle;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .badge-unpaid { background: #ffebee; color: #c62828; }
+  .badge-paid { background: #e8f5e9; color: #2e7d32; }
+  .badge-partially_paid { background: #fff8e1; color: #f57f17; }
+  .badge-refunded { background: #eceff1; color: #37474f; }
+  .badge-partially_refunded { background: #eceff1; color: #37474f; }
+
+  .badge-pending { background: #fff3e0; color: #ef6c00; }
+  .badge-confirmed { background: #e3f2fd; color: #1565c0; }
+  .badge-in_production { background: #ede7f6; color: #651fff; }
+  .badge-ready_to_ship { background: #f1f8e9; color: #558b2f; }
+  .badge-shipped { background: #e0f7fa; color: #00838f; }
+  .badge-delivered { background: #e8f5e9; color: #2e7d32; }
+  .badge-cancelled { background: #ffebee; color: #c62828; }
+
+  /* Toast Notification */
+  .toast {
+    position: fixed;
+    top: 2rem;
+    right: 2rem;
+    background: var(--text);
+    color: var(--surface);
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    z-index: 1000;
+    font-weight: 500;
+    font-size: 0.95rem;
+    animation: slideIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  }
+
+  @keyframes slideIn {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .toast-close-btn {
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 1.3rem;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+  }
+
+  .empty-state {
+    text-align: center;
+    color: var(--muted);
+    padding: 2rem 0;
+    font-weight: 500;
+  }
+
+  .capitalize {
+    text-transform: capitalize;
+  }
+
+  /* Animations */
+  .animate-fade-in {
+    animation: fadeIn 0.4s ease-out;
+  }
+
+  .animate-slide-in {
+    animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(15px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  @media (max-width: 768px) {
+    .dashboard-grid {
+      grid-template-columns: 1fr;
+    }
+    .dashboard-sidebar {
+      position: static;
+    }
+    .sidebar-nav {
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+    .nav-btn {
+      flex: 1 1 150px;
+      justify-content: center;
+    }
+  }
+</style>
+
+<script>
+  // Client-side Dashboard logic
+  const apiBaseUrl = (import.meta.env.PUBLIC_API_BASE_URL ?? 'http://127.0.0.1:8000/api').replace(/\/+$/, '');
+  const loginUrl = apiBaseUrl.replace('/api', '/login');
+
+  let profileData: any = null;
+  let addressesData: any[] = [];
+  let ordersData: any[] = [];
+
+  // DOM Elements
+  const loadingEl = document.getElementById('dashboard-loading');
+  const wrapperEl = document.getElementById('dashboard-wrapper');
+  
+  // Header Elements
+  const headerNameEl = document.getElementById('header-customer-name');
+  const headerTypeEl = document.getElementById('header-customer-type');
+
+  // Tab Buttons & Content
+  const tabButtons = document.querySelectorAll('.nav-btn');
+  const tabContents = document.querySelectorAll('.tab-content');
+
+  // Profile fields
+  const pDisplayName = document.getElementById('profile-display-name');
+  const pEmail = document.getElementById('profile-email');
+  const pPhone = document.getElementById('profile-phone');
+  const pWhatsapp = document.getElementById('profile-whatsapp');
+  const pCompany = document.getElementById('profile-company');
+  const pType = document.getElementById('profile-type');
+
+  // Address elements
+  const addressesList = document.getElementById('addresses-list');
+  const addAddressBtn = document.getElementById('add-address-btn');
+  const addressFormContainer = document.getElementById('address-form-container');
+  const addressForm = document.getElementById('address-form') as HTMLFormElement;
+  const addressFormTitle = document.getElementById('address-form-title');
+  const cancelAddressBtn = document.getElementById('cancel-address-btn');
+  const formAddressId = document.getElementById('form-address-id') as HTMLInputElement;
+
+  // Orders elements
+  const ordersList = document.getElementById('orders-list');
+
+  // Toast
+  const toastBanner = document.getElementById('toast-banner');
+  const toastMessage = document.getElementById('toast-message');
+  const toastClose = document.getElementById('toast-close');
+
+  // Init
+  async function init() {
+    try {
+      // 1. Session verification
+      const sessionRes = await fetch(`${apiBaseUrl}/customer/session`, { credentials: 'include' });
+      if (sessionRes.status === 401) {
+        window.location.href = loginUrl;
+        return;
+      }
+      
+      const sessionData = await sessionRes.json();
+      if (!sessionData.authenticated) {
+        window.location.href = loginUrl;
+        return;
+      }
+
+      // 2. Load dashboard data
+      await Promise.all([
+        loadProfile(),
+        loadAddresses(),
+        loadOrders()
+      ]);
+
+      // Show wrapper, hide loading spinner
+      loadingEl?.classList.add('hidden');
+      wrapperEl?.classList.remove('hidden');
+
+      // Setup Listeners
+      setupTabs();
+      setupAddressForm();
+      toastClose?.addEventListener('click', () => toastBanner?.classList.add('hidden'));
+
+    } catch (e) {
+      console.error(e);
+      window.location.href = loginUrl;
+    }
+  }
+
+  // Loaders
+  async function loadProfile() {
+    const res = await fetch(`${apiBaseUrl}/customer/profile`, { credentials: 'include' });
+    const json = await res.json();
+    profileData = json.data;
+
+    // Populate header
+    if (headerNameEl) headerNameEl.textContent = profileData.display_name || profileData.name;
+    if (headerTypeEl) {
+      headerTypeEl.textContent = profileData.customer_type;
+      headerTypeEl.className = `customer-badge type-${profileData.customer_type}`;
+    }
+
+    // Populate tab fields
+    if (pDisplayName) pDisplayName.textContent = profileData.display_name || '-';
+    if (pEmail) pEmail.textContent = profileData.email;
+    if (pPhone) pPhone.textContent = profileData.phone || '-';
+    if (pWhatsapp) pWhatsapp.textContent = profileData.whatsapp_phone || '-';
+    if (pCompany) pCompany.textContent = profileData.company_name || '-';
+    if (pType) pType.textContent = profileData.customer_type;
+  }
+
+  async function loadAddresses() {
+    const res = await fetch(`${apiBaseUrl}/customer/addresses`, { credentials: 'include' });
+    const json = await res.json();
+    addressesData = json.data;
+    renderAddresses();
+  }
+
+  async function loadOrders() {
+    const res = await fetch(`${apiBaseUrl}/customer/orders`, { credentials: 'include' });
+    const json = await res.json();
+    ordersData = json.data;
+    renderOrders();
+  }
+
+  // Render lists
+  function renderAddresses() {
+    if (!addressesList) return;
+    
+    if (addressesData.length === 0) {
+      addressesList.innerHTML = `<p class="empty-state">No saved addresses found. Click 'Add New Address' to create one.</p>`;
+      return;
+    }
+
+    addressesList.innerHTML = addressesData.map(addr => `
+      <div class="address-card" data-id="${addr.id}">
+        <div>
+          <div class="address-meta">
+            <span class="address-label">${escapeHtml(addr.label)}</span>
+            <span class="address-type-pill">${escapeHtml(addr.address_type)}</span>
+            ${addr.is_default_shipping ? '<span class="default-badge">Default Shipping</span>' : ''}
+            ${addr.is_default_billing ? '<span class="default-badge">Default Billing</span>' : ''}
+          </div>
+          <div class="address-details">
+            <p><strong>${escapeHtml(addr.contact_name)}</strong></p>
+            <p>${escapeHtml(addr.phone)}</p>
+            ${addr.company_name ? `<p>${escapeHtml(addr.company_name)}</p>` : ''}
+            ${addr.gstin ? `<p>GST: ${escapeHtml(addr.gstin)}</p>` : ''}
+            <p>${escapeHtml(addr.address_line_1)}</p>
+            ${addr.address_line_2 ? `<p>${escapeHtml(addr.address_line_2)}</p>` : ''}
+            ${addr.landmark ? `<p>Landmark: ${escapeHtml(addr.landmark)}</p>` : ''}
+            <p>${escapeHtml(addr.city)}, ${escapeHtml(addr.state)} - ${escapeHtml(addr.postal_code)}</p>
+            <p>${escapeHtml(addr.country_code)}</p>
+            ${addr.delivery_notes ? `<p class="summary"><em>Notes: ${escapeHtml(addr.delivery_notes)}</em></p>` : ''}
+          </div>
+        </div>
+        <div class="address-actions">
+          <button class="btn btn-secondary btn-sm edit-address-btn">Edit</button>
+          <button class="btn btn-danger btn-sm delete-address-btn">Delete</button>
+          ${(!addr.is_default_shipping || !addr.is_default_billing) ? `
+            <button class="btn btn-muted btn-sm make-default-btn">Set Default</button>
+          ` : ''}
+        </div>
+      </div>
+    `).join('');
+
+    // Bind Address actions
+    addressesList.querySelectorAll('.edit-address-btn').forEach((btn, i) => {
+      btn.addEventListener('click', () => editAddress(addressesData[i]));
+    });
+
+    addressesList.querySelectorAll('.delete-address-btn').forEach((btn, i) => {
+      btn.addEventListener('click', () => deleteAddress(addressesData[i].id));
+    });
+
+    addressesList.querySelectorAll('.make-default-btn').forEach((btn, i) => {
+      btn.addEventListener('click', () => makeAddressDefault(addressesData[i].id));
+    });
+  }
+
+  function renderOrders() {
+    if (!ordersList) return;
+
+    if (ordersData.length === 0) {
+      ordersList.innerHTML = `<tr><td colspan="6" class="empty-state">No orders placed yet.</td></tr>`;
+      return;
+    }
+
+    ordersList.innerHTML = ordersData.map(order => {
+      const placedDate = order.placed_at ? new Intl.DateTimeFormat('en-IN', { dateStyle: 'medium' }).format(new Date(order.placed_at)) : '-';
+      const formattedTotal = new Intl.NumberFormat('en-IN', { style: 'currency', currency: order.currency ?? 'INR', maximumFractionDigits: 0 }).format(order.total_amount_minor / 100);
+      
+      return `
+        <tr>
+          <td><strong>${escapeHtml(order.public_id)}</strong></td>
+          <td>${placedDate}</td>
+          <td>${formattedTotal}</td>
+          <td><span class="badge badge-${order.payment_status}">${titleCase(order.payment_status)}</span></td>
+          <td><span class="badge badge-${order.status}">${titleCase(order.status)}</span></td>
+          <td>
+            <a href="/account/orders/${order.public_id}" class="btn btn-secondary btn-sm">View details</a>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // Address CRUD operations
+  function editAddress(address: any) {
+    if (!addressForm || !addressFormContainer || !addressFormTitle) return;
+
+    addressFormTitle.textContent = `Edit Address: ${address.label}`;
+    formAddressId.value = address.id;
+
+    // Fill form
+    (document.getElementById('address_type') as HTMLSelectElement).value = address.address_type;
+    (document.getElementById('label') as HTMLInputElement).value = address.label;
+    (document.getElementById('contact_name') as HTMLInputElement).value = address.contact_name;
+    (document.getElementById('phone') as HTMLInputElement).value = address.phone;
+    (document.getElementById('company_name') as HTMLInputElement).value = address.company_name || '';
+    (document.getElementById('gstin') as HTMLInputElement).value = address.gstin || '';
+    (document.getElementById('address_line_1') as HTMLInputElement).value = address.address_line_1;
+    (document.getElementById('address_line_2') as HTMLInputElement).value = address.address_line_2 || '';
+    (document.getElementById('landmark') as HTMLInputElement).value = address.landmark || '';
+    (document.getElementById('city') as HTMLInputElement).value = address.city;
+    (document.getElementById('state') as HTMLInputElement).value = address.state;
+    (document.getElementById('postal_code') as HTMLInputElement).value = address.postal_code;
+    (document.getElementById('country_code') as HTMLInputElement).value = address.country_code || 'IN';
+    (document.getElementById('is_default_shipping') as HTMLInputElement).checked = address.is_default_shipping;
+    (document.getElementById('is_default_billing') as HTMLInputElement).checked = address.is_default_billing;
+    (document.getElementById('delivery_notes') as HTMLTextAreaElement).value = address.delivery_notes || '';
+
+    addressFormContainer.classList.remove('hidden');
+    addressFormContainer.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  async function deleteAddress(id: number) {
+    if (!confirm('Are you sure you want to delete this address?')) return;
+    try {
+      const res = await fetch(`${apiBaseUrl}/customer/addresses/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: { 'Accept': 'application/json' }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(data.message || 'Address deleted.');
+        await loadAddresses();
+      } else {
+        showToast(data.message || 'Failed to delete address.', true);
+      }
+    } catch (e) {
+      showToast('Connection error occurred.', true);
+    }
+  }
+
+  async function makeAddressDefault(id: number) {
+    try {
+      const res = await fetch(`${apiBaseUrl}/customer/addresses/${id}/default`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ type: 'both' }) // sets both shipping/billing
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast('Address set as default.');
+        await loadAddresses();
+      } else {
+        showToast(data.message || 'Failed to update defaults.', true);
+      }
+    } catch (e) {
+      showToast('Connection error occurred.', true);
+    }
+  }
+
+  function setupAddressForm() {
+    addAddressBtn?.addEventListener('click', () => {
+      if (!addressForm || !addressFormContainer || !addressFormTitle) return;
+      addressFormTitle.textContent = 'Add New Address';
+      addressForm.reset();
+      formAddressId.value = '';
+      addressFormContainer.classList.remove('hidden');
+      addressFormContainer.scrollIntoView({ behavior: 'smooth' });
+    });
+
+    cancelAddressBtn?.addEventListener('click', () => {
+      addressFormContainer?.classList.add('hidden');
+    });
+
+    addressForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = new FormData(addressForm);
+      const payload: any = {};
+      formData.forEach((value, key) => {
+        if (key === 'is_default_shipping' || key === 'is_default_billing') {
+          payload[key] = true;
+        } else {
+          payload[key] = value;
+        }
+      });
+
+      // Handle unchecked defaults explicitly
+      if (!payload.is_default_shipping) payload.is_default_shipping = false;
+      if (!payload.is_default_billing) payload.is_default_billing = false;
+
+      const addressId = formAddressId.value;
+      const url = addressId ? `${apiBaseUrl}/customer/addresses/${addressId}` : `${apiBaseUrl}/customer/addresses`;
+      const method = addressId ? 'PUT' : 'POST';
+
+      try {
+        const res = await fetch(url, {
+          method: method,
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (res.ok || res.status === 211) {
+          showToast(data.message || 'Address saved successfully.');
+          addressFormContainer?.classList.add('hidden');
+          await loadAddresses();
+        } else {
+          if (data.errors) {
+            const errs = Object.values(data.errors).flat().join(' ');
+            showToast(errs, true);
+          } else {
+            showToast(data.message || 'Validation failed.', true);
+          }
+        }
+      } catch (e) {
+        showToast('Connection error occurred.', true);
+      }
+    });
+  }
+
+  // Tabs navigation
+  function setupTabs() {
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const target = btn.getAttribute('data-target');
+        tabContents.forEach(content => {
+          if (content.id === target) {
+            content.classList.remove('hidden');
+          } else {
+            content.classList.add('hidden');
+          }
+        });
+      });
+    });
+  }
+
+  // Toast function
+  function showToast(message: string, isError = false) {
+    if (!toastBanner || !toastMessage) return;
+    toastMessage.textContent = message;
+    if (isError) {
+      toastBanner.style.background = 'var(--danger-color)';
+    } else {
+      toastBanner.style.background = 'var(--text)';
+    }
+    toastBanner.classList.remove('hidden');
+
+    // Auto close after 5s
+    setTimeout(() => {
+      toastBanner.classList.add('hidden');
+    }, 5000);
+  }
+
+  // Helper formatting functions
+  function titleCase(value: string) {
+    if (!value) return '';
+    return value
+      .split(/[-_]/g)
+      .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ');
+  }
+
+  function escapeHtml(str: string) {
+    if (!str) return '';
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  // Run on load
+  document.addEventListener('DOMContentLoaded', init);
+</script>

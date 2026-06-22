@@ -104,9 +104,9 @@ class CustomerAuthController extends Controller
 
     public function account()
     {
-        return view('customer.account', [
-            'account' => Auth::guard('customer')->user(),
-        ]);
+        $siteUrl = rtrim(env('PUBLIC_SITE_URL', 'http://127.0.0.1:4321'), '/');
+
+        return redirect()->away($siteUrl.'/account');
     }
 
     public function destroy(Request $request)

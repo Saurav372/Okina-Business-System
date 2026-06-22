@@ -75,7 +75,10 @@ Verification note: completed on 2026-06-18. The implementation adds a public cat
 
 Verification note: completed on 2026-06-20. The webhook flow now authenticates Cashfree callbacks, deduplicates provider event IDs, creates payment and refund records from safe summaries, updates the matched payment attempt, and recalculates payment status from the new payment/refund records. `php artisan test --filter=PaymentWebhookProcessingTest`, `php artisan test`, and `./vendor/bin/pint app/Models/Order.php app/Models/Payment.php app/Models/PaymentAttempt.php app/Models/PaymentWebhookLog.php app/Models/Refund.php app/Services/PaymentWebhookProcessingService.php app/Http/Controllers/Api/PaymentWebhookController.php tests/Feature/PaymentWebhookProcessingTest.php` passed.
 Verification note: completed on 2026-06-20. The website payment handoff now uses the shared payment gateway contract, persists an initiated payment attempt with public-safe gateway data, and reuses the same pending order and attempt across duplicate submissions and failed retries. php artisan test --filter=CheckoutPendingOrderTest, php artisan test --filter=PaymentGatewayContractTest, php artisan test, and ./vendor/bin/pint app/Services/CheckoutPendingOrderService.php app/Services/WebsitePaymentInitiationService.php app/Support/Payments/PaymentGatewayRules.php tests/Feature/CheckoutPendingOrderTest.php tests/Feature/PaymentGatewayContractTest.php passed.
-| B4.1 | Customer dashboard | Project B | B4 | Show customer profile, addresses, orders, payments, uploaded designs, and support actions. | B3.1, C1.1 | Customer tracking | B/C | Medium | High | Access control tests | Not Started |
+| B4.1 | Customer dashboard | Project B | B4 | Show customer profile, addresses, orders, payments, uploaded designs, and support actions. | B3.1, C1.1 | Customer tracking | B/C | Medium | High | Access control tests | Completed |
+
+Verification note: completed on 2026-06-22. The customer dashboard is fully implemented in the Astro frontend utilizing client-side fetch calls (CORS/Credentials enabled) to the backend customer API endpoints. Features include profile display, shipping/billing address CRUD + defaults sync, order/payment history, tracking status timeline, temporary signed preview links for design mockups, and cart reorders. The implementation is protected by session-based authentication and is verified by a comprehensive feature test suite (`CustomerDashboardApiTest.php`).
+
 | B4.2 | Customer tracking page | Project B | B4 | Show customer-friendly order status, payment summary, shipment details, and support actions. | C1.1, C4.1 | Customer support workflow | B/C | Medium | High | Tracking privacy/status tests | Not Started |
 
 ## Project C Tasks
@@ -291,6 +294,17 @@ Verification note: B3.1.10 completed on 2026-06-20. The checkout retry path now 
 | B3.3.7 | Failed-payment handling | Completed |
 | B3.3.8 | Refund webhook handling | Completed |
 | B3.3.9 | Logging and retry tests | Completed |
+
+### B4.1 Customer dashboard
+
+| Subtask ID | Subtask Name | Status |
+|---|---|---|
+| B4.1.1 | Dashboard UI & Routing | Completed |
+| B4.1.2 | API route definitions | Completed |
+| B4.1.3 | Address management | Completed |
+| B4.1.4 | Order details & tracking | Completed |
+| B4.1.5 | Reorder & support actions | Completed |
+| B4.1.6 | Test suite, linting & PHPStan | Completed |
 
 ### C1.1 Basic admin order and payment view
 

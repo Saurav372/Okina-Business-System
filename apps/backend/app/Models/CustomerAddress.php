@@ -41,6 +41,14 @@ class CustomerAddress extends Model
 
     public const TYPE_BOTH = 'both';
 
+    protected function casts(): array
+    {
+        return [
+            'is_default_shipping' => 'boolean',
+            'is_default_billing' => 'boolean',
+        ];
+    }
+
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);

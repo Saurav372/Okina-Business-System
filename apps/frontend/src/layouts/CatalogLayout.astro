@@ -1,4 +1,4 @@
-﻿---
+---
 const {
   title,
   description = 'Okina Craft catalog',
@@ -287,6 +287,7 @@ const {
           <nav class="nav" aria-label="Catalog navigation">
             <a href="/" aria-current={Astro.url.pathname === '/' ? 'page' : undefined}>Products</a>
             <a href="/categories" aria-current={Astro.url.pathname === '/categories/' || Astro.url.pathname === '/categories' ? 'page' : undefined}>Categories</a>
+            <span id="nav-auth-links" style="display:flex;gap:0.75rem;"></span>
           </nav>
         </div>
       </header>
@@ -297,5 +298,44 @@ const {
         Public catalog data is sourced from the shared backend API and excludes draft or private records.
       </footer>
     </div>
+    <script>
+      const apiBaseUrl = (import.meta.env.PUBLIC_API_BASE_URL ?? 'http://127.0.0.1:8000/api').replace(/\/+$/, '');
+      const authSpan = document.getElementById('nav-auth-links');
+      if (authSpan) {
+        const loginUrl = apiBaseUrl.replace('/api', '/login');
+
+        fetch(`${apiBaseUrl}/customer/session`, { credentials: 'include' })
+          .then(res => {
+            if (res.status === 401) {
+              authSpan.innerHTML = `<a href="${loginUrl}">Login</a>`;
+              return;
+            }
+            return res.json();
+          })
+          .then(data => {
+            if (data && data.authenticated) {
+              authSpan.innerHTML = `
+                <a href="/account">My Account</a>
+                <button id="logout-btn" style="background:none;border:none;color:var(--muted);font-size:0.95rem;cursor:pointer;padding:0;font-family:inherit;margin-left:0.5rem;">Logout</button>
+              `;
+              document.getElementById('logout-btn')?.addEventListener('click', function(e) {
+                e.preventDefault();
+                fetch(`${apiBaseUrl}/customer/logout`, {
+                  method: 'POST',
+                  credentials: 'include',
+                  headers: { 'Accept': 'application/json' }
+                }).then(() => {
+                  window.location.href = '/';
+                });
+              });
+            } else {
+              authSpan.innerHTML = `<a href="${loginUrl}">Login</a>`;
+            }
+          })
+          .catch(() => {
+            authSpan.innerHTML = `<a href="${loginUrl}">Login</a>`;
+          });
+      }
+    </script>
   </body>
 </html>

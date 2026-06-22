@@ -4,86 +4,78 @@ Use this file as the task-specific context for a coding session. Update it befor
 
 ## Current Parent Task
 
+B4 Customer Account and Tracking
+
 ## Current Subtask
 
-C1.2 Sales order creation
+None (B4.1 Customer dashboard is completed)
 
 ## Current Status
 
-Completed — implementation for C1.2 carried out and committed locally. Relevant static analysis and feature tests ran and passed locally. See Completion Notes below for commits and changed files.
+Completed. All deliverables for B4.1 Customer dashboard have been implemented, tested, and validated successfully.
 
 ## Goal
 
-Allow authorized staff to create sales orders: select or create a customer, choose product/SKU, set quantities and customization, apply pricing/discounts, and record advance/final payment structure. Persist order items with stored customization snapshots. Keep creation permission-gated and transaction-safe.
+Provide a customer-facing portal where authenticated customers can manage their profiles, view and manage their shipping/billing addresses, view their complete order and payment history, view high-quality design customization snapshots with signed temporary preview links, and perform quick actions like reordering or contacting support. The portal must be fully secure, preventing access to other customers' data, and styled using premium aesthetics.
 
 ## Dependencies
 
-- A2.1 Admin authentication
-- A2.3 Role and permission model
-- A3.2 Shared products, variants and SKUs
+- A2.2 Customer authentication
+- A3.1 Shared customers and addresses
 - A5.1 Shared order/payment domain model
-- B2.2.7 Order persistence (order item/customization storage)
-- C1.1 Basic admin order and payment view (completed)
+- B3.1 Cart and checkout with pending order creation
+- C1.1 Basic admin order and payment view
 
 ## Required Deliverables
 
-- Staff-facing Filament page or protected controller to create sales orders
-- Server-side validation and pricing calculation consistent with `CartPricingService`
-- Persisted order items that include stored customization snapshots (no live storage paths leaked)
-- Support for advance/final payment scheduling fields and tests
-- Feature tests: `AdminSalesOrderCreationTest` and related authorization/validation tests
-
-### Completion Notes
-
-- Implementation: server-side `SalesOrderService` now computes and persists order totals using `OrderTotalsCalculator`; controller and a minimal protected admin create view were added.
-- Tests: `AdminSalesOrderCreationTest` passed locally (2 tests). Pint formatting applied and passed.
-- Commits:
-	- `80ee47f` C1.2: Add admin sales order create view, route and controller action
-	- `fe20c19` C1.2: Persist order totals via OrderTotalsCalculator; accept optional discount/shipping/tax inputs
-
-Changed files (selected):
-- `apps/backend/app/Services/SalesOrderService.php`
-- `apps/backend/app/Http/Requests/Admin/SalesOrderCreateRequest.php`
-- `apps/backend/app/Http/Controllers/Admin/SalesOrderController.php`
-- `apps/backend/routes/web.php`
-- `apps/backend/resources/views/admin/orders/create.blade.php`
-- `apps/backend/tests/Feature/AdminSalesOrderCreationTest.php` (existing test exercised)
-
-Notes:
-- The `OrderResource` Filament registration remains read-only; a controller + blade form was implemented instead to satisfy the staff-facing creation requirement. If you prefer a Filament page instead, I can implement that next.
+1. **Dashboard Interface / View**: An updated premium dashboard view (`resources/views/customer/account.blade.php`) featuring a clean tabbed/card layout for profile, addresses, and order history.
+2. **Address Management**: Controller actions, routes, and views/modals to list, create, edit, and delete customer addresses.
+3. **Order and Payment History**: Display orders with customer-friendly status labels, payment status, totals, and detailed breakdown including item customization previews.
+4. **Design Previews**: Integration of signed temporary URLs for uploaded customer design previews within order items.
+5. **Interactive Actions**:
+   - **Reorder**: A controller action to re-add items from a past order into the customer's cart.
+   - **Support/Contact**: Direct links to WhatsApp or support email with contextual order information.
+6. **Feature Tests**:
+   - `CustomerDashboardTest` verifying auth protection, access control boundaries, profile/address rendering, and design file authorization.
+   - `CustomerAddressTest` verifying CRUD operations on addresses.
+   - `CustomerReorderTest` verifying the reorder action adds items back to the cart correctly.
 
 ## Acceptance Criteria
 
-- Authorized staff can create sales orders with valid customers and SKUs
-- Pricing and discounts are calculated server-side and reflected in stored order totals
-- Customization snapshots are persisted on order items; previews are derived from stored snapshot metadata
-- No direct payment gateway processing is performed during order creation (advance/final scheduling only)
-- All regression tests pass locally
+- Guests are redirected to the customer login screen.
+- Authenticated customers can only view their own profile, addresses, orders, payments, and design previews.
+- Address management allows adding/editing/deleting shipping/billing addresses, updating defaults correctly.
+- Past orders show correct customer-friendly status labels and payment status computed from payment/refund records.
+- Customization thumbnails display mockups safely using temporary signed routes.
+- The "Reorder" action copies all items from a past order into the current session cart.
+- The UI is responsive, premium, and clean.
 
 ## Tests Required
 
-- `AdminSalesOrderCreationTest` (feature)
-- Unit tests for pricing/discount edge cases
-- Authorization denial tests for unauthorized roles
-- Full backend test run before marking the subtask complete
+- `tests/Feature/CustomerDashboardTest.php`
+- `tests/Feature/CustomerAddressTest.php`
+- `tests/Feature/CustomerReorderTest.php`
+- Full test suite run using `php artisan test` before completion.
 
 ## Quality Requirements
 
-- Avoid adding migrations that modify shared order/payment tables without review
-- Keep creation flows transaction-safe and idempotent where relevant
-- Enforce input validation and controller/service authorization boundaries
-- Run `./vendor/bin/pint --test`, `./vendor/bin/phpstan analyse`, and `php artisan test` before committing
+- Avoid N+1 queries by eager-loading relations (`orders.items`, `orders.payments`, `orders.refunds`, `addresses`).
+- Use transaction safety for address updates and reorders.
+- Apply Laravel Pint formatting.
+- Ensure strict security checks in controllers/policies (i.e. customers cannot access other customers' records).
 
 ## Files Likely Affected
 
-- `apps/backend/app/Filament/Resources/Orders/OrderResource.php`
-- `apps/backend/app/Http/Controllers/Admin/SalesOrderController.php` (new)
-- `apps/backend/app/Services/SalesOrderService.php` (new)
-- `apps/backend/resources/views/admin/orders/create.blade.php` or Filament page
-- `apps/backend/tests/Feature/AdminSalesOrderCreationTest.php`
-
-- C1.1.8 and later C1.1 slices (shipping, CRM, inventory, finance reporting)
-- Shipping, CRM, inventory, and finance reporting tasks
+- `apps/backend/app/Http/Controllers/CustomerAuthController.php`
+- `apps/backend/app/Http/Controllers/CustomerAddressController.php` (new)
+- `apps/backend/app/Http/Controllers/CustomerOrderController.php` (new)
+- `apps/backend/routes/web.php`
+- `apps/backend/resources/views/customer/account.blade.php`
+- `apps/backend/resources/views/customer/addresses/` (new)
+- `apps/backend/resources/views/customer/orders/` (new)
+- `apps/backend/tests/Feature/CustomerDashboardTest.php` (new)
+- `apps/backend/tests/Feature/CustomerAddressTest.php` (new)
+- `apps/backend/tests/Feature/CustomerReorderTest.php` (new)
 
 ## Reference Details
 
@@ -92,3 +84,4 @@ Notes:
 - `docs/subtask-validation.md`
 - `docs/dependency-impact-register.md`
 - `docs/project-b-c-build-runway.md`
+- `okina_craft_full_project_spec.md`

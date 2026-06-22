@@ -18,6 +18,10 @@ class EnsureCustomerAccountAccess
         $account = Auth::guard('customer')->user();
 
         if (! $account instanceof CustomerAccount) {
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json(['message' => 'Unauthenticated.'], 401);
+            }
+
             return redirect()->route('customer.login');
         }
 
@@ -26,6 +30,10 @@ class EnsureCustomerAccountAccess
 
             $request->session()->invalidate();
             $request->session()->regenerateToken();
+
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json(['message' => 'Account is suspended or unverified.'], 403);
+            }
 
             return redirect()->route('customer.login');
         }

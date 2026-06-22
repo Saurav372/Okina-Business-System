@@ -35,9 +35,7 @@ class CustomerAuthenticationTest extends TestCase
         $this->assertAuthenticatedAs($account, 'customer');
 
         $this->get(route('customer.account'))
-            ->assertOk()
-            ->assertSee('Customer Account')
-            ->assertSee('Saurav Customer');
+            ->assertRedirect(rtrim(env('PUBLIC_SITE_URL', 'http://127.0.0.1:4321'), '/').'/account');
     }
 
     public function test_customer_registration_requires_unique_normalized_email(): void

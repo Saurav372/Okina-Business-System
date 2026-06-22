@@ -49,6 +49,7 @@ Complexity scale:
 | C6.2 Notification implementation | Complete only when versioned templates, dispatch rules, delivery logs, retries, and deduplication work without blocking the business action that emitted the event. |
 | C6.3 Google Sheets backup sync | Complete only when approved record summaries are queued, deduplicated, retryable, observable, and non-blocking to the source save. |
 | C6.4 Backup, security, and regression gates | Complete only when backup, restore, security reviews, deployment checklist, regression checklist, and rollback procedure are documented and tested. |
+| B4.1 Customer dashboard | Complete only when Astro frontend dashboard handles session validation, address CRUD/defaults, order history, tracking, signed mockup previews, and reordering, and backend API routes are fully auth-protected and pass all feature tests. |
 
 ## A1.1 Final ERD And Schema Plan
 
@@ -307,6 +308,19 @@ Verification note: B3.1.2 completed on 2026-06-19. The cart validation endpoint 
 | B3.3.7 | Failed-payment handling | B3.3.2, B3.3.3 | Failed event is recorded without corrupting order | Failed payment tests | Payments, Orders | High |
 | B3.3.8 | Refund webhook handling | A5.2, A5.3.7 | Refund event updates refund/payment records once | Refund webhook tests | Payments, Finance | High |
 | B3.3.9 | Logging and retry tests | A4.3, B3.3.1-B3.3.8 | Failures are logged and retry behavior is safe | Logging/retry tests | Payments, Jobs | High |
+
+## B4.1 Customer Dashboard
+
+| Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |
+|---|---|---|---|---|---|---|
+| B4.1.1 | Documentation updates | None | `task-list.md` and `subtask-validation.md` updated with dashboard subtasks and validation rules | Documentation review | Docs | Low |
+| B4.1.2 | API route definitions | A2.2 | Routing for session, profile, addresses (CRUD/default), orders, and reordering defined and protected | API route tests | API, Auth | Medium |
+| B4.1.3 | Address management | A3.1 | Customers can list, create, update, delete, and toggle default status of shipping/billing addresses safely | CustomerAddress tests | Customers, Addresses | High |
+| B4.1.4 | Order details & tracking | A5.1.2 | Order list and detail endpoints show customer-friendly status, payments, and signed design preview URLs | CustomerOrder tests | Orders, Files | High |
+| B4.1.5 | Reorder & support actions | B3.1 | Reorder endpoint copies past order items to active database cart; support action details provided | CustomerReorder tests | Orders, Cart | High |
+| B4.1.6 | Test suite, linting & PHPStan | B4.1.2-B4.1.5 | Entire test suite passes; Pint formatting and PHPStan static analysis verify code correctness | Feature tests, Pint, PHPStan | All Modules | Medium |
+
+Verification note: completed on 2026-06-22. The customer dashboard is fully implemented in the Astro frontend utilizing client-side fetch calls to backend API endpoints under `web` and `customer.access` middleware groups. Comprehensive feature tests in `CustomerDashboardApiTest.php` cover session verification, profile retrieval, shipping/billing address CRUD + default setting, secure order details, signed preview generation, and reordering. All tests pass, and Laravel Pint formatting is verified.
 
 ## C1.2 Sales Order Creation
 

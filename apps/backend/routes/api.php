@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\CartController;
+use App\Http\Controllers\Api\CustomerApiController;
 use App\Http\Controllers\Api\PaymentWebhookController;
 use App\Http\Controllers\Api\ProductCustomizationController;
 use App\Http\Controllers\Api\PublicCatalogController;
@@ -35,6 +36,20 @@ Route::middleware('web')->withoutMiddleware(ValidateCsrfToken::class)->prefix('c
     Route::post('/items', [CartController::class, 'store']);
     Route::patch('/items/{cartItem}', [CartController::class, 'update']);
     Route::delete('/items/{cartItem}', [CartController::class, 'destroy']);
+});
+
+Route::middleware(['web', 'customer.access'])->withoutMiddleware(ValidateCsrfToken::class)->prefix('customer')->group(function () {
+    Route::get('/session', [CustomerApiController::class, 'session']);
+    Route::post('/logout', [CustomerApiController::class, 'logout']);
+    Route::get('/profile', [CustomerApiController::class, 'profile']);
+    Route::get('/addresses', [CustomerApiController::class, 'addresses']);
+    Route::post('/addresses', [CustomerApiController::class, 'storeAddress']);
+    Route::put('/addresses/{address}', [CustomerApiController::class, 'updateAddress']);
+    Route::delete('/addresses/{address}', [CustomerApiController::class, 'destroyAddress']);
+    Route::post('/addresses/{address}/default', [CustomerApiController::class, 'setDefaultAddress']);
+    Route::get('/orders', [CustomerApiController::class, 'orders']);
+    Route::get('/orders/{order}', [CustomerApiController::class, 'orderDetail']);
+    Route::post('/orders/{order}/reorder', [CustomerApiController::class, 'reorder']);
 });
 
 Route::prefix('webhooks')->group(function () {
