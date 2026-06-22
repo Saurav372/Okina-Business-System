@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\ProductSku;
+use App\Support\Orders\OrderTotalsCalculator;
 use App\Support\Orders\SalesOrderRules;
 use App\Support\Products\CustomizationSnapshotBuilder;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +15,7 @@ readonly class SalesOrderService
     public function __construct(
         private readonly CustomizationSnapshotBuilder $snapshots,
         private readonly SalesOrderRules $rules,
+        private readonly OrderTotalsCalculator $totalsCalculator,
     ) {}
 
     /**
@@ -28,9 +30,9 @@ readonly class SalesOrderService
         $items = $input['items'] ?? [];
 
         $currency = 'INR';
-        $subtotal = 0;
 
         $orderItemAttributes = [];
+        $lineTotals = [];
 
         foreach ($items as $item) {
             $sku = ProductSku::query()
@@ -67,12 +69,20 @@ readonly class SalesOrderService
                 'price_source' => $priceSource,
             ];
 
-            $subtotal += $lineTotal;
+            $lineTotals[] = (int) $lineTotal;
         }
+        $discountAmount = isset($input['discount_amount_minor']) ? (int) $input['discount_amount_minor'] : 0;
+        $shippingAmount = isset($input['shipping_amount_minor']) ? (int) $input['shipping_amount_minor'] : 0;
+        $taxAmount = isset($input['tax_amount_minor']) ? (int) $input['tax_amount_minor'] : 0;
 
-        $total = $subtotal;
+        $totals = $this->totalsCalculator->fromLineTotals(
+            $lineTotals,
+            $discountAmount,
+            $shippingAmount,
+            $taxAmount,
+        );
 
-        $order = DB::transaction(function () use ($customer, $orderItemAttributes, $subtotal, $total, $currency, $input, $actor) {
+        $order = DB::transaction(function () use ($customer, $orderItemAttributes, $totals, $currency, $input, $actor) {
             $order = Order::create([
                 'order_type' => $this->rules->orderType(),
                 'order_source' => $this->rules->orderSource(),
@@ -83,11 +93,11 @@ readonly class SalesOrderService
                     'name' => $customer->display_name ?? $customer->name,
                     'email' => $customer->email ?? null,
                 ],
-                'subtotal_amount_minor' => (int) $subtotal,
-                'discount_amount_minor' => 0,
-                'shipping_amount_minor' => 0,
-                'tax_amount_minor' => 0,
-                'total_amount_minor' => (int) $total,
+                'subtotal_amount_minor' => $totals->subtotalAmountMinor(),
+                'discount_amount_minor' => $totals->discountAmountMinor(),
+                'shipping_amount_minor' => $totals->shippingAmountMinor(),
+                'tax_amount_minor' => $totals->taxAmountMinor(),
+                'total_amount_minor' => $totals->totalAmountMinor(),
                 'currency' => $currency,
                 'created_by_user_id' => $actor?->id ?? null,
                 'internal_notes' => isset($input['advance_payment']) ? json_encode(['payment_schedule' => $input['advance_payment']]) : null,

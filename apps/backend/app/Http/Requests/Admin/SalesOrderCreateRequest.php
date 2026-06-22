@@ -22,6 +22,9 @@ class SalesOrderCreateRequest extends FormRequest
             'advance_payment' => ['nullable', 'array'],
             'advance_payment.amount_minor' => ['required_with:advance_payment', 'integer', 'min:0'],
             'advance_payment.due_date' => ['required_with:advance_payment', 'date'],
+            'discount_amount_minor' => ['nullable', 'integer', 'min:0'],
+            'shipping_amount_minor' => ['nullable', 'integer', 'min:0'],
+            'tax_amount_minor' => ['nullable', 'integer', 'min:0'],
         ];
     }
 }
