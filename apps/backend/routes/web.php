@@ -44,5 +44,6 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     Route::get('/security', [AdminAuthController::class, 'security'])->name('admin.security');
     Route::post('/logout', [AdminAuthController::class, 'destroy'])->name('admin.logout');
     Route::get('/orders/{order:public_id}/detail', [OrderDetailController::class, 'show'])->name('admin.orders.detail');
+    Route::get('/sales-orders/create', [SalesOrderController::class, 'create'])->name('admin.sales_orders.create');
     Route::post('/sales-orders', [SalesOrderController::class, 'store'])->name('admin.sales_orders.store');
 });
