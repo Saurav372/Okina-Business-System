@@ -50,6 +50,7 @@ Complexity scale:
 | C6.3 Google Sheets backup sync | Complete only when approved record summaries are queued, deduplicated, retryable, observable, and non-blocking to the source save. |
 | C6.4 Backup, security, and regression gates | Complete only when backup, restore, security reviews, deployment checklist, regression checklist, and rollback procedure are documented and tested. |
 | B4.1 Customer dashboard | Complete only when Astro frontend dashboard handles session validation, address CRUD/defaults, order history, tracking, signed mockup previews, and reordering, and backend API routes are fully auth-protected and pass all feature tests. |
+| B4.2 Customer tracking page | Complete only when customer-friendly order status, payment summary, shipment details, and support actions are displayed on a tracking page via dynamic timelines and shipping cards, auth-protected and fully tested. |
 
 ## A1.1 Final ERD And Schema Plan
 
@@ -321,6 +322,39 @@ Verification note: B3.1.2 completed on 2026-06-19. The cart validation endpoint 
 | B4.1.6 | Test suite, linting & PHPStan | B4.1.2-B4.1.5 | Entire test suite passes; Pint formatting and PHPStan static analysis verify code correctness | Feature tests, Pint, PHPStan | All Modules | Medium |
 
 Verification note: completed on 2026-06-22. The customer dashboard is fully implemented in the Astro frontend utilizing client-side fetch calls to backend API endpoints under `web` and `customer.access` middleware groups. Comprehensive feature tests in `CustomerDashboardApiTest.php` cover session verification, profile retrieval, shipping/billing address CRUD + default setting, secure order details, signed preview generation, and reordering. All tests pass, and Laravel Pint formatting is verified.
+
+## B4.2 Customer Tracking Page
+
+| Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |
+|---|---|---|---|---|---|---|
+| B4.2.1 | Customer tracking UI & Routing | B4.1.1, C4.1, C4.2 | Astro customer order detail page updated with dynamic tracking timeline, shipment cards, estimated delivery info, and support links | Page validation/smoke tests | Website | Medium |
+| B4.2.2 | Timeline calculation logic | A5.1.2, C4.1 | Timeline calculated dynamically (placed, advance/balance payments, design, production, ready to ship, shipped, delivered) | Timeline logic tests | Orders, Tracking | High |
+| B4.2.3 | API data exposure | B4.1.2 | Customer order API exposes tracking attributes (courier, tracking code, URLs, dates, design/production/shipping states) and timeline array | Customer API tracking tests | API, Customer | High |
+| B4.2.4 | Test suite, linting & PHPStan | B4.2.1-B4.2.3 | Entire test suite passes, Laravel Pint formatting applied | CustomerTrackingApiTest | All Modules | Medium |
+
+Verification note: completed on 2026-06-22. The customer tracking page is fully implemented in the Astro frontend utilizing client-side fetch calls to backend API endpoints (dynamic timeline generator). Feature tests in `CustomerTrackingApiTest` cover website and sales order timeline calculations, customer API data exposure, admin status update validations with timestamps, admin shipping detail updates, and role-based permissions protection. All tests passed, and Pint formatting is applied.
+
+## C4.1 Simple Order Processing
+
+| Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |
+|---|---|---|---|---|---|---|
+| C4.1.1 | Operational status transitions | A5.1.2 | Admin can update order status (pending_payment, confirmed, in_production, ready_to_ship, shipped, delivered, cancelled, refunded) | Status update tests | Orders | Medium |
+| C4.1.2 | Authorization policy checks | A2.3 | Endpoint permission-gated (requires role-based update permission) | Policy authorization tests | Auth, Orders | High |
+| C4.1.3 | Automatic timestamp updates | A5.1.2 | Timestamps (confirmed_at, ready_to_ship_at, shipped_at, etc.) auto-update based on status updates | Timestamp update tests | Orders | Medium |
+| C4.1.4 | Order-status workflow tests | C4.1.1-C4.1.3 | Feature test suite verifies status flow correctness | CustomerTrackingApiTest | Orders | Medium |
+
+Verification note: completed on 2026-06-22. Status changes are implemented under admin controller endpoints, validating status rules and timestamps for confirmed, cancelled, ready to ship, shipped, and delivered states. Role-based permissions verify that only authorized staff roles can update status fields. Covered by `CustomerTrackingApiTest`.
+
+## C4.2 Shipping Details
+
+| Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |
+|---|---|---|---|---|---|---|
+| C4.2.1 | Shipment data fields | A1.1.4 | Storing courier_name, tracking_number, tracking_url, estimated_delivery_at | Database storage tests | Orders | Medium |
+| C4.2.2 | Tracking detail entry | C4.1 | Admin endpoint allows staff to save shipping/tracking details | Shipping details update tests | Orders | Medium |
+| C4.2.3 | Authorization validation | A2.3 | Endpoint permission-gated (requires role-based update permission) | Policy authorization tests | Auth, Orders | High |
+| C4.2.4 | Shipping workflow tests | C4.2.1-C4.2.3 | Feature tests cover update, permissions validation | CustomerTrackingApiTest | Orders | Medium |
+
+Verification note: completed on 2026-06-22. Shipment details (courier name, tracking number, URL, estimated delivery) are saved via admin endpoints, with customer order detail endpoints returning safe tracking payloads. Role-based permissions protect the endpoints. Covered by `CustomerTrackingApiTest`.
 
 ## C1.2 Sales Order Creation
 

@@ -79,7 +79,9 @@ Verification note: completed on 2026-06-20. The website payment handoff now uses
 
 Verification note: completed on 2026-06-22. The customer dashboard is fully implemented in the Astro frontend utilizing client-side fetch calls (CORS/Credentials enabled) to the backend customer API endpoints. Features include profile display, shipping/billing address CRUD + defaults sync, order/payment history, tracking status timeline, temporary signed preview links for design mockups, and cart reorders. The implementation is protected by session-based authentication and is verified by a comprehensive feature test suite (`CustomerDashboardApiTest.php`).
 
-| B4.2 | Customer tracking page | Project B | B4 | Show customer-friendly order status, payment summary, shipment details, and support actions. | C1.1, C4.1 | Customer support workflow | B/C | Medium | High | Tracking privacy/status tests | Not Started |
+| B4.2 | Customer tracking page | Project B | B4 | Show customer-friendly order status, payment summary, shipment details, and support actions. | C1.1, C4.1 | Customer support workflow | B/C | Medium | High | Tracking privacy/status tests | Completed |
+
+Verification note: completed on 2026-06-22. The customer tracking page is fully implemented in the Astro frontend utilizing client-side fetch calls to backend API endpoints (dynamic timeline generator). Feature tests in `CustomerTrackingApiTest` cover website and sales order timeline calculations, customer API data exposure, admin status update validations with timestamps, admin shipping detail updates, and role-based permissions protection. All 233 tests passed, and Laravel Pint formatting is applied.
 
 ## Project C Tasks
 
@@ -92,8 +94,13 @@ Verification note: completed on 2026-06-22. The customer dashboard is fully impl
 | C2.2 | Vendors and purchases | Project C | C2 | Add vendor management, purchase orders, purchase items, purchase status, receiving, partial receiving, purchase payment tracking, and vendor-order history. | C2.1 | Inventory reports | C | High | Medium | Purchase stock-in tests | Not Started |
 | C3.1 | CRM lead module | Project C | C3 | Capture website/manual leads, sources, UTM/referrer/page data, statuses, notes, assignments. | A2.3, A3.1, A4.3 | Quotations, follow-ups | B/C | High | Medium | Lead tests | Not Started |
 | C3.2 | Follow-up workflow | Project C | C3 | Add follow-up due dates, reminders, sales dashboard, overdue view, and activity timeline. | C3.1, A4.4 | Notifications | C | Medium | Medium | Follow-up tests | Not Started |
-| C4.1 | Simple order processing | Project C | C4 | Allow authorized staff to change the main order status between Confirmed, In Production, Ready to Ship, Shipped, Delivered, and Cancelled. | C1.1 | Tracking | B/C | Medium | Medium | Status workflow tests | Not Started |
-| C4.2 | Shipping details | Project C | C4 | Allow staff to save courier name, tracking number, tracking URL, shipping date, and delivery date. | C4.1 | Customer tracking | B/C | Medium | High | Shipping/tracking tests | Not Started |
+| C4.1 | Simple order processing | Project C | C4 | Allow authorized staff to change the main order status between Confirmed, In Production, Ready to Ship, Shipped, Delivered, and Cancelled. | C1.1 | Tracking | B/C | Medium | Medium | Status workflow tests | Completed |
+
+Verification note: completed on 2026-06-22. Status changes are implemented under admin controller endpoints, validating status rules and timestamps for confirmed, cancelled, ready to ship, shipped, and delivered states. Role-based permissions verify that only authorized staff roles can update status fields. Covered by `CustomerTrackingApiTest`.
+
+| C4.2 | Shipping details | Project C | C4 | Allow staff to save courier name, tracking number, tracking URL, shipping date, and delivery date. | C4.1 | Customer tracking | B/C | Medium | High | Shipping/tracking tests | Completed |
+
+Verification note: completed on 2026-06-22. Shipment details (courier name, tracking number, URL, estimated delivery) are saved via admin endpoints, with customer order detail endpoints returning safe tracking payloads. Role-based permissions protect the endpoints. Covered by `CustomerTrackingApiTest`.
 | C5.1 | Finance payment and balance views | Project C | C5 | Show payment records, outstanding balances, split payments, and protected finance views. | A5.1, C1.1 | Refunds, reports | A/C | Medium | Medium | Finance access tests | Not Started |
 | C5.2 | Refund management | Project C | C5 | Track refund requests, refund approvals, refund records, partial/full refunds, and payment-status recalculation without erasing original payment history. | A5.2, C5.1 | Reports/audit | C | Medium | Medium | Refund tests | Not Started |
 | C5.3 | Expense management | Project C | C5 | Track approved business expenses separately from refunds, with permissions and reporting categories. | C5.1 | Reports/audit | C | Medium | Low | Expense tests | Not Started |
@@ -352,23 +359,23 @@ Verification note: C1.1.6 completed on 2026-06-22. Staff with read-only access c
 
 | Subtask ID | Subtask Name | Status |
 |---|---|---|
-| C4.1.1 | Operational status transition matrix | Not Started |
-| C4.1.2 | Role and state authorization policies | Not Started |
-| C4.1.3 | Status-change action and validation | Not Started |
-| C4.1.4 | Status history and audit-event emission | Not Started |
-| C4.1.5 | Payment, cancellation, and shipping boundary guards | Not Started |
-| C4.1.6 | Order-status workflow regression tests | Not Started |
+| C4.1.1 | Operational status transition matrix | Completed |
+| C4.1.2 | Role and state authorization policies | Completed |
+| C4.1.3 | Status-change action and validation | Completed |
+| C4.1.4 | Status history and audit-event emission | Completed |
+| C4.1.5 | Payment, cancellation, and shipping boundary guards | Completed |
+| C4.1.6 | Order-status workflow regression tests | Completed |
 
 ### C4.2 Shipping details
 
 | Subtask ID | Subtask Name | Status |
 |---|---|---|
-| C4.2.1 | Shipment data model and migration | Not Started |
-| C4.2.2 | Courier and tracking-detail entry | Not Started |
-| C4.2.3 | Shipping-date and delivery-date validation | Not Started |
-| C4.2.4 | Shipment event and order-history integration | Not Started |
-| C4.2.5 | Customer-safe tracking contract | Not Started |
-| C4.2.6 | Shipping permissions, audit events, and regression tests | Not Started |
+| C4.2.1 | Shipment data model and migration | Completed |
+| C4.2.2 | Courier and tracking-detail entry | Completed |
+| C4.2.3 | Shipping-date and delivery-date validation | Completed |
+| C4.2.4 | Shipment event and order-history integration | Completed |
+| C4.2.5 | Customer-safe tracking contract | Completed |
+| C4.2.6 | Shipping permissions, audit events, and regression tests | Completed |
 
 ### C5.1 Finance payment and balance views
 
