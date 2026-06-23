@@ -8,11 +8,13 @@ use App\Models\Lead;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\Quotation;
 use App\Models\StoredFile;
 use App\Policies\LeadPolicy;
 use App\Policies\OrderPolicy;
 use App\Policies\ProductCategoryPolicy;
 use App\Policies\ProductPolicy;
+use App\Policies\QuotationPolicy;
 use App\Policies\StoredFilePolicy;
 use App\Support\Products\CustomizationOptionRules;
 use App\Support\Products\PublicCatalogRules;
@@ -40,5 +42,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Product::class, ProductPolicy::class);
         Gate::policy(ProductCategory::class, ProductCategoryPolicy::class);
         Gate::policy(Lead::class, LeadPolicy::class);
+        Gate::policy(Quotation::class, QuotationPolicy::class);
     }
 }

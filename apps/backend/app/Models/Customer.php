@@ -59,4 +59,9 @@ class Customer extends Model
     {
         return $this->hasMany(CustomerAddress::class);
     }
+
+    public function quotations(): HasMany
+    {
+        return $this->hasMany(Quotation::class);
+    }
 }

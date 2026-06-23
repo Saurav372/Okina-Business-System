@@ -199,6 +199,11 @@ class Lead extends Model
         return $this->belongsTo(User::class, 'created_by_user_id');
     }
 
+    public function quotations(): HasMany
+    {
+        return $this->hasMany(Quotation::class);
+    }
+
     public function activities(): HasMany
     {
         return $this->hasMany(LeadActivity::class)->orderBy('occurred_at');

@@ -8,22 +8,22 @@ C1.3 Quotations and bulk-order conversion
 
 ## Current Subtask
 
-C1.3.2 Quotation creation
+C1.3.3 Quotation items and pricing
 
 ## Current Status
 
-Not Started. C1.3.1 is completed and verified.
+Not Started. C1.3.2 is completed and verified.
 
 ## Goal
 
-Allow staff to create a quotation originating from a qualified lead or manually from scratch.
+Ensure detailed items and pricing calculations are fully supported on quotations, covering catalog fallbacks, manual overrides, discounts, shipping, tax rates, and final totals.
 
 ## Dependencies
 
-- C1.3.1 Bulk enquiry capture (Completed)
+- C1.3.2 Quotation creation (Completed)
 
 ## Required Deliverables
 
-1. **Quotation schema & migrations**: Build the migrations and models for quotations and quotation items.
-2. **Creation endpoint**: Enable staff to create a quotation from a lead or manual entries.
-3. **Feature tests**: Validate quotation creation and data snapshots.
+1. **Deterministic pricing logic**: Check catalog fallbacks and overrides for items.
+2. **Defensive Totals Calculation**: Handle tax rates and capping discounts correctly.
+3. **Integration tests**: Verify all pricing combinations and calculations in the test suite.

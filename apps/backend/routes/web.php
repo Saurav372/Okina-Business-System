@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\AdminOrderDesignFileController;
 use App\Http\Controllers\Admin\LeadActivityController;
 use App\Http\Controllers\Admin\LeadController;
 use App\Http\Controllers\Admin\OrderDetailController;
+use App\Http\Controllers\Admin\QuotationController;
 use App\Http\Controllers\Admin\SalesOrderController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\CustomerAuthController;
@@ -60,6 +61,7 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     Route::patch('/leads/{lead}', [LeadController::class, 'update'])->name('admin.leads.update');
     Route::get('/leads/{lead}/activities', [LeadActivityController::class, 'index'])->name('admin.leads.activities.index');
     Route::post('/leads/{lead}/activities', [LeadActivityController::class, 'store'])->name('admin.leads.activities.store');
+    Route::post('/quotations', [QuotationController::class, 'store'])->name('admin.quotations.store');
     // B2.2.8 — Admin design-file access bridge (order-scoped, policy-gated)
     Route::get('/orders/{order:public_id}/files/{file:public_id}/preview', [AdminOrderDesignFileController::class, 'preview'])->name('admin.orders.files.preview')->withoutScopedBindings();
     Route::get('/orders/{order:public_id}/files/{file:public_id}/download', [AdminOrderDesignFileController::class, 'download'])->name('admin.orders.files.download')->withoutScopedBindings();
