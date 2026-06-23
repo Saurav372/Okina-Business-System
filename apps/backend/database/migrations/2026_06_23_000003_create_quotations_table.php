@@ -67,6 +67,7 @@ return new class extends Migration
             $table->timestamp('rejected_at')->nullable();
             $table->timestamp('expired_at')->nullable();
             $table->timestamp('converted_at')->nullable();
+            $table->timestamp('revised_at')->nullable();
             $table->string('conversion_idempotency_key', 120)->nullable()->unique();
 
             $table->text('customer_note')->nullable();

@@ -416,6 +416,10 @@ Verification note: C1.3.1 completed on 2026-06-23. The bulk enquiry capture flow
 
 Verification note: C1.3.2 completed on 2026-06-23. Staff can create quotations originating from a qualified lead, customer, or manual entry with reachability rules. Validates early that lead or customer public IDs exist, enforces source exclusivity, auto-populates valid_until to 30 days from now, and computes taxes using PHP_ROUND_HALF_UP on a defensive taxable amount base. Returns public-safe payloads hiding internal database IDs. Formatted via Laravel Pint and validated via QuotationCreationTest.php with 16 tests and 92 assertions. All 343 tests passed.
 
+Verification note: C1.3.3 completed on 2026-06-23. Quotation item and pricing logic is fully integrated and tested as part of the core quotation controller and request flow. Item pricing is resolved deterministically (explicit override -> SKU price -> product base price -> 422 validation failure). Subtotal, discounts (capped at subtotal), shipping, tax, and order totals are calculated using OrderTotalsCalculator. Enforces defensive taxable base calculations and PHP_ROUND_HALF_UP rounding rules. Formatted using Laravel Pint and fully tested via QuotationCreationTest.php. All 343 tests passed.
+
+Verification note: C1.3.4 completed on 2026-06-23. Quotation status transitions are implemented with state transition validation, automated timestamp logging, and a dedicated status update endpoint. Validates transitions based on the recommended sales workflow state machine (draft -> sent -> cancelled/approved/rejected/revision_requested/expired -> revised/sent -> cancelled/converted -> terminal). Supports `revised_at` timestamp. Rejects identical state transitions with a 422 validation failure, and blocks modifications on terminal states (converted/cancelled). Returns full updated quotation JSON payloads. Formatted via Laravel Pint and validated via QuotationStatusTest.php with 6 tests and 46 assertions. All 349 tests passed.
+
 ## C2.1 Inventory Movements And Stock Handling
 
 | Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |

@@ -11,8 +11,11 @@ use App\Models\Quotation;
 use App\Support\Orders\OrderTotalsCalculator;
 use App\Support\Products\CustomizationSnapshotBuilder;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class QuotationController extends Controller
@@ -216,5 +219,61 @@ class QuotationController extends Controller
             'created_at' => $quotation->created_at?->toIso8601String() ?? $quotation->created_at,
             'updated_at' => $quotation->updated_at?->toIso8601String() ?? $quotation->updated_at,
         ], 201);
+    }
+
+    public function updateStatus(Request $request, Quotation $quotation)
+    {
+        Gate::authorize('update', $quotation);
+
+        $validated = $request->validate([
+            'status' => ['required', 'string', Rule::in(Quotation::STATUSES)],
+            'note' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $targetStatus = $validated['status'];
+
+        if (! $quotation->canTransitionTo($targetStatus)) {
+            throw ValidationException::withMessages([
+                'status' => ["Invalid quotation status transition from {$quotation->status} to {$targetStatus}."],
+            ]);
+        }
+
+        $now = now();
+        $updateData = [
+            'status' => $targetStatus,
+        ];
+
+        // Automate timestamp logging and relations based on target status
+        if ($targetStatus === Quotation::STATUS_SENT) {
+            $updateData['sent_at'] = $now;
+        } elseif ($targetStatus === Quotation::STATUS_APPROVED) {
+            $updateData['approved_at'] = $now;
+            $updateData['approved_by_user_id'] = Auth::id() ?? $request->user()?->id;
+        } elseif ($targetStatus === Quotation::STATUS_REJECTED) {
+            $updateData['rejected_at'] = $now;
+        } elseif ($targetStatus === Quotation::STATUS_EXPIRED) {
+            $updateData['expired_at'] = $now;
+        } elseif ($targetStatus === Quotation::STATUS_CONVERTED) {
+            $updateData['converted_at'] = $now;
+        } elseif ($targetStatus === Quotation::STATUS_REVISED) {
+            $updateData['revised_at'] = $now;
+        }
+
+        $quotation->update($updateData);
+
+        return response()->json([
+            'success' => true,
+            'quotation' => [
+                'public_id' => $quotation->public_id,
+                'status' => $quotation->status,
+                'sent_at' => $quotation->sent_at?->toIso8601String() ?? $quotation->sent_at,
+                'approved_at' => $quotation->approved_at?->toIso8601String() ?? $quotation->approved_at,
+                'rejected_at' => $quotation->rejected_at?->toIso8601String() ?? $quotation->rejected_at,
+                'expired_at' => $quotation->expired_at?->toIso8601String() ?? $quotation->expired_at,
+                'converted_at' => $quotation->converted_at?->toIso8601String() ?? $quotation->converted_at,
+                'revised_at' => $quotation->revised_at?->toIso8601String() ?? $quotation->revised_at,
+                'updated_at' => $quotation->updated_at?->toIso8601String() ?? $quotation->updated_at,
+            ],
+        ]);
     }
 }

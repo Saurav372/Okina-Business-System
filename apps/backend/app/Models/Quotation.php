@@ -34,6 +34,7 @@ use Illuminate\Support\Str;
     'rejected_at',
     'expired_at',
     'converted_at',
+    'revised_at',
     'conversion_idempotency_key',
     'customer_note',
     'internal_notes',
@@ -101,6 +102,7 @@ class Quotation extends Model
             'rejected_at' => 'datetime',
             'expired_at' => 'datetime',
             'converted_at' => 'datetime',
+            'revised_at' => 'datetime',
             'subtotal_amount_minor' => 'integer',
             'discount_amount_minor' => 'integer',
             'shipping_amount_minor' => 'integer',
@@ -150,5 +152,59 @@ class Quotation extends Model
     public function items(): HasMany
     {
         return $this->hasMany(QuotationItem::class)->orderBy('sort_order');
+    }
+
+    public function canTransitionTo(string $targetStatus): bool
+    {
+        if ($this->status === $targetStatus) {
+            return false;
+        }
+
+        // Terminal statuses cannot transition
+        if (in_array($this->status, [self::STATUS_CANCELLED, self::STATUS_CONVERTED], true)) {
+            return false;
+        }
+
+        return match ($this->status) {
+            self::STATUS_DRAFT => in_array($targetStatus, [
+                self::STATUS_SENT,
+                self::STATUS_CANCELLED,
+            ], true),
+
+            self::STATUS_SENT => in_array($targetStatus, [
+                self::STATUS_APPROVED,
+                self::STATUS_REJECTED,
+                self::STATUS_REVISION_REQUESTED,
+                self::STATUS_EXPIRED,
+                self::STATUS_CANCELLED,
+            ], true),
+
+            self::STATUS_REVISION_REQUESTED => in_array($targetStatus, [
+                self::STATUS_REVISED,
+                self::STATUS_CANCELLED,
+            ], true),
+
+            self::STATUS_REVISED => in_array($targetStatus, [
+                self::STATUS_SENT,
+                self::STATUS_CANCELLED,
+            ], true),
+
+            self::STATUS_REJECTED => in_array($targetStatus, [
+                self::STATUS_REVISION_REQUESTED,
+                self::STATUS_CANCELLED,
+            ], true),
+
+            self::STATUS_EXPIRED => in_array($targetStatus, [
+                self::STATUS_REVISED,
+                self::STATUS_CANCELLED,
+            ], true),
+
+            self::STATUS_APPROVED => in_array($targetStatus, [
+                self::STATUS_CONVERTED,
+                self::STATUS_CANCELLED,
+            ], true),
+
+            default => false,
+        };
     }
 }
