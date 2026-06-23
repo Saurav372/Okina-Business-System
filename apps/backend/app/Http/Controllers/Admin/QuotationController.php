@@ -234,6 +234,8 @@ class QuotationController extends Controller
         $now = now();
 
         DB::transaction(function () use ($quotation, $targetStatus, $validated, $now, $request) {
+            // Lock quotation for update to prevent concurrent revision/status update collisions
+            Quotation::where('id', $quotation->id)->lockForUpdate()->first();
             $quotation->refresh();
 
             if (! $quotation->canTransitionTo($targetStatus)) {
@@ -246,8 +248,58 @@ class QuotationController extends Controller
                 'status' => $targetStatus,
             ];
 
-            // Automate timestamp logging and relations based on target status
-            if ($targetStatus === Quotation::STATUS_SENT) {
+            if ($targetStatus === Quotation::STATUS_REVISED) {
+                // Serialize line items snapshot
+                $itemsSnapshot = $quotation->items->map(fn ($item) => [
+                    'product_sku_id' => $item->product_sku_id,
+                    'product_id_snapshot' => $item->product_id_snapshot,
+                    'product_name_snapshot' => $item->product_name_snapshot,
+                    'sku_code_snapshot' => $item->sku_code_snapshot,
+                    'item_name' => $item->item_name,
+                    'selected_options_snapshot' => $item->selected_options_snapshot,
+                    'customization_snapshot' => $item->customization_snapshot,
+                    'quantity' => $item->quantity,
+                    'unit_price_minor' => $item->unit_price_minor,
+                    'discount_amount_minor' => $item->discount_amount_minor,
+                    'tax_amount_minor' => $item->tax_amount_minor,
+                    'line_subtotal_minor' => $item->line_subtotal_minor,
+                    'line_total_minor' => $item->line_total_minor,
+                    'currency' => $item->currency,
+                    'sort_order' => $item->sort_order,
+                    'customer_note' => $item->customer_note,
+                    'internal_notes' => $item->internal_notes,
+                ])->toArray();
+
+                // Clean customer snapshot from security token (approval_token)
+                $customerSnapshot = $quotation->customer_snapshot;
+                if (is_array($customerSnapshot)) {
+                    unset($customerSnapshot['approval_token']);
+                }
+
+                // Create the revision archive (representing the version being replaced)
+                $quotation->revisions()->create([
+                    'revision_number' => $quotation->current_revision_number,
+                    'previous_status' => $quotation->status,
+                    'quotation_type' => $quotation->quotation_type,
+                    'valid_until' => $quotation->valid_until,
+                    'customer_note' => $quotation->customer_note,
+                    'subtotal_amount_minor' => $quotation->subtotal_amount_minor,
+                    'discount_amount_minor' => $quotation->discount_amount_minor,
+                    'shipping_amount_minor' => $quotation->shipping_amount_minor,
+                    'tax_amount_minor' => $quotation->tax_amount_minor,
+                    'total_amount_minor' => $quotation->total_amount_minor,
+                    'currency' => $quotation->currency,
+                    'items_snapshot' => $itemsSnapshot,
+                    'customer_snapshot' => $customerSnapshot,
+                    'reason' => $validated['note'] ?? null,
+                    'created_by_user_id' => Auth::id() ?? $request->user()?->id,
+                ]);
+
+                // Increment revision counter for the new active version
+                $quotation->current_revision_number += 1;
+                $updateData['current_revision_number'] = $quotation->current_revision_number;
+                $updateData['revised_at'] = $now;
+            } elseif ($targetStatus === Quotation::STATUS_SENT) {
                 $updateData['sent_at'] = $now;
             } elseif ($targetStatus === Quotation::STATUS_APPROVED) {
                 $updateData['approved_at'] = $now;
@@ -258,8 +310,6 @@ class QuotationController extends Controller
                 $updateData['expired_at'] = $now;
             } elseif ($targetStatus === Quotation::STATUS_CONVERTED) {
                 $updateData['converted_at'] = $now;
-            } elseif ($targetStatus === Quotation::STATUS_REVISED) {
-                $updateData['revised_at'] = $now;
             }
 
             $quotation->update($updateData);

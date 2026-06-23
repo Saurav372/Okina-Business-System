@@ -161,6 +161,11 @@ class Quotation extends Model
         return $this->hasMany(QuotationApprovalEvent::class);
     }
 
+    public function revisions(): HasMany
+    {
+        return $this->hasMany(QuotationRevision::class);
+    }
+
     public function isApproved(): bool
     {
         return $this->status === self::STATUS_APPROVED;
