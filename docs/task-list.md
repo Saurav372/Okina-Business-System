@@ -336,13 +336,17 @@ Verification note: C1.1.6 completed on 2026-06-22. Staff with read-only access c
 
 | Subtask ID | Subtask Name | Status |
 |---|---|---|
-| C3.1.1 | Lead data model and safe migration | Not Started |
-| C3.1.2 | Manual lead capture | Not Started |
+| C3.1.1 | Lead data model and safe migration | Completed |
+| C3.1.2 | Manual lead capture | Completed |
 | C3.1.3 | Website/bulk lead capture endpoint | Not Started |
 | C3.1.4 | Source, referrer, page, and UTM attribution | Not Started |
 | C3.1.5 | Lead lifecycle, ownership, and assignment | Not Started |
 | C3.1.6 | Notes and activity timeline | Not Started |
 | C3.1.7 | Lead authorization, list/detail views, and regression tests | Not Started |
+
+Verification note: C3.1.1 completed on 2026-06-23. The implementation adds a safe `create_leads_table` migration with all fields and 8 composite indexes from `crm-quotations-schema.md`, a `Lead` Eloquent model with auto-generated `LD-` public_id, default status/priority/country_code, JSON casts, lifecycle datetime casts, helper methods (`isOpen`, `isConverted`, `hasContactRoute`), CRM query scopes, and BelongsTo relations. `LeadFactory` adds states for `websiteBulkEnquiry`, `manual`, `assignedTo`, `qualified`, `won`, `lost`, `spam`, `highPriority`, `urgent`, and `createdBy`. `php artisan migrate --force` and `php artisan test --filter=LeadModelTest` (31 tests, 72 assertions) passed. `php artisan test` (278 tests, 1612 assertions) passed. `./vendor/bin/pint` applied and passed.
+
+Verification note: C3.1.2 completed on 2026-06-23. The manual lead capture endpoint is fully implemented under `POST /admin/leads` and protected by the `['auth', 'dashboard.access']` middleware group. Gated via `LeadPolicy` requiring `leads.manage` permission. Input validation via `StoreLeadRequest` utilizes centralized `Lead::SOURCES`, `Lead::STATUSES`, and `Lead::PRIORITIES` constants. The response is public-safe and contains no internal database IDs. Covered by 6 feature tests in `ManualLeadCaptureTest.php`. All tests passed, and Laravel Pint formatting is applied.
 
 ### C3.2 Follow-up workflow
 
@@ -436,7 +440,10 @@ Verification note: C1.1.6 completed on 2026-06-22. Staff with read-only access c
 | C1.2.7 | Order editing rules | Completed |
 | C1.2.8 | Order confirmation | Completed |
 
+Verification note: C1.2.7 completed on 2026-06-23. The order editing rules are fully implemented with permission checks (`Gate::authorize`), pessimistic locking (`lockForUpdate`) on both the order and order items inside the transaction, and automatic totals recalculation. An audit event (`orders.order_edited`) is emitted inside `DB::afterCommit` with a sanitized payload tracking header and item-level changes. Covered by 7 feature tests in `SalesOrderEditTest.php` and verified by `AuditEventContractTest.php`. All tests passed.
+
 Verification note: C1.2.8 completed on 2026-06-23. The order confirmation transition is protected using OrderStatus::canTransitionTo() and updateStatus validation rules. Verified via OrderConfirmationTest.php with 7 tests and 24 assertions. All tests passed, and Laravel Pint formatting is applied.
+
 
 ### C1.3 Quotations and bulk-order conversion
 

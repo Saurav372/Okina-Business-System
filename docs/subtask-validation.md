@@ -373,6 +373,24 @@ Verification note: C1.2.7 completed on 2026-06-23. The order editing rules are f
 
 Verification note: C1.2.8 completed on 2026-06-23. The order confirmation transition is protected using OrderStatus::canTransitionTo() and updateStatus validation rules. Verified via OrderConfirmationTest.php with 7 tests and 24 assertions. All tests passed, and Laravel Pint formatting is applied.
 
+## C3.1 CRM Lead Module
+
+| Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |
+|---|---|---|---|---|---|---|
+| C3.1.1 | `leads` table migration, `Lead` Eloquent model, `LeadFactory`, and unit tests | A2.3, A3.1, A4.3 | Migration runs and rolls back cleanly; `Lead` auto-generates `public_id` starting with `LD-`; all fields and indexes from `crm-quotations-schema.md` are present; status/priority enums are enforced; unit tests pass | `tests/Unit/LeadModelTest.php`, migrate/rollback check | CRM, Database | High |
+| C3.1.2 | Manual lead capture endpoint and admin form | A2.3, C3.1.1 | Authorized staff can create a lead with contact, source, priority, and product interest data; unauthenticated/unauthorized requests are rejected; validation errors are returned for missing or invalid fields | Manual lead creation tests | CRM, Admin, Auth | Medium |
+| C3.1.3 | Website/bulk lead capture endpoint | C3.1.1, B3.1.5 | Website bulk enquiry submits a lead with raw contact, UTM, referrer, and product interest data; duplicate detection prevents identical submissions within a short window; no customer record is created without qualification | Bulk enquiry endpoint tests | CRM, Website | Medium |
+| C3.1.4 | Source, referrer, page, and UTM attribution storage | C3.1.1, C3.1.3 | UTM source/medium/campaign/content/term, referrer URL, and landing page URL are stored on the lead; attribution data is excluded from customer-facing APIs; internal views expose attribution fields | Attribution field tests | CRM, Website | Low |
+| C3.1.5 | Lead lifecycle, ownership, and assignment | C3.1.1, A2.3 | Status can progress through `new`, `assigned`, `contacted`, `qualified`, `quoted`, `won`, `lost`, `spam`; invalid status transitions are rejected; assignment to a staff user is recorded and triggers an activity entry; `assigned_to_user_id` updates safely | Lead status/assignment tests | CRM, Admin, Auth | High |
+| C3.1.6 | Notes and activity timeline | C3.1.1, C3.1.5 | Staff can add notes to a lead; activity entries are created for status changes, assignments, and notes; activity timeline is returned in chronological order; sensitive content is not exposed in customer-facing APIs | Activity timeline tests | CRM, Admin | Medium |
+| C3.1.7 | Lead authorization, list/detail views, and regression tests | A2.3, C3.1.1–C3.1.6 | Only authorized staff roles can list, view, create, assign, and update leads; unauthorized roles receive 403; lead list returns paginated safe summaries; lead detail returns full authorized view; all lead flow regression tests pass | Lead authorization tests, lead list/detail tests | CRM, Admin, Auth | High |
+
+Verification note: C3.1.1 completed on 2026-06-23. The implementation adds a safe `create_leads_table` migration with all fields and 8 composite indexes from `crm-quotations-schema.md`, a `Lead` Eloquent model with auto-generated `LD-` public_id, default status/priority/country_code on creation, JSON casts for `product_interest`, datetime casts for 4 lifecycle timestamp fields, helper methods (`isOpen`, `isConverted`, `hasContactRoute`), CRM query scopes (`open`, `assignedTo`, `byStatus`, `bySource`, `byPriority`), and BelongsTo relations to `customer`, `assignedTo`, and `creator`. `LeadFactory` includes 10 named states. `php artisan migrate --force`, `php artisan test --filter=LeadModelTest` (31 tests, 72 assertions), and `php artisan test` (278 tests, 1612 assertions) passed. `./vendor/bin/pint` applied and passed.
+
+Verification note: C3.1.2 completed on 2026-06-23. The manual lead capture endpoint is fully implemented under `POST /admin/leads` and protected by the `['auth', 'dashboard.access']` middleware group. Gated via `LeadPolicy` requiring `leads.manage` permission. Input validation via `StoreLeadRequest` utilizes centralized `Lead::SOURCES`, `Lead::STATUSES`, and `Lead::PRIORITIES` constants. The response is public-safe and contains no internal database IDs. Covered by 6 feature tests in `ManualLeadCaptureTest.php`. All tests passed, and Laravel Pint formatting is applied.
+
+
+
 ## C1.3 Quotations And Bulk-Order Conversion
 
 | Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |

@@ -4,58 +4,61 @@ Use this file as the task-specific context for a coding session. Update it befor
 
 ## Current Parent Task
 
-C1 Orders, Sales Orders and Quotations
+C3.1 CRM lead module
 
 ## Current Subtask
 
-C1.2.8 Order confirmation
+C3.1.3 Website/bulk lead capture endpoint
 
 ## Current Status
 
-Not Started. We need to plan and implement the order confirmation flow and verification rules.
+Not Started. C3.1.2 (Manual lead capture) is completed. We now need to implement the public website bulk enquiry endpoint where prospective customers can submit their contact details, UTM attribution data, and custom printing requirements, which gets captured as a lead in the backend database.
 
 ## Goal
 
-Allow staff with appropriate permissions to confirm website orders, transitioning them from `pending_payment` to `confirmed` status. The system must enforce status transitions, validate permissions, record timestamps (`confirmed_at`), and ensure the confirmation flow adheres to the business rules.
+Create a public API endpoint allowing guests on the customer-facing website to submit bulk enquiries. The endpoint must validate contact information, support UTM and attribution fields, perform spam/duplicate submission checks within a short window, write to the `leads` table with source `website_bulk_enquiry` and status `new`, and return a public-safe response.
 
 ## Dependencies
 
-- C1.2.6 Sales order creation (Completed)
-- A5.1.2 Order status definitions (Completed)
+- C3.1.1 Lead data model and safe migration (Completed)
+- C3.1.2 Manual lead capture (Completed)
 
 ## Required Deliverables
 
-1. **Validation & Transition Logic**: Verify that a website order can be transitioned from `pending_payment` to `confirmed` through the admin endpoint or action, enforcing proper status flow limits (e.g. preventing confirmation of already cancelled/delivered/refunded orders).
-2. **Permission Guarding**: Ensure only authorized roles/permissions can confirm an order.
-3. **Audit Event Emission**: Verify if confirmation triggers an audit event, or implement one if needed according to standard specifications.
-4. **Feature Tests**:
-   - `OrderConfirmationTest` or extending existing tests verifying transition rules, permissions, and database timestamp updates.
+1. **Public Route**: Register `POST /catalog/leads` (or similar prefix) in `routes/api.php` under public/guest access.
+2. **Form Request**: Create `app/Http/Requests/Lead/StorePublicLeadRequest.php` validating source (must be `website_bulk_enquiry`), contact name, email, phone, details, and optional UTM fields.
+3. **Controller**: Create `app/Http/Controllers/Api/PublicLeadController.php` with a `store` method.
+4. **Duplicate Prevention**: Implement duplicate checking logic (e.g. check for identical contact email/phone and product interest submitted within the last 5 minutes) to return 429 or custom duplicate warning instead of inserting duplicate rows.
+5. **Feature Test**: Create `tests/Feature/WebsiteLeadCaptureTest.php` to verify successful public capture, validation failures, duplicate submission blocking, and public-safe response shape.
 
 ## Acceptance Criteria
 
-- Staff with correct permissions can confirm an order (transition status to `confirmed`).
-- Confirming an order sets `confirmed_at` to the current timestamp.
-- Orders in terminal states (cancelled, delivered, refunded) cannot be confirmed.
-- All tests compile and pass.
+- `POST /api/catalog/leads` (or matching public route) with valid payload creates a lead record and returns HTTP 201 with public-safe fields.
+- The public response does not expose internal numeric IDs.
+- Submitting the same request payload (email, phone, product interest) within 5 minutes returns a validation or throttle failure (e.g., HTTP 429 or 422 with a clear duplicate message).
+- Standard guest requests do not require authentication or permissions.
 
 ## Tests Required
 
-- `tests/Feature/OrderConfirmationTest.php`
-- Run the full test suite via `php artisan test`.
+- `tests/Feature/WebsiteLeadCaptureTest.php`
+- Run via `php artisan test --filter=WebsiteLeadCaptureTest`
 
 ## Quality Requirements
 
-- Ensure database transactions and locks are utilized where necessary.
+- Enforce standard Laravel validations.
 - Apply Laravel Pint formatting.
+- Exclude internal database IDs.
 
 ## Files Likely Affected
 
-- `apps/backend/app/Http/Controllers/Admin/AdminOrderActionController.php`
-- `apps/backend/tests/Feature/OrderConfirmationTest.php` (new)
+- `apps/backend/routes/api.php` (new route)
+- `apps/backend/app/Http/Controllers/Api/PublicLeadController.php` (new)
+- `apps/backend/app/Http/Requests/Lead/StorePublicLeadRequest.php` (new)
+- `apps/backend/tests/Feature/WebsiteLeadCaptureTest.php` (new)
 
 ## Reference Details
 
 - `docs/PROJECT-CONTEXT.md`
+- `docs/crm-quotations-schema.md`
 - `docs/task-list.md`
 - `docs/subtask-validation.md`
-- `docs/dependency-impact-register.md`
