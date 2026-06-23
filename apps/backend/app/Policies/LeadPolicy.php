@@ -67,4 +67,28 @@ class LeadPolicy
 
         return false;
     }
+
+    /**
+     * Determine whether the user can view the lead's activities timeline.
+     */
+    public function viewActivities(Authenticatable $actor, Lead $lead): bool
+    {
+        if ($actor instanceof User) {
+            return $actor->hasPermissionTo('leads.manage');
+        }
+
+        return false;
+    }
+
+    /**
+     * Determine whether the user can create an activity/note on the lead.
+     */
+    public function createActivity(Authenticatable $actor, Lead $lead): bool
+    {
+        if ($actor instanceof User) {
+            return $actor->hasPermissionTo('leads.manage');
+        }
+
+        return false;
+    }
 }
