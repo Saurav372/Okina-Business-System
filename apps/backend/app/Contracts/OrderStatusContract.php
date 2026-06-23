@@ -16,4 +16,6 @@ interface OrderStatusContract
      * @return array<string, mixed>
      */
     public function toArray(): array;
+
+    public function canTransitionTo(OrderStatusContract $target): bool;
 }

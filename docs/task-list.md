@@ -434,7 +434,9 @@ Verification note: C1.1.6 completed on 2026-06-22. Staff with read-only access c
 | C1.2.5 | Advance/final payment structure | Completed |
 | C1.2.6 | Order creation | Completed |
 | C1.2.7 | Order editing rules | Completed |
-| C1.2.8 | Order confirmation | Not Started |
+| C1.2.8 | Order confirmation | Completed |
+
+Verification note: C1.2.8 completed on 2026-06-23. The order confirmation transition is protected using OrderStatus::canTransitionTo() and updateStatus validation rules. Verified via OrderConfirmationTest.php with 7 tests and 24 assertions. All tests passed, and Laravel Pint formatting is applied.
 
 ### C1.3 Quotations and bulk-order conversion
 

@@ -66,6 +66,34 @@ enum OrderStatus: string implements OrderStatusContract
         ];
     }
 
+    public function canTransitionTo(OrderStatusContract $target): bool
+    {
+        $targetStatus = $target instanceof self ? $target : self::tryFrom($target->value());
+        if (! $targetStatus) {
+            return false;
+        }
+
+        // Allow transition to self (no-op)
+        if ($this === $targetStatus) {
+            return true;
+        }
+
+        // Terminal states cannot transition to any other state
+        if ($this->isTerminal()) {
+            return false;
+        }
+
+        return match ($this) {
+            self::PendingPayment => in_array($targetStatus, [self::Confirmed, self::Cancelled], true),
+            self::Confirmed => in_array($targetStatus, [self::InProduction, self::Cancelled, self::Refunded], true),
+            self::InProduction => in_array($targetStatus, [self::ReadyToShip, self::Refunded], true),
+            self::ReadyToShip => in_array($targetStatus, [self::Shipped, self::Refunded], true),
+            self::Shipped => in_array($targetStatus, [self::Delivered, self::Refunded], true),
+            self::Delivered => in_array($targetStatus, [self::Refunded], true),
+            default => false,
+        };
+    }
+
     /**
      * @return array<int, self>
      */

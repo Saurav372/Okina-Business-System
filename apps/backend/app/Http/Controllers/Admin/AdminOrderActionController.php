@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class AdminOrderActionController extends Controller
 {
@@ -24,6 +26,15 @@ class AdminOrderActionController extends Controller
             'shipping_status' => ['required', 'string', Rule::in(['not_shipped', 'shipped', 'delivered'])],
             'cancellation_reason' => ['nullable', 'string'],
         ]);
+
+        $currentStatus = OrderStatus::tryFrom($order->status);
+        $targetStatus = OrderStatus::tryFrom($validated['status']);
+
+        if ($currentStatus && $targetStatus && ! $currentStatus->canTransitionTo($targetStatus)) {
+            throw ValidationException::withMessages([
+                'status' => 'Invalid order status transition.',
+            ]);
+        }
 
         // Auto-update timestamps based on status transitions
         if ($validated['status'] === 'confirmed' && $order->confirmed_at === null) {

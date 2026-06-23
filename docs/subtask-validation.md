@@ -371,6 +371,8 @@ Verification note: completed on 2026-06-22. Shipment details (courier name, trac
 
 Verification note: C1.2.7 completed on 2026-06-23. The order editing rules are fully implemented with permission checks (`Gate::authorize`), pessimistic locking (`lockForUpdate`) on both the order and order items inside the transaction, and automatic totals recalculation. An audit event (`orders.order_edited`) is emitted inside `DB::afterCommit` with a sanitized payload tracking header and item-level changes. Covered by 7 feature tests in `SalesOrderEditTest.php` and verified by `AuditEventContractTest.php`. All tests passed.
 
+Verification note: C1.2.8 completed on 2026-06-23. The order confirmation transition is protected using OrderStatus::canTransitionTo() and updateStatus validation rules. Verified via OrderConfirmationTest.php with 7 tests and 24 assertions. All tests passed, and Laravel Pint formatting is applied.
+
 ## C1.3 Quotations And Bulk-Order Conversion
 
 | Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |
