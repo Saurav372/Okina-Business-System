@@ -54,6 +54,7 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     Route::put('/sales-orders/{order:public_id}', [SalesOrderController::class, 'update'])->name('admin.sales_orders.update');
     Route::get('/skus/search', [SalesOrderController::class, 'skuSearch'])->name('admin.skus.search');
     Route::post('/leads', [LeadController::class, 'store'])->name('admin.leads.store');
+    Route::patch('/leads/{lead}', [LeadController::class, 'update'])->name('admin.leads.update');
     // B2.2.8 — Admin design-file access bridge (order-scoped, policy-gated)
     Route::get('/orders/{order:public_id}/files/{file:public_id}/preview', [AdminOrderDesignFileController::class, 'preview'])->name('admin.orders.files.preview')->withoutScopedBindings();
     Route::get('/orders/{order:public_id}/files/{file:public_id}/download', [AdminOrderDesignFileController::class, 'download'])->name('admin.orders.files.download')->withoutScopedBindings();

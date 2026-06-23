@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -92,6 +93,24 @@ class Lead extends Model
     public const STATUSES = LEAD_STATUSES;
 
     public const PRIORITIES = LEAD_PRIORITIES;
+
+    public const VALID_TRANSITIONS = [
+        'new' => ['assigned', 'contacted', 'lost', 'spam'],
+        'assigned' => ['contacted', 'qualified', 'lost', 'spam'],
+        'contacted' => ['assigned', 'qualified', 'lost', 'spam'],
+        'qualified' => ['quoted', 'lost', 'spam'],
+        'quoted' => ['won', 'lost', 'spam'],
+        'lost' => ['new'],
+        'spam' => ['new'],
+        'won' => [], // Terminal state
+    ];
+
+    public function canTransitionTo(string $targetStatus): bool
+    {
+        $allowed = self::VALID_TRANSITIONS[$this->status] ?? [];
+
+        return in_array($targetStatus, $allowed, true);
+    }
 
     protected static function booted(): void
     {
@@ -178,5 +197,10 @@ class Lead extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by_user_id');
+    }
+
+    public function activities(): HasMany
+    {
+        return $this->hasMany(LeadActivity::class)->orderBy('occurred_at');
     }
 }

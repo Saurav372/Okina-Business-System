@@ -339,8 +339,8 @@ Verification note: C1.1.6 completed on 2026-06-22. Staff with read-only access c
 | C3.1.1 | Lead data model and safe migration | Completed |
 | C3.1.2 | Manual lead capture | Completed |
 | C3.1.3 | Website/bulk lead capture endpoint | Completed |
-| C3.1.4 | Source, referrer, page, and UTM attribution | Not Started |
-| C3.1.5 | Lead lifecycle, ownership, and assignment | Not Started |
+| C3.1.4 | Source, referrer, page, and UTM attribution | Completed |
+| C3.1.5 | Lead lifecycle, ownership, and assignment | Completed |
 | C3.1.6 | Notes and activity timeline | Not Started |
 | C3.1.7 | Lead authorization, list/detail views, and regression tests | Not Started |
 
@@ -349,6 +349,8 @@ Verification note: C3.1.1 completed on 2026-06-23. The implementation adds a saf
 Verification note: C3.1.2 completed on 2026-06-23. The manual lead capture endpoint is fully implemented under `POST /admin/leads` and protected by the `['auth', 'dashboard.access']` middleware group. Gated via `LeadPolicy` requiring `leads.manage` permission. Input validation via `StoreLeadRequest` utilizes centralized `Lead::SOURCES`, `Lead::STATUSES`, and `Lead::PRIORITIES` constants. The response is public-safe and contains no internal database IDs. Covered by 6 feature tests in `ManualLeadCaptureTest.php`. All tests passed, and Laravel Pint formatting is applied.
 
 Verification note: C3.1.3 completed on 2026-06-23. The website bulk enquiry endpoint is implemented under `POST /api/catalog/leads`. Spammers and double submissions are prevented via duplicate fingerprint detection (checks matching email/phone and product interests within 5 minutes) returning HTTP 422. Input validation is performed by `StorePublicLeadRequest` with size limits on product interest arrays and URL validation for referrer and landing URLs. Source and status are forced by the server to `website_bulk_enquiry` and `new`. The public JSON response excludes internal numeric IDs and UTM/attribution fields. Covered by 7 feature tests in `WebsiteLeadCaptureTest.php`. All tests passed, and Laravel Pint formatting is applied.
+
+Verification note: C3.1.4 completed on 2026-06-23. The implementation verified the validation and storage of all UTM parameters and page attribution URLs on guest submissions, added validation constraint checks for length and format to WebsiteLeadCaptureTest, added response assertions ensuring internal database IDs do not leak, and verified in LeadModelTest that UTM and attribution fields serialize correctly on the model level. `php artisan test --filter=WebsiteLeadCaptureTest`, `php artisan test --filter=LeadModelTest`, and `./vendor/bin/pint --test` passed.
 
 ### C3.2 Follow-up workflow
 

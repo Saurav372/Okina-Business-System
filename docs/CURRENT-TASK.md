@@ -8,46 +8,57 @@ C3.1 CRM lead module
 
 ## Current Subtask
 
-C3.1.4 Source, referrer, page, and UTM attribution storage
+C3.1.6 Notes and activity timeline
 
 ## Current Status
 
-Not Started. C3.1.3 (Website/bulk lead capture endpoint) is completed. We now need to verify and consolidate the UTM and referrer/page attribution storage and rules.
+Not Started. C3.1.5 is completed and verified.
 
 ## Goal
 
-Ensure that UTM fields (`utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, `utm_term`), `referrer_url`, and `landing_page_url` are validated, stored in the database, excluded from public-facing customer API responses, but fully retrievable for internal/admin surfaces.
+Allow staff to add freeform notes to a lead, expose the lead's activity timeline in chronological order (including system-generated `status_change` and `assignment` entries from C3.1.5), and ensure internal notes are never visible in customer-facing APIs.
 
 ## Dependencies
 
 - C3.1.1 Lead data model and safe migration (Completed)
-- C3.1.3 Website/bulk lead capture endpoint (Completed)
+- C3.1.5 Lead lifecycle, ownership, and assignment (Completed — `LeadActivity` model exists)
+- A2.3 Role and permission model (Completed)
 
 ## Required Deliverables
 
-1. **Attribution Validation & Storage Check**: Verify that all attribution fields are stored accurately in the `leads` database table upon public submission.
-2. **Exclusion Check**: Verify that public/guest API endpoints do not leak these attribution fields in JSON responses.
-3. **Feature/Unit Tests**: Consolidate tests in `tests/Feature/WebsiteLeadCaptureTest.php` and `tests/Unit/LeadModelTest.php` to thoroughly assert attribution validation rules, storage correctness, and client-side exclusion.
+1. **Note creation endpoint**: `POST /admin/leads/{lead}/activities` — accepts `activity_type` (defaulting to `note`), `body`, and optional `subject`. Only types that are staff-creatable (`note`, `call`, `email`, `whatsapp`) are allowed through this endpoint. Gated by `leads.manage` permission.
+2. **Activity timeline endpoint**: `GET /admin/leads/{lead}/activities` — returns all `LeadActivity` rows for a lead in chronological `occurred_at` order as a public-safe array. Gated by `leads.manage` permission.
+3. **Customer-visibility guard**: The `customer_visible` flag on `LeadActivity` is `false` by default. No customer-facing API must expose activity entries.
+4. **Feature tests**: `tests/Feature/LeadActivityTimelineTest.php` covering note creation, timeline retrieval order, authorization, and customer-visibility safety.
 
 ## Acceptance Criteria
 
-- Public/website bulk lead capture validates and persists UTM parameters and referrer/landing page URLs in the database.
-- Public responses for lead creation completely exclude UTM and page attribution fields.
-- Attempting to pass extremely long or invalid format strings into attribution fields is rejected by validation (422).
+- Staff can create a `note` (and other staff-initiated types) on a lead.
+- Attempting to create a system-only type (e.g. `status_change`, `assignment`) through the public endpoint is rejected.
+- Timeline returns entries in chronological order including system-generated entries.
+- Unauthenticated/unauthorized requests return 401/403.
+- No `lead_activities` data is exposed through any customer-facing route.
 
 ## Tests Required
 
-- `tests/Feature/WebsiteLeadCaptureTest.php`
-- Run via `php artisan test --filter=WebsiteLeadCaptureTest`
+- `tests/Feature/LeadActivityTimelineTest.php`
+- Run via `php artisan test --filter=LeadActivityTimelineTest`
 
 ## Quality Requirements
 
-- String length limits for UTM values: max 120 (source/medium) or 160 (campaign/content/term).
-- URL validation for referrer and landing page URLs: max 2048 characters.
+- Enforce standard Laravel conventions.
+- Keep controller lean; use `LeadActivity` model helpers where possible.
 - Apply Laravel Pint formatting.
 
 ## Files Likely Affected
 
-- `apps/backend/app/Http/Requests/Lead/StorePublicLeadRequest.php`
-- `apps/backend/tests/Feature/WebsiteLeadCaptureTest.php`
-- `apps/backend/tests/Unit/LeadModelTest.php`
+- `app/Http/Controllers/Admin/LeadActivityController.php` [NEW]
+- `app/Http/Requests/Lead/StoreLeadActivityRequest.php` [NEW]
+- `routes/web.php`
+- `tests/Feature/LeadActivityTimelineTest.php` [NEW]
+
+## Tasks Not Included
+
+- Customer-facing note or timeline views (not planned for customer APIs).
+- Quotation-related activity types (`quotation_created`, `quotation_sent`, etc.) — deferred to CRM quotation tasks.
+- Full Filament CRM list/detail views (deferred to C3.1.7).
