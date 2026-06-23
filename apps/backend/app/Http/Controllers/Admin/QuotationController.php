@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\OrderStatus;
+use App\Enums\OrderType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreQuotationRequest;
 use App\Models\Customer;
 use App\Models\Lead;
+use App\Models\Order;
 use App\Models\ProductSku;
 use App\Models\Quotation;
 use App\Support\Orders\OrderTotalsCalculator;
@@ -341,5 +344,188 @@ class QuotationController extends Controller
                 'updated_at' => $quotation->updated_at?->toIso8601String() ?? $quotation->updated_at,
             ],
         ]);
+    }
+
+    public function convert(Request $request, Quotation $quotation)
+    {
+        Gate::authorize('update', $quotation);
+
+        $validated = $request->validate([
+            'note' => ['nullable', 'string', 'max:1000'],
+            'idempotency_key' => ['nullable', 'string', 'max:120'],
+        ]);
+
+        $idempotencyKey = $validated['idempotency_key'] ?? null;
+
+        // ---- Idempotency early-return ----------------------------------------
+        // If this key was already used and the order was created, return it.
+        if (
+            $idempotencyKey !== null
+            && $quotation->conversion_idempotency_key === $idempotencyKey
+            && $quotation->converted_order_id !== null
+        ) {
+            $order = $quotation->convertedOrder;
+
+            return response()->json([
+                'message' => 'Quotation conversion processed (idempotent).',
+                'order' => [
+                    'public_id' => $order->public_id,
+                    'status' => $order->status,
+                ],
+                'quotation' => [
+                    'public_id' => $quotation->public_id,
+                    'status' => $quotation->status,
+                    'converted_at' => $quotation->converted_at?->toIso8601String(),
+                ],
+            ]);
+        }
+
+        // ---- Pre-condition validation -----------------------------------------
+        // Business rules must fail clearly before database constraints rescue us.
+
+        if ($quotation->status !== Quotation::STATUS_APPROVED) {
+            throw ValidationException::withMessages([
+                'quotation' => ['Quotation must be in approved status to convert.'],
+            ]);
+        }
+
+        if ($quotation->converted_order_id !== null) {
+            throw ValidationException::withMessages([
+                'quotation' => ['Quotation has already been converted to a sales order.'],
+            ]);
+        }
+
+        if ($quotation->customer_id === null) {
+            throw ValidationException::withMessages([
+                'quotation' => ['Quotation must be linked to a customer before conversion.'],
+            ]);
+        }
+
+        // All items must be SKU-backed to ensure order total integrity.
+        $quotation->load('items');
+        $unconvertibleItems = $quotation->items
+            ->filter(fn ($item) => $item->product_sku_id === null)
+            ->map(fn ($item) => [
+                'item_name' => $item->item_name,
+                'sort_order' => $item->sort_order,
+            ])
+            ->values()
+            ->toArray();
+
+        if (! empty($unconvertibleItems)) {
+            abort(response()->json([
+                'message' => 'Quotation contains items that cannot be converted to a sales order. Link each item to a valid product/SKU before converting.',
+                'unconvertible_items' => $unconvertibleItems,
+            ], 422));
+        }
+
+        // ---- Atomic conversion -----------------------------------------------
+        $now = now();
+
+        $order = DB::transaction(function () use ($quotation, $validated, $idempotencyKey, $now, $request) {
+            // Pessimistic lock to prevent concurrent conversion attempts.
+            Quotation::where('id', $quotation->id)->lockForUpdate()->first();
+            $quotation->refresh();
+
+            // Re-validate inside lock (TOCTOU protection)
+            if ($quotation->status !== Quotation::STATUS_APPROVED) {
+                throw ValidationException::withMessages([
+                    'quotation' => ['Quotation must be in approved status to convert.'],
+                ]);
+            }
+
+            if ($quotation->converted_order_id !== null) {
+                throw ValidationException::withMessages([
+                    'quotation' => ['Quotation has already been converted to a sales order.'],
+                ]);
+            }
+
+            // Build order item attributes from quotation items.
+            // All items are guaranteed SKU-backed by the pre-condition check above.
+            $orderItemAttributes = $quotation->items->map(function ($item) {
+                $sku = $item->productSku()->with('product')->first();
+
+                return [
+                    'product_id' => $sku->product_id,
+                    'sku_id' => $sku->id,
+                    'quantity' => $item->quantity,
+                    'product_name_snapshot' => $item->product_name_snapshot ?? $sku->product?->name ?? $item->item_name,
+                    'product_slug_snapshot' => $sku->product?->slug ?? '',
+                    'sku_code_snapshot' => $item->sku_code_snapshot ?? $sku->sku_code,
+                    'customization_fingerprint' => '0000000000000000000000000000000000000000000000000000000000000000',
+                    'customization_snapshot' => $item->customization_snapshot ?? [],
+                    'unit_price_minor' => $item->unit_price_minor,
+                    'line_subtotal_minor' => $item->line_subtotal_minor,
+                    'line_total_minor' => $item->line_total_minor,
+                    'currency' => $item->currency,
+                    'price_source' => 'quotation_conversion',
+                ];
+            })->toArray();
+
+            // Build customer snapshot: prefer the one stored on the quotation,
+            // strip any security tokens that may have leaked into it.
+            $customerSnapshot = is_array($quotation->customer_snapshot)
+                ? collect($quotation->customer_snapshot)->except(['approval_token'])->toArray()
+                : [];
+
+            $order = Order::create([
+                'order_type' => OrderType::SalesOrder->value(),
+                'order_source' => 'quotation_conversion',
+                'status' => OrderStatus::Confirmed->value(),
+                'customer_id' => $quotation->customer_id,
+                'customer_snapshot' => $customerSnapshot,
+                'subtotal_amount_minor' => $quotation->subtotal_amount_minor,
+                'discount_amount_minor' => $quotation->discount_amount_minor,
+                'shipping_amount_minor' => $quotation->shipping_amount_minor,
+                'tax_amount_minor' => $quotation->tax_amount_minor,
+                'total_amount_minor' => $quotation->total_amount_minor,
+                'currency' => $quotation->currency,
+                'customer_notes' => $quotation->customer_note,
+                'internal_notes' => $quotation->internal_notes,
+                'created_by_user_id' => Auth::id() ?? $request->user()?->id,
+                'placed_at' => $now,
+                'confirmed_at' => $now,
+            ]);
+
+            $order->items()->createMany($orderItemAttributes);
+
+            // Stamp the quotation as converted.
+            $actorUser = $request->user();
+            $quotation->update([
+                'status' => Quotation::STATUS_CONVERTED,
+                'converted_at' => $now,
+                'converted_by_user_id' => Auth::id() ?? $actorUser?->id,
+                'converted_order_id' => $order->id,
+                'conversion_idempotency_key' => $idempotencyKey,
+            ]);
+
+            // Log the conversion event in the approval event trail.
+            $quotation->approvalEvents()->create([
+                'event_type' => Quotation::STATUS_CONVERTED,
+                'revision_number' => $quotation->current_revision_number,
+                'actor_type' => 'staff',
+                'actor_user_id' => Auth::id() ?? $actorUser?->id,
+                'actor_name_snapshot' => $actorUser?->name,
+                'actor_email_snapshot' => $actorUser?->email,
+                'note' => $validated['note'] ?? null,
+                'occurred_at' => $now,
+            ]);
+
+            return $order;
+        });
+
+        $quotation->refresh();
+
+        return response()->json([
+            'order' => [
+                'public_id' => $order->public_id,
+                'status' => $order->status,
+            ],
+            'quotation' => [
+                'public_id' => $quotation->public_id,
+                'status' => $quotation->status,
+                'converted_at' => $quotation->converted_at?->toIso8601String(),
+            ],
+        ], 201);
     }
 }

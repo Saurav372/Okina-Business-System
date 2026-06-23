@@ -8,22 +8,27 @@ C1.3 Quotations and bulk-order conversion
 
 ## Current Subtask
 
-C1.3.6 Quotation revision
+C1.3.7 Sales-order conversion
 
 ## Current Status
 
-Not Started. C1.3.5 is completed and verified.
+Completed. C1.3.7 is implemented and verified. All 379 tests pass.
+
+## Next Subtask
+
+C1.3.8 Advance-payment recording
 
 ## Goal
 
-Implement the quotation revision tracking system, setting up the revisions history schema and model to record term snapshots whenever a quotation is revised.
+Allow staff to record advance (partial) payments against a newly created sales order that originated from a quotation conversion.
 
 ## Dependencies
 
-- C1.3.5 Customer approval (Completed)
+- C1.3.7 Sales-order conversion (Completed)
+- C5.1 Finance payment and balance views (Not Started — advance payment recording is a prerequisite step)
 
-## Required Deliverables
+## Reference Details
 
-1. **Revision snapshotting schema & model**: Create `quotation_revisions` table and model.
-2. **Revision logic**: Implement logic to snapshot quotation totals, contact snapshots, and items when revision status is changed.
-3. **Feature tests**: Validate revision logging and history.
+- Sales orders start in `confirmed` status after quotation conversion.
+- Advance payments are recorded as `Payment` records against the `Order`.
+- Payment status recalculation rules are implemented in `A5.1.4` and `A5.2.5`.

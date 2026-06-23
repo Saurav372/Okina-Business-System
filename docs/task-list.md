@@ -464,8 +464,8 @@ Verification note: C1.2.8 completed on 2026-06-23. The order confirmation transi
 | C1.3.3 | Quotation items and pricing | Completed |
 | C1.3.4 | Quotation status | Completed |
 | C1.3.5 | Customer approval | Completed |
-| C1.3.6 | Quotation revision | Not Started |
-| C1.3.7 | Sales-order conversion | Not Started |
+| C1.3.6 | Quotation revision | Completed |
+| C1.3.7 | Sales-order conversion | Completed |
 | C1.3.8 | Advance-payment recording | Not Started |
 
 Verification note: C1.3.1 completed on 2026-06-23. The bulk enquiry capture flow connects the website checkout quantity block and CRM Lead capture. Validated that checkout blocks bulk order quantities (item count >= 25) and returns a bulk handoff response advising next_step = bulk_enquiry (handled by CheckoutValidationService). The frontend then submits to the public leads capture API, creating a new lead with source = website_bulk_enquiry (handled by PublicLeadController). Covered by a dedicated feature integration test in `BulkEnquiryCaptureBridgeTest.php`. All 327 tests passed and Pint applied.
@@ -477,6 +477,10 @@ Verification note: C1.3.3 completed on 2026-06-23. Quotation item and pricing lo
 Verification note: C1.3.4 completed on 2026-06-23. Quotation status transitions are implemented with state transition validation, automated timestamp logging, and a dedicated status update endpoint. Validates transitions based on the recommended sales workflow state machine (draft -> sent -> cancelled/approved/rejected/revision_requested/expired -> revised/sent -> cancelled/converted -> terminal). Supports `revised_at` timestamp. Rejects identical state transitions with a 422 validation failure, and blocks modifications on terminal states (converted/cancelled). Returns full updated quotation JSON payloads. Formatted via Laravel Pint and validated via QuotationStatusTest.php with 6 tests and 46 assertions. All 349 tests passed.
 
 Verification note: C1.3.5 completed on 2026-06-23. Customer approval and rejection logic is fully implemented and tested. Added a unique secure `approval_token` column to the `quotations` table and verified using constant-time `hash_equals()` validation on public customer endpoints. Created the `quotation_approval_events` table and model to log a complete history of events (sent, approved, rejected, cancelled, revision_requested, revised, expired, converted). Supports header/body `idempotency_key` checking to avoid duplicate event records. Enforces that only approved quotations can transition to the `converted` state. Formatted via Laravel Pint and validated via QuotationApprovalTest.php with 10 tests and 38 assertions. All 359 tests passed.
+
+Verification note: C1.3.6 completed on 2026-06-23. Quotation revision snapshotting and version archiving is fully implemented. When a quotation's status transitions to revised, a snapshot of the current quotation's commercial terms (totals, line items snapshot, type, expiry date, previous status, customer note, and customer profile details) is persisted in the quotation_revisions table, the approval_token is redacted/excluded from the archive for security, and current_revision_number on the quotation is incremented sequentially. Concurrency is handled using pessimistic row locks (lockForUpdate) inside the transaction block. Formatted via Laravel Pint and validated via QuotationRevisionTest.php with 6 tests and 41 assertions. All 367 tests passed.
+
+Verification note: C1.3.7 completed on 2026-06-23. Approved quotations can be atomically converted to confirmed sales orders via POST /admin/quotations/{id}/convert. Conversion is blocked with 422 if the quotation is not approved, already converted, has no live customer_id, or contains any free-text items (product_sku_id = null) — ensuring order total integrity. All quotation totals are copied verbatim to the order. OrderItems are created with price_source = quotation_conversion. Idempotency is supported via conversion_idempotency_key. The operation uses lockForUpdate inside a DB transaction for TOCTOU safety. A QuotationApprovalEvent with event_type = converted is logged atomically. Formatted via Laravel Pint and validated via QuotationConversionTest.php with 12 tests and 65 assertions. All 379 tests passed.
 
 ### C2.1 Inventory movements and stock handling
 

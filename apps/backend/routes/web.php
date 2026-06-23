@@ -63,6 +63,7 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     Route::post('/leads/{lead}/activities', [LeadActivityController::class, 'store'])->name('admin.leads.activities.store');
     Route::post('/quotations', [QuotationController::class, 'store'])->name('admin.quotations.store');
     Route::patch('/quotations/{quotation:public_id}/status', [QuotationController::class, 'updateStatus'])->name('admin.quotations.status.update');
+    Route::post('/quotations/{quotation:public_id}/convert', [QuotationController::class, 'convert'])->name('admin.quotations.convert');
     // B2.2.8 — Admin design-file access bridge (order-scoped, policy-gated)
     Route::get('/orders/{order:public_id}/files/{file:public_id}/preview', [AdminOrderDesignFileController::class, 'preview'])->name('admin.orders.files.preview')->withoutScopedBindings();
     Route::get('/orders/{order:public_id}/files/{file:public_id}/download', [AdminOrderDesignFileController::class, 'download'])->name('admin.orders.files.download')->withoutScopedBindings();
