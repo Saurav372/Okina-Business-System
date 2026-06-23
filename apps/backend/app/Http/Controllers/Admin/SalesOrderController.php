@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\SalesOrderCreateRequest;
+use App\Http\Requests\Admin\SalesOrderUpdateRequest;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\ProductSku;
@@ -68,5 +69,17 @@ class SalesOrderController extends Controller
             });
 
         return response()->json($results->values());
+    }
+
+    public function update(SalesOrderUpdateRequest $request, Order $order, SalesOrderService $service)
+    {
+        Gate::authorize('update', $order);
+
+        $updatedOrder = $service->update($order, $request->validated(), $request->user());
+
+        return response()->json([
+            'public_id' => $updatedOrder->public_id,
+            'order' => $updatedOrder->toArray(),
+        ], 200);
     }
 }

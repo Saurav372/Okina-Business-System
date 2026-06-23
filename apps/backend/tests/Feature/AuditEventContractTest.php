@@ -34,6 +34,7 @@ class AuditEventContractTest extends TestCase
                 'refunds.refund_recorded',
                 'inventory.stock_moved',
                 'finance.expense_recorded',
+                'orders.order_edited',
             ],
             $catalog->keys(),
         );
@@ -45,6 +46,7 @@ class AuditEventContractTest extends TestCase
         $this->assertSame('finance', $catalog->definition('refunds.refund_recorded')->module);
         $this->assertSame('inventory', $catalog->definition('inventory.stock_moved')->module);
         $this->assertSame('finance', $catalog->definition('finance.expense_recorded')->module);
+        $this->assertSame('orders', $catalog->definition('orders.order_edited')->module);
     }
 
     public function test_audit_event_definitions_expose_safe_payload_shape_and_masked_fields(): void

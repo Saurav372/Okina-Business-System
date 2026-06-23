@@ -106,6 +106,16 @@ class Order extends Model
         ];
     }
 
+    public function isEditable(): bool
+    {
+        return in_array($this->status, [
+            'pending_payment',
+            'confirmed',
+            'in_production',
+            'ready_to_ship',
+        ], true);
+    }
+
     public function getRouteKeyName(): string
     {
         return 'public_id';

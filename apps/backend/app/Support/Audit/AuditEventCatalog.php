@@ -94,6 +94,18 @@ final class AuditEventCatalog
                 references: ['C5.3.2', 'C5.3.3', 'C5.4'],
                 summary: 'Business expense was created or updated for finance review.',
             ),
+            new AuditEventDefinition(
+                key: 'orders.order_edited',
+                module: 'orders',
+                action: 'order.edited',
+                subjectType: 'order',
+                actorTypes: ['user', 'system'],
+                safeFields: ['order_public_id', 'order_type', 'customer_public_id', 'status', 'total_amount', 'currency', 'changes'],
+                maskedFields: ['payment_reference', 'gateway_payload', 'raw_payload'],
+                relatedTypes: ['customer', 'order_item'],
+                references: ['C1.2.7'],
+                summary: 'Sales order was updated by staff with validation checks and changes tracked.',
+            ),
         ];
     }
 

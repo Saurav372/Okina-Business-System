@@ -433,7 +433,7 @@ Verification note: C1.1.6 completed on 2026-06-22. Staff with read-only access c
 | C1.2.4 | Pricing and discount | Completed |
 | C1.2.5 | Advance/final payment structure | Completed |
 | C1.2.6 | Order creation | Completed |
-| C1.2.7 | Order editing rules | Not Started |
+| C1.2.7 | Order editing rules | Completed |
 | C1.2.8 | Order confirmation | Not Started |
 
 ### C1.3 Quotations and bulk-order conversion
