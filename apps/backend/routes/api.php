@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\CustomerApiController;
 use App\Http\Controllers\Api\PaymentWebhookController;
 use App\Http\Controllers\Api\ProductCustomizationController;
 use App\Http\Controllers\Api\PublicCatalogController;
+use App\Http\Controllers\Api\PublicLeadController;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Support\Facades\Route;
 
@@ -26,6 +27,7 @@ Route::prefix('catalog')->group(function () {
     Route::post('/products/{product:slug}/design-preview/{preview_file}/link', [ProductCustomizationController::class, 'previewLink'])
         ->middleware('auth:customer')
         ->name('catalog.products.mockup-preview-link');
+    Route::post('/leads', [PublicLeadController::class, 'store'])->name('api.catalog.leads.store');
 });
 
 Route::middleware('web')->withoutMiddleware(ValidateCsrfToken::class)->prefix('cart')->group(function () {

@@ -8,35 +8,32 @@ C3.1 CRM lead module
 
 ## Current Subtask
 
-C3.1.3 Website/bulk lead capture endpoint
+C3.1.4 Source, referrer, page, and UTM attribution storage
 
 ## Current Status
 
-Not Started. C3.1.2 (Manual lead capture) is completed. We now need to implement the public website bulk enquiry endpoint where prospective customers can submit their contact details, UTM attribution data, and custom printing requirements, which gets captured as a lead in the backend database.
+Not Started. C3.1.3 (Website/bulk lead capture endpoint) is completed. We now need to verify and consolidate the UTM and referrer/page attribution storage and rules.
 
 ## Goal
 
-Create a public API endpoint allowing guests on the customer-facing website to submit bulk enquiries. The endpoint must validate contact information, support UTM and attribution fields, perform spam/duplicate submission checks within a short window, write to the `leads` table with source `website_bulk_enquiry` and status `new`, and return a public-safe response.
+Ensure that UTM fields (`utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, `utm_term`), `referrer_url`, and `landing_page_url` are validated, stored in the database, excluded from public-facing customer API responses, but fully retrievable for internal/admin surfaces.
 
 ## Dependencies
 
 - C3.1.1 Lead data model and safe migration (Completed)
-- C3.1.2 Manual lead capture (Completed)
+- C3.1.3 Website/bulk lead capture endpoint (Completed)
 
 ## Required Deliverables
 
-1. **Public Route**: Register `POST /catalog/leads` (or similar prefix) in `routes/api.php` under public/guest access.
-2. **Form Request**: Create `app/Http/Requests/Lead/StorePublicLeadRequest.php` validating source (must be `website_bulk_enquiry`), contact name, email, phone, details, and optional UTM fields.
-3. **Controller**: Create `app/Http/Controllers/Api/PublicLeadController.php` with a `store` method.
-4. **Duplicate Prevention**: Implement duplicate checking logic (e.g. check for identical contact email/phone and product interest submitted within the last 5 minutes) to return 429 or custom duplicate warning instead of inserting duplicate rows.
-5. **Feature Test**: Create `tests/Feature/WebsiteLeadCaptureTest.php` to verify successful public capture, validation failures, duplicate submission blocking, and public-safe response shape.
+1. **Attribution Validation & Storage Check**: Verify that all attribution fields are stored accurately in the `leads` database table upon public submission.
+2. **Exclusion Check**: Verify that public/guest API endpoints do not leak these attribution fields in JSON responses.
+3. **Feature/Unit Tests**: Consolidate tests in `tests/Feature/WebsiteLeadCaptureTest.php` and `tests/Unit/LeadModelTest.php` to thoroughly assert attribution validation rules, storage correctness, and client-side exclusion.
 
 ## Acceptance Criteria
 
-- `POST /api/catalog/leads` (or matching public route) with valid payload creates a lead record and returns HTTP 201 with public-safe fields.
-- The public response does not expose internal numeric IDs.
-- Submitting the same request payload (email, phone, product interest) within 5 minutes returns a validation or throttle failure (e.g., HTTP 429 or 422 with a clear duplicate message).
-- Standard guest requests do not require authentication or permissions.
+- Public/website bulk lead capture validates and persists UTM parameters and referrer/landing page URLs in the database.
+- Public responses for lead creation completely exclude UTM and page attribution fields.
+- Attempting to pass extremely long or invalid format strings into attribution fields is rejected by validation (422).
 
 ## Tests Required
 
@@ -45,20 +42,12 @@ Create a public API endpoint allowing guests on the customer-facing website to s
 
 ## Quality Requirements
 
-- Enforce standard Laravel validations.
+- String length limits for UTM values: max 120 (source/medium) or 160 (campaign/content/term).
+- URL validation for referrer and landing page URLs: max 2048 characters.
 - Apply Laravel Pint formatting.
-- Exclude internal database IDs.
 
 ## Files Likely Affected
 
-- `apps/backend/routes/api.php` (new route)
-- `apps/backend/app/Http/Controllers/Api/PublicLeadController.php` (new)
-- `apps/backend/app/Http/Requests/Lead/StorePublicLeadRequest.php` (new)
-- `apps/backend/tests/Feature/WebsiteLeadCaptureTest.php` (new)
-
-## Reference Details
-
-- `docs/PROJECT-CONTEXT.md`
-- `docs/crm-quotations-schema.md`
-- `docs/task-list.md`
-- `docs/subtask-validation.md`
+- `apps/backend/app/Http/Requests/Lead/StorePublicLeadRequest.php`
+- `apps/backend/tests/Feature/WebsiteLeadCaptureTest.php`
+- `apps/backend/tests/Unit/LeadModelTest.php`
