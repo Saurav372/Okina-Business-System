@@ -224,4 +224,54 @@ class QuotationApprovalTest extends TestCase
         $quotationApproved = Quotation::factory()->create(['status' => 'approved']);
         $this->assertTrue($quotationApproved->canTransitionTo('converted'));
     }
+
+    public function test_invalid_idempotency_reuse(): void
+    {
+        $quotation = Quotation::factory()->create(['status' => 'sent']);
+
+        // First attempt: approve with key ABC
+        $response1 = $this->postJson(route('api.catalog.quotations.approve', $quotation->public_id), [
+            'token' => $quotation->approval_token,
+            'idempotency_key' => 'ABC',
+            'note' => 'Approved first',
+        ]);
+        $response1->assertStatus(200);
+        $response1->assertJsonPath('quotation.status', 'approved');
+
+        // Second attempt: reject with same key ABC
+        $response2 = $this->postJson(route('api.catalog.quotations.reject', $quotation->public_id), [
+            'token' => $quotation->approval_token,
+            'idempotency_key' => 'ABC',
+            'note' => 'Rejected second',
+        ]);
+        $response2->assertStatus(200);
+        $response2->assertJsonPath('message', 'Quotation action processed (idempotent).');
+        $response2->assertJsonPath('quotation.status', 'approved'); // Status remains approved
+    }
+
+    public function test_approved_quote_can_be_converted(): void
+    {
+        $user = $this->createAuthorizedStaffUser();
+        $quotation = Quotation::factory()->create(['status' => 'approved']);
+
+        $response = $this->actingAs($user)->patchJson(route('admin.quotations.status.update', $quotation->public_id), [
+            'status' => 'converted',
+            'note' => 'Converted to order.',
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJsonPath('quotation.status', 'converted');
+
+        $quotation->refresh();
+        $this->assertSame('converted', $quotation->status);
+        $this->assertNotNull($quotation->converted_at);
+
+        $event = QuotationApprovalEvent::query()
+            ->where('quotation_id', $quotation->id)
+            ->where('event_type', 'converted')
+            ->first();
+        $this->assertNotNull($event);
+        $this->assertSame('staff', $event->actor_type);
+        $this->assertSame($user->id, $event->actor_user_id);
+    }
 }

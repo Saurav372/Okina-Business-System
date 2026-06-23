@@ -231,47 +231,51 @@ class QuotationController extends Controller
         ]);
 
         $targetStatus = $validated['status'];
-
-        if (! $quotation->canTransitionTo($targetStatus)) {
-            throw ValidationException::withMessages([
-                'status' => ["Invalid quotation status transition from {$quotation->status} to {$targetStatus}."],
-            ]);
-        }
-
         $now = now();
-        $updateData = [
-            'status' => $targetStatus,
-        ];
 
-        // Automate timestamp logging and relations based on target status
-        if ($targetStatus === Quotation::STATUS_SENT) {
-            $updateData['sent_at'] = $now;
-        } elseif ($targetStatus === Quotation::STATUS_APPROVED) {
-            $updateData['approved_at'] = $now;
-            $updateData['approved_by_user_id'] = Auth::id() ?? $request->user()?->id;
-        } elseif ($targetStatus === Quotation::STATUS_REJECTED) {
-            $updateData['rejected_at'] = $now;
-        } elseif ($targetStatus === Quotation::STATUS_EXPIRED) {
-            $updateData['expired_at'] = $now;
-        } elseif ($targetStatus === Quotation::STATUS_CONVERTED) {
-            $updateData['converted_at'] = $now;
-        } elseif ($targetStatus === Quotation::STATUS_REVISED) {
-            $updateData['revised_at'] = $now;
-        }
+        DB::transaction(function () use ($quotation, $targetStatus, $validated, $now, $request) {
+            $quotation->refresh();
 
-        $quotation->update($updateData);
+            if (! $quotation->canTransitionTo($targetStatus)) {
+                throw ValidationException::withMessages([
+                    'status' => ["Invalid quotation status transition from {$quotation->status} to {$targetStatus}."],
+                ]);
+            }
 
-        $actorUser = $request->user();
-        $quotation->approvalEvents()->create([
-            'event_type' => $targetStatus,
-            'revision_number' => $quotation->current_revision_number,
-            'actor_type' => 'staff',
-            'actor_user_id' => Auth::id() ?? $actorUser?->id,
-            'actor_name_snapshot' => $actorUser?->name,
-            'actor_email_snapshot' => $actorUser?->email,
-            'note' => $validated['note'] ?? null,
-            'occurred_at' => $now,
-        ]);
+            $updateData = [
+                'status' => $targetStatus,
+            ];
+
+            // Automate timestamp logging and relations based on target status
+            if ($targetStatus === Quotation::STATUS_SENT) {
+                $updateData['sent_at'] = $now;
+            } elseif ($targetStatus === Quotation::STATUS_APPROVED) {
+                $updateData['approved_at'] = $now;
+                $updateData['approved_by_user_id'] = Auth::id() ?? $request->user()?->id;
+            } elseif ($targetStatus === Quotation::STATUS_REJECTED) {
+                $updateData['rejected_at'] = $now;
+            } elseif ($targetStatus === Quotation::STATUS_EXPIRED) {
+                $updateData['expired_at'] = $now;
+            } elseif ($targetStatus === Quotation::STATUS_CONVERTED) {
+                $updateData['converted_at'] = $now;
+            } elseif ($targetStatus === Quotation::STATUS_REVISED) {
+                $updateData['revised_at'] = $now;
+            }
+
+            $quotation->update($updateData);
+
+            $actorUser = $request->user();
+            $quotation->approvalEvents()->create([
+                'event_type' => $targetStatus,
+                'revision_number' => $quotation->current_revision_number,
+                'actor_type' => 'staff',
+                'actor_user_id' => Auth::id() ?? $actorUser?->id,
+                'actor_name_snapshot' => $actorUser?->name,
+                'actor_email_snapshot' => $actorUser?->email,
+                'note' => $validated['note'] ?? null,
+                'occurred_at' => $now,
+            ]);
+        });
 
         return response()->json([
             'success' => true,
