@@ -261,6 +261,18 @@ class QuotationController extends Controller
 
         $quotation->update($updateData);
 
+        $actorUser = $request->user();
+        $quotation->approvalEvents()->create([
+            'event_type' => $targetStatus,
+            'revision_number' => $quotation->current_revision_number,
+            'actor_type' => 'staff',
+            'actor_user_id' => Auth::id() ?? $actorUser?->id,
+            'actor_name_snapshot' => $actorUser?->name,
+            'actor_email_snapshot' => $actorUser?->email,
+            'note' => $validated['note'] ?? null,
+            'occurred_at' => $now,
+        ]);
+
         return response()->json([
             'success' => true,
             'quotation' => [

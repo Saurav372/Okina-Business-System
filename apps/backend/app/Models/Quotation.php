@@ -35,6 +35,7 @@ use Illuminate\Support\Str;
     'expired_at',
     'converted_at',
     'revised_at',
+    'approval_token',
     'conversion_idempotency_key',
     'customer_note',
     'internal_notes',
@@ -86,6 +87,7 @@ class Quotation extends Model
     {
         static::creating(function (Quotation $quotation): void {
             $quotation->public_id ??= 'QT-'.Str::upper(Str::random(12));
+            $quotation->approval_token ??= Str::random(40);
             $quotation->status ??= self::STATUS_DRAFT;
             $quotation->currency ??= 'INR';
             $quotation->current_revision_number ??= 1;
@@ -152,6 +154,16 @@ class Quotation extends Model
     public function items(): HasMany
     {
         return $this->hasMany(QuotationItem::class)->orderBy('sort_order');
+    }
+
+    public function approvalEvents(): HasMany
+    {
+        return $this->hasMany(QuotationApprovalEvent::class);
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->status === self::STATUS_APPROVED;
     }
 
     public function canTransitionTo(string $targetStatus): bool

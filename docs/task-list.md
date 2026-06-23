@@ -463,7 +463,7 @@ Verification note: C1.2.8 completed on 2026-06-23. The order confirmation transi
 | C1.3.2 | Quotation creation | Completed |
 | C1.3.3 | Quotation items and pricing | Completed |
 | C1.3.4 | Quotation status | Completed |
-| C1.3.5 | Customer approval | Not Started |
+| C1.3.5 | Customer approval | Completed |
 | C1.3.6 | Quotation revision | Not Started |
 | C1.3.7 | Sales-order conversion | Not Started |
 | C1.3.8 | Advance-payment recording | Not Started |
@@ -475,6 +475,8 @@ Verification note: C1.3.2 completed on 2026-06-23. Staff can create quotations o
 Verification note: C1.3.3 completed on 2026-06-23. Quotation item and pricing logic is fully integrated and tested as part of the core quotation controller and request flow. Item pricing is resolved deterministically (explicit override -> SKU price -> product base price -> 422 validation failure). Subtotal, discounts (capped at subtotal), shipping, tax, and order totals are calculated using OrderTotalsCalculator. Enforces defensive taxable base calculations and PHP_ROUND_HALF_UP rounding rules. Formatted using Laravel Pint and fully tested via QuotationCreationTest.php. All 343 tests passed.
 
 Verification note: C1.3.4 completed on 2026-06-23. Quotation status transitions are implemented with state transition validation, automated timestamp logging, and a dedicated status update endpoint. Validates transitions based on the recommended sales workflow state machine (draft -> sent -> cancelled/approved/rejected/revision_requested/expired -> revised/sent -> cancelled/converted -> terminal). Supports `revised_at` timestamp. Rejects identical state transitions with a 422 validation failure, and blocks modifications on terminal states (converted/cancelled). Returns full updated quotation JSON payloads. Formatted via Laravel Pint and validated via QuotationStatusTest.php with 6 tests and 46 assertions. All 349 tests passed.
+
+Verification note: C1.3.5 completed on 2026-06-23. Customer approval and rejection logic is fully implemented and tested. Added a unique secure `approval_token` column to the `quotations` table and verified using constant-time `hash_equals()` validation on public customer endpoints. Created the `quotation_approval_events` table and model to log a complete history of events (sent, approved, rejected, cancelled, revision_requested, revised, expired, converted). Supports header/body `idempotency_key` checking to avoid duplicate event records. Enforces that only approved quotations can transition to the `converted` state. Formatted via Laravel Pint and validated via QuotationApprovalTest.php with 10 tests and 38 assertions. All 359 tests passed.
 
 ### C2.1 Inventory movements and stock handling
 

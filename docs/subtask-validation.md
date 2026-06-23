@@ -420,6 +420,8 @@ Verification note: C1.3.3 completed on 2026-06-23. Quotation item and pricing lo
 
 Verification note: C1.3.4 completed on 2026-06-23. Quotation status transitions are implemented with state transition validation, automated timestamp logging, and a dedicated status update endpoint. Validates transitions based on the recommended sales workflow state machine (draft -> sent -> cancelled/approved/rejected/revision_requested/expired -> revised/sent -> cancelled/converted -> terminal). Supports `revised_at` timestamp. Rejects identical state transitions with a 422 validation failure, and blocks modifications on terminal states (converted/cancelled). Returns full updated quotation JSON payloads. Formatted via Laravel Pint and validated via QuotationStatusTest.php with 6 tests and 46 assertions. All 349 tests passed.
 
+Verification note: C1.3.5 completed on 2026-06-23. Customer approval and rejection logic is fully implemented and tested. Added a unique secure `approval_token` column to the `quotations` table and verified using constant-time `hash_equals()` validation on public customer endpoints. Created the `quotation_approval_events` table and model to log a complete history of events (sent, approved, rejected, cancelled, revision_requested, revised, expired, converted). Supports header/body `idempotency_key` checking to avoid duplicate event records. Enforces that only approved quotations can transition to the `converted` state. Formatted via Laravel Pint and validated via QuotationApprovalTest.php with 10 tests and 38 assertions. All 359 tests passed.
+
 ## C2.1 Inventory Movements And Stock Handling
 
 | Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |
