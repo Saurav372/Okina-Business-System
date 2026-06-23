@@ -412,6 +412,8 @@ Verification note: C3.1.7 completed on 2026-06-23. Lead authorization, list, and
 | C1.3.7 | Sales-order conversion | A5.1.7, C1.2.6, C1.3.5 | Approved quote converts once to sales order | Conversion/idempotency tests | Quotations, Orders | High |
 | C1.3.8 | Advance-payment recording | C1.3.7, C5.1 | Advance payment can be recorded against sales order | Advance payment tests | Orders, Payments, Finance | High |
 
+Verification note: C1.3.1 completed on 2026-06-23. The bulk enquiry capture flow connects the website checkout quantity block and CRM Lead capture. Validated that checkout blocks bulk order quantities (item count >= 25) and returns a bulk handoff response advising next_step = bulk_enquiry (handled by CheckoutValidationService). The frontend then submits to the public leads capture API, creating a new lead with source = website_bulk_enquiry (handled by PublicLeadController). Covered by a dedicated feature integration test in `BulkEnquiryCaptureBridgeTest.php`. All 327 tests passed and Pint applied.
+
 ## C2.1 Inventory Movements And Stock Handling
 
 | Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |

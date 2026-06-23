@@ -8,23 +8,22 @@ C1.3 Quotations and bulk-order conversion
 
 ## Current Subtask
 
-C1.3.1 Bulk enquiry capture
+C1.3.2 Quotation creation
 
 ## Current Status
 
-Not Started. C3.1.7 is completed and verified.
+Not Started. C1.3.1 is completed and verified.
 
 ## Goal
 
-Ensure bulk enquiries submitted via public endpoints capture details correctly, routing them to the CRM Leads/Quotations module and attaching any necessary source or product interest data.
+Allow staff to create a quotation originating from a qualified lead or manually from scratch.
 
 ## Dependencies
 
-- C3.1 CRM lead module (Completed)
-- B3.1.5 Bulk quantity detection (Completed)
+- C1.3.1 Bulk enquiry capture (Completed)
 
 ## Required Deliverables
 
-1. **Endpoint routing**: Ensure public bulk enquiries correctly create leads/quotation source data.
-2. **Attribution & source linkage**: Connect guest submissions with UTM parameters, referrers, and specific product categories.
-3. **Feature tests**: Verify correct lead creation and validation on bulk enquiry submissions.
+1. **Quotation schema & migrations**: Build the migrations and models for quotations and quotation items.
+2. **Creation endpoint**: Enable staff to create a quotation from a lead or manual entries.
+3. **Feature tests**: Validate quotation creation and data snapshots.

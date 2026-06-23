@@ -459,7 +459,7 @@ Verification note: C1.2.8 completed on 2026-06-23. The order confirmation transi
 
 | Subtask ID | Subtask Name | Status |
 |---|---|---|
-| C1.3.1 | Bulk enquiry capture | Not Started |
+| C1.3.1 | Bulk enquiry capture | Completed |
 | C1.3.2 | Quotation creation | Not Started |
 | C1.3.3 | Quotation items and pricing | Not Started |
 | C1.3.4 | Quotation status | Not Started |
@@ -467,6 +467,8 @@ Verification note: C1.2.8 completed on 2026-06-23. The order confirmation transi
 | C1.3.6 | Quotation revision | Not Started |
 | C1.3.7 | Sales-order conversion | Not Started |
 | C1.3.8 | Advance-payment recording | Not Started |
+
+Verification note: C1.3.1 completed on 2026-06-23. The bulk enquiry capture flow connects the website checkout quantity block and CRM Lead capture. Validated that checkout blocks bulk order quantities (item count >= 25) and returns a bulk handoff response advising next_step = bulk_enquiry (handled by CheckoutValidationService). The frontend then submits to the public leads capture API, creating a new lead with source = website_bulk_enquiry (handled by PublicLeadController). Covered by a dedicated feature integration test in `BulkEnquiryCaptureBridgeTest.php`. All 327 tests passed and Pint applied.
 
 ### C2.1 Inventory movements and stock handling
 
