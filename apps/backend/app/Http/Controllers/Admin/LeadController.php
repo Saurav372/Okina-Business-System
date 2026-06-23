@@ -7,10 +7,84 @@ use App\Http\Requests\Lead\StoreLeadRequest;
 use App\Http\Requests\Lead\UpdateLeadRequest;
 use App\Models\Lead;
 use App\Models\LeadActivity;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
 class LeadController extends Controller
 {
+    /**
+     * Display a listing of the leads.
+     */
+    public function index(Request $request)
+    {
+        Gate::authorize('viewAny', Lead::class);
+
+        $leads = Lead::query()
+            ->latest('created_at')
+            ->paginate($request->query('per_page', 15));
+
+        $leads->through(function ($lead) {
+            return [
+                'public_id' => $lead->public_id,
+                'source' => $lead->source,
+                'source_detail' => $lead->source_detail,
+                'status' => $lead->status,
+                'priority' => $lead->priority,
+                'contact_name' => $lead->contact_name,
+                'company_name' => $lead->company_name,
+                'email' => $lead->email,
+                'phone' => $lead->phone,
+                'interest_summary' => $lead->interest_summary,
+                'assigned_to_user_id' => $lead->assigned_to_user_id,
+                'created_at' => $lead->created_at?->toIso8601String() ?? $lead->created_at,
+                'updated_at' => $lead->updated_at?->toIso8601String() ?? $lead->updated_at,
+            ];
+        });
+
+        return response()->json($leads);
+    }
+
+    /**
+     * Display the specified lead.
+     */
+    public function show(Lead $lead)
+    {
+        Gate::authorize('view', $lead);
+
+        return response()->json([
+            'public_id' => $lead->public_id,
+            'source' => $lead->source,
+            'source_detail' => $lead->source_detail,
+            'status' => $lead->status,
+            'priority' => $lead->priority,
+            'contact_name' => $lead->contact_name,
+            'company_name' => $lead->company_name,
+            'email' => $lead->email,
+            'phone' => $lead->phone,
+            'city' => $lead->city,
+            'state' => $lead->state,
+            'country_code' => $lead->country_code,
+            'interest_summary' => $lead->interest_summary,
+            'requirements' => $lead->requirements,
+            'product_interest' => $lead->product_interest,
+            'utm_source' => $lead->utm_source,
+            'utm_medium' => $lead->utm_medium,
+            'utm_campaign' => $lead->utm_campaign,
+            'utm_content' => $lead->utm_content,
+            'utm_term' => $lead->utm_term,
+            'referrer_url' => $lead->referrer_url,
+            'landing_page_url' => $lead->landing_page_url,
+            'last_contacted_at' => $lead->last_contacted_at?->toIso8601String() ?? $lead->last_contacted_at,
+            'qualified_at' => $lead->qualified_at?->toIso8601String() ?? $lead->qualified_at,
+            'lost_at' => $lead->lost_at?->toIso8601String() ?? $lead->lost_at,
+            'lost_reason' => $lead->lost_reason,
+            'converted_at' => $lead->converted_at?->toIso8601String() ?? $lead->converted_at,
+            'assigned_to_user_id' => $lead->assigned_to_user_id,
+            'created_at' => $lead->created_at?->toIso8601String() ?? $lead->created_at,
+            'updated_at' => $lead->updated_at?->toIso8601String() ?? $lead->updated_at,
+        ], 200);
+    }
+
     /**
      * Store a newly created lead in storage.
      */

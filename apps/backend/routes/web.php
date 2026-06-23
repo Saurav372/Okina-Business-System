@@ -54,7 +54,9 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     Route::post('/sales-orders', [SalesOrderController::class, 'store'])->name('admin.sales_orders.store');
     Route::put('/sales-orders/{order:public_id}', [SalesOrderController::class, 'update'])->name('admin.sales_orders.update');
     Route::get('/skus/search', [SalesOrderController::class, 'skuSearch'])->name('admin.skus.search');
+    Route::get('/leads', [LeadController::class, 'index'])->name('admin.leads.index');
     Route::post('/leads', [LeadController::class, 'store'])->name('admin.leads.store');
+    Route::get('/leads/{lead}', [LeadController::class, 'show'])->name('admin.leads.show');
     Route::patch('/leads/{lead}', [LeadController::class, 'update'])->name('admin.leads.update');
     Route::get('/leads/{lead}/activities', [LeadActivityController::class, 'index'])->name('admin.leads.activities.index');
     Route::post('/leads/{lead}/activities', [LeadActivityController::class, 'store'])->name('admin.leads.activities.store');
