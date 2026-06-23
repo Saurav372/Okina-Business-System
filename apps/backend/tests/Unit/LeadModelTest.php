@@ -425,4 +425,31 @@ class LeadModelTest extends TestCase
         $this->assertSame('won', $lead->status);
         $this->assertNotNull($lead->converted_at);
     }
+
+    /**
+     * Test UTM and page attribution fields are preserved and serialized on the model level.
+     */
+    public function test_attribution_fields_are_preserved_and_serialized(): void
+    {
+        $lead = Lead::factory()->create([
+            'utm_source' => 'google',
+            'utm_medium' => 'cpc',
+            'utm_campaign' => 'campaign',
+            'utm_content' => 'content',
+            'utm_term' => 'term',
+            'referrer_url' => 'https://referrer.com',
+            'landing_page_url' => 'https://landing.com',
+        ]);
+
+        $serialized = $lead->toArray();
+
+        // Verify they are preserved in serialized array output
+        $this->assertSame('google', $serialized['utm_source'] ?? null);
+        $this->assertSame('cpc', $serialized['utm_medium'] ?? null);
+        $this->assertSame('campaign', $serialized['utm_campaign'] ?? null);
+        $this->assertSame('content', $serialized['utm_content'] ?? null);
+        $this->assertSame('term', $serialized['utm_term'] ?? null);
+        $this->assertSame('https://referrer.com', $serialized['referrer_url'] ?? null);
+        $this->assertSame('https://landing.com', $serialized['landing_page_url'] ?? null);
+    }
 }

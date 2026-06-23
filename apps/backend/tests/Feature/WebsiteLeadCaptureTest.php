@@ -72,7 +72,12 @@ class WebsiteLeadCaptureTest extends TestCase
         $this->assertSame('Saurav Sen', $lead->contact_name);
         $this->assertSame('saurav@example.com', $lead->email);
         $this->assertSame('google', $lead->utm_source);
+        $this->assertSame('cpc', $lead->utm_medium);
+        $this->assertSame('bulk_print_2026', $lead->utm_campaign);
+        $this->assertSame('ad_text_1', $lead->utm_content);
+        $this->assertSame('custom print', $lead->utm_term);
         $this->assertSame('https://www.google.com', $lead->referrer_url);
+        $this->assertSame('https://okinacraft.com/bulk-enquiry', $lead->landing_page_url);
     }
 
     /**
@@ -262,5 +267,77 @@ class WebsiteLeadCaptureTest extends TestCase
         $this->assertSame('new', $lead->status);
         $this->assertSame('normal', $lead->priority);
         $this->assertNull($lead->created_by_user_id);
+    }
+
+    /**
+     * Test that invalid or too long attribution fields are rejected.
+     */
+    public function test_validation_fails_for_invalid_or_long_attribution_fields(): void
+    {
+        // Test too long UTM fields
+        $response = $this->postJson(route('api.catalog.leads.store'), [
+            'contact_name' => 'John Doe',
+            'email' => 'john@example.com',
+            'utm_source' => str_repeat('a', 121),
+            'utm_medium' => str_repeat('b', 121),
+            'utm_campaign' => str_repeat('c', 161),
+            'utm_content' => str_repeat('d', 161),
+            'utm_term' => str_repeat('e', 161),
+        ]);
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors([
+            'utm_source',
+            'utm_medium',
+            'utm_campaign',
+            'utm_content',
+            'utm_term',
+        ]);
+
+        // Test invalid and too long URL fields
+        $response = $this->postJson(route('api.catalog.leads.store'), [
+            'contact_name' => 'John Doe',
+            'email' => 'john@example.com',
+            'referrer_url' => 'http://'.str_repeat('a', 2049),
+            'landing_page_url' => 'http://'.str_repeat('b', 2049),
+        ]);
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors([
+            'referrer_url',
+            'landing_page_url',
+        ]);
+
+        $response = $this->postJson(route('api.catalog.leads.store'), [
+            'contact_name' => 'John Doe',
+            'email' => 'john@example.com',
+            'landing_page_url' => 'not-a-url',
+        ]);
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['landing_page_url']);
+    }
+
+    /**
+     * Test public API response does not expose internal IDs.
+     */
+    public function test_public_api_response_does_not_expose_internal_ids(): void
+    {
+        $payload = [
+            'contact_name' => 'Saurav Sen',
+            'email' => 'saurav@example.com',
+        ];
+
+        $response = $this->postJson(route('api.catalog.leads.store'), $payload);
+
+        $response->assertStatus(201);
+
+        $lead = Lead::query()->first();
+        $this->assertNotNull($lead);
+
+        // Ensure database IDs and user association fields do not leak
+        $response->assertJsonMissing([
+            'id' => $lead->id,
+            'customer_id' => $lead->customer_id,
+            'assigned_to_user_id' => $lead->assigned_to_user_id,
+            'created_by_user_id' => $lead->created_by_user_id,
+        ]);
     }
 }
