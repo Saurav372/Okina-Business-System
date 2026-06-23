@@ -4,54 +4,27 @@ Use this file as the task-specific context for a coding session. Update it befor
 
 ## Current Parent Task
 
-C3.1 CRM lead module
+C1.3 Quotations and bulk-order conversion
 
 ## Current Subtask
 
-C3.1.7 Lead authorization, list/detail views, and regression tests
+C1.3.1 Bulk enquiry capture
 
 ## Current Status
 
-Not Started. C3.1.6 is completed and verified.
+Not Started. C3.1.7 is completed and verified.
 
 ## Goal
 
-Ensure only authorized staff roles can list, view, create, assign, and update leads. The lead list view must return paginated public-safe summaries, and the detail view must return full details for the lead. All CRM module tests must pass to verify complete regression safety.
+Ensure bulk enquiries submitted via public endpoints capture details correctly, routing them to the CRM Leads/Quotations module and attaching any necessary source or product interest data.
 
 ## Dependencies
 
-- A2.3 Role and permission model (Completed)
-- C3.1.1 Lead data model and safe migration (Completed)
-- C3.1.5 Lead lifecycle, ownership, and assignment (Completed)
-- C3.1.6 Notes and activity timeline (Completed)
+- C3.1 CRM lead module (Completed)
+- B3.1.5 Bulk quantity detection (Completed)
 
 ## Required Deliverables
 
-1. **Lead listing endpoint**: `GET /admin/leads` — returns paginated list of leads with safe summary fields. Gated by `leads.view` or `leads.manage` permission.
-2. **Lead detail endpoint**: `GET /admin/leads/{lead}` — returns full detail view of a single lead. Gated by `leads.view` or `leads.manage` permission.
-3. **Authorization checks**: Gated via `LeadPolicy` (e.g. `viewAny`, `view`). Unauthorized users must receive HTTP 403, and guest requests must get HTTP 401.
-4. **Feature tests**: `tests/Feature/LeadDetailListTest.php` covering listing, detail retrieval, pagination, public-safe responses, and authorization checks.
-
-## Acceptance Criteria
-
-- Staff with `leads.view` or `leads.manage` permissions can retrieve paginated lead list and individual lead details.
-- Unauthorized requests receive 403 Forbidden. Unauthenticated requests receive 401 Unauthorized.
-- Responses are public safe and do not expose internal database IDs (`id`, `customer_id`, `created_by_user_id`).
-- All tests in the CRM lead module pass successfully.
-
-## Tests Required
-
-- `tests/Feature/LeadDetailListTest.php`
-- Run via `php artisan test --filter=LeadDetailListTest`
-
-## Quality Requirements
-
-- Enforce standard Laravel conventions.
-- Keep controller lean.
-- Apply Laravel Pint formatting.
-
-## Files Likely Affected
-
-- `app/Http/Controllers/Admin/LeadController.php`
-- `routes/web.php`
-- `tests/Feature/LeadDetailListTest.php` [NEW]
+1. **Endpoint routing**: Ensure public bulk enquiries correctly create leads/quotation source data.
+2. **Attribution & source linkage**: Connect guest submissions with UTM parameters, referrers, and specific product categories.
+3. **Feature tests**: Verify correct lead creation and validation on bulk enquiry submissions.
