@@ -424,6 +424,8 @@ Verification note: C1.3.5 completed on 2026-06-23. Customer approval and rejecti
 
 Verification note: C1.3.7 completed on 2026-06-23. Approved quotations convert atomically to confirmed sales orders via POST /admin/quotations/{id}/convert. Conversion blocks with 422 if: (1) status is not approved, (2) already converted, (3) no live customer_id, or (4) any quotation item has no product_sku_id — preserving order total integrity. Quotation totals are copied verbatim. OrderItems have price_source = quotation_conversion. Idempotency is protected via conversion_idempotency_key. TOCTOU is guarded by lockForUpdate inside DB::transaction. QuotationApprovalEvent with event_type = converted is logged atomically inside the same transaction. Formatted via Laravel Pint and validated via QuotationConversionTest.php with 12 tests and 65 assertions. All 379 tests passed.
 
+Verification note: C1.3.8 completed on 2026-06-24. Advance/manual payment recording is fully implemented via POST /admin/orders/{order}/payments. Gated by `payments.record` permission and `OrderPolicy@recordPayment`. Validates that payment amount does not exceed the remaining balance and that the order is not in a terminal state (cancelled/refunded). Generates a unique receipt number starting with `RC-`. Emits `AuditEvent` with type `payments.payment_recorded`. Supports idempotency key verification. Verified via ManualPaymentRecordingTest.php with 8 tests and 31 assertions. All tests passed and Laravel Pint formatted.
+
 ## C2.1 Inventory Movements And Stock Handling
 
 | Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |

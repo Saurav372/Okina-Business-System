@@ -43,4 +43,13 @@ class OrderPolicy
 
         return false;
     }
+
+    public function recordPayment(Authenticatable $actor, Order $order): bool
+    {
+        if ($actor instanceof User) {
+            return $actor->hasPermissionTo('payments.record');
+        }
+
+        return false;
+    }
 }

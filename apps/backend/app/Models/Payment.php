@@ -31,6 +31,45 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 ])]
 class Payment extends Model
 {
+    public const METHOD_CASH = 'cash';
+
+    public const METHOD_BANK_TRANSFER = 'bank_transfer';
+
+    public const METHOD_UPI = 'upi';
+
+    public const METHOD_CHEQUE = 'cheque';
+
+    public const METHOD_OTHER = 'other';
+
+    public const METHODS = [
+        self::METHOD_CASH,
+        self::METHOD_BANK_TRANSFER,
+        self::METHOD_UPI,
+        self::METHOD_CHEQUE,
+        self::METHOD_OTHER,
+    ];
+
+    public const TYPE_FULL = 'full';
+
+    public const TYPE_ADVANCE = 'advance';
+
+    public const TYPE_PARTIAL = 'partial';
+
+    public const TYPE_INSTALLMENT = 'installment';
+
+    public const TYPE_FINAL_BALANCE = 'final_balance';
+
+    public const TYPE_MANUAL_ADJUSTMENT = 'manual_adjustment';
+
+    public const TYPES = [
+        self::TYPE_FULL,
+        self::TYPE_ADVANCE,
+        self::TYPE_PARTIAL,
+        self::TYPE_INSTALLMENT,
+        self::TYPE_FINAL_BALANCE,
+        self::TYPE_MANUAL_ADJUSTMENT,
+    ];
+
     protected function casts(): array
     {
         return [

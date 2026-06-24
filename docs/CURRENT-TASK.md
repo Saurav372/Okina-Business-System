@@ -8,15 +8,15 @@ C1.3 Quotations and bulk-order conversion
 
 ## Current Subtask
 
-C1.3.7 Sales-order conversion
+C1.3.8 Advance-payment recording
 
 ## Current Status
 
-Completed. C1.3.7 is implemented and verified. All 379 tests pass.
+Completed. C1.3.8 is implemented and verified. All 8 manual payment tests pass.
 
 ## Next Subtask
 
-C1.3.8 Advance-payment recording
+C1.3 Parent Task Completion & Validation
 
 ## Goal
 

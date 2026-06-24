@@ -482,6 +482,8 @@ Verification note: C1.3.6 completed on 2026-06-23. Quotation revision snapshotti
 
 Verification note: C1.3.7 completed on 2026-06-23. Approved quotations can be atomically converted to confirmed sales orders via POST /admin/quotations/{id}/convert. Conversion is blocked with 422 if the quotation is not approved, already converted, has no live customer_id, or contains any free-text items (product_sku_id = null) — ensuring order total integrity. All quotation totals are copied verbatim to the order. OrderItems are created with price_source = quotation_conversion. Idempotency is supported via conversion_idempotency_key. The operation uses lockForUpdate inside a DB transaction for TOCTOU safety. A QuotationApprovalEvent with event_type = converted is logged atomically. Formatted via Laravel Pint and validated via QuotationConversionTest.php with 12 tests and 65 assertions. All 379 tests passed.
 
+Verification note: C1.3.8 completed on 2026-06-24. Advance/manual payment recording is fully implemented via POST /admin/orders/{order}/payments. Gated by `payments.record` permission and `OrderPolicy@recordPayment`. Validates that payment amount does not exceed the remaining balance and that the order is not in a terminal state (cancelled/refunded). Generates a unique receipt number starting with `RC-`. Emits `AuditEvent` with type `payments.payment_recorded`. Supports idempotency key verification. Verified via ManualPaymentRecordingTest.php with 8 tests and 31 assertions. All tests passed and Laravel Pint formatted.
+
 ### C2.1 Inventory movements and stock handling
 
 | Subtask ID | Subtask Name | Status |
