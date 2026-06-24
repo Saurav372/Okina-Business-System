@@ -4,31 +4,31 @@ Use this file as the task-specific context for a coding session. Update it befor
 
 ## Current Parent Task
 
-C1.3 Quotations and bulk-order conversion
+C5.1 Finance payment and balance views
 
 ## Current Subtask
 
-C1.3.8 Advance-payment recording
+C5.1.1 Finance access boundary and sensitive-field policy
 
 ## Current Status
 
-Completed. C1.3.8 is implemented and verified. All 8 manual payment tests pass.
+Not Started. Preparing implementation plan.
 
 ## Next Subtask
 
-C1.3 Parent Task Completion & Validation
+C5.1.2 Payment and refund ledger list
 
 ## Goal
 
-Allow staff to record advance (partial) payments against a newly created sales order that originated from a quotation conversion.
+Define and enforce the authorization policy and sensitive field protection rules for payments and refunds, ensuring only staff with explicit permissions (e.g. `finance.view` or `finance.manage`) can view sensitive fields like gateway fees, net amount, or overall financial reports.
 
 ## Dependencies
 
-- C1.3.7 Sales-order conversion (Completed)
-- C5.1 Finance payment and balance views (Not Started — advance payment recording is a prerequisite step)
+- A2.3 Role and permission model (Completed)
+- C1.1 Basic admin order and payment view (Completed)
 
 ## Reference Details
 
-- Sales orders start in `confirmed` status after quotation conversion.
-- Advance payments are recorded as `Payment` records against the `Order`.
-- Payment status recalculation rules are implemented in `A5.1.4` and `A5.2.5`.
+- Admin role and permissions are stored in database.
+- Policy check rules should block unauthorized roles from retrieving sensitive columns (`gateway_fee_minor`, `net_amount_minor`, etc.) when querying payment data.
+- User permissions: `payments.view`, `payments.record`, `finance.view_sensitive`.

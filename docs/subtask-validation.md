@@ -452,6 +452,17 @@ Verification note: C1.3.8 completed on 2026-06-24. Advance/manual payment record
 | C2.2.7 | Purchase payment tracking | C5.1, C2.2.2 | Vendor payment status is trackable | Purchase payment tests | Purchases, Finance | Medium |
 | C2.2.8 | Vendor-order history | C2.2.1-C2.2.7 | Vendor page shows related purchase history | History tests | Vendors, Purchases | Low |
 
+## C5.1 Finance Payment And Balance Views
+
+| Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |
+|---|---|---|---|---|---|---|
+| C5.1.1 | Finance access boundary and sensitive-field policy | A2.3 | Gated access to payment/refund endpoints based on roles/permissions; sensitive columns (gateway fees, net amount, etc.) are hidden from unauthorized users | Permission and access restriction tests | Auth, Finance, Payments | High |
+| C5.1.2 | Payment and refund ledger list | C5.1.1, C1.1 | Paginated ledger lists all payments and refunds; respects user visibility permissions | Ledger listing/access tests | Finance, Payments | Medium |
+| C5.1.3 | Order payment detail and balance panel | C5.1.1, C1.1 | Detail page for order shows payment list, refund list, and outstanding balance summary | Order payment detail tests | Finance, Payments, Orders | Medium |
+| C5.1.4 | Shared balance calculation presentation | A5.1.4 | Computes outstanding balance correctly (total - paid + refunded) using the shared calculator and displays it | Balance presentation tests | Finance, Payments, Orders | Medium |
+| C5.1.5 | Finance filters, totals, and pagination | C5.1.2 | Ledger supports filtering by date range, provider, method, status, and type with correct totals | Filter and aggregate tests | Finance, Payments | Medium |
+| C5.1.6 | Finance authorization and calculation regression tests | C5.1.1-C5.1.5 | Complete regression test suite verifying all access rules and calculations | Finance regression tests | Finance, Payments, Auth | High |
+
 ## C5.2 Refund Management
 
 | Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |
