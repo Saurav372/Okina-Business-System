@@ -269,6 +269,13 @@ class AdminOrderDetailTest extends TestCase
             'processed_at' => now()->subMinutes(10),
         ]);
 
+        $order->load([
+            'items',
+            'paymentAttempts',
+            'payments.paymentAttempt',
+            'refunds.payment.paymentAttempt',
+        ]);
+
         $summary = app(OrderDetailCatalog::class)->summarize($order);
 
         $this->assertSame('OD-DETAILED', $summary['public_id']);
@@ -358,5 +365,194 @@ class AdminOrderDetailTest extends TestCase
         $user->assignRole($role);
 
         return $user;
+    }
+
+    public function test_detail_summary_always_includes_financial_amount_keys_with_defaults(): void
+    {
+        $order = Order::factory()->create([
+            'total_amount_minor' => 10000,
+        ]);
+
+        $order->load([
+            'items',
+            'paymentAttempts',
+            'payments.paymentAttempt',
+            'refunds.payment.paymentAttempt',
+        ]);
+
+        $summary = app(OrderDetailCatalog::class)->summarize($order);
+
+        $this->assertArrayHasKey('paid_amount_minor', $summary['amounts']);
+        $this->assertArrayHasKey('refunded_amount_minor', $summary['amounts']);
+        $this->assertArrayHasKey('outstanding_balance_minor', $summary['amounts']);
+
+        $this->assertSame(0, $summary['amounts']['paid_amount_minor']);
+        $this->assertSame(0, $summary['amounts']['refunded_amount_minor']);
+        $this->assertSame(10000, $summary['amounts']['outstanding_balance_minor']);
+    }
+
+    public function test_detail_summary_calculates_paid_refunded_and_outstanding_balance_with_multi_payment_scenarios(): void
+    {
+        $order = Order::factory()->create([
+            'total_amount_minor' => 10000,
+        ]);
+
+        $attempt = PaymentAttempt::create([
+            'order_id' => $order->id,
+            'provider' => 'cashfree',
+            'attempt_type' => 'website_checkout',
+            'status' => 'succeeded',
+            'amount_minor' => 10000,
+            'currency' => 'INR',
+            'idempotency_key' => 'idemp-multi-scenario',
+        ]);
+
+        // Payment A: 3000 succeeded
+        $payA = Payment::create([
+            'order_id' => $order->id,
+            'payment_attempt_id' => $attempt->id,
+            'payment_type' => 'partial',
+            'provider' => 'cashfree',
+            'status' => 'succeeded',
+            'amount_minor' => 3000,
+            'currency' => 'INR',
+        ]);
+
+        // Payment B: 5000 succeeded
+        $payB = Payment::create([
+            'order_id' => $order->id,
+            'payment_attempt_id' => $attempt->id,
+            'payment_type' => 'partial',
+            'provider' => 'cashfree',
+            'status' => 'succeeded',
+            'amount_minor' => 5000,
+            'currency' => 'INR',
+        ]);
+
+        // Payment C: 2000 pending (should not be summed)
+        Payment::create([
+            'order_id' => $order->id,
+            'payment_attempt_id' => $attempt->id,
+            'payment_type' => 'partial',
+            'provider' => 'cashfree',
+            'status' => 'pending',
+            'amount_minor' => 2000,
+            'currency' => 'INR',
+        ]);
+
+        // Refund A: 500 succeeded
+        Refund::create([
+            'order_id' => $order->id,
+            'payment_id' => $payA->id,
+            'provider' => 'cashfree',
+            'refund_type' => 'partial',
+            'status' => 'succeeded',
+            'amount_minor' => 500,
+            'currency' => 'INR',
+        ]);
+
+        // Refund B: 700 succeeded
+        Refund::create([
+            'order_id' => $order->id,
+            'payment_id' => $payB->id,
+            'provider' => 'cashfree',
+            'refund_type' => 'partial',
+            'status' => 'succeeded',
+            'amount_minor' => 700,
+            'currency' => 'INR',
+        ]);
+
+        // Refund C: 300 failed (should not be summed)
+        Refund::create([
+            'order_id' => $order->id,
+            'payment_id' => $payA->id,
+            'provider' => 'cashfree',
+            'refund_type' => 'partial',
+            'status' => 'failed',
+            'amount_minor' => 300,
+            'currency' => 'INR',
+        ]);
+
+        $order->load([
+            'items',
+            'paymentAttempts',
+            'payments.paymentAttempt',
+            'refunds.payment.paymentAttempt',
+        ]);
+
+        $summary = app(OrderDetailCatalog::class)->summarize($order);
+
+        $this->assertSame(8000, $summary['amounts']['paid_amount_minor']);
+        $this->assertSame(1200, $summary['amounts']['refunded_amount_minor']);
+        $this->assertSame(3200, $summary['amounts']['outstanding_balance_minor']); // 10000 - 8000 + 1200
+    }
+
+    public function test_detail_summary_clamps_outstanding_balance_to_zero(): void
+    {
+        $order = Order::factory()->create([
+            'total_amount_minor' => 10000,
+        ]);
+
+        $attempt = PaymentAttempt::create([
+            'order_id' => $order->id,
+            'provider' => 'cashfree',
+            'attempt_type' => 'website_checkout',
+            'status' => 'succeeded',
+            'amount_minor' => 12000,
+            'currency' => 'INR',
+            'idempotency_key' => 'idemp-clamps-to-zero',
+        ]);
+
+        // Overpaid Payment: 12000 succeeded
+        Payment::create([
+            'order_id' => $order->id,
+            'payment_attempt_id' => $attempt->id,
+            'payment_type' => 'full',
+            'provider' => 'cashfree',
+            'status' => 'succeeded',
+            'amount_minor' => 12000,
+            'currency' => 'INR',
+        ]);
+
+        $order->load([
+            'items',
+            'paymentAttempts',
+            'payments.paymentAttempt',
+            'refunds.payment.paymentAttempt',
+        ]);
+
+        $summary = app(OrderDetailCatalog::class)->summarize($order);
+
+        $this->assertSame(12000, $summary['amounts']['paid_amount_minor']);
+        $this->assertSame(0, $summary['amounts']['outstanding_balance_minor']);
+    }
+
+    public function test_detail_summary_throws_logic_exception_if_relations_are_not_eager_loaded(): void
+    {
+        $order = Order::factory()->create();
+
+        // Calling summarize without loading relations should throw LogicException
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage("OrderDetailCatalog requires the 'items' relationship to be eager loaded.");
+
+        app(OrderDetailCatalog::class)->summarize($order);
+    }
+
+    public function test_domain_invariant_succeeded_refund_must_reference_valid_recorded_payment(): void
+    {
+        $order = Order::factory()->create();
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('A succeeded refund must reference a valid recorded payment.');
+
+        Refund::create([
+            'order_id' => $order->id,
+            'payment_id' => null,
+            'provider' => 'cashfree',
+            'refund_type' => 'full',
+            'status' => 'succeeded',
+            'amount_minor' => 1000,
+            'currency' => 'INR',
+        ]);
     }
 }

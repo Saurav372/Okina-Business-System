@@ -310,13 +310,13 @@ class CustomerTrackingApiTest extends TestCase
     {
         $order = Order::factory()->create();
 
-        // 1. Guest client gets redirected to login (302)
+        // 1. Guest client gets 401 Unauthorized
         $this->postJson("/admin/orders/{$order->public_id}/status", [
             'status' => 'confirmed',
             'design_status' => 'approved',
             'production_status' => 'completed',
             'shipping_status' => 'shipped',
-        ])->assertStatus(302);
+        ])->assertStatus(401);
 
         // 2. Customer client gets redirected to login (302) since they aren't authenticated under admin guard
         $this->actingAs($this->customerAccount, 'customer')

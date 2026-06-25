@@ -67,9 +67,17 @@ class FinanceAccessPolicyTest extends TestCase
         $approver = $this->makeStaffWithPermissions('refunds.approve');
 
         $order = Order::factory()->create();
+        $payment = Payment::create([
+            'order_id' => $order->id,
+            'payment_type' => 'full',
+            'provider' => 'manual',
+            'status' => 'succeeded',
+            'amount_minor' => 1000,
+            'currency' => 'INR',
+        ]);
         $refund = Refund::create([
             'order_id' => $order->id,
-            'payment_id' => null,
+            'payment_id' => $payment->id,
             'provider' => 'manual',
             'refund_type' => 'full',
             'status' => 'succeeded',
@@ -113,6 +121,13 @@ class FinanceAccessPolicyTest extends TestCase
             'gateway_fee_minor' => 50,
             'net_amount_minor' => 950,
             'paid_at' => now(),
+        ]);
+
+        $order->load([
+            'items',
+            'paymentAttempts',
+            'payments.paymentAttempt',
+            'refunds.payment.paymentAttempt',
         ]);
 
         // 1. Staff without finance.view_cost permission

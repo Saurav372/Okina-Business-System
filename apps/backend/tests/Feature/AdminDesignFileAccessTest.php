@@ -119,6 +119,13 @@ class AdminDesignFileAccessTest extends TestCase
             'price_source' => 'order_snapshot',
         ]);
 
+        $order->load([
+            'items',
+            'paymentAttempts',
+            'payments.paymentAttempt',
+            'refunds.payment.paymentAttempt',
+        ]);
+
         $summary = app(OrderDetailCatalog::class)->summarize($order);
 
         $this->assertArrayHasKey('items', $summary);

@@ -30,6 +30,15 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 ])]
 class Refund extends Model
 {
+    protected static function booted(): void
+    {
+        static::saving(function (Refund $refund) {
+            if ($refund->status === 'succeeded' && is_null($refund->payment_id)) {
+                throw new \InvalidArgumentException('A succeeded refund must reference a valid recorded payment.');
+            }
+        });
+    }
+
     protected function casts(): array
     {
         return [

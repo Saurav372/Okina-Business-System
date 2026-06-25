@@ -224,12 +224,12 @@ class AdminOrderItemFileAccessTest extends TestCase
         $this->get(route('admin.orders.files.preview', [
             'order' => $order->public_id,
             'file' => $storedFile->public_id,
-        ]))->assertRedirect();
+        ]))->assertStatus(401);
 
         $this->get(route('admin.orders.files.download', [
             'order' => $order->public_id,
             'file' => $storedFile->public_id,
-        ]))->assertRedirect();
+        ]))->assertStatus(401);
     }
 
     public function test_design_file_route_uses_public_id_not_internal_id(): void
@@ -382,6 +382,13 @@ class AdminOrderItemFileAccessTest extends TestCase
             'line_total_minor' => 2000,
             'currency' => 'INR',
             'price_source' => 'order_snapshot',
+        ]);
+
+        $order->load([
+            'items',
+            'paymentAttempts',
+            'payments.paymentAttempt',
+            'refunds.payment.paymentAttempt',
         ]);
 
         return [$order, $product, $sku];

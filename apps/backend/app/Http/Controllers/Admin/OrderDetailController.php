@@ -13,6 +13,13 @@ class OrderDetailController extends Controller
     {
         Gate::authorize('view', $order);
 
+        $order->load([
+            'items',
+            'paymentAttempts',
+            'payments.paymentAttempt',
+            'refunds.payment.paymentAttempt',
+        ]);
+
         $summary = app(OrderDetailCatalog::class)->summarize($order);
 
         return view('admin.orders.detail', [

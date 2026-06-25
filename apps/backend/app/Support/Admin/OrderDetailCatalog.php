@@ -125,12 +125,11 @@ final class OrderDetailCatalog
      */
     public function summarize(Order $order): array
     {
-        $order->loadMissing([
-            'paymentAttempts',
-            'payments.paymentAttempt',
-            'refunds.payment.paymentAttempt',
-            'items',
-        ]);
+        $this->validateRelationshipsLoaded($order);
+
+        $paidAmountMinor = $order->payments->where('status', 'succeeded')->sum('amount_minor');
+        $refundedAmountMinor = $order->refunds->where('status', 'succeeded')->sum('amount_minor');
+        $outstandingBalanceMinor = max(0, $order->total_amount_minor - $paidAmountMinor + $refundedAmountMinor);
 
         return [
             'public_id' => $order->public_id,
@@ -144,6 +143,9 @@ final class OrderDetailCatalog
                 'shipping_amount_minor' => $order->shipping_amount_minor,
                 'tax_amount_minor' => $order->tax_amount_minor,
                 'total_amount_minor' => $order->total_amount_minor,
+                'paid_amount_minor' => $paidAmountMinor,
+                'refunded_amount_minor' => $refundedAmountMinor,
+                'outstanding_balance_minor' => $outstandingBalanceMinor,
             ],
             'design_approved' => $order->design_approved,
             'design_approved_at' => $order->design_approved_at?->toIso8601String(),
@@ -345,5 +347,33 @@ final class OrderDetailCatalog
         }
 
         return $public;
+    }
+
+    /**
+     * @throws \LogicException
+     */
+    private function validateRelationshipsLoaded(Order $order): void
+    {
+        foreach (['items', 'paymentAttempts', 'payments', 'refunds'] as $relation) {
+            if (! $order->relationLoaded($relation)) {
+                throw new \LogicException("OrderDetailCatalog requires the '{$relation}' relationship to be eager loaded.");
+            }
+        }
+
+        $order->payments->each(function (Payment $payment) {
+            if (! $payment->relationLoaded('paymentAttempt')) {
+                throw new \LogicException("OrderDetailCatalog requires each Payment to have the 'paymentAttempt' relationship eager loaded.");
+            }
+        });
+
+        $order->refunds->each(function (Refund $refund) {
+            if (! $refund->relationLoaded('payment')) {
+                throw new \LogicException("OrderDetailCatalog requires each Refund to have the 'payment' relationship eager loaded.");
+            }
+
+            if ($refund->payment && ! $refund->payment->relationLoaded('paymentAttempt')) {
+                throw new \LogicException("OrderDetailCatalog requires the nested 'paymentAttempt' relationship on each Refund's Payment to be eager loaded.");
+            }
+        });
     }
 }

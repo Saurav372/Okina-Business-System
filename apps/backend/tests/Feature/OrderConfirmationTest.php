@@ -119,8 +119,8 @@ class OrderConfirmationTest extends TestCase
                 'production_status' => 'not_started',
                 'shipping_status' => 'not_shipped',
             ])
-            ->assertStatus(302)
-            ->assertSessionHasErrors(['status']);
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['status']);
 
         $order->refresh();
         $this->assertSame('cancelled', $order->status);
@@ -147,8 +147,8 @@ class OrderConfirmationTest extends TestCase
                 'production_status' => 'completed',
                 'shipping_status' => 'delivered',
             ])
-            ->assertStatus(302)
-            ->assertSessionHasErrors(['status']);
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['status']);
 
         $order->refresh();
         $this->assertSame('delivered', $order->status);
@@ -175,8 +175,8 @@ class OrderConfirmationTest extends TestCase
                 'production_status' => 'completed',
                 'shipping_status' => 'not_shipped',
             ])
-            ->assertStatus(302)
-            ->assertSessionHasErrors(['status']);
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['status']);
 
         $order->refresh();
         $this->assertSame('refunded', $order->status);
