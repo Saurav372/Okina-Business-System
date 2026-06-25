@@ -396,13 +396,15 @@ Verification note: C3.1.7 completed on 2026-06-23. Lead authorization, list, and
 | Subtask ID | Subtask Name | Status |
 |---|---|---|
 | C5.1.1 | Finance access boundary and sensitive-field policy | Completed |
-| C5.1.2 | Payment and refund ledger list | Not Started |
+| C5.1.2 | Payment and refund ledger list | Completed |
 | C5.1.3 | Order payment detail and balance panel | Not Started |
 | C5.1.4 | Shared balance calculation presentation | Not Started |
 | C5.1.5 | Finance filters, totals, and pagination | Not Started |
 | C5.1.6 | Finance authorization and calculation regression tests | Not Started |
 
 Verification note: C5.1.1 completed on 2026-06-25. Enforced finance access boundary and sensitive-field policies. Created PaymentPolicy, RefundPolicy, PaymentResource, and RefundResource. Registered policies in AppServiceProvider. Appended controller routes for listing and displaying payments and refunds. Ensured internal primary database keys and foreign keys are omitted from serialization. Conditionally loaded sensitive gateway fee and net amount fields using $this->when() based on finance.view_cost permissions. Verified via FinanceBoundaryTest.php (5 tests, 64 assertions) and FinanceAccessPolicyTest.php (3 tests, 26 assertions).
+
+Verification note: C5.1.2 completed on 2026-06-25. Implemented paginated ledger lists for all payments and refunds. Exposes JSON payloads through PaymentResource and RefundResource, protecting database keys and conditionally loading sensitive details. Integrated eager loading (`with('order')` and `with(['order', 'payment'])`) on query builders in PaymentController and RefundController to prevent N+1 queries. Verified via FinanceBoundaryTest.php (which covers collection visibility, key omission, and resource mapping).
 
 ### C5.4 Financial reports
 

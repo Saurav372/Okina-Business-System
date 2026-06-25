@@ -12,7 +12,7 @@ C5.1.2 Payment and refund ledger list
 
 ## Current Status
 
-In Progress. Confirming list endpoints and verifying formatting/tests.
+Completed. C5.1.2 is implemented and verified. Eager loaded ledger lists are in place.
 
 ## Next Subtask
 

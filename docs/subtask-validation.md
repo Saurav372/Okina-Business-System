@@ -465,6 +465,8 @@ Verification note: C1.3.8 completed on 2026-06-24. Advance/manual payment record
 
 Verification note: C5.1.1 completed on 2026-06-25. Enforced finance access boundary and sensitive-field policies. Created PaymentPolicy, RefundPolicy, PaymentResource, and RefundResource. Registered policies in AppServiceProvider. Appended controller routes for listing and displaying payments and refunds. Ensured internal primary database keys and foreign keys are omitted from serialization. Conditionally loaded sensitive gateway fee and net amount fields using $this->when() based on finance.view_cost permissions. Verified via FinanceBoundaryTest.php (5 tests, 64 assertions) and FinanceAccessPolicyTest.php (3 tests, 26 assertions).
 
+Verification note: C5.1.2 completed on 2026-06-25. Implemented paginated ledger lists for all payments and refunds. Exposes JSON payloads through PaymentResource and RefundResource, protecting database keys and conditionally loading sensitive details. Integrated eager loading (`with('order')` and `with(['order', 'payment'])`) on query builders in PaymentController and RefundController to prevent N+1 queries. Verified via FinanceBoundaryTest.php (which covers collection visibility, key omission, and resource mapping).
+
 ## C5.2 Refund Management
 
 | Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |
