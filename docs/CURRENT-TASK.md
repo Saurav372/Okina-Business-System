@@ -8,15 +8,15 @@ C5.1 Finance payment and balance views
 
 ## Current Subtask
 
-C5.1.4 Shared balance calculation presentation
+C5.1.5 Finance filters, totals, and pagination
 
 ## Current Status
 
-In Progress. Preparing to refactor `OrderDetailCatalog` to calculate outstanding balance using the shared `OrderTotalsCalculator` instead of local calculations.
+Completed. C5.1.4 is implemented and verified. Eager loaded balance calculations are delegated to the shared OrderTotalsCalculator.
 
 ## Next Subtask
 
-C5.1.5 Finance filters, totals, and pagination
+C5.1.6 Finance authorization and calculation regression tests
 
 ## Goal
 
