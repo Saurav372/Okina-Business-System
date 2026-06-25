@@ -469,6 +469,8 @@ Verification note: C5.1.2 completed on 2026-06-25. Implemented paginated ledger 
 
 Verification note: C5.1.3 completed on 2026-06-25. Implemented paid amount, refunded amount, and outstanding balance summary for order details using only succeeded payments and refunds. Outstanding balance is clamped to zero. Fail-loud LogicExceptions are thrown if required top-level or nested relationships are not eager loaded. Eager loading is optimized at the controller level. Model-level boot event validates the domain invariant that succeeded refunds must have a valid recorded payment. Verified via AdminOrderDetailTest.php (8 tests, 81 assertions) and full test suite run (400 tests passed).
 
+Verification note: C5.1.4 completed on 2026-06-25. Refactored balance calculations in OrderDetailCatalog to delegate arithmetic to the shared OrderTotalsCalculator. Used constructor injection with fallback resolution for backward compatibility. Verified via AdminOrderDetailTest.php and all 400 tests passing.
+
 ## C5.2 Refund Management
 
 | Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |
