@@ -8,15 +8,15 @@ C5.1 Finance payment and balance views
 
 ## Current Subtask
 
-C5.1.3 Order payment detail and balance panel
+C5.1.4 Shared balance calculation presentation
 
 ## Current Status
 
-In Progress. Updating OrderDetailCatalog to calculate and present paid amount, refunded amount, and outstanding balance summary using only succeeded payments and refunds.
+Completed. C5.1.3 is implemented and verified. Eager loaded financial columns are added, clamping outstanding balance to zero, throwing descriptive LogicExceptions for missing relations, and validating the domain invariant for succeeded refunds.
 
 ## Next Subtask
 
-C5.1.4 Shared balance calculation presentation
+C5.1.5 Finance filters, totals, and pagination
 
 ## Goal
 
