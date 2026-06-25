@@ -8,27 +8,27 @@ C5.1 Finance payment and balance views
 
 ## Current Subtask
 
-C5.1.1 Finance access boundary and sensitive-field policy
+C5.1.2 Payment and refund ledger list
 
 ## Current Status
 
-Completed. C5.1.1 is implemented and verified. All 10 finance policy and boundary tests pass.
+In Progress. Confirming list endpoints and verifying formatting/tests.
 
 ## Next Subtask
 
-C5.1.2 Payment and refund ledger list
+C5.1.3 Order payment detail and balance panel
 
 ## Goal
 
-Define and enforce the authorization policy and sensitive field protection rules for payments and refunds, ensuring only staff with explicit permissions (e.g. `finance.view` or `finance.manage`) can view sensitive fields like gateway fees, net amount, or overall financial reports.
+Provide a paginated list of all payment and refund records (the financial ledger) for authorized staff. The listings must respect user visibility permissions and sensitive field boundary rules.
 
 ## Dependencies
 
-- A2.3 Role and permission model (Completed)
+- C5.1.1 Finance access boundary and sensitive-field policy (Completed)
 - C1.1 Basic admin order and payment view (Completed)
 
 ## Reference Details
 
-- Admin role and permissions are stored in database.
-- Policy check rules should block unauthorized roles from retrieving sensitive columns (`gateway_fee_minor`, `net_amount_minor`, etc.) when querying payment data.
-- User permissions: `payments.view`, `payments.record`, `finance.view_sensitive`.
+- Route: `GET /admin/payments` (PaymentController@index) and `GET /admin/refunds` (RefundController@index).
+- Must utilize PaymentResource and RefundResource to shape output, hide database keys, and conditionally omit sensitive amounts.
+- Relationship eager loading is required to avoid N+1 queries.
