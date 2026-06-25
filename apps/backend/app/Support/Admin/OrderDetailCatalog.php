@@ -8,6 +8,7 @@ use App\Models\Payment;
 use App\Models\PaymentAttempt;
 use App\Models\Refund;
 use App\Support\Products\CustomizationSnapshotBuilder;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
 
 final class OrderDetailCatalog
@@ -241,7 +242,7 @@ final class OrderDetailCatalog
      */
     private function paymentSnapshot(Payment $payment): array
     {
-        return [
+        $snapshot = [
             'provider' => $payment->provider,
             'payment_type' => $payment->payment_type,
             'status' => $payment->status,
@@ -254,6 +255,13 @@ final class OrderDetailCatalog
             'payment_attempt_public_id' => $payment->paymentAttempt?->public_id,
             'paid_at' => $payment->paid_at?->toIso8601String(),
         ];
+
+        if (Gate::allows('viewSensitive', $payment)) {
+            $snapshot['gateway_fee_minor'] = $payment->gateway_fee_minor;
+            $snapshot['net_amount_minor'] = $payment->net_amount_minor;
+        }
+
+        return $snapshot;
     }
 
     /**

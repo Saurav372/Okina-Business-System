@@ -5,7 +5,9 @@ use App\Http\Controllers\Admin\AdminOrderDesignFileController;
 use App\Http\Controllers\Admin\LeadActivityController;
 use App\Http\Controllers\Admin\LeadController;
 use App\Http\Controllers\Admin\OrderDetailController;
+use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\QuotationController;
+use App\Http\Controllers\Admin\RefundController;
 use App\Http\Controllers\Admin\SalesOrderController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\CustomerAuthController;
@@ -68,4 +70,10 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     // B2.2.8 — Admin design-file access bridge (order-scoped, policy-gated)
     Route::get('/orders/{order:public_id}/files/{file:public_id}/preview', [AdminOrderDesignFileController::class, 'preview'])->name('admin.orders.files.preview')->withoutScopedBindings();
     Route::get('/orders/{order:public_id}/files/{file:public_id}/download', [AdminOrderDesignFileController::class, 'download'])->name('admin.orders.files.download')->withoutScopedBindings();
+
+    // Finance payment & refund boundary routes
+    Route::get('/payments', [PaymentController::class, 'index'])->name('admin.payments.index');
+    Route::get('/payments/{payment}', [PaymentController::class, 'show'])->name('admin.payments.show');
+    Route::get('/refunds', [RefundController::class, 'index'])->name('admin.refunds.index');
+    Route::get('/refunds/{refund}', [RefundController::class, 'show'])->name('admin.refunds.show');
 });

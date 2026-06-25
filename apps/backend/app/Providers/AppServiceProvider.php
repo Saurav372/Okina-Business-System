@@ -6,15 +6,19 @@ use App\Contracts\CustomizationOptionContract;
 use App\Contracts\PublicCatalogContract;
 use App\Models\Lead;
 use App\Models\Order;
+use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\Quotation;
+use App\Models\Refund;
 use App\Models\StoredFile;
 use App\Policies\LeadPolicy;
 use App\Policies\OrderPolicy;
+use App\Policies\PaymentPolicy;
 use App\Policies\ProductCategoryPolicy;
 use App\Policies\ProductPolicy;
 use App\Policies\QuotationPolicy;
+use App\Policies\RefundPolicy;
 use App\Policies\StoredFilePolicy;
 use App\Support\Products\CustomizationOptionRules;
 use App\Support\Products\PublicCatalogRules;
@@ -43,5 +47,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(ProductCategory::class, ProductCategoryPolicy::class);
         Gate::policy(Lead::class, LeadPolicy::class);
         Gate::policy(Quotation::class, QuotationPolicy::class);
+        Gate::policy(Payment::class, PaymentPolicy::class);
+        Gate::policy(Refund::class, RefundPolicy::class);
     }
 }
