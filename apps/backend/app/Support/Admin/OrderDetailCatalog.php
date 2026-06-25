@@ -7,12 +7,23 @@ use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\PaymentAttempt;
 use App\Models\Refund;
+use App\Support\Orders\OrderTotalsCalculator;
 use App\Support\Products\CustomizationSnapshotBuilder;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
 
 final class OrderDetailCatalog
 {
+    private OrderTotalsCalculator $totalsCalculator;
+
+    /**
+     * Temporary constructor supporting fallback resolution until all callers are container-resolved.
+     */
+    public function __construct(?OrderTotalsCalculator $totalsCalculator = null)
+    {
+        $this->totalsCalculator = $totalsCalculator ?? app(OrderTotalsCalculator::class);
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -129,7 +140,19 @@ final class OrderDetailCatalog
 
         $paidAmountMinor = $order->payments->where('status', 'succeeded')->sum('amount_minor');
         $refundedAmountMinor = $order->refunds->where('status', 'succeeded')->sum('amount_minor');
-        $outstandingBalanceMinor = max(0, $order->total_amount_minor - $paidAmountMinor + $refundedAmountMinor);
+
+        $totals = $this->totalsCalculator->fromAmounts(
+            subtotalAmountMinor: $order->subtotal_amount_minor,
+            discountAmountMinor: $order->discount_amount_minor,
+            shippingAmountMinor: $order->shipping_amount_minor,
+            taxAmountMinor: $order->tax_amount_minor,
+            paidAmountMinor: $paidAmountMinor,
+            refundAmountMinor: $refundedAmountMinor,
+        );
+
+        $paidAmountMinor = $totals->paidAmountMinor();
+        $refundedAmountMinor = $totals->refundAmountMinor();
+        $outstandingBalanceMinor = $totals->outstandingAmountMinor();
 
         return [
             'public_id' => $order->public_id,

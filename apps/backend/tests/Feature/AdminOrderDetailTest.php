@@ -370,6 +370,7 @@ class AdminOrderDetailTest extends TestCase
     public function test_detail_summary_always_includes_financial_amount_keys_with_defaults(): void
     {
         $order = Order::factory()->create([
+            'subtotal_amount_minor' => 10000,
             'total_amount_minor' => 10000,
         ]);
 
@@ -394,6 +395,7 @@ class AdminOrderDetailTest extends TestCase
     public function test_detail_summary_calculates_paid_refunded_and_outstanding_balance_with_multi_payment_scenarios(): void
     {
         $order = Order::factory()->create([
+            'subtotal_amount_minor' => 10000,
             'total_amount_minor' => 10000,
         ]);
 
@@ -490,6 +492,7 @@ class AdminOrderDetailTest extends TestCase
     public function test_detail_summary_clamps_outstanding_balance_to_zero(): void
     {
         $order = Order::factory()->create([
+            'subtotal_amount_minor' => 10000,
             'total_amount_minor' => 10000,
         ]);
 
