@@ -12,7 +12,7 @@ C5.1.1 Finance access boundary and sensitive-field policy
 
 ## Current Status
 
-Not Started. Preparing implementation plan.
+Completed. C5.1.1 is implemented and verified. All 10 finance policy and boundary tests pass.
 
 ## Next Subtask
 

@@ -463,6 +463,8 @@ Verification note: C1.3.8 completed on 2026-06-24. Advance/manual payment record
 | C5.1.5 | Finance filters, totals, and pagination | C5.1.2 | Ledger supports filtering by date range, provider, method, status, and type with correct totals | Filter and aggregate tests | Finance, Payments | Medium |
 | C5.1.6 | Finance authorization and calculation regression tests | C5.1.1-C5.1.5 | Complete regression test suite verifying all access rules and calculations | Finance regression tests | Finance, Payments, Auth | High |
 
+Verification note: C5.1.1 completed on 2026-06-25. Enforced finance access boundary and sensitive-field policies. Created PaymentPolicy, RefundPolicy, PaymentResource, and RefundResource. Registered policies in AppServiceProvider. Appended controller routes for listing and displaying payments and refunds. Ensured internal primary database keys and foreign keys are omitted from serialization. Conditionally loaded sensitive gateway fee and net amount fields using $this->when() based on finance.view_cost permissions. Verified via FinanceBoundaryTest.php (5 tests, 64 assertions) and FinanceAccessPolicyTest.php (3 tests, 26 assertions).
+
 ## C5.2 Refund Management
 
 | Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |
