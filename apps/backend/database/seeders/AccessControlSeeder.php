@@ -32,8 +32,9 @@ class AccessControlSeeder extends Seeder
             ['name' => 'View Inventory', 'slug' => 'inventory.view', 'group' => 'inventory', 'is_sensitive' => false],
             ['name' => 'Manage Inventory', 'slug' => 'inventory.manage', 'group' => 'inventory', 'is_sensitive' => false],
             ['name' => 'Adjust Inventory', 'slug' => 'inventory.adjust', 'group' => 'inventory', 'is_sensitive' => true],
-            ['name' => 'View Finance Costs', 'slug' => 'finance.view_cost', 'group' => 'finance', 'is_sensitive' => true],
+            ['name' => 'View Finance Cost', 'slug' => 'finance.view_cost', 'group' => 'finance', 'is_sensitive' => true],
             ['name' => 'View Finance Profit', 'slug' => 'finance.view_profit', 'group' => 'finance', 'is_sensitive' => true],
+            ['name' => 'Manage Expenses', 'slug' => 'finance.manage_expenses', 'group' => 'finance', 'is_sensitive' => true],
             ['name' => 'View Reports', 'slug' => 'reports.view', 'group' => 'reports', 'is_sensitive' => false],
             ['name' => 'View Audit', 'slug' => 'audit.view', 'group' => 'audit', 'is_sensitive' => true],
             ['name' => 'Manage Production', 'slug' => 'production.manage', 'group' => 'production', 'is_sensitive' => false],
@@ -81,6 +82,7 @@ class AccessControlSeeder extends Seeder
                     'quotations.manage',
                     'production.manage',
                     'reports.view',
+                    'finance.manage_expenses',
                 ],
             ],
             [
@@ -131,6 +133,7 @@ class AccessControlSeeder extends Seeder
                     'finance.view_profit',
                     'reports.view',
                     'audit.view',
+                    'finance.manage_expenses',
                 ],
             ],
             [

@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\LeadController;
 use App\Http\Controllers\Admin\OrderDetailController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\QuotationController;
+use App\Http\Controllers\Admin\ExpenseCategoryController;
 use App\Http\Controllers\Admin\RefundController;
 use App\Http\Controllers\Admin\SalesOrderController;
 use App\Http\Controllers\AdminAuthController;
@@ -80,4 +81,13 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     Route::post('/refunds/{refund}/process', [RefundController::class, 'process'])->name('admin.refunds.process');
     Route::post('/refunds/{refund}/cancel', [RefundController::class, 'cancel'])->name('admin.refunds.cancel');
     Route::get('/refunds/{refund}', [RefundController::class, 'show'])->name('admin.refunds.show');
+
+    // Expense Categories admin routes
+    Route::apiResource('/expense-categories', ExpenseCategoryController::class)->names([
+        'index' => 'admin.expense_categories.index',
+        'store' => 'admin.expense_categories.store',
+        'show' => 'admin.expense_categories.show',
+        'update' => 'admin.expense_categories.update',
+        'destroy' => 'admin.expense_categories.destroy',
+    ]);
 });
