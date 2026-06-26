@@ -8,49 +8,46 @@ C5.3 Expense management
 
 ## Current Subtask
 
-C5.3.3 Expense approval rules
+C5.3.4 Expense permissions
 
 ## Current Status
 
-Not Started. C5.3.2 Expense entry is fully completed, verified, and committed.
+Not Started. C5.3.3 Expense approval rules is fully completed, verified, and committed.
 
 ## Next Subtask
 
-C5.3.4 Expense permissions
+C5.3.5 Expense reporting data
 
 ## Goal
 
-Implement status transition rules, approval policies, action endpoints, and feature tests for submitting, approving, and rejecting recorded expenses.
+Ensure that restricted users cannot see protected expense data. Enforce fine-grained permission boundaries so that only authorized roles can read, create, update, delete, or transition expenses.
 
 ## Dependencies
 
-- C5.3.2 Expense entry (Completed)
 - A2.3 Role and permission model (Completed)
+- C5.3.2 Expense entry (Completed)
+- C5.3.3 Expense approval rules (Completed)
 
 ## Required Deliverables
 
-- Update the `Expense` model with status transition constraints, guards, and action methods (e.g. submit, approve, reject).
-- Action endpoints to submit, approve, and reject expenses.
-- ExpensePolicy rules checking role-based transition rights.
-- Form requests or actions to handle transition details (like reason for rejection).
+- Audit and harden the existing `ExpensePolicy` to ensure all actions (viewAny, view, create, update, delete, submit, approve, reject) are correctly gated.
+- Verify that unauthorized staff roles receive `403` on all expense endpoints.
+- Confirm that the `finance.manage_expenses` and `finance.approve_expenses` permission assignments across all roles in `AccessControlSeeder.php` are correct and complete.
+- Add or expand tests asserting that each staff role's access boundaries are exactly right (no over-permission, no under-permission).
 
 ## Acceptance Criteria
 
-- Expenses begin in `'draft'` state.
-- Transition rules are strictly enforced:
-  - `draft` can be submitted to become `pending_approval`.
-  - `pending_approval` can be approved to become `approved` OR rejected to become `rejected`.
-  - `rejected` can be submitted to become `pending_approval`.
-  - `approved` is a terminal state and cannot be changed.
-  - Invalid transitions are rejected at both controller/API level (HTTP 422) and domain model layer (LogicException).
-- Only authorized users with appropriate permissions (e.g., `'finance.approve_expenses'` for approving/rejecting, and `'finance.manage_expenses'` for submitting/drafting) can perform these actions.
-- Action history (who transitioned, when, and reasons if any) should be recorded.
+- Only users with `finance.manage_expenses` can: list, show, create, update, delete, and submit expenses.
+- Only users with `finance.approve_expenses` can: approve and reject expenses.
+- All other roles (Sales Staff, Inventory Staff, Production Staff, etc.) receive `403` on all expense endpoints.
+- No expense data leaks to unauthorized users (existence leakage is prevented — no `404` vs `403` discrepancy on expense lookups by public_id).
+- Permission grants in `AccessControlSeeder.php` match exactly the roles that should have access.
 
 ## Tests Required
 
-- Feature tests verifying valid state transitions (`draft` -> `pending_approval` -> `approved` / `rejected`).
-- Feature tests verifying invalid state transitions are blocked (e.g. `approved` -> `draft` or `rejected` -> `approved`).
-- Feature tests verifying role-based permission gates on submit, approve, and reject endpoints.
+- Feature tests for each staff role asserting they can or cannot access each expense endpoint.
+- Tests covering: `GET /admin/expenses`, `GET /admin/expenses/{id}`, `POST /admin/expenses`, `PUT /admin/expenses/{id}`, `DELETE /admin/expenses/{id}`, `POST /admin/expenses/{id}/submit`, `POST /admin/expenses/{id}/approve`, `POST /admin/expenses/{id}/reject`.
+- Tests confirming that unauthorized users get `403` and cannot distinguish between "not found" and "forbidden" for valid public IDs.
 
 ## Quality Requirements
 
@@ -60,12 +57,11 @@ Implement status transition rules, approval policies, action endpoints, and feat
 
 ## Files Likely Affected
 
-- `app/Models/Expense.php`
 - `app/Policies/ExpensePolicy.php`
-- `app/Http/Controllers/Admin/ExpenseController.php`
+- `database/seeders/AccessControlSeeder.php`
 - `tests/Feature/ExpenseTest.php`
 
 ## Tasks Not Included
 
-- Expense permissions restrictions (handled in C5.3.4).
 - Expense reporting data (handled in C5.3.5).
+- Audit log integration (handled in C6.1).

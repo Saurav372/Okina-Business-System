@@ -22,6 +22,10 @@ class ExpenseTest extends TestCase
 
     private User $unauthorizedStaff;
 
+    private User $inventoryStaff;
+
+    private User $productionStaff;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -56,6 +60,16 @@ class ExpenseTest extends TestCase
             'slug' => Role::SALES_STAFF,
         ]);
 
+        $inventoryRole = Role::create([
+            'name' => 'Inventory Staff',
+            'slug' => Role::INVENTORY_STAFF,
+        ]);
+
+        $productionRole = Role::create([
+            'name' => 'Production Staff',
+            'slug' => Role::PRODUCTION_STAFF,
+        ]);
+
         // Create users
         $this->admin = User::factory()->create([
             'user_type' => User::TYPE_STAFF,
@@ -77,6 +91,20 @@ class ExpenseTest extends TestCase
             'email_verified_at' => now(),
         ]);
         $this->unauthorizedStaff->roles()->attach($salesRole);
+
+        $this->inventoryStaff = User::factory()->create([
+            'user_type' => User::TYPE_STAFF,
+            'status' => User::STATUS_ACTIVE,
+            'email_verified_at' => now(),
+        ]);
+        $this->inventoryStaff->roles()->attach($inventoryRole);
+
+        $this->productionStaff = User::factory()->create([
+            'user_type' => User::TYPE_STAFF,
+            'status' => User::STATUS_ACTIVE,
+            'email_verified_at' => now(),
+        ]);
+        $this->productionStaff->roles()->attach($productionRole);
     }
 
     public function test_authorized_user_can_create_expense(): void
@@ -649,5 +677,233 @@ class ExpenseTest extends TestCase
         $this->assertEquals('approve', $history[3]['action']);
         $this->assertEquals(Expense::STATUS_PENDING_APPROVAL, $history[3]['from']);
         $this->assertEquals(Expense::STATUS_APPROVED, $history[3]['to']);
+    }
+
+    // -----------------------------------------------------------------------
+    // C5.3.4 – Expense permission boundary tests
+    // -----------------------------------------------------------------------
+
+    /**
+     * Users with finance.manage_expenses (Admin, Finance Staff) can access
+     * the read-only expense listing.
+     */
+    public function test_manage_expenses_roles_can_list_and_show_expenses(): void
+    {
+        $category = ExpenseCategory::factory()->create(['is_active' => true]);
+        $expense = Expense::factory()->create([
+            'expense_category_id' => $category->id,
+            'recorded_by_user_id' => $this->admin->id,
+        ]);
+
+        foreach ([$this->admin, $this->submitterOnly] as $user) {
+            $this->actingAs($user)
+                ->getJson(route('admin.expenses.index'))
+                ->assertOk();
+
+            $this->actingAs($user)
+                ->getJson(route('admin.expenses.show', $expense->public_id))
+                ->assertOk();
+        }
+    }
+
+    /**
+     * Roles without finance.manage_expenses cannot list or show expenses.
+     */
+    public function test_roles_without_manage_expenses_cannot_list_or_show_expenses(): void
+    {
+        $category = ExpenseCategory::factory()->create(['is_active' => true]);
+        $expense = Expense::factory()->create([
+            'expense_category_id' => $category->id,
+            'recorded_by_user_id' => $this->admin->id,
+        ]);
+
+        foreach ([$this->unauthorizedStaff, $this->inventoryStaff, $this->productionStaff] as $user) {
+            $this->actingAs($user)
+                ->getJson(route('admin.expenses.index'))
+                ->assertStatus(403);
+
+            $this->actingAs($user)
+                ->getJson(route('admin.expenses.show', $expense->public_id))
+                ->assertStatus(403);
+        }
+    }
+
+    /**
+     * Roles without finance.manage_expenses cannot create or update expenses.
+     */
+    public function test_roles_without_manage_expenses_cannot_create_or_update_expenses(): void
+    {
+        $category = ExpenseCategory::factory()->create(['is_active' => true]);
+        $expense = Expense::factory()->create([
+            'expense_category_id' => $category->id,
+            'recorded_by_user_id' => $this->admin->id,
+        ]);
+
+        $payload = [
+            'expense_category_public_id' => $category->public_id,
+            'amount' => '100.00',
+            'occurred_at' => Carbon::today()->toDateString(),
+        ];
+
+        foreach ([$this->unauthorizedStaff, $this->inventoryStaff, $this->productionStaff] as $user) {
+            $this->actingAs($user)
+                ->postJson(route('admin.expenses.store'), $payload)
+                ->assertStatus(403);
+
+            $this->actingAs($user)
+                ->putJson(route('admin.expenses.update', $expense->public_id), $payload)
+                ->assertStatus(403);
+        }
+    }
+
+    /**
+     * Roles without finance.manage_expenses cannot delete expenses.
+     */
+    public function test_roles_without_manage_expenses_cannot_delete_expenses(): void
+    {
+        $category = ExpenseCategory::factory()->create(['is_active' => true]);
+        $expense = Expense::factory()->create([
+            'expense_category_id' => $category->id,
+            'recorded_by_user_id' => $this->admin->id,
+        ]);
+
+        foreach ([$this->unauthorizedStaff, $this->inventoryStaff, $this->productionStaff] as $user) {
+            $this->actingAs($user)
+                ->deleteJson(route('admin.expenses.destroy', $expense->public_id))
+                ->assertStatus(403);
+        }
+    }
+
+    /**
+     * Roles without finance.manage_expenses cannot submit expenses.
+     */
+    public function test_roles_without_manage_expenses_cannot_submit_expenses(): void
+    {
+        $category = ExpenseCategory::factory()->create(['is_active' => true]);
+        $expense = Expense::factory()->create([
+            'expense_category_id' => $category->id,
+            'recorded_by_user_id' => $this->admin->id,
+            'status' => Expense::STATUS_DRAFT,
+        ]);
+
+        foreach ([$this->unauthorizedStaff, $this->inventoryStaff, $this->productionStaff] as $user) {
+            $this->actingAs($user)
+                ->postJson(route('admin.expenses.submit', $expense->public_id))
+                ->assertStatus(403);
+        }
+    }
+
+    /**
+     * Only roles with finance.approve_expenses (Admin) can approve expenses.
+     * Finance Staff (manage only) cannot approve.
+     */
+    public function test_only_approve_expenses_role_can_approve(): void
+    {
+        $category = ExpenseCategory::factory()->create(['is_active' => true]);
+        $expense = Expense::factory()->create([
+            'expense_category_id' => $category->id,
+            'recorded_by_user_id' => $this->submitterOnly->id,
+            'status' => Expense::STATUS_PENDING_APPROVAL,
+        ]);
+
+        // Finance Staff (manage but not approve) — must be 403
+        $this->actingAs($this->submitterOnly)
+            ->postJson(route('admin.expenses.approve', $expense->public_id))
+            ->assertStatus(403);
+
+        // Unauthorized roles — must be 403
+        foreach ([$this->unauthorizedStaff, $this->inventoryStaff, $this->productionStaff] as $user) {
+            $this->actingAs($user)
+                ->postJson(route('admin.expenses.approve', $expense->public_id))
+                ->assertStatus(403);
+        }
+
+        // Admin (has approve_expenses) — must succeed
+        $this->actingAs($this->admin)
+            ->postJson(route('admin.expenses.approve', $expense->public_id))
+            ->assertOk();
+    }
+
+    /**
+     * Only roles with finance.approve_expenses (Admin) can reject expenses.
+     * Finance Staff (manage only) cannot reject.
+     */
+    public function test_only_approve_expenses_role_can_reject(): void
+    {
+        $category = ExpenseCategory::factory()->create(['is_active' => true]);
+        $expense = Expense::factory()->create([
+            'expense_category_id' => $category->id,
+            'recorded_by_user_id' => $this->submitterOnly->id,
+            'status' => Expense::STATUS_PENDING_APPROVAL,
+        ]);
+
+        $reason = ['rejection_reason' => 'Reason must be at least ten chars.'];
+
+        // Finance Staff (manage but not approve) — must be 403
+        $this->actingAs($this->submitterOnly)
+            ->postJson(route('admin.expenses.reject', $expense->public_id), $reason)
+            ->assertStatus(403);
+
+        // Unauthorized roles — must be 403
+        foreach ([$this->unauthorizedStaff, $this->inventoryStaff, $this->productionStaff] as $user) {
+            $this->actingAs($user)
+                ->postJson(route('admin.expenses.reject', $expense->public_id), $reason)
+                ->assertStatus(403);
+        }
+
+        // Admin (has approve_expenses) — must succeed
+        $this->actingAs($this->admin)
+            ->postJson(route('admin.expenses.reject', $expense->public_id), $reason)
+            ->assertOk();
+    }
+
+    /**
+     * Unauthorized users always receive 403 on a valid public_id — not 404.
+     * This prevents existence leakage (ID enumeration).
+     */
+    public function test_no_existence_leakage_for_unauthorized_users(): void
+    {
+        $category = ExpenseCategory::factory()->create(['is_active' => true]);
+        $expense = Expense::factory()->create([
+            'expense_category_id' => $category->id,
+            'recorded_by_user_id' => $this->admin->id,
+            'status' => Expense::STATUS_DRAFT,
+        ]);
+
+        $validId = $expense->public_id;
+
+        foreach ([$this->unauthorizedStaff, $this->inventoryStaff, $this->productionStaff] as $user) {
+            // show — valid ID must return 403, not 404
+            $this->actingAs($user)
+                ->getJson(route('admin.expenses.show', $validId))
+                ->assertStatus(403);
+
+            // update — valid ID must return 403
+            $this->actingAs($user)
+                ->putJson(route('admin.expenses.update', $validId), [])
+                ->assertStatus(403);
+
+            // delete — valid ID must return 403
+            $this->actingAs($user)
+                ->deleteJson(route('admin.expenses.destroy', $validId))
+                ->assertStatus(403);
+
+            // submit — valid ID must return 403
+            $this->actingAs($user)
+                ->postJson(route('admin.expenses.submit', $validId))
+                ->assertStatus(403);
+
+            // approve — valid ID must return 403
+            $this->actingAs($user)
+                ->postJson(route('admin.expenses.approve', $validId))
+                ->assertStatus(403);
+
+            // reject — valid ID must return 403
+            $this->actingAs($user)
+                ->postJson(route('admin.expenses.reject', $validId), [
+                    'rejection_reason' => 'Ten chars minimum.',
+                ])
+                ->assertStatus(403);
+        }
     }
 }
