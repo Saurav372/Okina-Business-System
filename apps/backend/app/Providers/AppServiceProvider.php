@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Contracts\CustomizationOptionContract;
 use App\Contracts\PublicCatalogContract;
+use App\Models\Expense;
 use App\Models\ExpenseCategory;
 use App\Models\Lead;
 use App\Models\Order;
@@ -14,6 +15,7 @@ use App\Models\Quotation;
 use App\Models\Refund;
 use App\Models\StoredFile;
 use App\Policies\ExpenseCategoryPolicy;
+use App\Policies\ExpensePolicy;
 use App\Policies\LeadPolicy;
 use App\Policies\OrderPolicy;
 use App\Policies\PaymentPolicy;
@@ -52,5 +54,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Payment::class, PaymentPolicy::class);
         Gate::policy(Refund::class, RefundPolicy::class);
         Gate::policy(ExpenseCategory::class, ExpenseCategoryPolicy::class);
+        Gate::policy(Expense::class, ExpensePolicy::class);
     }
 }

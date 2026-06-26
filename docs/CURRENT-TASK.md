@@ -8,42 +8,46 @@ C5.3 Expense management
 
 ## Current Subtask
 
-C5.3.1 Expense categories
+C5.3.2 Expense entry
 
 ## Current Status
 
-Not Started. C5.2 Parent Task is fully completed, verified, and committed.
+Not Started. C5.3.1 Expense categories is fully completed, verified, and committed.
 
 ## Next Subtask
 
-C5.3.2 Expense entry
+C5.3.3 Expense approval rules
 
 ## Goal
 
-Ensure that expense categories are defined, stored in the database, and manageable by authorized users (finance staff/admin) as part of the backend database schema and admin API endpoints.
+Implement the database migration, Eloquent model, factories, form requests, admin REST endpoints, policies, and feature tests for recording and managing business expenses.
 
 ## Dependencies
 
+- C5.3.1 Expense categories (Completed)
 - C5.1 Finance payment and balance views (Completed)
 
 ## Required Deliverables
 
-- Database migration for `expense_categories` table (fields: id, public_id, name, code, description, is_active, created_at, updated_at).
-- ExpenseCategory model and factory.
-- Seeders for default expense categories (e.g. shipping, raw_materials, marketing, printing_supplies, utilities, other).
-- Admin API endpoints to list, show, create, update, and toggle active status of expense categories (guarded by policies and appropriate roles/permissions).
-- Form requests for input validation.
+- Database migration for `expenses` table (fields: id, public_id, expense_category_id, amount_minor, currency, notes, recorded_by_user_id, reference, status, occurred_at, created_at, updated_at).
+- Expense model and factory.
+- Update `ExpenseCategory::isReferenced()` to check for linked expenses.
+- Admin API endpoints to list, show, create, update, and delete expenses (protected by policies and role/permission checks).
+- Form requests for input validation (e.g. validating category existence and activity status).
 
 ## Acceptance Criteria
 
-- Expense categories must have a name, code (unique slug), description, and active status.
-- Only authorized users with `finance.manage` or `expenses.manage` or similar permissions can create/edit categories.
-- Public IDs are generated for public references.
-- Categories can be soft-deleted or marked inactive instead of hard deleted if referenced.
+- Expenses must have a category (only active, non-deleted categories), amount, currency (default to INR), occurred_at date, reference, notes, and status (e.g., draft, pending_approval, approved, rejected).
+- Only authorized users with `finance.manage_expenses` or similar permissions can manage expenses.
+- Public IDs are generated for public references (e.g., `EXP-[A-Z0-9]{12}`).
+- `ExpenseCategory::isReferenced()` must return true if the category has associated expense records, blocking its deletion with validation errors.
+- Soft-deleted expense categories cannot be linked to new expenses.
 
 ## Tests Required
 
-- Automated feature tests asserting CRUD operations and role-based permissions protection.
+- Automated feature tests asserting CRUD operations, role-based permissions protection, and relationship validation.
+- Assert that deleting a category linked to an expense fails validation.
+- Assert that creating an expense under an inactive or soft-deleted category fails validation.
 
 ## Quality Requirements
 
@@ -54,10 +58,12 @@ Ensure that expense categories are defined, stored in the database, and manageab
 ## Files Likely Affected
 
 - `app/Models/ExpenseCategory.php`
-- `database/migrations/..._create_expense_categories_table.php`
-- `app/Http/Controllers/Admin/ExpenseCategoryController.php`
-- `tests/Feature/ExpenseCategoryTest.php`
+- `app/Models/Expense.php` (New)
+- `database/migrations/..._create_expenses_table.php` (New)
+- `app/Http/Controllers/Admin/ExpenseController.php` (New)
+- `tests/Feature/ExpenseTest.php` (New)
 
 ## Tasks Not Included
 
-- Expense entries linking to these categories (handled in C5.3.2).
+- Expense approval rules and transitions (handled in C5.3.3).
+- Expense permissions and reporting data (handled in C5.3.4 and C5.3.5).

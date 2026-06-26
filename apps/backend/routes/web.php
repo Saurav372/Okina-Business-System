@@ -2,12 +2,13 @@
 
 use App\Http\Controllers\Admin\AdminOrderActionController;
 use App\Http\Controllers\Admin\AdminOrderDesignFileController;
+use App\Http\Controllers\Admin\ExpenseCategoryController;
+use App\Http\Controllers\Admin\ExpenseController;
 use App\Http\Controllers\Admin\LeadActivityController;
 use App\Http\Controllers\Admin\LeadController;
 use App\Http\Controllers\Admin\OrderDetailController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\QuotationController;
-use App\Http\Controllers\Admin\ExpenseCategoryController;
 use App\Http\Controllers\Admin\RefundController;
 use App\Http\Controllers\Admin\SalesOrderController;
 use App\Http\Controllers\AdminAuthController;
@@ -89,5 +90,14 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
         'show' => 'admin.expense_categories.show',
         'update' => 'admin.expense_categories.update',
         'destroy' => 'admin.expense_categories.destroy',
+    ]);
+
+    // Expenses admin routes
+    Route::apiResource('/expenses', ExpenseController::class)->names([
+        'index' => 'admin.expenses.index',
+        'store' => 'admin.expenses.store',
+        'show' => 'admin.expenses.show',
+        'update' => 'admin.expenses.update',
+        'destroy' => 'admin.expenses.destroy',
     ]);
 });

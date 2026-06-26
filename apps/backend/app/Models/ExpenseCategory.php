@@ -5,6 +5,7 @@ namespace App\Models;
 use Database\Factories\ExpenseCategoryFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -46,7 +47,7 @@ class ExpenseCategory extends Model
     /**
      * Generate a unique external public ID.
      */
-    private static function generatePublicId(): string
+    protected static function generatePublicId(): string
     {
         return 'EXPCAT-'.Str::upper(Str::random(12));
     }
@@ -100,8 +101,23 @@ class ExpenseCategory extends Model
             return true;
         }
 
-        // Placeholder until Expense model exists in C5.3.2.
-        // Categories cannot yet be referenced.
-        return false;
+        return $this->expenses()->exists();
+    }
+
+    /**
+     * Reusable domain logic to check if a category is assignable.
+     *
+     * @throws \LogicException
+     */
+    public function ensureCanAssignToExpense(): void
+    {
+        if (! $this->is_active) {
+            throw new \LogicException('Expense category is inactive.');
+        }
+    }
+
+    public function expenses(): HasMany
+    {
+        return $this->hasMany(Expense::class, 'expense_category_id');
     }
 }

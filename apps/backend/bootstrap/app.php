@@ -28,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 || $request->is('admin/quotations*')
                 || $request->is('admin/payments*')
                 || $request->is('admin/refunds*')
-                || $request->is('admin/expense-categories*'),
+                || $request->is('admin/expense-categories*')
+                || $request->is('admin/expenses*'),
         );
     })->create();
