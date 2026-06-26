@@ -149,6 +149,8 @@ class RefundController extends Controller
 
             $lockedRefund->loadMissing(['order', 'payment']);
 
+            $oldStatus = $lockedRefund->status;
+
             try {
                 $lockedRefund->approve($actor);
             } catch (\LogicException $e) {
@@ -161,17 +163,109 @@ class RefundController extends Controller
 
             $this->auditPayload = [
                 'refund_public_id' => $lockedRefund->id,
-                'order_public_id' => $lockedRefund->order?->public_id,
                 'payment_public_id' => $lockedRefund->payment_id,
+                'order_public_id' => $lockedRefund->order?->public_id,
+                'old_status' => $oldStatus,
+                'new_status' => Refund::STATUS_APPROVED,
                 'status' => Refund::STATUS_APPROVED,
-                'approved_by_user_id' => $lockedRefund->approved_by_user_id,
-                'approved_at' => $lockedRefund->approved_at?->toIso8601String(),
+                'approved_by_user_id' => $actor?->id,
+                'actor_type' => 'user',
+                'actor_id' => $actor?->id,
+                'occurred_at' => now()->toIso8601String(),
             ];
 
             return $lockedRefund;
         });
 
         event(new AuditEvent('refunds.refund_approved', $actor, $this->auditPayload));
+
+        return new RefundResource($lockedRefund);
+    }
+
+    public function process(Refund $refund)
+    {
+        Gate::authorize('process', $refund);
+
+        $actor = request()->user();
+
+        $lockedRefund = DB::transaction(function () use ($refund, $actor) {
+            $lockedRefund = Refund::query()
+                ->lockForUpdate()
+                ->findOrFail($refund->getKey());
+
+            $lockedRefund->loadMissing(['order', 'payment']);
+
+            $oldStatus = $lockedRefund->status;
+
+            try {
+                $lockedRefund->markProcessing($actor);
+            } catch (\LogicException $e) {
+                throw ValidationException::withMessages([
+                    'refund' => [$e->getMessage()],
+                ]);
+            }
+
+            $lockedRefund->save();
+
+            $this->auditPayload = [
+                'refund_public_id' => $lockedRefund->id,
+                'payment_public_id' => $lockedRefund->payment_id,
+                'order_public_id' => $lockedRefund->order?->public_id,
+                'old_status' => $oldStatus,
+                'new_status' => Refund::STATUS_PROCESSING,
+                'actor_type' => 'user',
+                'actor_id' => $actor?->id,
+                'occurred_at' => now()->toIso8601String(),
+            ];
+
+            return $lockedRefund;
+        });
+
+        event(new AuditEvent('refunds.refund_processing_started', $actor, $this->auditPayload));
+
+        return new RefundResource($lockedRefund);
+    }
+
+    public function cancel(Refund $refund)
+    {
+        Gate::authorize('cancel', $refund);
+
+        $actor = request()->user();
+
+        $lockedRefund = DB::transaction(function () use ($refund, $actor) {
+            $lockedRefund = Refund::query()
+                ->lockForUpdate()
+                ->findOrFail($refund->getKey());
+
+            $lockedRefund->loadMissing(['order', 'payment']);
+
+            $oldStatus = $lockedRefund->status;
+
+            try {
+                $lockedRefund->cancel();
+            } catch (\LogicException $e) {
+                throw ValidationException::withMessages([
+                    'refund' => [$e->getMessage()],
+                ]);
+            }
+
+            $lockedRefund->save();
+
+            $this->auditPayload = [
+                'refund_public_id' => $lockedRefund->id,
+                'payment_public_id' => $lockedRefund->payment_id,
+                'order_public_id' => $lockedRefund->order?->public_id,
+                'old_status' => $oldStatus,
+                'new_status' => Refund::STATUS_CANCELLED,
+                'actor_type' => 'user',
+                'actor_id' => $actor?->id,
+                'occurred_at' => now()->toIso8601String(),
+            ];
+
+            return $lockedRefund;
+        });
+
+        event(new AuditEvent('refunds.refund_cancelled', $actor, $this->auditPayload));
 
         return new RefundResource($lockedRefund);
     }

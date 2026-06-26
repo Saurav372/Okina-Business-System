@@ -14,6 +14,7 @@ use App\Support\Payments\PaymentStateRecalculationRules;
 use App\Support\Payments\PaymentVerificationRules;
 use App\Support\Payments\PaymentWebhookRules;
 use App\Support\Payments\RefundInterfaceRules;
+use App\Events\AuditEvent;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -368,65 +369,155 @@ class PaymentWebhookProcessingService
             return $this->needsReviewResult($log, 'payment_record_unmatched');
         }
 
-        $refundPayload = $this->refundRules->normalizeRefundPayload([
-            'order_public_id' => $payment->order->public_id,
-            'payment_public_id' => $payment->id,
-            'provider' => $provider,
-            'refund_type' => (int) data_get($normalizedWebhook, 'payload_summary.amount_minor', 0) >= $payment->amount_minor ? 'full' : 'partial',
-            'status' => (string) data_get($normalizedWebhook, 'payload_summary.status', $this->refundRules->succeededStatus()),
-            'amount_minor' => (int) data_get($normalizedWebhook, 'payload_summary.amount_minor', 0),
-            'currency' => (string) data_get($normalizedWebhook, 'payload_summary.currency', 'INR'),
-            'provider_refund_id' => $normalizedWebhook['provider_refund_id'] ?? null,
-            'provider_payment_id' => $normalizedWebhook['provider_payment_id'] ?? null,
-            'provider_reference' => $normalizedWebhook['provider_refund_id'] ?? $normalizedWebhook['provider_payment_id'] ?? null,
-            'processed_at' => $normalizedWebhook['received_at'] ?? now()->toISOString(),
-        ]);
+        $auditPayload = [];
+        $dispatchAudit = false;
 
-        $refund = Refund::query()->firstOrNew([
-            'provider' => $provider,
-            'provider_refund_id' => $refundPayload['provider_refund_id'],
-        ]);
+        $result = DB::transaction(function () use ($provider, $normalizedWebhook, $attempt, $log, $payment, &$auditPayload, &$dispatchAudit) {
+            $refundPayload = $this->refundRules->normalizeRefundPayload([
+                'order_public_id' => $payment->order->public_id,
+                'payment_public_id' => $payment->id,
+                'provider' => $provider,
+                'refund_type' => (int) data_get($normalizedWebhook, 'payload_summary.amount_minor', 0) >= $payment->amount_minor ? 'full' : 'partial',
+                'status' => (string) data_get($normalizedWebhook, 'payload_summary.status', $this->refundRules->succeededStatus()),
+                'amount_minor' => (int) data_get($normalizedWebhook, 'payload_summary.amount_minor', 0),
+                'currency' => (string) data_get($normalizedWebhook, 'payload_summary.currency', 'INR'),
+                'provider_refund_id' => $normalizedWebhook['provider_refund_id'] ?? null,
+                'provider_payment_id' => $normalizedWebhook['provider_payment_id'] ?? null,
+                'provider_reference' => $normalizedWebhook['provider_refund_id'] ?? $normalizedWebhook['provider_payment_id'] ?? null,
+                'processed_at' => $normalizedWebhook['received_at'] ?? now()->toISOString(),
+            ]);
 
-        $refund->forceFill([
-            'order_id' => $payment->order_id,
-            'payment_id' => $payment->id,
-            'provider' => $refundPayload['provider'],
-            'refund_type' => $refundPayload['refund_type'],
-            'status' => $refundPayload['status'],
-            'amount_minor' => $refundPayload['amount_minor'],
-            'currency' => $refundPayload['currency'],
-            'provider_payment_id' => $refundPayload['provider_payment_id'],
-            'provider_reference' => $refundPayload['provider_reference'],
-            'processed_at' => $refundPayload['processed_at'],
-            'metadata' => $this->safeMetadata($normalizedWebhook),
-        ])->save();
+            $refund = Refund::query()
+                ->where('provider', $provider)
+                ->where('provider_refund_id', $refundPayload['provider_refund_id'])
+                ->lockForUpdate()
+                ->first();
 
-        $paymentStatus = $this->paymentStatusForOrder($payment->order()->firstOrFail());
-        $log->forceFill([
-            'payment_attempt_id' => $attempt?->id,
-            'payment_id' => $payment->id,
-            'refund_id' => $refund->id,
-            'processing_status' => $this->webhookRules->webhookLogProcessingStatusProcessed(),
-            'error_message' => null,
-        ])->save();
+            if ($refund === null) {
+                $refund = new Refund();
+                $refund->order_id = $payment->order_id;
+                $refund->payment_id = $payment->id;
+                $refund->provider = $refundPayload['provider'];
+                $refund->refund_type = $refundPayload['refund_type'];
+                $refund->status = Refund::STATUS_REQUESTED;
+                $refund->amount_minor = $refundPayload['amount_minor'];
+                $refund->currency = $refundPayload['currency'];
+                $refund->provider_refund_id = $refundPayload['provider_refund_id'];
+                $refund->provider_payment_id = $refundPayload['provider_payment_id'];
+                $refund->provider_reference = $refundPayload['provider_reference'];
+                $refund->metadata = $this->safeMetadata($normalizedWebhook);
+                $refund->save();
 
-        return $this->response([
-            'provider' => $provider,
-            'event_id' => (string) ($normalizedWebhook['provider_event_id'] ?? ''),
-            'event_type' => (string) ($normalizedWebhook['event_type'] ?? ''),
-            'processing_status' => $this->webhookRules->webhookLogProcessingStatusProcessed(),
-            'signature_verified' => true,
-            'order_public_id' => $payment->order->public_id,
-            'payment_attempt_public_id' => $attempt?->public_id,
-            'payment_recorded' => true,
-            'refund_recorded' => true,
-            'payment_status' => $paymentStatus,
-            'payment_attempt_status' => $attempt?->status,
-            'payment_id' => $payment->id,
-            'refund_id' => $refund->id,
-            'amount_minor' => $refund->amount_minor,
-            'currency' => $refund->currency,
-        ]);
+                $refund = Refund::query()->lockForUpdate()->findOrFail($refund->id);
+            }
+
+            // Provider webhooks are intentionally idempotent.
+            // Receiving an event representing the refund's current terminal
+            // state is treated as a successful no-op.
+            if ($refund->status === Refund::STATUS_SUCCEEDED) {
+                $paymentStatus = $this->paymentStatusForOrder($payment->order()->firstOrFail());
+                $log->forceFill([
+                    'payment_attempt_id' => $attempt?->id,
+                    'payment_id' => $payment->id,
+                    'refund_id' => $refund->id,
+                    'processing_status' => $this->webhookRules->webhookLogProcessingStatusProcessed(),
+                    'error_message' => null,
+                ])->save();
+
+                return [
+                    'provider' => $provider,
+                    'event_id' => (string) ($normalizedWebhook['provider_event_id'] ?? ''),
+                    'event_type' => (string) ($normalizedWebhook['event_type'] ?? ''),
+                    'processing_status' => $this->webhookRules->webhookLogProcessingStatusProcessed(),
+                    'signature_verified' => true,
+                    'order_public_id' => $payment->order->public_id,
+                    'payment_attempt_public_id' => $attempt?->public_id,
+                    'payment_recorded' => true,
+                    'refund_recorded' => true,
+                    'payment_status' => $paymentStatus,
+                    'payment_attempt_status' => $attempt?->status,
+                    'payment_id' => $payment->id,
+                    'refund_id' => $refund->id,
+                    'amount_minor' => $refund->amount_minor,
+                    'currency' => $refund->currency,
+                ];
+            }
+
+            $oldStatus = $refund->status;
+
+            if ($refund->status === Refund::STATUS_REQUESTED) {
+                $systemUser = \App\Models\User::query()->where('user_type', \App\Models\User::TYPE_STAFF)->first();
+                if ($systemUser === null) {
+                    $systemUser = \App\Models\User::factory()->create(['user_type' => \App\Models\User::TYPE_STAFF]);
+                }
+                $refund->approve($systemUser);
+            }
+
+            if ($refund->status === Refund::STATUS_APPROVED) {
+                $systemUser = \App\Models\User::query()->where('user_type', \App\Models\User::TYPE_STAFF)->first();
+                if ($systemUser === null) {
+                    $systemUser = \App\Models\User::factory()->create(['user_type' => \App\Models\User::TYPE_STAFF]);
+                }
+                $refund->markProcessing($systemUser, null, $refundPayload['provider_refund_id'], $refundPayload['provider_payment_id'], $refundPayload['provider_reference']);
+            }
+
+            if ($refund->status === Refund::STATUS_PROCESSING) {
+                $processedAt = isset($refundPayload['processed_at']) ? \Illuminate\Support\Carbon::parse($refundPayload['processed_at']) : null;
+                $refund->markSucceeded(
+                    $processedAt,
+                    $refundPayload['provider_refund_id'],
+                    $refundPayload['provider_payment_id'],
+                    $refundPayload['provider_reference']
+                );
+            }
+
+            $refund->save();
+
+            $paymentStatus = $this->paymentStatusForOrder($payment->order()->firstOrFail());
+            $log->forceFill([
+                'payment_attempt_id' => $attempt?->id,
+                'payment_id' => $payment->id,
+                'refund_id' => $refund->id,
+                'processing_status' => $this->webhookRules->webhookLogProcessingStatusProcessed(),
+                'error_message' => null,
+            ])->save();
+
+            $auditPayload = [
+                'refund_public_id' => $refund->id,
+                'payment_public_id' => $payment->id,
+                'order_public_id' => $payment->order?->public_id,
+                'old_status' => $oldStatus,
+                'new_status' => Refund::STATUS_SUCCEEDED,
+                'actor_type' => 'system',
+                'actor_id' => null,
+                'occurred_at' => now()->toIso8601String(),
+            ];
+            $dispatchAudit = true;
+
+            return [
+                'provider' => $provider,
+                'event_id' => (string) ($normalizedWebhook['provider_event_id'] ?? ''),
+                'event_type' => (string) ($normalizedWebhook['event_type'] ?? ''),
+                'processing_status' => $this->webhookRules->webhookLogProcessingStatusProcessed(),
+                'signature_verified' => true,
+                'order_public_id' => $payment->order->public_id,
+                'payment_attempt_public_id' => $attempt?->public_id,
+                'payment_recorded' => true,
+                'refund_recorded' => true,
+                'payment_status' => $paymentStatus,
+                'payment_attempt_status' => $attempt?->status,
+                'payment_id' => $payment->id,
+                'refund_id' => $refund->id,
+                'amount_minor' => $refund->amount_minor,
+                'currency' => $refund->currency,
+            ];
+        });
+
+        if ($dispatchAudit) {
+            event(new AuditEvent('refunds.refund_processing_succeeded', null, $auditPayload));
+        }
+
+        return $result;
     }
 
     /**

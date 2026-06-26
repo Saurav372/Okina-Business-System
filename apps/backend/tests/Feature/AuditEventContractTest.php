@@ -32,6 +32,10 @@ class AuditEventContractTest extends TestCase
                 'orders.order_cancelled',
                 'refunds.refund_requested',
                 'refunds.refund_approved',
+                'refunds.refund_processing_started',
+                'refunds.refund_processing_succeeded',
+                'refunds.refund_processing_failed',
+                'refunds.refund_cancelled',
                 'refunds.refund_recorded',
                 'inventory.stock_moved',
                 'finance.expense_recorded',
@@ -45,6 +49,10 @@ class AuditEventContractTest extends TestCase
         $this->assertSame('orders', $catalog->definition('orders.order_cancelled')->module);
         $this->assertSame('finance', $catalog->definition('refunds.refund_requested')->module);
         $this->assertSame('finance', $catalog->definition('refunds.refund_approved')->module);
+        $this->assertSame('finance', $catalog->definition('refunds.refund_processing_started')->module);
+        $this->assertSame('finance', $catalog->definition('refunds.refund_processing_succeeded')->module);
+        $this->assertSame('finance', $catalog->definition('refunds.refund_processing_failed')->module);
+        $this->assertSame('finance', $catalog->definition('refunds.refund_cancelled')->module);
         $this->assertSame('finance', $catalog->definition('refunds.refund_recorded')->module);
         $this->assertSame('inventory', $catalog->definition('inventory.stock_moved')->module);
         $this->assertSame('finance', $catalog->definition('finance.expense_recorded')->module);

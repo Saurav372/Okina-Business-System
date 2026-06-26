@@ -77,5 +77,7 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     Route::get('/refunds', [RefundController::class, 'index'])->name('admin.refunds.index');
     Route::post('/refunds', [RefundController::class, 'store'])->name('admin.refunds.store');
     Route::post('/refunds/{refund}/approve', [RefundController::class, 'approve'])->name('admin.refunds.approve');
+    Route::post('/refunds/{refund}/process', [RefundController::class, 'process'])->name('admin.refunds.process');
+    Route::post('/refunds/{refund}/cancel', [RefundController::class, 'cancel'])->name('admin.refunds.cancel');
     Route::get('/refunds/{refund}', [RefundController::class, 'show'])->name('admin.refunds.show');
 });

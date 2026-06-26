@@ -528,8 +528,8 @@ Verification note: C1.3.8 completed on 2026-06-24. Advance/manual payment record
 |---|---|---|
 | C5.2.1 | Refund request | Completed |
 | C5.2.2 | Refund approval | Completed |
-| C5.2.3 | Partial refund | Not Started |
-| C5.2.4 | Full refund | Not Started |
+| C5.2.3 | Partial refund | Completed |
+| C5.2.4 | Full refund | Completed |
 | C5.2.5 | Refund payment record | Not Started |
 | C5.2.6 | Payment-status recalculation | Not Started |
 | C5.2.7 | Refund audit trail | Not Started |
@@ -537,6 +537,10 @@ Verification note: C1.3.8 completed on 2026-06-24. Advance/manual payment record
 Verification note: C5.2.1 completed on 2026-06-26. Implemented refund request creation under `POST /admin/refunds` with a dedicated `refunds.request` permission and model scope validation inside locked transaction. Checked bounds for full and partial refund types, verified that failed/cancelled refunds release reserved balance, and verified audit events. Tested via RefundRequestTest.php.
 
 Verification note: C5.2.2 completed on 2026-06-26. Implemented refund approval workflow under `POST /admin/refunds/{refund}/approve` gated by the `refunds.approve` permission. Extracted state transition predicates/mutators (`canBeApproved()`, `ensureCanBeApproved()`, `approve()`) directly to the model. Handled concurrency locking on the refund record prior to mutation. Emitted `refunds.refund_approved` audit event. Tested via RefundApprovalTest.php.
+
+Verification note: C5.2.3 completed on 2026-06-26. Implemented partial refund transitions, controller endpoints for processing and cancelling, policies, and webhook integrations with row locking and idempotency verification. Dispatched explicit audit events and recalculated order balances correctly. Tested via PartialRefundTest.php.
+
+Verification note: C5.2.4 completed on 2026-06-26. Implemented full refund transitions, controller processing, and webhook integrations under locked transactions. Verified that full refund validation rejects amounts not equal to the remaining refundable balance, and that it correctly reduces net paid amount to 0, dynamically updating payment status to refunded. Tested via PartialRefundTest.php.
 
 ### C5.3 Expense management
 

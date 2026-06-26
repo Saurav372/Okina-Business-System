@@ -8,38 +8,40 @@ C5.2 Refund management
 
 ## Current Subtask
 
-C5.2.3 Partial refund processing
+C5.2.4 Full refund processing
 
 ## Current Status
 
-Not Started. C5.2.2 is completed, verified, and committed.
+In Progress. C5.2.3 is completed, verified, and committed.
 
 ## Next Subtask
 
-C5.2.4 Full refund processing
+C5.2.5 Refund payment record
 
 ## Goal
 
-Implement the partial refund execution logic. Transition the refund status from `approved` to `processing` and eventually to `succeeded` or `failed` once processed by the gateway adapter (or marked manually as succeeded/failed), ensuring that partial refund totals are correctly calculated.
+Implement the full refund execution logic. Ensure transition rules, policy gates, endpoints, controllers, and webhook integrations support transitioning full refunds to succeeded or failed states, ensuring that full refund amounts are correctly validated to equal the remaining refundable balance of the payment.
 
 ## Dependencies
 
 - C5.2.2 Refund approval workflow (Completed)
-- A5.2.3 Partial refund rules (Completed)
+- C5.2.3 Partial refund processing (Completed)
+- A5.2.4 Full refund rules (Completed)
 
 ## Required Deliverables
 
-- Backend logic/service updates to process a partial refund (updating status and recording transaction/provider attributes).
-- Validation and business logic checks ensuring partial refunds correctly offset the parent payment balances.
+- Backend logic/service updates to process a full refund (updating status and recording transaction/provider attributes).
+- Validation and business logic checks ensuring full refunds correctly match and offset the parent payment balances.
 
 ## Acceptance Criteria
 
-- Approved partial refunds can transition to `processing` and eventually to `succeeded`.
-- Recalculated balance accounts for the partial refund amount correctly.
+- Approved full refunds can transition to `processing` and eventually to `succeeded`.
+- Recalculated balance accounts for the full refund amount correctly, matching the net paid amount.
+- Validation rejects full refunds if the requested amount does not equal the remaining refundable balance.
 
 ## Tests Required
 
-- Test suite verifying status updates, totals calculations, and validation rules for partial refunds.
+- Test suite verifying status updates, totals calculations, and validation rules for full refunds.
 
 ## Quality Requirements
 
@@ -54,4 +56,4 @@ Implement the partial refund execution logic. Transition the refund status from 
 
 ## Tasks Not Included
 
-- Full refund processing details (handled in C5.2.4).
+- Refund payment record integrity details (handled in C5.2.5).
