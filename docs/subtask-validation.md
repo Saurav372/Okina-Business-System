@@ -473,6 +473,8 @@ Verification note: C5.1.4 completed on 2026-06-25. Refactored balance calculatio
 
 Verification note: C5.1.5 completed on 2026-06-26. Implemented filtering, aggregates, and pagination for finance ledger. Supported filtering payments and refunds by date range, provider, method (payments only), status, and type. Added validation rules via form requests. Implemented page aggregates (totals for amount, fees, net) dynamically calculated from the filtered dataset. Hidden fee/net aggregates for unauthorized staff. Verified via FinanceLedgerFilterTest.php (6 tests, 79 assertions).
 
+Verification note: C5.1.6 completed on 2026-06-26. Verified full regression coverage for finance ledger and balance calculations. Confirmed role-based visibility policies, endpoint protection gates, response structure filtering, and aggregate constraints. Ran and verified all tests passing without regressions.
+
 ## C5.2 Refund Management
 
 | Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |

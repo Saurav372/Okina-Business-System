@@ -4,51 +4,47 @@ Use this file as the task-specific context for a coding session. Update it befor
 
 ## Current Parent Task
 
-C5.1 Finance payment and balance views
+C5.2 Refund management
 
 ## Current Subtask
 
-C5.1.6 Finance authorization and calculation regression tests
+C5.2.1 Refund request creation
 
 ## Current Status
 
-Not Started. C5.1.5 is implemented and verified.
+Not Started. C5.1 is completed and all its regression tests are verified.
 
 ## Next Subtask
 
-C5.2.1 Refund request (under C5.2 Refund management parent task)
+C5.2.2 Refund approval workflow
 
 ## Goal
 
-Develop and verify a comprehensive regression test suite validating all role-based access rules (finance/cost visibility), ledger list fields, calculation panel outcomes, and correct filter-aggregate behaviors on the finance endpoints.
+Implement the refund request model, migrations, and creation endpoint so that staff (with appropriate permissions) can request refunds against a successful payment/order.
 
 ## Dependencies
 
-- C5.1.1 Finance access boundary and sensitive-field policy (Completed)
-- C5.1.2 Payment and refund ledger list (Completed)
-- C5.1.3 Order payment detail and balance panel (Completed)
-- C5.1.4 Shared balance calculation presentation (Completed)
-- C5.1.5 Finance filters, totals, and pagination (Completed)
+- A5.2 Cancellation and refund rules (Completed)
+- C5.1 Finance payment and balance views (Completed)
 
 ## Required Deliverables
 
-- Consolidated or dedicated regression test suite verifying:
-  - Role-based gates for viewing payments and refunds (e.g. Finance Staff vs Sales Staff vs unauthorized users).
-  - Proper filtering and pagination of both index endpoints.
-  - Assertions on exact minor aggregate values in the meta block of the list response.
-  - Proper masking/exclusion of sensitive fields (`gateway_fee_minor`, `net_amount_minor`) based on user permissions.
-  - Order details summary calculations mapping correctness.
+- Migration to support refund requests (with tracking status, reasons, and link to payment/order).
+- RefundRequest model and relationships.
+- Endpoint/controller logic to submit a new refund request.
+- Validation ensuring a refund request is made against a valid succeeded payment/order, and does not exceed the paid amount.
 
 ## Acceptance Criteria
 
-- All access policy rules and data boundaries are fully covered in regression tests.
-- Calculations in order detail summary balances remain correct and robust.
-- The test suite passes cleanly with no regressions.
+- A refund request can be successfully created when validation rules are satisfied.
+- Refund request status defaults to pending approval.
+- Unauthorized users or staff without `refunds.manage` or `refunds.request` cannot create requests.
 
 ## Tests Required
 
-- Run all finance-related feature tests (e.g., `FinanceBoundaryTest`, `FinanceAccessPolicyTest`, `FinanceLedgerFilterTest`, `AdminOrderDetailTest`).
-- Ensure the full backend test suite (`php artisan test`) passes completely.
+- Integration and unit tests covering successful refund request creation.
+- Validation tests checking bounds (requesting more than paid, duplicate requests, invalid payments).
+- Policy/permission gating tests.
 
 ## Quality Requirements
 
@@ -57,10 +53,12 @@ Develop and verify a comprehensive regression test suite validating all role-bas
 
 ## Files Likely Affected
 
-- `tests/Feature/FinanceBoundaryTest.php`
-- `tests/Feature/FinanceAccessPolicyTest.php`
-- `tests/Feature/FinanceLedgerFilterTest.php`
+- `app/Models/RefundRequest.php`
+- `database/migrations/xxxx_xx_xx_create_refund_requests_table.php`
+- `app/Http/Controllers/Admin/RefundRequestController.php`
+- `tests/Feature/RefundRequestTest.php`
 
 ## Tasks Not Included
 
-- Modification of database schema or controller logic (except for bug fixes discovered during testing).
+- Approval workflow logic (which belongs to C5.2.2).
+- Processing/distributing payments via gateway (part of refund execution).

@@ -101,7 +101,7 @@ Verification note: completed on 2026-06-22. Status changes are implemented under
 | C4.2 | Shipping details | Project C | C4 | Allow staff to save courier name, tracking number, tracking URL, shipping date, and delivery date. | C4.1 | Customer tracking | B/C | Medium | High | Shipping/tracking tests | Completed |
 
 Verification note: completed on 2026-06-22. Shipment details (courier name, tracking number, URL, estimated delivery) are saved via admin endpoints, with customer order detail endpoints returning safe tracking payloads. Role-based permissions protect the endpoints. Covered by `CustomerTrackingApiTest`.
-| C5.1 | Finance payment and balance views | Project C | C5 | Show payment records, outstanding balances, split payments, and protected finance views. | A5.1, C1.1 | Refunds, reports | A/C | Medium | Medium | Finance access tests | Not Started |
+| C5.1 | Finance payment and balance views | Project C | C5 | Show payment records, outstanding balances, split payments, and protected finance views. | A5.1, C1.1 | Refunds, reports | A/C | Medium | Medium | Finance access tests | Completed |
 | C5.2 | Refund management | Project C | C5 | Track refund requests, refund approvals, refund records, partial/full refunds, and payment-status recalculation without erasing original payment history. | A5.2, C5.1 | Reports/audit | C | Medium | Medium | Refund tests | Not Started |
 | C5.3 | Expense management | Project C | C5 | Track approved business expenses separately from refunds, with permissions and reporting categories. | C5.1 | Reports/audit | C | Medium | Low | Expense tests | Not Started |
 | C5.4 | Financial reports | Project C | C5 | Create payment, balance, refund, expense, sales, and protected finance reports. | C5.1, C5.2, C5.3 | Hardening | C | Medium | Low | Report accuracy tests | Not Started |
@@ -400,7 +400,7 @@ Verification note: C3.1.7 completed on 2026-06-23. Lead authorization, list, and
 | C5.1.3 | Order payment detail and balance panel | Completed |
 | C5.1.4 | Shared balance calculation presentation | Completed |
 | C5.1.5 | Finance filters, totals, and pagination | Completed |
-| C5.1.6 | Finance authorization and calculation regression tests | Not Started |
+| C5.1.6 | Finance authorization and calculation regression tests | Completed |
 
 Verification note: C5.1.1 completed on 2026-06-25. Enforced finance access boundary and sensitive-field policies. Created PaymentPolicy, RefundPolicy, PaymentResource, and RefundResource. Registered policies in AppServiceProvider. Appended controller routes for listing and displaying payments and refunds. Ensured internal primary database keys and foreign keys are omitted from serialization. Conditionally loaded sensitive gateway fee and net amount fields using $this->when() based on finance.view_cost permissions. Verified via FinanceBoundaryTest.php (5 tests, 64 assertions) and FinanceAccessPolicyTest.php (3 tests, 26 assertions).
 
@@ -411,6 +411,8 @@ Verification note: C5.1.3 completed on 2026-06-25. Implemented paid amount, refu
 Verification note: C5.1.4 completed on 2026-06-25. Refactored balance calculations in OrderDetailCatalog to delegate arithmetic to the shared OrderTotalsCalculator. Used constructor injection with fallback resolution for backward compatibility. Verified via AdminOrderDetailTest.php and all 400 tests passing.
 
 Verification note: C5.1.5 completed on 2026-06-26. Implemented filtering, aggregates, and pagination for finance ledger. Supported filtering payments and refunds by date range, provider, method (payments only), status, and type. Added validation rules via form requests. Implemented page aggregates (totals for amount, fees, net) dynamically calculated from the filtered dataset. Hidden fee/net aggregates for unauthorized staff. Verified via FinanceLedgerFilterTest.php (6 tests, 79 assertions).
+
+Verification note: C5.1.6 completed on 2026-06-26. Verified full regression coverage for finance ledger and balance calculations. Confirmed role-based visibility policies, endpoint protection gates, response structure filtering, and aggregate constraints. Ran and verified all tests passing without regressions.
 
 ### C5.4 Financial reports
 
