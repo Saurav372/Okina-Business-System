@@ -43,6 +43,8 @@ class Expense extends Model
 
     public const STATUS_REJECTED = 'rejected';
 
+    private const HISTORY_SCHEMA_VERSION = 1;
+
     protected $fillable = [
         'expense_category_id',
         'amount_minor',
@@ -52,6 +54,8 @@ class Expense extends Model
         'reference',
         'status',
         'occurred_at',
+        'approved_at',
+        'metadata',
     ];
 
     protected $casts = [
@@ -59,6 +63,8 @@ class Expense extends Model
         'recorded_by_user_id' => 'integer',
         'expense_category_id' => 'integer',
         'occurred_at' => 'date',
+        'approved_at' => 'datetime',
+        'metadata' => 'array',
     ];
 
     /**
@@ -106,5 +112,79 @@ class Expense extends Model
     public function recordedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'recorded_by_user_id');
+    }
+
+    public function canTransitionTo(string $targetStatus): bool
+    {
+        $current = $this->status;
+
+        if ($current === self::STATUS_APPROVED) {
+            return false;
+        }
+
+        if ($targetStatus === self::STATUS_PENDING_APPROVAL) {
+            return in_array($current, [self::STATUS_DRAFT, self::STATUS_REJECTED], true);
+        }
+
+        if ($current === self::STATUS_PENDING_APPROVAL) {
+            return in_array($targetStatus, [self::STATUS_APPROVED, self::STATUS_REJECTED], true);
+        }
+
+        return false;
+    }
+
+    public function ensureCanTransitionTo(string $targetStatus): void
+    {
+        if (! $this->canTransitionTo($targetStatus)) {
+            throw new \LogicException("Cannot transition expense from {$this->status} to {$targetStatus}.");
+        }
+    }
+
+    public function submit(User $user): void
+    {
+        $this->ensureCanTransitionTo(self::STATUS_PENDING_APPROVAL);
+        $oldStatus = $this->status;
+        $this->status = self::STATUS_PENDING_APPROVAL;
+        $this->appendHistoryEntry('submit', $oldStatus, self::STATUS_PENDING_APPROVAL, $user->id, now());
+        $this->save();
+    }
+
+    public function approve(User $user): void
+    {
+        $this->ensureCanTransitionTo(self::STATUS_APPROVED);
+        $oldStatus = $this->status;
+        $transitionedAt = now();
+        $this->status = self::STATUS_APPROVED;
+        $this->approved_at = $transitionedAt;
+        $this->appendHistoryEntry('approve', $oldStatus, self::STATUS_APPROVED, $user->id, $transitionedAt);
+        $this->save();
+    }
+
+    public function reject(User $user, string $reason): void
+    {
+        $this->ensureCanTransitionTo(self::STATUS_REJECTED);
+        $oldStatus = $this->status;
+        $this->status = self::STATUS_REJECTED;
+        $this->appendHistoryEntry('reject', $oldStatus, self::STATUS_REJECTED, $user->id, now(), $reason);
+        $this->save();
+    }
+
+    private function appendHistoryEntry(string $action, string $from, string $to, int $userId, \DateTimeInterface $transitionedAt, ?string $reason = null): void
+    {
+        $metadata = $this->metadata ?? [];
+        $metadata['version'] ??= self::HISTORY_SCHEMA_VERSION;
+        $history = $metadata['history'] ?? [];
+
+        $history[] = [
+            'action' => $action,
+            'from' => $from,
+            'to' => $to,
+            'performed_by_user_id' => $userId,
+            'performed_at' => $transitionedAt->format('c'),
+            'reason' => $reason,
+        ];
+
+        $metadata['history'] = $history;
+        $this->metadata = $metadata;
     }
 }

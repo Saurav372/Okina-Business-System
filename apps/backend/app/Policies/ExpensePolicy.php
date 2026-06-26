@@ -46,4 +46,28 @@ class ExpensePolicy
     {
         return $user->hasPermissionTo('finance.manage_expenses');
     }
+
+    /**
+     * Determine whether the user can submit the model.
+     */
+    public function submit(User $user, Expense $expense): bool
+    {
+        return $user->hasPermissionTo('finance.manage_expenses');
+    }
+
+    /**
+     * Determine whether the user can approve the model.
+     */
+    public function approve(User $user, Expense $expense): bool
+    {
+        return $user->hasPermissionTo('finance.approve_expenses');
+    }
+
+    /**
+     * Determine whether the user can reject the model.
+     */
+    public function reject(User $user, Expense $expense): bool
+    {
+        return $user->hasPermissionTo('finance.approve_expenses');
+    }
 }

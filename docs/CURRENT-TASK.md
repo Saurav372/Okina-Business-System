@@ -8,46 +8,49 @@ C5.3 Expense management
 
 ## Current Subtask
 
-C5.3.2 Expense entry
+C5.3.3 Expense approval rules
 
 ## Current Status
 
-Not Started. C5.3.1 Expense categories is fully completed, verified, and committed.
+Not Started. C5.3.2 Expense entry is fully completed, verified, and committed.
 
 ## Next Subtask
 
-C5.3.3 Expense approval rules
+C5.3.4 Expense permissions
 
 ## Goal
 
-Implement the database migration, Eloquent model, factories, form requests, admin REST endpoints, policies, and feature tests for recording and managing business expenses.
+Implement status transition rules, approval policies, action endpoints, and feature tests for submitting, approving, and rejecting recorded expenses.
 
 ## Dependencies
 
-- C5.3.1 Expense categories (Completed)
-- C5.1 Finance payment and balance views (Completed)
+- C5.3.2 Expense entry (Completed)
+- A2.3 Role and permission model (Completed)
 
 ## Required Deliverables
 
-- Database migration for `expenses` table (fields: id, public_id, expense_category_id, amount_minor, currency, notes, recorded_by_user_id, reference, status, occurred_at, created_at, updated_at).
-- Expense model and factory.
-- Update `ExpenseCategory::isReferenced()` to check for linked expenses.
-- Admin API endpoints to list, show, create, update, and delete expenses (protected by policies and role/permission checks).
-- Form requests for input validation (e.g. validating category existence and activity status).
+- Update the `Expense` model with status transition constraints, guards, and action methods (e.g. submit, approve, reject).
+- Action endpoints to submit, approve, and reject expenses.
+- ExpensePolicy rules checking role-based transition rights.
+- Form requests or actions to handle transition details (like reason for rejection).
 
 ## Acceptance Criteria
 
-- Expenses must have a category (only active, non-deleted categories), amount, currency (default to INR), occurred_at date, reference, notes, and status (e.g., draft, pending_approval, approved, rejected).
-- Only authorized users with `finance.manage_expenses` or similar permissions can manage expenses.
-- Public IDs are generated for public references (e.g., `EXP-[A-Z0-9]{12}`).
-- `ExpenseCategory::isReferenced()` must return true if the category has associated expense records, blocking its deletion with validation errors.
-- Soft-deleted expense categories cannot be linked to new expenses.
+- Expenses begin in `'draft'` state.
+- Transition rules are strictly enforced:
+  - `draft` can be submitted to become `pending_approval`.
+  - `pending_approval` can be approved to become `approved` OR rejected to become `rejected`.
+  - `rejected` can be submitted to become `pending_approval`.
+  - `approved` is a terminal state and cannot be changed.
+  - Invalid transitions are rejected at both controller/API level (HTTP 422) and domain model layer (LogicException).
+- Only authorized users with appropriate permissions (e.g., `'finance.approve_expenses'` for approving/rejecting, and `'finance.manage_expenses'` for submitting/drafting) can perform these actions.
+- Action history (who transitioned, when, and reasons if any) should be recorded.
 
 ## Tests Required
 
-- Automated feature tests asserting CRUD operations, role-based permissions protection, and relationship validation.
-- Assert that deleting a category linked to an expense fails validation.
-- Assert that creating an expense under an inactive or soft-deleted category fails validation.
+- Feature tests verifying valid state transitions (`draft` -> `pending_approval` -> `approved` / `rejected`).
+- Feature tests verifying invalid state transitions are blocked (e.g. `approved` -> `draft` or `rejected` -> `approved`).
+- Feature tests verifying role-based permission gates on submit, approve, and reject endpoints.
 
 ## Quality Requirements
 
@@ -57,13 +60,12 @@ Implement the database migration, Eloquent model, factories, form requests, admi
 
 ## Files Likely Affected
 
-- `app/Models/ExpenseCategory.php`
-- `app/Models/Expense.php` (New)
-- `database/migrations/..._create_expenses_table.php` (New)
-- `app/Http/Controllers/Admin/ExpenseController.php` (New)
-- `tests/Feature/ExpenseTest.php` (New)
+- `app/Models/Expense.php`
+- `app/Policies/ExpensePolicy.php`
+- `app/Http/Controllers/Admin/ExpenseController.php`
+- `tests/Feature/ExpenseTest.php`
 
 ## Tasks Not Included
 
-- Expense approval rules and transitions (handled in C5.3.3).
-- Expense permissions and reporting data (handled in C5.3.4 and C5.3.5).
+- Expense permissions restrictions (handled in C5.3.4).
+- Expense reporting data (handled in C5.3.5).

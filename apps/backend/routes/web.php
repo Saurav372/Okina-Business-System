@@ -100,4 +100,7 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
         'update' => 'admin.expenses.update',
         'destroy' => 'admin.expenses.destroy',
     ]);
+    Route::post('/expenses/{expense:public_id}/submit', [ExpenseController::class, 'submit'])->name('admin.expenses.submit');
+    Route::post('/expenses/{expense:public_id}/approve', [ExpenseController::class, 'approve'])->name('admin.expenses.approve');
+    Route::post('/expenses/{expense:public_id}/reject', [ExpenseController::class, 'reject'])->name('admin.expenses.reject');
 });

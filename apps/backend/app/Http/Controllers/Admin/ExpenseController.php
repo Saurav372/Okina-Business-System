@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\ApproveExpenseRequest;
+use App\Http\Requests\Admin\RejectExpenseRequest;
 use App\Http\Requests\Admin\StoreExpenseRequest;
+use App\Http\Requests\Admin\SubmitExpenseRequest;
 use App\Http\Requests\Admin\UpdateExpenseRequest;
 use App\Http\Resources\ExpenseResource;
 use App\Models\Expense;
@@ -152,6 +155,75 @@ class ExpenseController extends Controller
         $expense->delete();
 
         return response()->noContent();
+    }
+
+    /**
+     * Submit the expense for approval.
+     */
+    public function submit(SubmitExpenseRequest $request, Expense $expense): ExpenseResource
+    {
+        $this->authorize('submit', $expense);
+
+        return DB::transaction(function () use ($request, $expense) {
+            $expense = Expense::query()->lockForUpdate()->findOrFail($expense->id);
+            try {
+                $expense->submit($request->user());
+            } catch (\LogicException $e) {
+                throw ValidationException::withMessages([
+                    'status' => [$e->getMessage()],
+                ]);
+            }
+
+            $expense->load(['expenseCategory', 'recordedBy']);
+
+            return new ExpenseResource($expense);
+        });
+    }
+
+    /**
+     * Approve the expense.
+     */
+    public function approve(ApproveExpenseRequest $request, Expense $expense): ExpenseResource
+    {
+        $this->authorize('approve', $expense);
+
+        return DB::transaction(function () use ($request, $expense) {
+            $expense = Expense::query()->lockForUpdate()->findOrFail($expense->id);
+            try {
+                $expense->approve($request->user());
+            } catch (\LogicException $e) {
+                throw ValidationException::withMessages([
+                    'status' => [$e->getMessage()],
+                ]);
+            }
+
+            $expense->load(['expenseCategory', 'recordedBy']);
+
+            return new ExpenseResource($expense);
+        });
+    }
+
+    /**
+     * Reject the expense.
+     */
+    public function reject(RejectExpenseRequest $request, Expense $expense): ExpenseResource
+    {
+        $this->authorize('reject', $expense);
+
+        return DB::transaction(function () use ($request, $expense) {
+            $expense = Expense::query()->lockForUpdate()->findOrFail($expense->id);
+            try {
+                $expense->reject($request->user(), $request->rejection_reason);
+            } catch (\LogicException $e) {
+                throw ValidationException::withMessages([
+                    'status' => [$e->getMessage()],
+                ]);
+            }
+
+            $expense->load(['expenseCategory', 'recordedBy']);
+
+            return new ExpenseResource($expense);
+        });
     }
 
     /**

@@ -18,6 +18,8 @@ class ExpenseTest extends TestCase
 
     private User $admin;
 
+    private User $submitterOnly;
+
     private User $unauthorizedStaff;
 
     protected function setUp(): void
@@ -31,11 +33,23 @@ class ExpenseTest extends TestCase
             'group' => 'finance',
         ]);
 
+        $approveExpenses = Permission::create([
+            'name' => 'Approve Expenses',
+            'slug' => 'finance.approve_expenses',
+            'group' => 'finance',
+        ]);
+
         $adminRole = Role::create([
             'name' => 'Admin',
             'slug' => Role::ADMIN,
         ]);
-        $adminRole->permissions()->attach($manageExpenses);
+        $adminRole->permissions()->attach([$manageExpenses->id, $approveExpenses->id]);
+
+        $financeRole = Role::create([
+            'name' => 'Finance Staff',
+            'slug' => Role::FINANCE_STAFF,
+        ]);
+        $financeRole->permissions()->attach([$manageExpenses->id]);
 
         $salesRole = Role::create([
             'name' => 'Sales',
@@ -49,6 +63,13 @@ class ExpenseTest extends TestCase
             'email_verified_at' => now(),
         ]);
         $this->admin->roles()->attach($adminRole);
+
+        $this->submitterOnly = User::factory()->create([
+            'user_type' => User::TYPE_STAFF,
+            'status' => User::STATUS_ACTIVE,
+            'email_verified_at' => now(),
+        ]);
+        $this->submitterOnly->roles()->attach($financeRole);
 
         $this->unauthorizedStaff = User::factory()->create([
             'user_type' => User::TYPE_STAFF,
@@ -322,5 +343,311 @@ class ExpenseTest extends TestCase
 
         $response->assertOk();
         $response->assertJsonPath('data.category.name', $category->name);
+    }
+
+    public function test_expense_submit_transition_success(): void
+    {
+        $category = ExpenseCategory::factory()->create(['is_active' => true]);
+        $expense = Expense::factory()->create([
+            'expense_category_id' => $category->id,
+            'recorded_by_user_id' => $this->submitterOnly->id,
+            'status' => Expense::STATUS_DRAFT,
+        ]);
+
+        $response = $this->actingAs($this->submitterOnly)
+            ->postJson(route('admin.expenses.submit', $expense->public_id));
+
+        $response->assertOk();
+        $response->assertJsonPath('data.status', Expense::STATUS_PENDING_APPROVAL);
+
+        $this->assertDatabaseHas('expenses', [
+            'id' => $expense->id,
+            'status' => Expense::STATUS_PENDING_APPROVAL,
+        ]);
+
+        $freshExpense = Expense::findOrFail($expense->id);
+        $this->assertNotNull($freshExpense->metadata);
+        $this->assertEquals(1, $freshExpense->metadata['version']);
+        $this->assertCount(1, $freshExpense->metadata['history']);
+
+        $entry = $freshExpense->metadata['history'][0];
+        $this->assertEquals('submit', $entry['action']);
+        $this->assertEquals(Expense::STATUS_DRAFT, $entry['from']);
+        $this->assertEquals(Expense::STATUS_PENDING_APPROVAL, $entry['to']);
+        $this->assertEquals($this->submitterOnly->id, $entry['performed_by_user_id']);
+        $this->assertNotNull($entry['performed_at']);
+    }
+
+    public function test_expense_approval_transition_success(): void
+    {
+        $category = ExpenseCategory::factory()->create(['is_active' => true]);
+        $expense = Expense::factory()->create([
+            'expense_category_id' => $category->id,
+            'recorded_by_user_id' => $this->submitterOnly->id,
+            'status' => Expense::STATUS_PENDING_APPROVAL,
+        ]);
+
+        $response = $this->actingAs($this->admin)
+            ->postJson(route('admin.expenses.approve', $expense->public_id));
+
+        $response->assertOk();
+        $response->assertJsonPath('data.status', Expense::STATUS_APPROVED);
+
+        $freshExpense = Expense::findOrFail($expense->id);
+        $this->assertEquals(Expense::STATUS_APPROVED, $freshExpense->status);
+        $this->assertNotNull($freshExpense->approved_at);
+
+        $entry = $freshExpense->metadata['history'][0];
+        $this->assertEquals('approve', $entry['action']);
+        $this->assertEquals(Expense::STATUS_PENDING_APPROVAL, $entry['from']);
+        $this->assertEquals(Expense::STATUS_APPROVED, $entry['to']);
+        $this->assertEquals($this->admin->id, $entry['performed_by_user_id']);
+    }
+
+    public function test_expense_rejection_transition_success(): void
+    {
+        $category = ExpenseCategory::factory()->create(['is_active' => true]);
+        $expense = Expense::factory()->create([
+            'expense_category_id' => $category->id,
+            'recorded_by_user_id' => $this->submitterOnly->id,
+            'status' => Expense::STATUS_PENDING_APPROVAL,
+        ]);
+
+        $reason = 'Reason with at least ten characters.';
+        $response = $this->actingAs($this->admin)
+            ->postJson(route('admin.expenses.reject', $expense->public_id), [
+                'rejection_reason' => '   '.$reason.'   ', // test whitespace trim
+            ]);
+
+        $response->assertOk();
+        $response->assertJsonPath('data.status', Expense::STATUS_REJECTED);
+
+        $freshExpense = Expense::findOrFail($expense->id);
+        $this->assertEquals(Expense::STATUS_REJECTED, $freshExpense->status);
+        $this->assertNull($freshExpense->approved_at);
+
+        $entry = $freshExpense->metadata['history'][0];
+        $this->assertEquals('reject', $entry['action']);
+        $this->assertEquals($reason, $entry['reason']); // trimmed
+        $this->assertEquals($this->admin->id, $entry['performed_by_user_id']);
+    }
+
+    public function test_expense_resubmit_after_rejection(): void
+    {
+        $category = ExpenseCategory::factory()->create(['is_active' => true]);
+        $expense = Expense::factory()->create([
+            'expense_category_id' => $category->id,
+            'recorded_by_user_id' => $this->submitterOnly->id,
+            'status' => Expense::STATUS_REJECTED,
+        ]);
+
+        $response = $this->actingAs($this->submitterOnly)
+            ->postJson(route('admin.expenses.submit', $expense->public_id));
+
+        $response->assertOk();
+        $response->assertJsonPath('data.status', Expense::STATUS_PENDING_APPROVAL);
+
+        $freshExpense = Expense::findOrFail($expense->id);
+        $this->assertEquals(Expense::STATUS_PENDING_APPROVAL, $freshExpense->status);
+
+        $entry = $freshExpense->metadata['history'][0];
+        $this->assertEquals('submit', $entry['action']);
+        $this->assertEquals(Expense::STATUS_REJECTED, $entry['from']);
+        $this->assertEquals(Expense::STATUS_PENDING_APPROVAL, $entry['to']);
+    }
+
+    public function test_cannot_transition_from_approved_terminal_state(): void
+    {
+        $category = ExpenseCategory::factory()->create(['is_active' => true]);
+        $expense = Expense::factory()->create([
+            'expense_category_id' => $category->id,
+            'recorded_by_user_id' => $this->submitterOnly->id,
+            'status' => Expense::STATUS_APPROVED,
+            'approved_at' => Carbon::now()->subHour(),
+        ]);
+
+        $originalApprovedAt = $expense->approved_at;
+
+        // Try submit
+        $response = $this->actingAs($this->admin)
+            ->postJson(route('admin.expenses.submit', $expense->public_id));
+        $response->assertStatus(422);
+
+        // Try approve
+        $response = $this->actingAs($this->admin)
+            ->postJson(route('admin.expenses.approve', $expense->public_id));
+        $response->assertStatus(422);
+
+        // Try reject
+        $response = $this->actingAs($this->admin)
+            ->postJson(route('admin.expenses.reject', $expense->public_id), [
+                'rejection_reason' => 'Some rejection reason here.',
+            ]);
+        $response->assertStatus(422);
+
+        // Assert approved_at not modified
+        $freshExpense = Expense::findOrFail($expense->id);
+        $this->assertEquals($originalApprovedAt->toIso8601String(), $freshExpense->approved_at->toIso8601String());
+    }
+
+    public function test_permissions_gating_on_transitions(): void
+    {
+        $category = ExpenseCategory::factory()->create(['is_active' => true]);
+        $expense = Expense::factory()->create([
+            'expense_category_id' => $category->id,
+            'recorded_by_user_id' => $this->submitterOnly->id,
+            'status' => Expense::STATUS_PENDING_APPROVAL,
+        ]);
+
+        // SubmitterOnly cannot approve
+        $response = $this->actingAs($this->submitterOnly)
+            ->postJson(route('admin.expenses.approve', $expense->public_id));
+        $response->assertStatus(403);
+
+        // SubmitterOnly cannot reject
+        $response = $this->actingAs($this->submitterOnly)
+            ->postJson(route('admin.expenses.reject', $expense->public_id), [
+                'rejection_reason' => 'Reason long enough.',
+            ]);
+        $response->assertStatus(403);
+
+        // UnauthorizedStaff cannot submit
+        $expense->status = Expense::STATUS_DRAFT;
+        $expense->save();
+        $response = $this->actingAs($this->unauthorizedStaff)
+            ->postJson(route('admin.expenses.submit', $expense->public_id));
+        $response->assertStatus(403);
+    }
+
+    public function test_rejection_validation_rules(): void
+    {
+        $category = ExpenseCategory::factory()->create(['is_active' => true]);
+        $expense = Expense::factory()->create([
+            'expense_category_id' => $category->id,
+            'recorded_by_user_id' => $this->submitterOnly->id,
+            'status' => Expense::STATUS_PENDING_APPROVAL,
+        ]);
+
+        // Missing reason
+        $response = $this->actingAs($this->admin)
+            ->postJson(route('admin.expenses.reject', $expense->public_id), []);
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['rejection_reason']);
+
+        // Too short reason (less than 10 chars after trim)
+        $response = $this->actingAs($this->admin)
+            ->postJson(route('admin.expenses.reject', $expense->public_id), [
+                'rejection_reason' => '  short  ',
+            ]);
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['rejection_reason']);
+
+        // Spaces only
+        $response = $this->actingAs($this->admin)
+            ->postJson(route('admin.expenses.reject', $expense->public_id), [
+                'rejection_reason' => '           ',
+            ]);
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['rejection_reason']);
+
+        // Too long reason (over 1000 chars)
+        $response = $this->actingAs($this->admin)
+            ->postJson(route('admin.expenses.reject', $expense->public_id), [
+                'rejection_reason' => str_repeat('a', 1001),
+            ]);
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['rejection_reason']);
+    }
+
+    public function test_invalid_direct_transitions_fail(): void
+    {
+        $category = ExpenseCategory::factory()->create(['is_active' => true]);
+
+        // Draft directly to Approved
+        $expense1 = Expense::factory()->create([
+            'expense_category_id' => $category->id,
+            'recorded_by_user_id' => $this->submitterOnly->id,
+            'status' => Expense::STATUS_DRAFT,
+        ]);
+        $response = $this->actingAs($this->admin)
+            ->postJson(route('admin.expenses.approve', $expense1->public_id));
+        $response->assertStatus(422);
+
+        // Rejected directly to Approved
+        $expense2 = Expense::factory()->create([
+            'expense_category_id' => $category->id,
+            'recorded_by_user_id' => $this->submitterOnly->id,
+            'status' => Expense::STATUS_REJECTED,
+        ]);
+        $response = $this->actingAs($this->admin)
+            ->postJson(route('admin.expenses.approve', $expense2->public_id));
+        $response->assertStatus(422);
+    }
+
+    public function test_duplicate_submits_fail(): void
+    {
+        $category = ExpenseCategory::factory()->create(['is_active' => true]);
+        $expense = Expense::factory()->create([
+            'expense_category_id' => $category->id,
+            'recorded_by_user_id' => $this->submitterOnly->id,
+            'status' => Expense::STATUS_PENDING_APPROVAL,
+        ]);
+
+        $response = $this->actingAs($this->submitterOnly)
+            ->postJson(route('admin.expenses.submit', $expense->public_id));
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['status']);
+    }
+
+    public function test_chronological_history_sequences(): void
+    {
+        $category = ExpenseCategory::factory()->create(['is_active' => true]);
+        $expense = Expense::factory()->create([
+            'expense_category_id' => $category->id,
+            'recorded_by_user_id' => $this->submitterOnly->id,
+            'status' => Expense::STATUS_DRAFT,
+        ]);
+
+        // Transition 1: Submit
+        $this->actingAs($this->submitterOnly)
+            ->postJson(route('admin.expenses.submit', $expense->public_id))
+            ->assertOk();
+
+        // Transition 2: Reject
+        $this->actingAs($this->admin)
+            ->postJson(route('admin.expenses.reject', $expense->public_id), [
+                'rejection_reason' => 'Please correct the amount value.',
+            ])
+            ->assertOk();
+
+        // Transition 3: Submit again
+        $this->actingAs($this->submitterOnly)
+            ->postJson(route('admin.expenses.submit', $expense->public_id))
+            ->assertOk();
+
+        // Transition 4: Approve
+        $this->actingAs($this->admin)
+            ->postJson(route('admin.expenses.approve', $expense->public_id))
+            ->assertOk();
+
+        $freshExpense = Expense::findOrFail($expense->id);
+        $history = $freshExpense->metadata['history'];
+        $this->assertCount(4, $history);
+
+        $this->assertEquals('submit', $history[0]['action']);
+        $this->assertEquals(Expense::STATUS_DRAFT, $history[0]['from']);
+        $this->assertEquals(Expense::STATUS_PENDING_APPROVAL, $history[0]['to']);
+
+        $this->assertEquals('reject', $history[1]['action']);
+        $this->assertEquals(Expense::STATUS_PENDING_APPROVAL, $history[1]['from']);
+        $this->assertEquals(Expense::STATUS_REJECTED, $history[1]['to']);
+
+        $this->assertEquals('submit', $history[2]['action']);
+        $this->assertEquals(Expense::STATUS_REJECTED, $history[2]['from']);
+        $this->assertEquals(Expense::STATUS_PENDING_APPROVAL, $history[2]['to']);
+
+        $this->assertEquals('approve', $history[3]['action']);
+        $this->assertEquals(Expense::STATUS_PENDING_APPROVAL, $history[3]['from']);
+        $this->assertEquals(Expense::STATUS_APPROVED, $history[3]['to']);
     }
 }
