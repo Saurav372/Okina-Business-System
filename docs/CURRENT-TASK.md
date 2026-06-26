@@ -4,58 +4,60 @@ Use this file as the task-specific context for a coding session. Update it befor
 
 ## Current Parent Task
 
-C5.2 Refund management
+C5.3 Expense management
 
 ## Current Subtask
 
-C5.2.6 Payment-status recalculation
+C5.3.1 Expense categories
 
 ## Current Status
 
-Not Started. C5.2.5 is completed, verified, and committed.
+Not Started. C5.2 Parent Task is fully completed, verified, and committed.
 
 ## Next Subtask
 
-C5.2.7 Refund audit trail
+C5.3.2 Expense entry
 
 ## Goal
 
-Ensure that order/payment status is recalculated correctly when refunds are processed, transitioning the payment status to `partially_refunded` or `refunded` based on the remaining net paid amount, with refund states taking priority over paid states.
+Ensure that expense categories are defined, stored in the database, and manageable by authorized users (finance staff/admin) as part of the backend database schema and admin API endpoints.
 
 ## Dependencies
 
-- C5.2.5 Refund payment record (Completed)
+- C5.1 Finance payment and balance views (Completed)
 
 ## Required Deliverables
 
-- Backend logic/service updates (or model methods) ensuring that when a payment or refund record is saved/updated/deleted, the associated order's dynamic payment status correctly resolves to unpaid, partially_paid, paid, partially_refunded, or refunded.
-- Tests verifying that transition to refunded or partially refunded states updates the order state correctly.
+- Database migration for `expense_categories` table (fields: id, public_id, name, code, description, is_active, created_at, updated_at).
+- ExpenseCategory model and factory.
+- Seeders for default expense categories (e.g. shipping, raw_materials, marketing, printing_supplies, utilities, other).
+- Admin API endpoints to list, show, create, update, and toggle active status of expense categories (guarded by policies and appropriate roles/permissions).
+- Form requests for input validation.
 
 ## Acceptance Criteria
 
-- The calculated payment status behaves as follows:
-  - `unpaid`: paid_total = 0 and refund_total = 0.
-  - `partially_paid`: paid_total > 0, paid_total < order_total, and refund_total = 0.
-  - `paid`: paid_total >= order_total and refund_total = 0.
-  - `partially_refunded`: refund_total > 0 and net_paid > 0.
-  - `refunded`: refund_total > 0 and net_paid = 0.
-- Order details catalog and admin view presentation display the recalculated payment status correctly.
+- Expense categories must have a name, code (unique slug), description, and active status.
+- Only authorized users with `finance.manage` or `expenses.manage` or similar permissions can create/edit categories.
+- Public IDs are generated for public references.
+- Categories can be soft-deleted or marked inactive instead of hard deleted if referenced.
 
 ## Tests Required
 
-- Automated test suite verifying the dynamic payment status calculation across all states: unpaid, partially_paid, paid, partially_refunded, and refunded.
+- Automated feature tests asserting CRUD operations and role-based permissions protection.
 
 ## Quality Requirements
 
 - Zero N+1 query regression.
-- Adhere strictly to the domain calculation rules defined in `PaymentStateRecalculationRules`.
+- Code style matching Pint constraints.
+- Static analysis check passing under PHPStan.
 
 ## Files Likely Affected
 
-- `app/Support/Payments/PaymentStateRecalculationRules.php`
-- `tests/Feature/PaymentStateRecalculationRulesTest.php`
-- `app/Models/Order.php`
+- `app/Models/ExpenseCategory.php`
+- `database/migrations/..._create_expense_categories_table.php`
+- `app/Http/Controllers/Admin/ExpenseCategoryController.php`
+- `tests/Feature/ExpenseCategoryTest.php`
 
 ## Tasks Not Included
 
-- Refund audit events permanent storage and validation (handled in C5.2.7).
+- Expense entries linking to these categories (handled in C5.3.2).
