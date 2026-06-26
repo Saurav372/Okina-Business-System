@@ -8,43 +8,47 @@ C5.2 Refund management
 
 ## Current Subtask
 
-C5.2.1 Refund request creation
+C5.2.2 Refund approval workflow
 
 ## Current Status
 
-Not Started. C5.1 is completed and all its regression tests are verified.
+Not Started. C5.2.1 is completed, verified, and committed.
 
 ## Next Subtask
 
-C5.2.2 Refund approval workflow
+C5.2.3 Partial refund processing
 
 ## Goal
 
-Implement the refund request model, migrations, and creation endpoint so that staff (with appropriate permissions) can request refunds against a successful payment/order.
+Implement the refund approval endpoint (`POST /admin/refunds/{refund}/approve`) and workflow, allowing authorized staff (with the `refunds.approve` permission) to transition a refund request from `requested` to `approved`.
 
 ## Dependencies
 
-- A5.2 Cancellation and refund rules (Completed)
-- C5.1 Finance payment and balance views (Completed)
+- C5.2.1 Refund request creation (Completed)
+- A2.3 Role and permission model (Completed)
 
 ## Required Deliverables
 
-- Migration to support refund requests (with tracking status, reasons, and link to payment/order).
-- RefundRequest model and relationships.
-- Endpoint/controller logic to submit a new refund request.
-- Validation ensuring a refund request is made against a valid succeeded payment/order, and does not exceed the paid amount.
+- Endpoint/route: `POST /admin/refunds/{refund}/approve`.
+- Update `RefundPolicy` so that `approve` is gated strictly by the `refunds.approve` permission.
+- Controller logic:
+  - Transition refund status from `requested` to `approved`.
+  - Record the `approved_by_user_id` and `approved_at` timestamp.
+  - Emit an `AuditEvent` with key `refunds.refund_approved` containing refund details.
+- Validation ensuring that only refunds in `requested` status can be approved.
 
 ## Acceptance Criteria
 
-- A refund request can be successfully created when validation rules are satisfied.
-- Refund request status defaults to pending approval.
-- Unauthorized users or staff without `refunds.manage` or `refunds.request` cannot create requests.
+- Staff with `refunds.approve` can successfully approve requested refunds.
+- Unauthorized users or staff without `refunds.approve` are blocked (HTTP 403).
+- Only refunds in `requested` state can be approved (other states reject with HTTP 422).
 
 ## Tests Required
 
-- Integration and unit tests covering successful refund request creation.
-- Validation tests checking bounds (requesting more than paid, duplicate requests, invalid payments).
-- Policy/permission gating tests.
+- Integration tests covering successful approval.
+- Unauthorized rejection tests.
+- Transition rule constraints tests (rejecting approval of already approved, succeeded, failed, or cancelled refunds).
+- Audit event emission assertion.
 
 ## Quality Requirements
 
@@ -53,12 +57,11 @@ Implement the refund request model, migrations, and creation endpoint so that st
 
 ## Files Likely Affected
 
-- `app/Models/RefundRequest.php`
-- `database/migrations/xxxx_xx_xx_create_refund_requests_table.php`
-- `app/Http/Controllers/Admin/RefundRequestController.php`
-- `tests/Feature/RefundRequestTest.php`
+- `app/Http/Controllers/Admin/RefundController.php`
+- `app/Policies/RefundPolicy.php`
+- `routes/web.php`
+- `tests/Feature/RefundApprovalTest.php` (new)
 
 ## Tasks Not Included
 
-- Approval workflow logic (which belongs to C5.2.2).
-- Processing/distributing payments via gateway (part of refund execution).
+- Gateway execution of the refund (belongs to C5.2.3 and C5.2.4).
