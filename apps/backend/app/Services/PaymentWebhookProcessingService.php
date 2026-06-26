@@ -89,7 +89,7 @@ class PaymentWebhookProcessingService
                 $eventCategory = $this->eventCategory($normalizedWebhook);
                 $attempt = $this->matchedAttempt($provider, $normalizedWebhook);
 
-                if ($attempt === null && $eventCategory !== 'refund') {
+                if ($attempt === null && ! str_starts_with($eventCategory, 'refund')) {
                     $this->updateLogFailure($log, 'needs_review', 'Unable to match the webhook to a payment attempt.');
 
                     return $this->needsReviewResult($log, 'payment_attempt_unmatched');
@@ -105,6 +105,10 @@ class PaymentWebhookProcessingService
 
                 if ($eventCategory === 'refund_succeeded') {
                     return $this->handleSuccessfulRefund($provider, $normalizedWebhook, $attempt, $log);
+                }
+
+                if ($eventCategory === 'refund_failed') {
+                    return $this->handleFailedRefund($provider, $normalizedWebhook, $attempt, $log);
                 }
 
                 $this->updateLogFailure($log, 'needs_review', 'Unsupported webhook event type.');
@@ -353,8 +357,50 @@ class PaymentWebhookProcessingService
      * @param  array<string, mixed>  $normalizedWebhook
      * @return array<string, mixed>
      */
+    /**
+     * @param  array<string, mixed>  $normalizedWebhook
+     * @return array<string, mixed>
+     */
     private function handleSuccessfulRefund(string $provider, array $normalizedWebhook, ?PaymentAttempt $attempt, PaymentWebhookLog $log): array
     {
+        return $this->processRefundLifecycle(
+            $provider,
+            $normalizedWebhook,
+            $attempt,
+            $log,
+            Refund::STATUS_SUCCEEDED
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $normalizedWebhook
+     * @return array<string, mixed>
+     */
+    private function handleFailedRefund(string $provider, array $normalizedWebhook, ?PaymentAttempt $attempt, PaymentWebhookLog $log): array
+    {
+        return $this->processRefundLifecycle(
+            $provider,
+            $normalizedWebhook,
+            $attempt,
+            $log,
+            Refund::STATUS_FAILED
+        );
+    }
+
+    /**
+     * Common generic refund lifecycle handler for success and failure webhooks.
+     * Webhook processing is append-only. Incoming events may advance state, but they never regress state.
+     *
+     * @param  array<string, mixed>  $normalizedWebhook
+     * @return array<string, mixed>
+     */
+    private function processRefundLifecycle(
+        string $provider,
+        array $normalizedWebhook,
+        ?PaymentAttempt $attempt,
+        PaymentWebhookLog $log,
+        string $incomingTargetStatus
+    ): array {
         $payment = Payment::query()
             ->where('provider', $provider)
             ->where('provider_payment_id', $normalizedWebhook['provider_payment_id'] ?? null)
@@ -365,57 +411,125 @@ class PaymentWebhookProcessingService
         }
 
         if ($payment === null) {
-            $this->updateLogFailure($log, 'needs_review', 'Unable to match the refund webhook to a payment record.');
+            $log->forceFill([
+                'payment_attempt_id' => $attempt?->id,
+                'processing_status' => 'needs_review',
+                'error_message' => 'refund_record_unmatched',
+                'processed_at' => now(),
+            ])->save();
 
-            return $this->needsReviewResult($log, 'payment_record_unmatched');
+            return [
+                'provider' => $provider,
+                'event_id' => (string) ($normalizedWebhook['provider_event_id'] ?? ''),
+                'event_type' => (string) ($normalizedWebhook['event_type'] ?? ''),
+                'processing_status' => 'needs_review',
+                'signature_verified' => true,
+                'error_message' => 'refund_record_unmatched',
+            ];
+        }
+
+        $refundPayload = $this->refundRules->normalizeRefundPayload([
+            'order_public_id' => $payment->order->public_id,
+            'payment_public_id' => $payment->id,
+            'provider' => $provider,
+            'refund_type' => (int) data_get($normalizedWebhook, 'payload_summary.amount_minor', 0) >= $payment->amount_minor ? 'full' : 'partial',
+            'status' => $incomingTargetStatus,
+            'amount_minor' => (int) data_get($normalizedWebhook, 'payload_summary.amount_minor', 0),
+            'currency' => (string) data_get($normalizedWebhook, 'payload_summary.currency', 'INR'),
+            'provider_refund_id' => $normalizedWebhook['provider_refund_id'] ?? null,
+            'provider_payment_id' => $normalizedWebhook['provider_payment_id'] ?? null,
+            'provider_reference' => $normalizedWebhook['provider_refund_id'] ?? $normalizedWebhook['provider_payment_id'] ?? null,
+            'processed_at' => $normalizedWebhook['received_at'] ?? now()->toISOString(),
+        ]);
+
+        $refund = Refund::query()
+            ->where('provider', $provider)
+            ->where('provider_refund_id', $refundPayload['provider_refund_id'])
+            ->first();
+
+        if ($refund !== null && $refund->status === $incomingTargetStatus) {
+            $log->forceFill([
+                'payment_attempt_id' => $attempt?->id,
+                'payment_id' => $payment->id,
+                'refund_id' => $refund->id,
+            ]);
+
+            return $this->handleDuplicateWebhook($log);
         }
 
         $auditPayload = [];
         $dispatchAudit = false;
+        $invalidTransition = false;
 
-        $result = DB::transaction(function () use ($provider, $normalizedWebhook, $attempt, $log, $payment, &$auditPayload, &$dispatchAudit) {
-            $refundPayload = $this->refundRules->normalizeRefundPayload([
-                'order_public_id' => $payment->order->public_id,
-                'payment_public_id' => $payment->id,
-                'provider' => $provider,
-                'refund_type' => (int) data_get($normalizedWebhook, 'payload_summary.amount_minor', 0) >= $payment->amount_minor ? 'full' : 'partial',
-                'status' => (string) data_get($normalizedWebhook, 'payload_summary.status', $this->refundRules->succeededStatus()),
-                'amount_minor' => (int) data_get($normalizedWebhook, 'payload_summary.amount_minor', 0),
-                'currency' => (string) data_get($normalizedWebhook, 'payload_summary.currency', 'INR'),
-                'provider_refund_id' => $normalizedWebhook['provider_refund_id'] ?? null,
-                'provider_payment_id' => $normalizedWebhook['provider_payment_id'] ?? null,
-                'provider_reference' => $normalizedWebhook['provider_refund_id'] ?? $normalizedWebhook['provider_payment_id'] ?? null,
-                'processed_at' => $normalizedWebhook['received_at'] ?? now()->toISOString(),
-            ]);
+        try {
+            $result = DB::transaction(function () use ($provider, $normalizedWebhook, $attempt, $log, $payment, $refundPayload, $incomingTargetStatus, &$auditPayload, &$dispatchAudit) {
+                $refund = Refund::query()
+                    ->where('provider', $provider)
+                    ->where('provider_refund_id', $refundPayload['provider_refund_id'])
+                    ->lockForUpdate()
+                    ->first();
 
-            $refund = Refund::query()
-                ->where('provider', $provider)
-                ->where('provider_refund_id', $refundPayload['provider_refund_id'])
-                ->lockForUpdate()
-                ->first();
+                if ($refund === null) {
+                    $refund = new Refund;
+                    $refund->order_id = $payment->order_id;
+                    $refund->payment_id = $payment->id;
+                    $refund->provider = $refundPayload['provider'];
+                    $refund->refund_type = $refundPayload['refund_type'];
+                    $refund->status = Refund::STATUS_REQUESTED;
+                    $refund->amount_minor = $refundPayload['amount_minor'];
+                    $refund->currency = $refundPayload['currency'];
+                    $refund->provider_refund_id = $refundPayload['provider_refund_id'];
+                    $refund->provider_payment_id = $refundPayload['provider_payment_id'];
+                    $refund->provider_reference = $refundPayload['provider_reference'];
+                    $refund->metadata = $this->safeMetadata($normalizedWebhook);
+                    $refund->save();
 
-            if ($refund === null) {
-                $refund = new Refund;
-                $refund->order_id = $payment->order_id;
-                $refund->payment_id = $payment->id;
-                $refund->provider = $refundPayload['provider'];
-                $refund->refund_type = $refundPayload['refund_type'];
-                $refund->status = Refund::STATUS_REQUESTED;
-                $refund->amount_minor = $refundPayload['amount_minor'];
-                $refund->currency = $refundPayload['currency'];
-                $refund->provider_refund_id = $refundPayload['provider_refund_id'];
-                $refund->provider_payment_id = $refundPayload['provider_payment_id'];
-                $refund->provider_reference = $refundPayload['provider_reference'];
-                $refund->metadata = $this->safeMetadata($normalizedWebhook);
+                    $refund = Refund::query()->lockForUpdate()->findOrFail($refund->id);
+                }
+
+                if ($refund->status === $incomingTargetStatus) {
+                    throw new \LogicException('idempotent_replay');
+                }
+
+                $oldStatus = $refund->status;
+
+                // Webhook processing is append-only. Incoming events may advance state, but they never regress state.
+                if ($incomingTargetStatus === Refund::STATUS_SUCCEEDED) {
+                    if ($refund->status === Refund::STATUS_REQUESTED) {
+                        $systemUser = User::query()->where('user_type', User::TYPE_STAFF)->first();
+                        if ($systemUser === null) {
+                            $systemUser = User::factory()->create(['user_type' => User::TYPE_STAFF]);
+                        }
+                        $refund->approve($systemUser);
+                    }
+
+                    if ($refund->status === Refund::STATUS_APPROVED) {
+                        $systemUser = User::query()->where('user_type', User::TYPE_STAFF)->first();
+                        if ($systemUser === null) {
+                            $systemUser = User::factory()->create(['user_type' => User::TYPE_STAFF]);
+                        }
+                        $refund->markProcessing($systemUser, null, $refundPayload['provider_refund_id'], $refundPayload['provider_payment_id'], $refundPayload['provider_reference']);
+                    }
+
+                    $processedAt = isset($refundPayload['processed_at']) ? Carbon::parse($refundPayload['processed_at']) : null;
+                    $refund->markSucceeded(
+                        $processedAt,
+                        $refundPayload['provider_refund_id'],
+                        $refundPayload['provider_payment_id'],
+                        $refundPayload['provider_reference']
+                    );
+                } else {
+                    $processedAt = isset($refundPayload['processed_at']) ? Carbon::parse($refundPayload['processed_at']) : null;
+                    $refund->markFailed(
+                        $processedAt,
+                        $normalizedWebhook['payload_summary']['reason_code'] ?? 'gateway_failure',
+                        $normalizedWebhook['payload_summary']['reason_note'] ?? 'Refund failed via gateway'
+                    );
+                }
+
+                $newStatus = $refund->status;
                 $refund->save();
 
-                $refund = Refund::query()->lockForUpdate()->findOrFail($refund->id);
-            }
-
-            // Provider webhooks are intentionally idempotent.
-            // Receiving an event representing the refund's current terminal
-            // state is treated as a successful no-op.
-            if ($refund->status === Refund::STATUS_SUCCEEDED) {
                 $paymentStatus = $this->paymentStatusForOrder($payment->order()->firstOrFail());
                 $log->forceFill([
                     'payment_attempt_id' => $attempt?->id,
@@ -424,6 +538,26 @@ class PaymentWebhookProcessingService
                     'processing_status' => $this->webhookRules->webhookLogProcessingStatusProcessed(),
                     'error_message' => null,
                 ])->save();
+
+                $auditPayload = [
+                    'refund_id' => $refund->id,
+                    'refund_public_id' => $refund->id,
+                    'payment_id' => $payment->id,
+                    'payment_public_id' => $payment->id,
+                    'order_public_id' => $payment->order?->public_id,
+                    'old_status' => $oldStatus,
+                    'new_status' => $newStatus,
+                    'actor_type' => 'system',
+                    'actor_id' => null,
+                    'occurred_at' => now()->toIso8601String(),
+                ];
+
+                if ($incomingTargetStatus === Refund::STATUS_FAILED) {
+                    $auditPayload['reason_code'] = $refund->reason_code;
+                    $auditPayload['reason_note'] = $refund->reason_note;
+                }
+
+                $dispatchAudit = true;
 
                 return [
                     'provider' => $provider,
@@ -442,58 +576,23 @@ class PaymentWebhookProcessingService
                     'amount_minor' => $refund->amount_minor,
                     'currency' => $refund->currency,
                 ];
+            });
+        } catch (\LogicException $e) {
+            if ($e->getMessage() === 'idempotent_replay') {
+                return $this->handleDuplicateWebhook($log);
             }
+            $invalidTransition = true;
+        }
 
-            $oldStatus = $refund->status;
-
-            if ($refund->status === Refund::STATUS_REQUESTED) {
-                $systemUser = User::query()->where('user_type', User::TYPE_STAFF)->first();
-                if ($systemUser === null) {
-                    $systemUser = User::factory()->create(['user_type' => User::TYPE_STAFF]);
-                }
-                $refund->approve($systemUser);
-            }
-
-            if ($refund->status === Refund::STATUS_APPROVED) {
-                $systemUser = User::query()->where('user_type', User::TYPE_STAFF)->first();
-                if ($systemUser === null) {
-                    $systemUser = User::factory()->create(['user_type' => User::TYPE_STAFF]);
-                }
-                $refund->markProcessing($systemUser, null, $refundPayload['provider_refund_id'], $refundPayload['provider_payment_id'], $refundPayload['provider_reference']);
-            }
-
-            if ($refund->status === Refund::STATUS_PROCESSING) {
-                $processedAt = isset($refundPayload['processed_at']) ? Carbon::parse($refundPayload['processed_at']) : null;
-                $refund->markSucceeded(
-                    $processedAt,
-                    $refundPayload['provider_refund_id'],
-                    $refundPayload['provider_payment_id'],
-                    $refundPayload['provider_reference']
-                );
-            }
-
-            $refund->save();
-
-            $paymentStatus = $this->paymentStatusForOrder($payment->order()->firstOrFail());
+        if ($invalidTransition) {
             $log->forceFill([
                 'payment_attempt_id' => $attempt?->id,
                 'payment_id' => $payment->id,
-                'refund_id' => $refund->id,
+                'refund_id' => $refund->id ?? null,
                 'processing_status' => $this->webhookRules->webhookLogProcessingStatusProcessed(),
-                'error_message' => null,
+                'error_message' => 'invalid_state_transition',
+                'processed_at' => now(),
             ])->save();
-
-            $auditPayload = [
-                'refund_public_id' => $refund->id,
-                'payment_public_id' => $payment->id,
-                'order_public_id' => $payment->order?->public_id,
-                'old_status' => $oldStatus,
-                'new_status' => Refund::STATUS_SUCCEEDED,
-                'actor_type' => 'system',
-                'actor_id' => null,
-                'occurred_at' => now()->toIso8601String(),
-            ];
-            $dispatchAudit = true;
 
             return [
                 'provider' => $provider,
@@ -501,24 +600,30 @@ class PaymentWebhookProcessingService
                 'event_type' => (string) ($normalizedWebhook['event_type'] ?? ''),
                 'processing_status' => $this->webhookRules->webhookLogProcessingStatusProcessed(),
                 'signature_verified' => true,
-                'order_public_id' => $payment->order->public_id,
-                'payment_attempt_public_id' => $attempt?->public_id,
-                'payment_recorded' => true,
-                'refund_recorded' => true,
-                'payment_status' => $paymentStatus,
-                'payment_attempt_status' => $attempt?->status,
-                'payment_id' => $payment->id,
-                'refund_id' => $refund->id,
-                'amount_minor' => $refund->amount_minor,
-                'currency' => $refund->currency,
+                'error_message' => 'invalid_state_transition',
             ];
-        });
+        }
 
         if ($dispatchAudit) {
-            event(new AuditEvent('refunds.refund_processing_succeeded', null, $auditPayload));
+            $eventKey = $incomingTargetStatus === Refund::STATUS_SUCCEEDED
+                ? 'refunds.refund_processing_succeeded'
+                : 'refunds.refund_processing_failed';
+
+            event(new AuditEvent($eventKey, null, $auditPayload));
         }
 
         return $result;
+    }
+
+    private function handleDuplicateWebhook(PaymentWebhookLog $log): array
+    {
+        $log->forceFill([
+            'processing_status' => $this->webhookRules->webhookLogProcessingStatusIgnoredDuplicate(),
+            'processed_at' => now(),
+            'error_message' => null,
+        ])->save();
+
+        return $this->resultFromLog($log, $this->duplicateResult($log));
     }
 
     /**
