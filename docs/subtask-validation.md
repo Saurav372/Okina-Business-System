@@ -515,6 +515,8 @@ Verification note: C5.3.1 completed on 2026-06-26. Implemented database schema, 
 
 Verification note: C5.3.2 completed on 2026-06-26. Implemented database migration for expenses table with restrictOnDelete FKs, Expense model with immutable guards, validation requests excluding soft-deleted categories and restricting future-dated amounts, decimal string resources, and REST endpoints with deterministic sorting and N+1 query eager loading. All 14 feature integration tests in ExpenseTest.php and all 493 global backend tests passed.
 
+Verification note: C5.3.3 completed on 2026-06-26. Implemented state transition rules, approval policies, transaction-locked action endpoints with row-level locks, form request validation including whitespace trimming, first-class approved_at timestamps, and versioned chronological transition history logs in metadata json. All 24 feature tests in ExpenseTest.php and all 503 global backend tests passed. Pint and PHPStan analyses are fully clean.
+
 
 ## C6.1 Immutable Audit Log
 
