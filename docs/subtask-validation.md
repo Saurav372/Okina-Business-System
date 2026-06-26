@@ -517,6 +517,8 @@ Verification note: C5.3.2 completed on 2026-06-26. Implemented database migratio
 
 Verification note: C5.3.3 completed on 2026-06-26. Implemented state transition rules, approval policies, transaction-locked action endpoints with row-level locks, form request validation including whitespace trimming, first-class approved_at timestamps, and versioned chronological transition history logs in metadata json. All 24 feature tests in ExpenseTest.php and all 503 global backend tests passed. Pint and PHPStan analyses are fully clean.
 
+Verification note: C5.3.4 completed on 2026-06-26. Audited and confirmed all eight expense endpoint policy gates (viewAny, view, create, update, delete, submit, approve, reject). Extended ExpenseTest.php with comprehensive role-by-role permission matrix tests covering Admin, Finance Staff, Sales Staff, Inventory Staff, and Production Staff. Added existence leakage prevention tests verifying that unauthorized users always receive 403 (not 404) on valid public IDs. All 32 ExpenseTest tests and all 511 global backend tests passed. Pint and PHPStan analyses are fully clean.
+
 
 ## C6.1 Immutable Audit Log
 

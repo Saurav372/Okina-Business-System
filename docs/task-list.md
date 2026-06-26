@@ -555,7 +555,7 @@ Verification note: C5.2.7 completed on 2026-06-26. Implemented and verified the 
 | C5.3.1 | Expense categories | Completed |
 | C5.3.2 | Expense entry | Completed |
 | C5.3.3 | Expense approval rules | Completed |
-| C5.3.4 | Expense permissions | Not Started |
+| C5.3.4 | Expense permissions | Completed |
 | C5.3.5 | Expense reporting data | Not Started |
 
 Verification note: C5.3.1 completed on 2026-06-26. Implemented database schema, Eloquent model, seeders, policies, validation requests, and REST endpoints for business expense categories. Added static unique public_id generation, save-time domain code mutation blocking, seeder regressions, and soft-delete route binding 404 behavior. All 13 feature integration tests in ExpenseCategoryTest.php and all 479 global backend tests passed.
@@ -563,6 +563,8 @@ Verification note: C5.3.1 completed on 2026-06-26. Implemented database schema, 
 Verification note: C5.3.2 completed on 2026-06-26. Implemented database migration for expenses table with restrictOnDelete FKs, Expense model with immutable guards, validation requests excluding soft-deleted categories and restricting future-dated amounts, decimal string resources, and REST endpoints with deterministic sorting and N+1 query eager loading. All 14 feature integration tests in ExpenseTest.php and all 493 global backend tests passed.
 
 Verification note: C5.3.3 completed on 2026-06-26. Implemented state transition rules, approval policies, transaction-locked action endpoints with row-level locks, form request validation including whitespace trimming, first-class approved_at timestamps, and versioned chronological transition history logs in metadata json. All 24 feature tests in ExpenseTest.php and all 503 global backend tests passed. Pint and PHPStan analyses are fully clean.
+
+Verification note: C5.3.4 completed on 2026-06-26. Audited and confirmed all eight expense endpoint policy gates (viewAny, view, create, update, delete, submit, approve, reject). Extended ExpenseTest.php with comprehensive role-by-role permission matrix tests covering Admin, Finance Staff, Sales Staff, Inventory Staff, and Production Staff. Added existence leakage prevention tests verifying that unauthorized users always receive 403 (not 404) on valid public IDs. All 32 ExpenseTest tests and all 511 global backend tests passed. Pint and PHPStan analyses are fully clean.
 
 
 ### C6.1 Immutable audit log
