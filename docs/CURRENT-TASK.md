@@ -8,47 +8,38 @@ C5.2 Refund management
 
 ## Current Subtask
 
-C5.2.2 Refund approval workflow
+C5.2.3 Partial refund processing
 
 ## Current Status
 
-Not Started. C5.2.1 is completed, verified, and committed.
+Not Started. C5.2.2 is completed, verified, and committed.
 
 ## Next Subtask
 
-C5.2.3 Partial refund processing
+C5.2.4 Full refund processing
 
 ## Goal
 
-Implement the refund approval endpoint (`POST /admin/refunds/{refund}/approve`) and workflow, allowing authorized staff (with the `refunds.approve` permission) to transition a refund request from `requested` to `approved`.
+Implement the partial refund execution logic. Transition the refund status from `approved` to `processing` and eventually to `succeeded` or `failed` once processed by the gateway adapter (or marked manually as succeeded/failed), ensuring that partial refund totals are correctly calculated.
 
 ## Dependencies
 
-- C5.2.1 Refund request creation (Completed)
-- A2.3 Role and permission model (Completed)
+- C5.2.2 Refund approval workflow (Completed)
+- A5.2.3 Partial refund rules (Completed)
 
 ## Required Deliverables
 
-- Endpoint/route: `POST /admin/refunds/{refund}/approve`.
-- Update `RefundPolicy` so that `approve` is gated strictly by the `refunds.approve` permission.
-- Controller logic:
-  - Transition refund status from `requested` to `approved`.
-  - Record the `approved_by_user_id` and `approved_at` timestamp.
-  - Emit an `AuditEvent` with key `refunds.refund_approved` containing refund details.
-- Validation ensuring that only refunds in `requested` status can be approved.
+- Backend logic/service updates to process a partial refund (updating status and recording transaction/provider attributes).
+- Validation and business logic checks ensuring partial refunds correctly offset the parent payment balances.
 
 ## Acceptance Criteria
 
-- Staff with `refunds.approve` can successfully approve requested refunds.
-- Unauthorized users or staff without `refunds.approve` are blocked (HTTP 403).
-- Only refunds in `requested` state can be approved (other states reject with HTTP 422).
+- Approved partial refunds can transition to `processing` and eventually to `succeeded`.
+- Recalculated balance accounts for the partial refund amount correctly.
 
 ## Tests Required
 
-- Integration tests covering successful approval.
-- Unauthorized rejection tests.
-- Transition rule constraints tests (rejecting approval of already approved, succeeded, failed, or cancelled refunds).
-- Audit event emission assertion.
+- Test suite verifying status updates, totals calculations, and validation rules for partial refunds.
 
 ## Quality Requirements
 
@@ -58,10 +49,9 @@ Implement the refund approval endpoint (`POST /admin/refunds/{refund}/approve`) 
 ## Files Likely Affected
 
 - `app/Http/Controllers/Admin/RefundController.php`
-- `app/Policies/RefundPolicy.php`
-- `routes/web.php`
-- `tests/Feature/RefundApprovalTest.php` (new)
+- `app/Models/Refund.php`
+- `tests/Feature/PartialRefundTest.php` (new or updated)
 
 ## Tasks Not Included
 
-- Gateway execution of the refund (belongs to C5.2.3 and C5.2.4).
+- Full refund processing details (handled in C5.2.4).
