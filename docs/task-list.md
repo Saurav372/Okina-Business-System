@@ -526,13 +526,15 @@ Verification note: C1.3.8 completed on 2026-06-24. Advance/manual payment record
 
 | Subtask ID | Subtask Name | Status |
 |---|---|---|
-| C5.2.1 | Refund request | Not Started |
+| C5.2.1 | Refund request | Completed |
 | C5.2.2 | Refund approval | Not Started |
 | C5.2.3 | Partial refund | Not Started |
 | C5.2.4 | Full refund | Not Started |
 | C5.2.5 | Refund payment record | Not Started |
 | C5.2.6 | Payment-status recalculation | Not Started |
 | C5.2.7 | Refund audit trail | Not Started |
+
+Verification note: C5.2.1 completed on 2026-06-26. Implemented refund request creation under `POST /admin/refunds` with a dedicated `refunds.request` permission and model scope validation inside locked transaction. Checked bounds for full and partial refund types, verified that failed/cancelled refunds release reserved balance, and verified audit events. Tested via RefundRequestTest.php.
 
 ### C5.3 Expense management
 

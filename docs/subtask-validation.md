@@ -487,6 +487,8 @@ Verification note: C5.1.6 completed on 2026-06-26. Verified full regression cove
 | C5.2.6 | Payment-status recalculation | C5.2.5 | Refunded/partially refunded states calculate correctly | Status calculation tests | Payments, Orders | High |
 | C5.2.7 | Refund audit events | A4.6, C5.2.1-C5.2.6 | Refund lifecycle emits audit events; permanent storage is verified by C6.1 integration | Audit-event tests | Finance, Audit | High |
 
+Verification note: C5.2.1 completed on 2026-06-26. Implemented refund request creation under `POST /admin/refunds` with a dedicated `refunds.request` permission and model scope validation inside locked transaction. Checked bounds for full and partial refund types, verified that failed/cancelled refunds release reserved balance, and verified audit events. Tested via RefundRequestTest.php.
+
 ## C5.3 Expense Management
 
 | Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |
