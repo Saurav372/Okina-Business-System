@@ -8,52 +8,53 @@ C5.2 Refund management
 
 ## Current Subtask
 
-C5.2.4 Full refund processing
+C5.2.5 Refund payment record
 
 ## Current Status
 
-In Progress. C5.2.3 is completed, verified, and committed.
+Not Started. C5.2.4 is completed, verified, and committed.
 
 ## Next Subtask
 
-C5.2.5 Refund payment record
+C5.2.6 Payment-status recalculation
 
 ## Goal
 
-Implement the full refund execution logic. Ensure transition rules, policy gates, endpoints, controllers, and webhook integrations support transitioning full refunds to succeeded or failed states, ensuring that full refund amounts are correctly validated to equal the remaining refundable balance of the payment.
+Ensure that processing a refund registers/links the refund record with the original payment (via `payment_id`) and that the original payment record remains completely intact (unmodified status, amount, and provider details), ensuring financial auditability and ledger integrity.
 
 ## Dependencies
 
-- C5.2.2 Refund approval workflow (Completed)
 - C5.2.3 Partial refund processing (Completed)
-- A5.2.4 Full refund rules (Completed)
+- C5.2.4 Full refund processing (Completed)
 
 ## Required Deliverables
 
-- Backend logic/service updates to process a full refund (updating status and recording transaction/provider attributes).
-- Validation and business logic checks ensuring full refunds correctly match and offset the parent payment balances.
+- Database and domain assertions verifying the relationship between `Refund` and `Payment`.
+- Verification that original `Payment` records are never deleted, voided, or modified during refund request, approval, processing, or completion.
+- API and database query checks verifying that both payment and refund entries are retained as distinct ledger records.
 
 ## Acceptance Criteria
 
-- Approved full refunds can transition to `processing` and eventually to `succeeded`.
-- Recalculated balance accounts for the full refund amount correctly, matching the net paid amount.
-- Validation rejects full refunds if the requested amount does not equal the remaining refundable balance.
+- All refunds must refer to a valid, succeeded `Payment` (represented by `payment_id`).
+- Completing (succeeding) a refund must not alter the `status`, `amount_minor`, or other core columns of the original `Payment` record.
+- In database queries and ledger responses, both the payment and the refund must co-exist as distinct entries.
 
 ## Tests Required
 
-- Test suite verifying status updates, totals calculations, and validation rules for full refunds.
+- Automated test suite verifying payment record integrity after a refund transitions to succeeded.
+- Tests asserting that refund records link to correct payments and do not mutate parent payment details.
 
 ## Quality Requirements
 
 - Zero N+1 query regression.
-- Adhere strictly to authorization boundaries.
+- Strict compliance with database constraints and relationship integrity.
 
 ## Files Likely Affected
 
-- `app/Http/Controllers/Admin/RefundController.php`
 - `app/Models/Refund.php`
-- `tests/Feature/PartialRefundTest.php` (new or updated)
+- `app/Models/Payment.php`
+- `tests/Feature/RefundPaymentRecordTest.php` (new)
 
 ## Tasks Not Included
 
-- Refund payment record integrity details (handled in C5.2.5).
+- Automated recalculation of order payment status fields (handled in C5.2.6).

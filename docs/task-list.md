@@ -530,7 +530,7 @@ Verification note: C1.3.8 completed on 2026-06-24. Advance/manual payment record
 | C5.2.2 | Refund approval | Completed |
 | C5.2.3 | Partial refund | Completed |
 | C5.2.4 | Full refund | Completed |
-| C5.2.5 | Refund payment record | Not Started |
+| C5.2.5 | Refund payment record | Completed |
 | C5.2.6 | Payment-status recalculation | Not Started |
 | C5.2.7 | Refund audit trail | Not Started |
 
@@ -541,6 +541,8 @@ Verification note: C5.2.2 completed on 2026-06-26. Implemented refund approval w
 Verification note: C5.2.3 completed on 2026-06-26. Implemented partial refund transitions, controller endpoints for processing and cancelling, policies, and webhook integrations with row locking and idempotency verification. Dispatched explicit audit events and recalculated order balances correctly. Tested via PartialRefundTest.php.
 
 Verification note: C5.2.4 completed on 2026-06-26. Implemented full refund transitions, controller processing, and webhook integrations under locked transactions. Verified that full refund validation rejects amounts not equal to the remaining refundable balance, and that it correctly reduces net paid amount to 0, dynamically updating payment status to refunded. Tested via PartialRefundTest.php.
+
+Verification note: C5.2.5 completed on 2026-06-26. Implemented explicit self-validating model methods `ensurePaymentIsRefundable()` (asserting `payment_id` presence, resolving payment relation, and checking `succeeded` status) and `ensurePaymentAssociationIsImmutable(?int $newPaymentId)` on the `Refund` model. Added invariants class documentation. Wrote feature tests verifying that parent payment records remain completely unchanged (immutable accounting snapshot comparison) during one or multiple refunds, and verifying that the relationship is append-only and ledger calculations dynamically resolve balance aggregates correctly. Tested via RefundPaymentRecordTest.php.
 
 ### C5.3 Expense management
 

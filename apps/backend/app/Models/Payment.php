@@ -29,6 +29,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'notes',
     'metadata',
 ])]
+/**
+ * Class Payment
+ *
+ * Invariants:
+ * 1. Accounting Invariant:
+ *    - Payment records are immutable accounting artifacts.
+ *    - The Payment model never reflects refund state.
+ *    - Refunds are represented exclusively by Refund records.
+ */
 class Payment extends Model
 {
     public const STATUS_PENDING_VERIFICATION = 'pending_verification';

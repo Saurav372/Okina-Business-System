@@ -28,6 +28,18 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
     'processed_at',
     'metadata',
 ])]
+/**
+ * Class Refund
+ *
+ * Invariants:
+ * 1. Association Invariants:
+ *    - The associated payment must exist.
+ *    - The payment association (payment_id) is immutable once set.
+ * 2. Lifecycle Invariants:
+ *    - The associated payment must be in a succeeded state.
+ * 3. Accounting Invariant:
+ *    - The Payment model never reflects refund state. Refunds are represented exclusively by Refund records.
+ */
 class Refund extends Model
 {
     public const STATUS_REQUESTED = 'requested';
@@ -158,6 +170,41 @@ class Refund extends Model
     public function ensureCanBeCancelled(): void
     {
         $this->ensureCanTransitionTo(self::STATUS_CANCELLED);
+    }
+
+    /**
+     * Lifecycle Invariant:
+     * 1. Ensure payment_id is present.
+     * 2. Resolve the related payment.
+     * 3. Throw LogicException if the payment cannot be resolved.
+     * 4. Throw LogicException if payment status != succeeded.
+     */
+    public function ensurePaymentIsRefundable(): void
+    {
+        if ($this->payment_id === null) {
+            throw new \LogicException('Payment ID is missing on the refund.');
+        }
+
+        $payment = $this->payment;
+
+        if ($payment === null) {
+            throw new \LogicException('The associated payment record cannot be resolved.');
+        }
+
+        if ($payment->status !== Payment::STATUS_SUCCEEDED) {
+            throw new \LogicException('The associated payment status must be succeeded.');
+        }
+    }
+
+    /**
+     * Association Invariant:
+     * Once set, the payment association is immutable.
+     */
+    public function ensurePaymentAssociationIsImmutable(?int $newPaymentId): void
+    {
+        if ($this->payment_id !== null && $this->payment_id !== $newPaymentId) {
+            throw new \LogicException('The payment association on a refund is immutable and cannot be changed.');
+        }
     }
 
     public function approve(User $user, ?\Illuminate\Support\Carbon $approvedAt = null): void
