@@ -513,6 +513,8 @@ Verification note: C5.2.7 completed on 2026-06-26. Implemented and verified the 
 
 Verification note: C5.3.1 completed on 2026-06-26. Implemented database schema, Eloquent model, seeders, policies, validation requests, and REST endpoints for business expense categories. Added static unique public_id generation, save-time domain code mutation blocking, seeder regressions, and soft-delete route binding 404 behavior. All 13 feature integration tests in ExpenseCategoryTest.php and all 479 global backend tests passed.
 
+Verification note: C5.3.2 completed on 2026-06-26. Implemented database migration for expenses table with restrictOnDelete FKs, Expense model with immutable guards, validation requests excluding soft-deleted categories and restricting future-dated amounts, decimal string resources, and REST endpoints with deterministic sorting and N+1 query eager loading. All 14 feature integration tests in ExpenseTest.php and all 493 global backend tests passed.
+
 
 ## C6.1 Immutable Audit Log
 
