@@ -59,6 +59,18 @@ final class AuditEventCatalog
                 summary: 'Refund request was created without exposing sensitive payment or provider data.',
             ),
             new AuditEventDefinition(
+                key: 'refunds.refund_approved',
+                module: 'finance',
+                action: 'refund.approved',
+                subjectType: 'refund',
+                actorTypes: ['user', 'system'],
+                safeFields: ['refund_public_id', 'order_public_id', 'payment_public_id', 'status', 'approved_by_user_id', 'approved_at'],
+                maskedFields: ['reason_note', 'provider_reference', 'gateway_payload', 'raw_payload'],
+                relatedTypes: ['order', 'payment'],
+                references: ['C5.2.2'],
+                summary: 'Refund request was approved by authorized staff.',
+            ),
+            new AuditEventDefinition(
                 key: 'refunds.refund_recorded',
                 module: 'finance',
                 action: 'refund.recorded',

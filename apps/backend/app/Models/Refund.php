@@ -53,6 +53,29 @@ class Refund extends Model
         return $query->whereNotIn('status', [self::STATUS_FAILED, self::STATUS_CANCELLED]);
     }
 
+    public const ERROR_ONLY_REQUESTED_CAN_BE_APPROVED = 'Only requested refunds can be approved.';
+
+    public function canBeApproved(): bool
+    {
+        return $this->status === self::STATUS_REQUESTED;
+    }
+
+    public function ensureCanBeApproved(): void
+    {
+        if (!$this->canBeApproved()) {
+            throw new \LogicException(self::ERROR_ONLY_REQUESTED_CAN_BE_APPROVED);
+        }
+    }
+
+    public function approve(User $user, ?\Illuminate\Support\Carbon $approvedAt = null): void
+    {
+        $this->ensureCanBeApproved();
+
+        $this->status = self::STATUS_APPROVED;
+        $this->approved_by_user_id = $user->id;
+        $this->approved_at = $approvedAt ?? \Illuminate\Support\Carbon::now();
+    }
+
     protected static function booted(): void
     {
         static::saving(function (Refund $refund) {

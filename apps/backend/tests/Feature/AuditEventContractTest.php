@@ -31,6 +31,7 @@ class AuditEventContractTest extends TestCase
                 'payments.payment_recorded',
                 'orders.order_cancelled',
                 'refunds.refund_requested',
+                'refunds.refund_approved',
                 'refunds.refund_recorded',
                 'inventory.stock_moved',
                 'finance.expense_recorded',
@@ -43,6 +44,7 @@ class AuditEventContractTest extends TestCase
         $this->assertSame('payments', $catalog->definition('payments.payment_recorded')->module);
         $this->assertSame('orders', $catalog->definition('orders.order_cancelled')->module);
         $this->assertSame('finance', $catalog->definition('refunds.refund_requested')->module);
+        $this->assertSame('finance', $catalog->definition('refunds.refund_approved')->module);
         $this->assertSame('finance', $catalog->definition('refunds.refund_recorded')->module);
         $this->assertSame('inventory', $catalog->definition('inventory.stock_moved')->module);
         $this->assertSame('finance', $catalog->definition('finance.expense_recorded')->module);

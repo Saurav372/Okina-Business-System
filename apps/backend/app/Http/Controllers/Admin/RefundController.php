@@ -135,4 +135,44 @@ class RefundController extends Controller
             ->setStatusCode(201)
             ->header('Location', route('admin.refunds.show', $refund));
     }
+
+    public function approve(Refund $refund)
+    {
+        Gate::authorize('approve', $refund);
+
+        $actor = request()->user();
+
+        $lockedRefund = DB::transaction(function () use ($refund, $actor) {
+            $lockedRefund = Refund::query()
+                ->lockForUpdate()
+                ->findOrFail($refund->getKey());
+
+            $lockedRefund->loadMissing(['order', 'payment']);
+
+            try {
+                $lockedRefund->approve($actor);
+            } catch (\LogicException $e) {
+                throw ValidationException::withMessages([
+                    'refund' => [$e->getMessage()],
+                ]);
+            }
+
+            $lockedRefund->save();
+
+            $this->auditPayload = [
+                'refund_public_id' => $lockedRefund->id,
+                'order_public_id' => $lockedRefund->order?->public_id,
+                'payment_public_id' => $lockedRefund->payment_id,
+                'status' => Refund::STATUS_APPROVED,
+                'approved_by_user_id' => $lockedRefund->approved_by_user_id,
+                'approved_at' => $lockedRefund->approved_at?->toIso8601String(),
+            ];
+
+            return $lockedRefund;
+        });
+
+        event(new AuditEvent('refunds.refund_approved', $actor, $this->auditPayload));
+
+        return new RefundResource($lockedRefund);
+    }
 }
