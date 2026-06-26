@@ -531,8 +531,10 @@ Verification note: C1.3.8 completed on 2026-06-24. Advance/manual payment record
 | C5.2.3 | Partial refund | Completed |
 | C5.2.4 | Full refund | Completed |
 | C5.2.5 | Refund payment record | Completed |
-| C5.2.6 | Payment-status recalculation | Not Started |
+| C5.2.6 | Payment-status recalculation | Completed |
 | C5.2.7 | Refund audit trail | Not Started |
+
+Verification note: C5.2.6 completed on 2026-06-26. Verified dynamic recalculations for unpaid, partially paid, paid, partially refunded, and refunded statuses using `PaymentStateRecalculationRules` unit tests and a dedicated integration test suite validating correct presentation and balance summaries across all payment status combinations. Tested via PaymentStatusRecalculationIntegrationTest.php.
 
 Verification note: C5.2.1 completed on 2026-06-26. Implemented refund request creation under `POST /admin/refunds` with a dedicated `refunds.request` permission and model scope validation inside locked transaction. Checked bounds for full and partial refund types, verified that failed/cancelled refunds release reserved balance, and verified audit events. Tested via RefundRequestTest.php.
 

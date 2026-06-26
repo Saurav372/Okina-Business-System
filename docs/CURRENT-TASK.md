@@ -8,53 +8,54 @@ C5.2 Refund management
 
 ## Current Subtask
 
-C5.2.5 Refund payment record
+C5.2.6 Payment-status recalculation
 
 ## Current Status
 
-Not Started. C5.2.4 is completed, verified, and committed.
+Not Started. C5.2.5 is completed, verified, and committed.
 
 ## Next Subtask
 
-C5.2.6 Payment-status recalculation
+C5.2.7 Refund audit trail
 
 ## Goal
 
-Ensure that processing a refund registers/links the refund record with the original payment (via `payment_id`) and that the original payment record remains completely intact (unmodified status, amount, and provider details), ensuring financial auditability and ledger integrity.
+Ensure that order/payment status is recalculated correctly when refunds are processed, transitioning the payment status to `partially_refunded` or `refunded` based on the remaining net paid amount, with refund states taking priority over paid states.
 
 ## Dependencies
 
-- C5.2.3 Partial refund processing (Completed)
-- C5.2.4 Full refund processing (Completed)
+- C5.2.5 Refund payment record (Completed)
 
 ## Required Deliverables
 
-- Database and domain assertions verifying the relationship between `Refund` and `Payment`.
-- Verification that original `Payment` records are never deleted, voided, or modified during refund request, approval, processing, or completion.
-- API and database query checks verifying that both payment and refund entries are retained as distinct ledger records.
+- Backend logic/service updates (or model methods) ensuring that when a payment or refund record is saved/updated/deleted, the associated order's dynamic payment status correctly resolves to unpaid, partially_paid, paid, partially_refunded, or refunded.
+- Tests verifying that transition to refunded or partially refunded states updates the order state correctly.
 
 ## Acceptance Criteria
 
-- All refunds must refer to a valid, succeeded `Payment` (represented by `payment_id`).
-- Completing (succeeding) a refund must not alter the `status`, `amount_minor`, or other core columns of the original `Payment` record.
-- In database queries and ledger responses, both the payment and the refund must co-exist as distinct entries.
+- The calculated payment status behaves as follows:
+  - `unpaid`: paid_total = 0 and refund_total = 0.
+  - `partially_paid`: paid_total > 0, paid_total < order_total, and refund_total = 0.
+  - `paid`: paid_total >= order_total and refund_total = 0.
+  - `partially_refunded`: refund_total > 0 and net_paid > 0.
+  - `refunded`: refund_total > 0 and net_paid = 0.
+- Order details catalog and admin view presentation display the recalculated payment status correctly.
 
 ## Tests Required
 
-- Automated test suite verifying payment record integrity after a refund transitions to succeeded.
-- Tests asserting that refund records link to correct payments and do not mutate parent payment details.
+- Automated test suite verifying the dynamic payment status calculation across all states: unpaid, partially_paid, paid, partially_refunded, and refunded.
 
 ## Quality Requirements
 
 - Zero N+1 query regression.
-- Strict compliance with database constraints and relationship integrity.
+- Adhere strictly to the domain calculation rules defined in `PaymentStateRecalculationRules`.
 
 ## Files Likely Affected
 
-- `app/Models/Refund.php`
-- `app/Models/Payment.php`
-- `tests/Feature/RefundPaymentRecordTest.php` (new)
+- `app/Support/Payments/PaymentStateRecalculationRules.php`
+- `tests/Feature/PaymentStateRecalculationRulesTest.php`
+- `app/Models/Order.php`
 
 ## Tasks Not Included
 
-- Automated recalculation of order payment status fields (handled in C5.2.6).
+- Refund audit events permanent storage and validation (handled in C5.2.7).
