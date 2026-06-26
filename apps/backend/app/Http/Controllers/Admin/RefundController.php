@@ -86,13 +86,13 @@ class RefundController extends Controller
 
             if ($requestedAmount > $remainingBefore) {
                 throw ValidationException::withMessages([
-                    'amount_minor' => ['The requested refund amount exceeds the remaining refundable balance of ' . $remainingBefore . ' minor units.'],
+                    'amount_minor' => ['The requested refund amount exceeds the remaining refundable balance of '.$remainingBefore.' minor units.'],
                 ]);
             }
 
             if ($validated['refund_type'] === Refund::TYPE_FULL && $requestedAmount !== $remainingBefore) {
                 throw ValidationException::withMessages([
-                    'amount_minor' => ['A full refund must equal the remaining refundable balance of ' . $remainingBefore . ' minor units.'],
+                    'amount_minor' => ['A full refund must equal the remaining refundable balance of '.$remainingBefore.' minor units.'],
                 ]);
             }
 
@@ -114,7 +114,9 @@ class RefundController extends Controller
 
             $this->auditPayload = [
                 'refund_id' => $refund->id,
+                'refund_public_id' => $refund->id,
                 'payment_id' => $payment->id,
+                'payment_public_id' => $payment->id,
                 'order_public_id' => $order->public_id,
                 'amount_minor' => $refund->amount_minor,
                 'refund_type' => $refund->refund_type,

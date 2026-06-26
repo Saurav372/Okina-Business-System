@@ -102,7 +102,7 @@ Verification note: completed on 2026-06-22. Status changes are implemented under
 
 Verification note: completed on 2026-06-22. Shipment details (courier name, tracking number, URL, estimated delivery) are saved via admin endpoints, with customer order detail endpoints returning safe tracking payloads. Role-based permissions protect the endpoints. Covered by `CustomerTrackingApiTest`.
 | C5.1 | Finance payment and balance views | Project C | C5 | Show payment records, outstanding balances, split payments, and protected finance views. | A5.1, C1.1 | Refunds, reports | A/C | Medium | Medium | Finance access tests | Completed |
-| C5.2 | Refund management | Project C | C5 | Track refund requests, refund approvals, refund records, partial/full refunds, and payment-status recalculation without erasing original payment history. | A5.2, C5.1 | Reports/audit | C | Medium | Medium | Refund tests | Not Started |
+| C5.2 | Refund management | Project C | C5 | Track refund requests, refund approvals, refund records, partial/full refunds, and payment-status recalculation without erasing original payment history. | A5.2, C5.1 | Reports/audit | C | Medium | Medium | Refund tests | Completed |
 | C5.3 | Expense management | Project C | C5 | Track approved business expenses separately from refunds, with permissions and reporting categories. | C5.1 | Reports/audit | C | Medium | Low | Expense tests | Not Started |
 | C5.4 | Financial reports | Project C | C5 | Create payment, balance, refund, expense, sales, and protected finance reports. | C5.1, C5.2, C5.3 | Hardening | C | Medium | Low | Report accuracy tests | Not Started |
 | C6.1 | Immutable audit log | Project C | C6 | Implement audit table design, order-change auditing, payment/refund auditing, inventory auditing, customer/product auditing, permission-change auditing, sensitive-data masking, viewing permissions, and retention rules. | A4.6, A5.1, C1.1 | Finance/inventory hardening | A/C | High | Medium | Audit immutability tests | Not Started |
@@ -532,7 +532,7 @@ Verification note: C1.3.8 completed on 2026-06-24. Advance/manual payment record
 | C5.2.4 | Full refund | Completed |
 | C5.2.5 | Refund payment record | Completed |
 | C5.2.6 | Payment-status recalculation | Completed |
-| C5.2.7 | Refund audit trail | Not Started |
+| C5.2.7 | Refund audit trail | Completed |
 
 Verification note: C5.2.6 completed on 2026-06-26. Verified dynamic recalculations for unpaid, partially paid, paid, partially refunded, and refunded statuses using `PaymentStateRecalculationRules` unit tests and a dedicated integration test suite validating correct presentation and balance summaries across all payment status combinations. Tested via PaymentStatusRecalculationIntegrationTest.php.
 
@@ -545,6 +545,8 @@ Verification note: C5.2.3 completed on 2026-06-26. Implemented partial refund tr
 Verification note: C5.2.4 completed on 2026-06-26. Implemented full refund transitions, controller processing, and webhook integrations under locked transactions. Verified that full refund validation rejects amounts not equal to the remaining refundable balance, and that it correctly reduces net paid amount to 0, dynamically updating payment status to refunded. Tested via PartialRefundTest.php.
 
 Verification note: C5.2.5 completed on 2026-06-26. Implemented explicit self-validating model methods `ensurePaymentIsRefundable()` (asserting `payment_id` presence, resolving payment relation, and checking `succeeded` status) and `ensurePaymentAssociationIsImmutable(?int $newPaymentId)` on the `Refund` model. Added invariants class documentation. Wrote feature tests verifying that parent payment records remain completely unchanged (immutable accounting snapshot comparison) during one or multiple refunds, and verifying that the relationship is append-only and ledger calculations dynamically resolve balance aggregates correctly. Tested via RefundPaymentRecordTest.php.
+
+Verification note: C5.2.7 completed on 2026-06-26. Implemented and verified the complete refund lifecycle audit trail. Added a dedicated feature integration test suite validating that all refund lifecycle transitions (requested, approved, processing, succeeded, failed, cancelled) correctly dispatch explicit audit events with safe payload formats. Eager-loaded relationships to prevent N+1 queries. Passed all test suites and resolved all static analysis check gates.
 
 ### C5.3 Expense management
 

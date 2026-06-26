@@ -499,6 +499,8 @@ Verification note: C5.2.5 completed on 2026-06-26. Implemented explicit self-val
 
 Verification note: C5.2.6 completed on 2026-06-26. Verified dynamic recalculations for unpaid, partially paid, paid, partially refunded, and refunded statuses using `PaymentStateRecalculationRules` unit tests and a dedicated integration test suite validating correct presentation and balance summaries across all payment status combinations. Tested via PaymentStatusRecalculationIntegrationTest.php.
 
+Verification note: C5.2.7 completed on 2026-06-26. Implemented and verified the complete refund lifecycle audit trail. Added a dedicated feature integration test suite validating that all refund lifecycle transitions (requested, approved, processing, succeeded, failed, cancelled) correctly dispatch explicit audit events with safe payload formats. Eager-loaded relationships to prevent N+1 queries. Passed all test suites and resolved all static analysis check gates.
+
 ## C5.3 Expense Management
 
 | Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |

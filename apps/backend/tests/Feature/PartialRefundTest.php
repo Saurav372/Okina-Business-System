@@ -4,12 +4,11 @@ namespace Tests\Feature;
 
 use App\Events\AuditEvent;
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Payment;
-use App\Models\Permission;
 use App\Models\PaymentAttempt;
 use App\Models\Product;
 use App\Models\ProductSku;
-use App\Models\OrderItem;
 use App\Models\Refund;
 use App\Models\Role;
 use App\Models\User;
@@ -27,6 +26,7 @@ class PartialRefundTest extends TestCase
     use RefreshDatabase;
 
     private User $financeStaff;
+
     private User $salesStaff;
 
     protected function setUp(): void
@@ -81,7 +81,7 @@ class PartialRefundTest extends TestCase
     #[DataProvider('validTransitionsProvider')]
     public function test_valid_transitions(string $from, string $to): void
     {
-        $refund = new Refund();
+        $refund = new Refund;
         $refund->status = $from;
         $this->assertTrue($refund->canTransitionTo($to));
     }
@@ -89,7 +89,7 @@ class PartialRefundTest extends TestCase
     #[DataProvider('invalidTransitionsProvider')]
     public function test_invalid_transitions(string $from, string $to): void
     {
-        $refund = new Refund();
+        $refund = new Refund;
         $refund->status = $from;
         $this->assertFalse($refund->canTransitionTo($to));
 
@@ -618,7 +618,7 @@ class PartialRefundTest extends TestCase
             ->assertOk();
 
         // 1. Check at the domain calculator level
-        $calculator = new OrderTotalsCalculator();
+        $calculator = new OrderTotalsCalculator;
         $totals = $calculator->fromAmounts(
             subtotalAmountMinor: $order->subtotal_amount_minor,
             paidAmountMinor: 10000,
@@ -741,7 +741,7 @@ class PartialRefundTest extends TestCase
             ->assertOk();
 
         // 1. Check at the domain calculator level
-        $calculator = new OrderTotalsCalculator();
+        $calculator = new OrderTotalsCalculator;
         $totals = $calculator->fromAmounts(
             subtotalAmountMinor: $order->subtotal_amount_minor,
             paidAmountMinor: 10000,

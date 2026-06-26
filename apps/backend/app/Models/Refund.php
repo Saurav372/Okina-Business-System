@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Carbon;
 
 #[Fillable([
     'order_id',
@@ -111,7 +112,7 @@ class Refund extends Model
 
     public function ensureCanTransitionTo(string $targetStatus): void
     {
-        if (!$this->canTransitionTo($targetStatus)) {
+        if (! $this->canTransitionTo($targetStatus)) {
             throw new \LogicException(self::TRANSITION_ERRORS[$targetStatus] ?? "Invalid status transition to {$targetStatus}");
         }
     }
@@ -207,20 +208,20 @@ class Refund extends Model
         }
     }
 
-    public function approve(User $user, ?\Illuminate\Support\Carbon $approvedAt = null): void
+    public function approve(User $user, ?Carbon $approvedAt = null): void
     {
         $this->applyTransition(self::STATUS_APPROVED);
 
         $this->approved_by_user_id = $user->id;
-        $this->approved_at = $approvedAt ?? \Illuminate\Support\Carbon::now();
+        $this->approved_at = $approvedAt ?? Carbon::now();
     }
 
-    public function markProcessing(User $user, ?\Illuminate\Support\Carbon $startedAt = null, ?string $providerRefundId = null, ?string $providerPaymentId = null, ?string $providerReference = null): void
+    public function markProcessing(User $user, ?Carbon $startedAt = null, ?string $providerRefundId = null, ?string $providerPaymentId = null, ?string $providerReference = null): void
     {
         $this->applyTransition(self::STATUS_PROCESSING);
 
         $this->processed_by_user_id = $user->id;
-        $this->processed_at = $startedAt ?? \Illuminate\Support\Carbon::now();
+        $this->processed_at = $startedAt ?? Carbon::now();
         $this->reason_code = null;
         $this->reason_note = null;
 
@@ -229,22 +230,22 @@ class Refund extends Model
         $this->provider_reference = $providerReference ?? $this->provider_reference;
     }
 
-    public function markSucceeded(?\Illuminate\Support\Carbon $succeededAt = null, ?string $providerRefundId = null, ?string $providerPaymentId = null, ?string $providerReference = null): void
+    public function markSucceeded(?Carbon $succeededAt = null, ?string $providerRefundId = null, ?string $providerPaymentId = null, ?string $providerReference = null): void
     {
         $this->applyTransition(self::STATUS_SUCCEEDED);
 
-        $this->processed_at = $succeededAt ?? \Illuminate\Support\Carbon::now();
+        $this->processed_at = $succeededAt ?? Carbon::now();
 
         $this->provider_refund_id = $providerRefundId ?? $this->provider_refund_id;
         $this->provider_payment_id = $providerPaymentId ?? $this->provider_payment_id;
         $this->provider_reference = $providerReference ?? $this->provider_reference;
     }
 
-    public function markFailed(?\Illuminate\Support\Carbon $failedAt = null, ?string $reasonCode = null, ?string $reasonNote = null): void
+    public function markFailed(?Carbon $failedAt = null, ?string $reasonCode = null, ?string $reasonNote = null): void
     {
         $this->applyTransition(self::STATUS_FAILED);
 
-        $this->processed_at = $failedAt ?? \Illuminate\Support\Carbon::now();
+        $this->processed_at = $failedAt ?? Carbon::now();
         $this->reason_code = $reasonCode;
         $this->reason_note = $reasonNote;
     }

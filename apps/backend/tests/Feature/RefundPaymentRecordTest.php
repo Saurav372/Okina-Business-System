@@ -3,11 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\PaymentAttempt;
 use App\Models\Product;
 use App\Models\ProductSku;
-use App\Models\OrderItem;
 use App\Models\Refund;
 use App\Support\Admin\OrderDetailCatalog;
 use App\Support\Orders\OrderTotalsCalculator;
@@ -70,7 +70,7 @@ class RefundPaymentRecordTest extends TestCase
             'status' => 'failed',
             'amount_minor' => 10000,
             'currency' => 'INR',
-            'idempotency_key' => 'idempotency:payment_attempt:failed:' . $order->id,
+            'idempotency_key' => 'idempotency:payment_attempt:failed:'.$order->id,
         ]);
 
         $paymentFailed = Payment::create([
@@ -110,7 +110,7 @@ class RefundPaymentRecordTest extends TestCase
             'status' => 'succeeded',
             'amount_minor' => 10000,
             'currency' => 'INR',
-            'idempotency_key' => 'idempotency:payment_attempt:immutable_test:' . $order->id,
+            'idempotency_key' => 'idempotency:payment_attempt:immutable_test:'.$order->id,
         ]);
 
         $payment = Payment::create([
@@ -158,7 +158,7 @@ class RefundPaymentRecordTest extends TestCase
             'status' => 'succeeded',
             'amount_minor' => 10000,
             'currency' => 'INR',
-            'idempotency_key' => 'idempotency:payment_attempt:multiple_refunds:' . $order->id,
+            'idempotency_key' => 'idempotency:payment_attempt:multiple_refunds:'.$order->id,
         ]);
 
         $payment = Payment::create([
@@ -278,7 +278,7 @@ class RefundPaymentRecordTest extends TestCase
             'status' => 'succeeded',
             'amount_minor' => 10000,
             'currency' => 'INR',
-            'idempotency_key' => 'idempotency:payment_attempt:ledger_test:' . $order->id,
+            'idempotency_key' => 'idempotency:payment_attempt:ledger_test:'.$order->id,
         ]);
 
         $payment = Payment::create([
@@ -323,7 +323,7 @@ class RefundPaymentRecordTest extends TestCase
         ]);
 
         // 1. Verify totals using OrderTotalsCalculator
-        $calculator = new OrderTotalsCalculator();
+        $calculator = new OrderTotalsCalculator;
         $totals = $calculator->fromAmounts(
             subtotalAmountMinor: $order->subtotal_amount_minor,
             paidAmountMinor: $payment->amount_minor,

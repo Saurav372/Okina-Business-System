@@ -2,11 +2,13 @@
 
 namespace App\Services;
 
+use App\Events\AuditEvent;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\PaymentAttempt;
 use App\Models\PaymentWebhookLog;
 use App\Models\Refund;
+use App\Models\User;
 use App\Support\Payments\CashfreeAdapterRules;
 use App\Support\Payments\GatewayFailureHandlingRules;
 use App\Support\Payments\PaymentAttemptRules;
@@ -14,7 +16,6 @@ use App\Support\Payments\PaymentStateRecalculationRules;
 use App\Support\Payments\PaymentVerificationRules;
 use App\Support\Payments\PaymentWebhookRules;
 use App\Support\Payments\RefundInterfaceRules;
-use App\Events\AuditEvent;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -394,7 +395,7 @@ class PaymentWebhookProcessingService
                 ->first();
 
             if ($refund === null) {
-                $refund = new Refund();
+                $refund = new Refund;
                 $refund->order_id = $payment->order_id;
                 $refund->payment_id = $payment->id;
                 $refund->provider = $refundPayload['provider'];
@@ -446,23 +447,23 @@ class PaymentWebhookProcessingService
             $oldStatus = $refund->status;
 
             if ($refund->status === Refund::STATUS_REQUESTED) {
-                $systemUser = \App\Models\User::query()->where('user_type', \App\Models\User::TYPE_STAFF)->first();
+                $systemUser = User::query()->where('user_type', User::TYPE_STAFF)->first();
                 if ($systemUser === null) {
-                    $systemUser = \App\Models\User::factory()->create(['user_type' => \App\Models\User::TYPE_STAFF]);
+                    $systemUser = User::factory()->create(['user_type' => User::TYPE_STAFF]);
                 }
                 $refund->approve($systemUser);
             }
 
             if ($refund->status === Refund::STATUS_APPROVED) {
-                $systemUser = \App\Models\User::query()->where('user_type', \App\Models\User::TYPE_STAFF)->first();
+                $systemUser = User::query()->where('user_type', User::TYPE_STAFF)->first();
                 if ($systemUser === null) {
-                    $systemUser = \App\Models\User::factory()->create(['user_type' => \App\Models\User::TYPE_STAFF]);
+                    $systemUser = User::factory()->create(['user_type' => User::TYPE_STAFF]);
                 }
                 $refund->markProcessing($systemUser, null, $refundPayload['provider_refund_id'], $refundPayload['provider_payment_id'], $refundPayload['provider_reference']);
             }
 
             if ($refund->status === Refund::STATUS_PROCESSING) {
-                $processedAt = isset($refundPayload['processed_at']) ? \Illuminate\Support\Carbon::parse($refundPayload['processed_at']) : null;
+                $processedAt = isset($refundPayload['processed_at']) ? Carbon::parse($refundPayload['processed_at']) : null;
                 $refund->markSucceeded(
                     $processedAt,
                     $refundPayload['provider_refund_id'],

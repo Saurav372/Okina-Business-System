@@ -3,11 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\PaymentAttempt;
 use App\Models\Product;
 use App\Models\ProductSku;
-use App\Models\OrderItem;
 use App\Models\Refund;
 use App\Support\Admin\OrderDetailCatalog;
 use App\Support\Payments\PaymentStateRecalculationRules;
@@ -66,7 +66,7 @@ class PaymentStatusRecalculationIntegrationTest extends TestCase
             'status' => 'succeeded',
             'amount_minor' => $amountMinor,
             'currency' => 'INR',
-            'idempotency_key' => 'idempotency:payment_attempt:' . uniqid(),
+            'idempotency_key' => 'idempotency:payment_attempt:'.uniqid(),
         ]);
 
         return Payment::create([

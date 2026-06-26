@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Events\AuditEvent;
 use App\Models\Order;
 use App\Models\Payment;
-use App\Models\Permission;
 use App\Models\Refund;
 use App\Models\Role;
 use App\Models\User;

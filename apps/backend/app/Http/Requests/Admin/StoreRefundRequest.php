@@ -41,20 +41,23 @@ class StoreRefundRequest extends FormRequest
                 if ($order && $payment) {
                     if ($payment->order_id !== $order->id) {
                         $validator->errors()->add('payment_id', 'The payment does not belong to the specified order.');
+
                         return;
                     }
 
                     if ($payment->status !== Payment::STATUS_SUCCEEDED) {
                         $validator->errors()->add('payment_id', 'Only succeeded payments can be refunded.');
+
                         return;
                     }
 
                     if ($this->input('amount_minor') > $payment->amount_minor) {
                         $validator->errors()->add('amount_minor', 'The refund amount cannot exceed the payment amount.');
+
                         return;
                     }
                 }
-            }
+            },
         ];
     }
 }
