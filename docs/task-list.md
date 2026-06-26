@@ -399,7 +399,7 @@ Verification note: C3.1.7 completed on 2026-06-23. Lead authorization, list, and
 | C5.1.2 | Payment and refund ledger list | Completed |
 | C5.1.3 | Order payment detail and balance panel | Completed |
 | C5.1.4 | Shared balance calculation presentation | Completed |
-| C5.1.5 | Finance filters, totals, and pagination | Not Started |
+| C5.1.5 | Finance filters, totals, and pagination | Completed |
 | C5.1.6 | Finance authorization and calculation regression tests | Not Started |
 
 Verification note: C5.1.1 completed on 2026-06-25. Enforced finance access boundary and sensitive-field policies. Created PaymentPolicy, RefundPolicy, PaymentResource, and RefundResource. Registered policies in AppServiceProvider. Appended controller routes for listing and displaying payments and refunds. Ensured internal primary database keys and foreign keys are omitted from serialization. Conditionally loaded sensitive gateway fee and net amount fields using $this->when() based on finance.view_cost permissions. Verified via FinanceBoundaryTest.php (5 tests, 64 assertions) and FinanceAccessPolicyTest.php (3 tests, 26 assertions).
@@ -409,6 +409,8 @@ Verification note: C5.1.2 completed on 2026-06-25. Implemented paginated ledger 
 Verification note: C5.1.3 completed on 2026-06-25. Implemented paid amount, refunded amount, and outstanding balance summary for order details using only succeeded payments and refunds. Outstanding balance is clamped to zero. Fail-loud LogicExceptions are thrown if required top-level or nested relationships are not eager loaded. Eager loading is optimized at the controller level. Model-level boot event validates the domain invariant that succeeded refunds must have a valid recorded payment. Verified via AdminOrderDetailTest.php (8 tests, 81 assertions) and full test suite run (400 tests passed).
 
 Verification note: C5.1.4 completed on 2026-06-25. Refactored balance calculations in OrderDetailCatalog to delegate arithmetic to the shared OrderTotalsCalculator. Used constructor injection with fallback resolution for backward compatibility. Verified via AdminOrderDetailTest.php and all 400 tests passing.
+
+Verification note: C5.1.5 completed on 2026-06-26. Implemented filtering, aggregates, and pagination for finance ledger. Supported filtering payments and refunds by date range, provider, method (payments only), status, and type. Added validation rules via form requests. Implemented page aggregates (totals for amount, fees, net) dynamically calculated from the filtered dataset. Hidden fee/net aggregates for unauthorized staff. Verified via FinanceLedgerFilterTest.php (6 tests, 79 assertions).
 
 ### C5.4 Financial reports
 

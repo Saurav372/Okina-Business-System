@@ -25,6 +25,8 @@ return Application::configure(basePath: dirname(__DIR__))
             fn (Request $request) => $request->is('api/*')
                 || $request->is('admin/leads*')
                 || $request->is('admin/orders*')
-                || $request->is('admin/quotations*'),
+                || $request->is('admin/quotations*')
+                || $request->is('admin/payments*')
+                || $request->is('admin/refunds*'),
         );
     })->create();

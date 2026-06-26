@@ -8,59 +8,59 @@ C5.1 Finance payment and balance views
 
 ## Current Subtask
 
-C5.1.5 Finance filters, totals, and pagination
+C5.1.6 Finance authorization and calculation regression tests
 
 ## Current Status
 
-Completed. C5.1.4 is implemented and verified. Eager loaded balance calculations are delegated to the shared OrderTotalsCalculator.
+Not Started. C5.1.5 is implemented and verified.
 
 ## Next Subtask
 
-C5.1.6 Finance authorization and calculation regression tests
+C5.2.1 Refund request (under C5.2 Refund management parent task)
 
 ## Goal
 
-Refactor the order details summary balance calculations in `OrderDetailCatalog` to leverage the shared `OrderTotalsCalculator` and `OrderTotals` contract.
+Develop and verify a comprehensive regression test suite validating all role-based access rules (finance/cost visibility), ledger list fields, calculation panel outcomes, and correct filter-aggregate behaviors on the finance endpoints.
 
 ## Dependencies
 
+- C5.1.1 Finance access boundary and sensitive-field policy (Completed)
+- C5.1.2 Payment and refund ledger list (Completed)
 - C5.1.3 Order payment detail and balance panel (Completed)
-- A5.1.4 Order totals and balances (Completed)
+- C5.1.4 Shared balance calculation presentation (Completed)
+- C5.1.5 Finance filters, totals, and pagination (Completed)
 
 ## Required Deliverables
 
-- Refactored `OrderDetailCatalog.php` utilizing `OrderTotalsCalculator` to compute `paid_amount_minor`, `refunded_amount_minor`, and `outstanding_balance_minor`.
-- Verification/test suite confirming correctness under the shared calculator framework.
+- Consolidated or dedicated regression test suite verifying:
+  - Role-based gates for viewing payments and refunds (e.g. Finance Staff vs Sales Staff vs unauthorized users).
+  - Proper filtering and pagination of both index endpoints.
+  - Assertions on exact minor aggregate values in the meta block of the list response.
+  - Proper masking/exclusion of sensitive fields (`gateway_fee_minor`, `net_amount_minor`) based on user permissions.
+  - Order details summary calculations mapping correctness.
 
 ## Acceptance Criteria
 
-- Outstanding balance is computed using the shared `OrderTotalsCalculator`.
-- Presentation output remains correct and maps directly to:
-  - `paid_amount_minor` -> `$totals->paidAmountMinor()`
-  - `refunded_amount_minor` -> `$totals->refundAmountMinor()`
-  - `outstanding_balance_minor` -> `$totals->outstandingAmountMinor()`
-- All existing tests in `AdminOrderDetailTest` continue to pass.
+- All access policy rules and data boundaries are fully covered in regression tests.
+- Calculations in order detail summary balances remain correct and robust.
+- The test suite passes cleanly with no regressions.
 
 ## Tests Required
 
-- Run existing tests in `AdminOrderDetailTest.php` and verify they pass.
-- Add additional assertions or tests if needed to verify integration with `OrderTotalsCalculator`.
+- Run all finance-related feature tests (e.g., `FinanceBoundaryTest`, `FinanceAccessPolicyTest`, `FinanceLedgerFilterTest`, `AdminOrderDetailTest`).
+- Ensure the full backend test suite (`php artisan test`) passes completely.
 
 ## Quality Requirements
 
-- Ensure no query performance regressions (N+1 queries).
-- Strictly adhere to the shared contract boundary.
+- Zero N+1 query regression.
+- Adhere strictly to authorization boundaries.
 
 ## Files Likely Affected
 
-- `app/Support/Admin/OrderDetailCatalog.php`
-- `tests/Feature/AdminOrderDetailTest.php`
+- `tests/Feature/FinanceBoundaryTest.php`
+- `tests/Feature/FinanceAccessPolicyTest.php`
+- `tests/Feature/FinanceLedgerFilterTest.php`
 
 ## Tasks Not Included
 
-- Modification of core calculator formulas or adding new fields to the schema.
-
-## Reference Details
-
-- Shared calculator class: `App\Support\Orders\OrderTotalsCalculator`.
-- Shared value object: `App\Support\Orders\OrderTotals`.
+- Modification of database schema or controller logic (except for bug fixes discovered during testing).
