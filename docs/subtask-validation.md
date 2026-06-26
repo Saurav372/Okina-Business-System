@@ -489,6 +489,8 @@ Verification note: C5.1.6 completed on 2026-06-26. Verified full regression cove
 
 Verification note: C5.2.1 completed on 2026-06-26. Implemented refund request creation under `POST /admin/refunds` with a dedicated `refunds.request` permission and model scope validation inside locked transaction. Checked bounds for full and partial refund types, verified that failed/cancelled refunds release reserved balance, and verified audit events. Tested via RefundRequestTest.php.
 
+Verification note: C5.2.2 completed on 2026-06-26. Implemented refund approval workflow under `POST /admin/refunds/{refund}/approve` gated by the `refunds.approve` permission. Extracted state transition predicates/mutators (`canBeApproved()`, `ensureCanBeApproved()`, `approve()`) directly to the model. Handled concurrency locking on the refund record prior to mutation. Emitted `refunds.refund_approved` audit event. Tested via RefundApprovalTest.php.
+
 ## C5.3 Expense Management
 
 | Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |
