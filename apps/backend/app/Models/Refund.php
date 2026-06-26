@@ -30,6 +30,29 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 ])]
 class Refund extends Model
 {
+    public const STATUS_REQUESTED = 'requested';
+
+    public const STATUS_APPROVED = 'approved';
+
+    public const STATUS_PROCESSING = 'processing';
+
+    public const STATUS_SUCCEEDED = 'succeeded';
+
+    public const STATUS_FAILED = 'failed';
+
+    public const STATUS_CANCELLED = 'cancelled';
+
+    public const TYPE_FULL = 'full';
+
+    public const TYPE_PARTIAL = 'partial';
+
+    public const TYPE_MANUAL_ADJUSTMENT = 'manual_adjustment';
+
+    public function scopeReservesBalance($query)
+    {
+        return $query->whereNotIn('status', [self::STATUS_FAILED, self::STATUS_CANCELLED]);
+    }
+
     protected static function booted(): void
     {
         static::saving(function (Refund $refund) {

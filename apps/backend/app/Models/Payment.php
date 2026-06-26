@@ -31,6 +31,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 ])]
 class Payment extends Model
 {
+    public const STATUS_PENDING_VERIFICATION = 'pending_verification';
+
+    public const STATUS_SUCCEEDED = 'succeeded';
+
+    public const STATUS_FAILED = 'failed';
+
+    public const STATUS_CANCELLED = 'cancelled';
+
+    public const STATUS_VOIDED = 'voided';
+
     public const METHOD_CASH = 'cash';
 
     public const METHOD_BANK_TRANSFER = 'bank_transfer';

@@ -75,5 +75,6 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     Route::get('/payments', [PaymentController::class, 'index'])->name('admin.payments.index');
     Route::get('/payments/{payment}', [PaymentController::class, 'show'])->name('admin.payments.show');
     Route::get('/refunds', [RefundController::class, 'index'])->name('admin.refunds.index');
+    Route::post('/refunds', [RefundController::class, 'store'])->name('admin.refunds.store');
     Route::get('/refunds/{refund}', [RefundController::class, 'show'])->name('admin.refunds.show');
 });

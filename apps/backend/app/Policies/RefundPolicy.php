@@ -38,7 +38,7 @@ class RefundPolicy
     public function create(Authenticatable $actor): bool
     {
         if ($actor instanceof User) {
-            return $actor->hasPermissionTo('refunds.approve');
+            return $actor->hasPermissionTo('refunds.request');
         }
 
         return false;

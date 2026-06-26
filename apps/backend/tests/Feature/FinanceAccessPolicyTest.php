@@ -65,6 +65,7 @@ class FinanceAccessPolicyTest extends TestCase
     {
         $viewer = $this->makeStaffWithPermissions('payments.view');
         $approver = $this->makeStaffWithPermissions('refunds.approve');
+        $requester = $this->makeStaffWithPermissions('refunds.request');
 
         $order = Order::factory()->create();
         $payment = Payment::create([
@@ -96,7 +97,8 @@ class FinanceAccessPolicyTest extends TestCase
         $this->assertFalse(Gate::forUser($approver)->allows('view', $refund));
 
         // create
-        $this->assertTrue(Gate::forUser($approver)->allows('create', Refund::class));
+        $this->assertTrue(Gate::forUser($requester)->allows('create', Refund::class));
+        $this->assertFalse(Gate::forUser($approver)->allows('create', Refund::class));
         $this->assertFalse(Gate::forUser($viewer)->allows('create', Refund::class));
 
         // update - always false
