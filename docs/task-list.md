@@ -506,7 +506,7 @@ Verification note: C1.3.8 completed on 2026-06-24. Advance/manual payment record
 | C2.1.4 | Manual adjustment | Completed |
 | C2.1.5 | Order stock deduction | Completed |
 | C2.1.6 | Cancellation stock reversal | Completed |
-| C2.1.7 | Low-stock warning | Not Started |
+| C2.1.7 | Low-stock warning | Completed |
 | C2.1.8 | Movement history and audit | Not Started |
 
 Verification note: C2.1.1 completed on 2026-06-27. Created the `inventory_items` table with database check constraints and chunked existing SKU backfill. Created the `InventoryItem` model, `InventoryBalanceService` for atomic transaction synchronization, and `ProductSkuObserver` for SKU auto-initialization. All tests in `InventoryItemTest.php` and the full test suite passed.
@@ -520,6 +520,8 @@ Verification note: C2.1.4 completed on 2026-06-27. Implemented the `adjust` API 
 Verification note: C2.1.5 completed on 2026-06-27. Implemented the `deductOrderStock` API in `InventoryBalanceService` allowing atomic order stock deduction. Features deadlock prevention via eager loading and sorting by inventory item IDs, duplicate SKU lock avoidance, missing inventory checks (`InventoryItemNotFoundException`), transaction deadlock retries, database-level unique key integrity constraint, and duplicate-safe audit dispatch. Covered by 7 feature tests in `InventoryOrderDeductionTest.php`.
 
 Verification note: C2.1.6 completed on 2026-06-27. Implemented the `reverseOrderStock` API in `InventoryBalanceService` allowing atomic cancellation stock reversal. Extends `InventoryMovementReason` with `ORDER_CANCELLATION`, features eager loading, deadlock-preventing sorting, locked inventory item caching, and checks duplicate reversals using `order_id` and `order_item_id` inside the lock. Covered by 8 feature tests in `InventoryCancellationReversalTest.php` including complete lifecycle tests (Deduct -> Deduct -> Reverse -> Reverse).
+
+Verification note: C2.1.7 completed on 2026-06-27. Implemented low-stock warning detection inside `recordMovement` in `InventoryBalanceService`. Features dynamic threshold resolution encapsulated in `resolvedLowStockThreshold()` helper on `InventoryItem`, threshold crossing verification, after-commit dispatch of the structured `LowStockDetected` event (carrying ProductSku, available quantity, threshold, causing InventoryMovement), and structured context logging. Covered by 6 feature tests in `InventoryLowStockWarningTest.php` including sequences, override resolution, and multiple movement types.
 
 
 

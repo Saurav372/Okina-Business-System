@@ -451,6 +451,8 @@ Verification note: C2.1.5 completed on 2026-06-27. Implemented the `deductOrderS
 
 Verification note: C2.1.6 completed on 2026-06-27. Implemented the `reverseOrderStock` API in `InventoryBalanceService` allowing atomic cancellation stock reversal. Extends `InventoryMovementReason` with `ORDER_CANCELLATION`, features eager loading, deadlock-preventing sorting, locked inventory item caching, and checks duplicate reversals using `order_id` and `order_item_id` inside the lock. Covered by 8 feature tests in `InventoryCancellationReversalTest.php` including complete lifecycle tests (Deduct -> Deduct -> Reverse -> Reverse).
 
+Verification note: C2.1.7 completed on 2026-06-27. Implemented low-stock warning detection inside `recordMovement` in `InventoryBalanceService`. Features dynamic threshold resolution encapsulated in `resolvedLowStockThreshold()` helper on `InventoryItem`, threshold crossing verification, after-commit dispatch of the structured `LowStockDetected` event (carrying ProductSku, available quantity, threshold, causing InventoryMovement), and structured context logging. Covered by 6 feature tests in `InventoryLowStockWarningTest.php` including sequences, override resolution, and multiple movement types.
+
 ## C2.2 Vendors And Purchases
 
 | Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |
