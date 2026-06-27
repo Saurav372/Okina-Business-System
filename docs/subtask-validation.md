@@ -439,6 +439,8 @@ Verification note: C1.3.8 completed on 2026-06-24. Advance/manual payment record
 | C2.1.7 | Low-stock warning | C2.1.1 | Low stock warning appears by configured threshold | Warning tests | Inventory, Notifications | Medium |
 | C2.1.8 | Movement history and audit events | C2.1.2-C2.1.7, A4.6 | All movements are traceable and emit audit events; permanent storage is verified by C6.1 integration | History/audit-event tests | Inventory, Audit | High |
 
+Verification note: C2.1.1 completed on 2026-06-27. Created the `inventory_items` table with database check constraints and chunked existing SKU backfill. Created the `InventoryItem` model, `InventoryBalanceService` for atomic transaction synchronization, and `ProductSkuObserver` for SKU auto-initialization. All tests in `InventoryItemTest.php` and the full test suite passed.
+
 ## C2.2 Vendors And Purchases
 
 | Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |

@@ -11,9 +11,11 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\ProductSku;
 use App\Models\Quotation;
 use App\Models\Refund;
 use App\Models\StoredFile;
+use App\Observers\ProductSkuObserver;
 use App\Policies\ExpenseCategoryPolicy;
 use App\Policies\ExpensePolicy;
 use App\Policies\LeadPolicy;
@@ -55,5 +57,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Refund::class, RefundPolicy::class);
         Gate::policy(ExpenseCategory::class, ExpenseCategoryPolicy::class);
         Gate::policy(Expense::class, ExpensePolicy::class);
+
+        ProductSku::observe(ProductSkuObserver::class);
     }
 }

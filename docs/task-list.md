@@ -500,7 +500,7 @@ Verification note: C1.3.8 completed on 2026-06-24. Advance/manual payment record
 
 | Subtask ID | Subtask Name | Status |
 |---|---|---|
-| C2.1.1 | SKU stock balance | Not Started |
+| C2.1.1 | SKU stock balance | Completed |
 | C2.1.2 | Stock-in | Not Started |
 | C2.1.3 | Stock-out | Not Started |
 | C2.1.4 | Manual adjustment | Not Started |
@@ -508,6 +508,9 @@ Verification note: C1.3.8 completed on 2026-06-24. Advance/manual payment record
 | C2.1.6 | Cancellation stock reversal | Not Started |
 | C2.1.7 | Low-stock warning | Not Started |
 | C2.1.8 | Movement history and audit | Not Started |
+
+Verification note: C2.1.1 completed on 2026-06-27. Created the `inventory_items` table with database check constraints and chunked existing SKU backfill. Created the `InventoryItem` model, `InventoryBalanceService` for atomic transaction synchronization, and `ProductSkuObserver` for SKU auto-initialization. All tests in `InventoryItemTest.php` and the full test suite passed.
+
 
 ### C2.2 Vendors and purchases
 

@@ -4,50 +4,49 @@ Use this file as the task-specific context for a coding session. Update it befor
 
 ## Current Parent Task
 
-C5.3 Expense management
+C2.1 Inventory movements and stock handling
 
 ## Current Subtask
 
-C5.3.5 Expense reporting data
+C2.1.1 SKU stock balance
 
 ## Current Status
 
-Not Started. C5.3.4 Expense permissions is fully completed, verified, and committed.
+Not Started. Parent task C5.3 Expense management is fully completed and committed.
 
 ## Next Subtask
 
-C5.4.1 Report scopes, date ranges, and authorization policy
+C2.1.2 Stock-in
 
 ## Goal
 
-Ensure that expense entries are properly aggregated and available for financial reports. Expose optimized query scopes or a service layer that allows retrieval of expense totals grouped by category, status, and date range, enforcing correct role-based permission boundaries.
+Define and implement the `inventory_items` table to track SKU-level stock balances (`on_hand_quantity`, `reserved_quantity`, `available_quantity`). Expose these stock balance metrics per SKU, ensuring they are automatically initialized for new and existing SKUs.
 
 ## Dependencies
 
-- C5.3.1 Expense categories (Completed)
-- C5.3.2 Expense entry (Completed)
-- C5.3.3 Expense approval rules (Completed)
-- C5.3.4 Expense permissions (Completed)
+- A3.2.4 SKUs (Completed)
 
 ## Required Deliverables
 
-- Implement query scopes or query methods on the `Expense` model/service to fetch expense summaries (e.g., total amount by category, total amount by status, monthly/daily trends within a date range).
-- Expose these summaries through an authorized endpoint or admin reporting catalog helper, ensuring only users with `finance.view_reports` or `finance.manage_expenses` (or relevant roles like Super Admin, Admin, and Finance Staff) can access them.
-- Add or expand tests asserting that the reporting data aggregates correctly (calculating correct decimal sums, respecting date ranges, and category filters).
-- Verify that N+1 queries are prevented when loading categories for the report grouping.
+- Create a database migration for the `inventory_items` table as defined in the schema plan.
+- Create the `InventoryItem` Eloquent model and define relationships with `ProductSku`.
+- Implement dynamic initialization (e.g., via a model observer or booting sequence) to ensure every `ProductSku` always has a corresponding `InventoryItem` row with default `0` quantities.
+- Expose the stock balance metrics (`on_hand_quantity`, `reserved_quantity`, `available_quantity`) in SKU details and resources, ensuring no internal numeric IDs leak.
+- Add unit and feature tests verifying that inventory item records are created alongside SKUs, and that balances are correctly queried.
 
 ## Acceptance Criteria
 
-- Reporting queries must allow filtering by `start_date`, `end_date`, `status`, and `expense_category_id`.
-- The aggregate response must return correct sums rounded properly (standard 2 decimal places).
-- Unauthorized roles (Sales, Inventory, Production Staff) must be blocked from accessing expense report queries/endpoints (returning `403`).
-- Eager loading of categories is enforced to prevent N+1 query regressions during aggregation.
+- The `inventory_items` table must contain: `id`, `product_sku_id` (unique), `on_hand_quantity` (default 0), `reserved_quantity` (default 0), and `available_quantity` (default 0).
+- An `InventoryItem` record must be automatically created when a new `ProductSku` is created.
+- Existing `ProductSku` records in the database must be safely backfilled during migration.
+- Stock metrics are exposed in SKU resources, keeping database keys hidden.
+- Test coverage must assert automated record creation on SKU inserts and retrieval of balances.
 
 ## Tests Required
 
-- Integration/feature tests for expense reporting queries/endpoints.
-- Tests validating calculation accuracy of aggregated amounts under various filters (date range, status, categories).
-- Permission matrix tests verifying only authorized roles can retrieve the report aggregates.
+- Model tests verifying `ProductSku` to `InventoryItem` relationships.
+- Observer/creation tests verifying that inserting a `ProductSku` automatically creates its `InventoryItem` record.
+- Integration tests ensuring that query responses containing SKUs include the correct stock balances.
 
 ## Quality Requirements
 
@@ -57,11 +56,12 @@ Ensure that expense entries are properly aggregated and available for financial 
 
 ## Files Likely Affected
 
-- `app/Models/Expense.php`
-- `app/Policies/ExpensePolicy.php`
-- `tests/Feature/ExpenseReportingTest.php` (new or expanded)
+- `app/Models/ProductSku.php`
+- `app/Models/InventoryItem.php` (new)
+- `database/migrations/[timestamp]_create_inventory_items_table.php` (new)
+- `tests/Feature/InventoryBalanceTest.php` (new)
 
 ## Tasks Not Included
 
-- Rendering full graphical charts (handled in the frontend / UI tasks).
-- Broad financial reconciliation reports (handled in C5.4).
+- Stock movements record handling (handled in C2.1.2 / C2.1.3).
+- Order reservations and automatic stock deductions (handled in C2.1.5).
