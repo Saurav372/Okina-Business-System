@@ -5,10 +5,12 @@ namespace App\Services;
 use App\Enums\InventoryDirection;
 use App\Enums\InventoryMovementReason;
 use App\Enums\InventoryMovementType;
+use App\Events\AuditEvent;
 use App\Exceptions\InsufficientStockException;
 use App\Models\InventoryItem;
 use App\Models\InventoryMovement;
 use App\Models\ProductSku;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -62,6 +64,59 @@ class InventoryBalanceService
         }
 
         return $this->recordMovement($sku, $quantity, InventoryMovementType::STOCK_OUT, InventoryDirection::OUT, $reason, $options);
+    }
+
+    /**
+     * Record a manual stock adjustment.
+     */
+    public function adjust(ProductSku $sku, int $newOnHand, int $newReserved, InventoryMovementReason $reason, array $options = []): InventoryMovement
+    {
+        return DB::transaction(function () use ($sku, $newOnHand, $newReserved, $reason, $options) {
+            // Acquire SELECT ... FOR UPDATE lock on the InventoryItem row
+            /** @var InventoryItem $inventoryItem */
+            $inventoryItem = InventoryItem::query()
+                ->where('product_sku_id', $sku->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            // Idempotency check early in adjust to handle retries cleanly
+            $idempotencyKey = $options['idempotency_key'] ?? null;
+            if ($idempotencyKey !== null) {
+                /** @var InventoryMovement|null $existing */
+                $existing = InventoryMovement::query()
+                    ->where('idempotency_key', $idempotencyKey)
+                    ->first();
+
+                if ($existing !== null) {
+                    return $existing;
+                }
+            }
+
+            $currentOnHand = $inventoryItem->on_hand_quantity;
+            $currentReserved = $inventoryItem->reserved_quantity;
+
+            $onHandDelta = $newOnHand - $currentOnHand;
+            $reservedDelta = $newReserved - $currentReserved;
+
+            if ($onHandDelta === 0 && $reservedDelta === 0) {
+                throw new InvalidArgumentException('Manual adjustment must change either the on-hand or reserved balance.');
+            }
+
+            $quantity = max(abs($onHandDelta), abs($reservedDelta));
+
+            // Resolve actor early
+            $actorId = $options['created_by_user_id'] ?? Auth::id();
+            $actor = $actorId ? (User::find($actorId) ?: Auth::user()) : null;
+
+            $mergedOptions = array_merge($options, [
+                'adjusted_on_hand' => $newOnHand,
+                'adjusted_reserved' => $newReserved,
+                'created_by_user_id' => $actorId,
+                'actor' => $actor,
+            ]);
+
+            return $this->recordMovement($sku, $quantity, InventoryMovementType::MANUAL_ADJUSTMENT, InventoryDirection::ADJUST, $reason, $mergedOptions);
+        });
     }
 
     /**
@@ -166,6 +221,29 @@ class InventoryBalanceService
                 'occurred_at' => $occurredAt,
                 'notes' => $options['notes'] ?? null,
             ]);
+
+            // Dispatch AuditEvent after successful transaction commit
+            DB::afterCommit(function () use ($movement, $sku, $type, $reason, $quantity, $beforeOnHand, $newOnHand, $beforeReserved, $newReserved, $options, $createdBy) {
+                $resolvedActorId = $options['created_by_user_id'] ?? $createdBy;
+                $actor = $options['actor'] ?? ($resolvedActorId ? (User::find($resolvedActorId) ?: Auth::user()) : null);
+
+                event(new AuditEvent(
+                    'inventory.stock_moved',
+                    $actor,
+                    [
+                        'movement_public_id' => (string) $movement->id,
+                        'sku_public_id' => $sku->sku_code,
+                        'movement_type' => $type->value,
+                        'reason' => $reason->value,
+                        'quantity' => $quantity,
+                        'before_on_hand' => $beforeOnHand,
+                        'after_on_hand' => $newOnHand,
+                        'before_reserved' => $beforeReserved,
+                        'after_reserved' => $newReserved,
+                        'actor_user_id' => $resolvedActorId,
+                    ]
+                ));
+            });
 
             return $movement;
         });

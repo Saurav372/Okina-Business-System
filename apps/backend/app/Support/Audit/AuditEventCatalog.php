@@ -136,10 +136,10 @@ final class AuditEventCatalog
                 action: 'stock.moved',
                 subjectType: 'inventory_movement',
                 actorTypes: ['user', 'system', 'job'],
-                safeFields: ['movement_public_id', 'sku_public_id', 'movement_type', 'quantity', 'before_balance', 'after_balance', 'reason'],
+                safeFields: ['movement_public_id', 'sku_public_id', 'movement_type', 'quantity', 'before_on_hand', 'after_on_hand', 'before_reserved', 'after_reserved', 'reason', 'actor_user_id'],
                 maskedFields: ['private_notes', 'raw_payload', 'token'],
                 relatedTypes: ['sku', 'order', 'purchase_order'],
-                references: ['C2.1.2', 'C2.1.3', 'C2.1.5', 'C2.1.6'],
+                references: ['C2.1.2', 'C2.1.3', 'C2.1.4', 'C2.1.5', 'C2.1.6'],
                 summary: 'Stock balance changed through a tracked inventory movement.',
             ),
             new AuditEventDefinition(

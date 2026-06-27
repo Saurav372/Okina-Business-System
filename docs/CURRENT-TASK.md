@@ -8,44 +8,46 @@ C2.1 Inventory movements and stock handling
 
 ## Current Subtask
 
-C2.1.3 Stock-out
+C2.1.4 Manual adjustment
 
 ## Current Status
 
-Not Started. C2.1.2 Stock-in is fully completed and committed.
+Not Started. C2.1.3 Stock-out is fully completed, verified, and committed.
 
 ## Next Subtask
 
-C2.1.4 Manual adjustment
+C2.1.5 Order stock deduction
 
 ## Goal
 
-Expose a public `stockOut` API on `InventoryBalanceService` to decrease a SKU's stock balance and record a matching trace in the append-only `inventory_movements` table atomically, reusing the unified `recordMovement` primitive.
+Expose a public `adjust` API on `InventoryBalanceService` to manually adjust a SKU's stock balances (on-hand and/or reserved), record a matching trace in the append-only `inventory_movements` table atomically, and emit a standardized `inventory.stock_moved` audit event.
 
 ## Dependencies
 
-- C2.1.2 Stock-in (Completed)
+- C2.1.1 SKU stock balance (Completed)
+- C2.1.3 Stock-out (Completed)
+- A4.6 Audit event/interface contract (Completed)
 
 ## Required Deliverables
 
-- Implement public `stockOut(ProductSku $sku, int $quantity, InventoryMovementReason $reason, array $options = []): InventoryMovement` in `InventoryBalanceService`.
-- Enforce the invariant that `stockOut` calls delegate to `recordMovement`, ensuring every mutation creates exactly one immutable movement record.
-- Validate input quantity is positive (throws `InvalidArgumentException` if <= 0).
-- Create feature tests in `InventoryStockOutTest` verifying stock-out operations, calculations, rollback integrity, enums casting, and idempotency.
+- Implement public `adjust(ProductSku $sku, int $newOnHand, int $newReserved, InventoryMovementReason $reason, array $options = []): InventoryMovement` in `InventoryBalanceService`.
+- Validate that the adjustment changes at least one balance (on-hand or reserved). If no balance changes, throw an `InvalidArgumentException`.
+- Delegate the updates to the unified `recordMovement` primitive inside `InventoryBalanceService` under `InventoryDirection::ADJUST` direction and `InventoryMovementType::MANUAL_ADJUSTMENT` type.
+- Emit an `App\Events\AuditEvent` with the key `inventory.stock_moved`, the current authenticated user as the actor (or custom user via options), and a payload containing `movement_public_id`, `sku_public_id`, `movement_type`, `quantity`, `before_balance` (e.g. before on-hand), `after_balance` (e.g. after on-hand), and `reason` (reason code).
+- Create feature tests in `InventoryManualAdjustmentTest` verifying manual adjustments, validation rules, transactional integrity, enums casting, audit event emission, and idempotency.
 
 ## Acceptance Criteria
 
-- Stock-out decreases both `inventory_items.on_hand_quantity` and the parent `product_skus.stock_quantity` atomically.
-- All stock-out events record a matching trace in `inventory_movements` with `movement_type = 'stock_out'` and `direction = 'out'`.
-- Negative or zero stock-out quantities are rejected with an exception.
-- Standard invariants are protected (e.g. throwing an exception if on-hand goes negative, unless `allow_negative_stock` is enabled).
-- Retries with the same `idempotency_key` return the original movement safely.
+- Adjusting balances updates `inventory_items.on_hand_quantity`, `inventory_items.reserved_quantity`, and the parent `product_skus.stock_quantity` atomically.
+- The operation records a matching trace in `inventory_movements` with `movement_type = 'manual_adjustment'` and `direction = 'adjust'`.
+- The operation dispatches the `inventory.stock_moved` audit event.
+- Retries with the same `idempotency_key` return the original movement safely and do not emit duplicate audit events.
 
 ## Tests Required
 
-- Integration tests for manual stock-out.
-- Tests verifying database rollback on failure.
-- Invariant tests verifying stock-out fails if it makes on-hand quantity negative (unless negative stock is allowed).
+- Integration tests for manual adjustment (on-hand change only, reserved change only, both changes).
+- Verification of database rollback on failure.
+- Verification of audit event emission.
 - Idempotency key tests.
 
 ## Quality Requirements
@@ -57,4 +59,4 @@ Expose a public `stockOut` API on `InventoryBalanceService` to decrease a SKU's 
 ## Files Likely Affected
 
 - `app/Services/InventoryBalanceService.php`
-- `tests/Feature/InventoryStockOutTest.php` (new)
+- `tests/Feature/InventoryManualAdjustmentTest.php` (new)
