@@ -231,3 +231,66 @@ Prompt templates and usage sequence are in:
 Use `docs/AI-PROMPT-SEQUENCE.md` for task inspection, implementation, quality review, regression review, and documentation updates.
 
 Do not combine inspection and implementation for shared, sensitive, or high-complexity tasks.
+
+## Expense Report API Contract
+
+Endpoint: `GET /admin/expenses/report`
+
+Permissions required: `reports.view` or `finance.manage_expenses`
+
+### Response Structure (Default: Category Grouping)
+
+```json
+{
+  "currency": "INR",
+  "summary": {
+    "total_amount": "2000200.00",
+    "approved_amount": "150.00",
+    "pending_amount": "50.00",
+    "rejected_amount": "2000000.00",
+    "total_expenses": 3
+  },
+  "categories": [
+    {
+      "category": {
+        "public_id": "CAT-TRAVEL",
+        "name": "Travel"
+      },
+      "totals": {
+        "total_amount": "200.00",
+        "approved": "150.00",
+        "pending": "50.00",
+        "rejected": "0.00"
+      },
+      "count": 2
+    }
+  ]
+}
+```
+
+### Response Structure (Monthly Grouping: `group_by=month`)
+
+```json
+{
+  "currency": "INR",
+  "summary": {
+    "total_amount": "2000200.00",
+    "approved_amount": "150.00",
+    "pending_amount": "50.00",
+    "rejected_amount": "2000000.00",
+    "total_expenses": 3
+  },
+  "monthly": [
+    {
+      "month": "2026-06",
+      "totals": {
+        "total_amount": "2000200.00",
+        "approved": "150.00",
+        "pending": "50.00",
+        "rejected": "2000000.00"
+      },
+      "count": 3
+    }
+  ]
+}
+```
