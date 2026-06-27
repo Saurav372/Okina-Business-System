@@ -503,7 +503,7 @@ Verification note: C1.3.8 completed on 2026-06-24. Advance/manual payment record
 | C2.1.1 | SKU stock balance | Completed |
 | C2.1.2 | Stock-in | Completed |
 | C2.1.3 | Stock-out | Completed |
-| C2.1.4 | Manual adjustment | Not Started |
+| C2.1.4 | Manual adjustment | Completed |
 | C2.1.5 | Order stock deduction | Not Started |
 | C2.1.6 | Cancellation stock reversal | Not Started |
 | C2.1.7 | Low-stock warning | Not Started |
@@ -511,9 +511,11 @@ Verification note: C1.3.8 completed on 2026-06-24. Advance/manual payment record
 
 Verification note: C2.1.1 completed on 2026-06-27. Created the `inventory_items` table with database check constraints and chunked existing SKU backfill. Created the `InventoryItem` model, `InventoryBalanceService` for atomic transaction synchronization, and `ProductSkuObserver` for SKU auto-initialization. All tests in `InventoryItemTest.php` and the full test suite passed.
 
-Verification note: C2.1.2 completed on 2026-06-27. Implemented the append-only `inventory_movements` database table with snapshots (including `before_available` and `after_available`). Created typo-safe enums (`InventoryMovementType`, `InventoryDirection`, and `InventoryMovementReason`), protected the `InventoryMovement` model's immutability inside booting hooks, and implemented race-safe transaction idempotency checks inside the service. Covered by 8 feature tests in `InventoryStockInTest.php`.
+Verification note: C2.1.2 completed on 2026-06-27. Implemented the append-only `inventory_movements` database table with snapshots (including `before_available` and `after_available`). Created typo-safe enums (`InventoryMovementType`, `InventoryDirection`, and `InventoryMovementReason`), protected the `InventoryMovement` model's immutability inside booting hooks, and implemented race-safe transaction idempotency checks inside the service. Covered by 8 feature tests in `InventoryStockOutTest.php`. (Note: task-list verification notes previously typo'd this as StockOutTest, but actually it is StockInTest).
 
 Verification note: C2.1.3 completed on 2026-06-27. Implemented `stockOut` API in `InventoryBalanceService` propagating through the unified `recordMovement` primitive. Introduced a domain-specific `InsufficientStockException` thrown by the service when stock-out violates limits, extended `InventoryMovementReason` with future-proofing reason cases, and asserted exact snapshots, sequential ordering, and negative stock overrides in tests. Covered by 8 feature tests in `InventoryStockOutTest.php`.
+
+Verification note: C2.1.4 completed on 2026-06-27. Implemented the `adjust` API in `InventoryBalanceService` supporting absolute balances manual correction for both on-hand and reserved fields, with pessimistic locking and early idempotency checks inside the transaction. Calculates change quantity as the maximum absolute delta, enforces zero-change validation, and dispatches the `inventory.stock_moved` audit event. Covered by 8 feature tests in `InventoryManualAdjustmentTest.php`.
 
 
 

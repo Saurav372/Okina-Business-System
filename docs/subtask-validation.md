@@ -445,6 +445,8 @@ Verification note: C2.1.2 completed on 2026-06-27. Implemented the append-only `
 
 Verification note: C2.1.3 completed on 2026-06-27. Implemented `stockOut` API in `InventoryBalanceService` propagating through the unified `recordMovement` primitive. Introduced a domain-specific `InsufficientStockException` thrown by the service when stock-out violates limits, extended `InventoryMovementReason` with future-proofing reason cases, and asserted exact snapshots, sequential ordering, and negative stock overrides in tests. Covered by 8 feature tests in `InventoryStockOutTest.php`.
 
+Verification note: C2.1.4 completed on 2026-06-27. Implemented the `adjust` API in `InventoryBalanceService` supporting absolute balances manual correction for both on-hand and reserved fields, with pessimistic locking and early idempotency checks inside the transaction. Calculates change quantity as the maximum absolute delta, enforces zero-change validation, and dispatches the `inventory.stock_moved` audit event. Covered by 8 feature tests in `InventoryManualAdjustmentTest.php`.
+
 ## C2.2 Vendors And Purchases
 
 | Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |
