@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\InventoryDirection;
 use App\Enums\InventoryMovementReason;
 use App\Enums\InventoryMovementType;
+use App\Exceptions\InsufficientStockException;
 use App\Models\InventoryItem;
 use App\Models\InventoryMovement;
 use App\Models\ProductSku;
@@ -49,6 +50,18 @@ class InventoryBalanceService
         }
 
         return $this->recordMovement($sku, $quantity, InventoryMovementType::STOCK_IN, InventoryDirection::IN, $reason, $options);
+    }
+
+    /**
+     * Record a stock-out event.
+     */
+    public function stockOut(ProductSku $sku, int $quantity, InventoryMovementReason $reason, array $options = []): InventoryMovement
+    {
+        if ($quantity <= 0) {
+            throw new InvalidArgumentException('Stock-out quantity must be positive.');
+        }
+
+        return $this->recordMovement($sku, $quantity, InventoryMovementType::STOCK_OUT, InventoryDirection::OUT, $reason, $options);
     }
 
     /**
@@ -97,6 +110,10 @@ class InventoryBalanceService
                 $newOnHand = $beforeOnHand + $quantity;
                 $newReserved = $beforeReserved;
             } elseif ($direction === InventoryDirection::OUT) {
+                // Business rule validation: prevent negative on-hand unless explicitly allowed
+                if ($beforeOnHand - $quantity < 0 && ! $inventoryItem->allow_negative_stock) {
+                    throw new InsufficientStockException($sku, $quantity, $beforeOnHand);
+                }
                 $newOnHand = $beforeOnHand - $quantity;
                 $newReserved = $beforeReserved;
             } elseif ($direction === InventoryDirection::RESERVE) {

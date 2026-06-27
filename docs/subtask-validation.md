@@ -443,6 +443,8 @@ Verification note: C2.1.1 completed on 2026-06-27. Created the `inventory_items`
 
 Verification note: C2.1.2 completed on 2026-06-27. Implemented the append-only `inventory_movements` database table with snapshots (including `before_available` and `after_available`). Created typo-safe enums (`InventoryMovementType`, `InventoryDirection`, and `InventoryMovementReason`), protected the `InventoryMovement` model's immutability inside booting hooks, and implemented race-safe transaction idempotency checks inside the service. Covered by 8 feature tests in `InventoryStockInTest.php`.
 
+Verification note: C2.1.3 completed on 2026-06-27. Implemented `stockOut` API in `InventoryBalanceService` propagating through the unified `recordMovement` primitive. Introduced a domain-specific `InsufficientStockException` thrown by the service when stock-out violates limits, extended `InventoryMovementReason` with future-proofing reason cases, and asserted exact snapshots, sequential ordering, and negative stock overrides in tests. Covered by 8 feature tests in `InventoryStockOutTest.php`.
+
 ## C2.2 Vendors And Purchases
 
 | Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |
