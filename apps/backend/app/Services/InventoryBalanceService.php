@@ -226,7 +226,7 @@ class InventoryBalanceService
             ]);
 
             // Dispatch AuditEvent after successful transaction commit
-            DB::afterCommit(function () use ($movement, $sku, $type, $reason, $quantity, $beforeOnHand, $newOnHand, $beforeReserved, $newReserved, $options, $createdBy) {
+            DB::afterCommit(function () use ($movement, $sku, $type, $direction, $reason, $quantity, $beforeOnHand, $newOnHand, $beforeReserved, $newReserved, $options, $createdBy) {
                 $resolvedActorId = $options['created_by_user_id'] ?? $createdBy;
                 $actor = $options['actor'] ?? ($resolvedActorId ? (User::find($resolvedActorId) ?: Auth::user()) : null);
 
@@ -237,6 +237,7 @@ class InventoryBalanceService
                         'movement_public_id' => (string) $movement->id,
                         'sku_public_id' => $sku->sku_code,
                         'movement_type' => $type->value,
+                        'direction' => $direction->value,
                         'reason' => $reason->value,
                         'quantity' => $quantity,
                         'before_on_hand' => $beforeOnHand,
@@ -319,6 +320,98 @@ class InventoryBalanceService
                     InventoryMovementType::ORDER_DEDUCTION,
                     InventoryDirection::OUT,
                     InventoryMovementReason::ORDER_FULFILLMENT,
+                    array_merge($options, [
+                        'order_id' => $order->id,
+                        'order_item_id' => $item->id,
+                    ])
+                );
+            }
+
+            return $movements;
+        }, 3);
+    }
+
+    /**
+     * Reverse stock deduction for an entire order's items atomically.
+     *
+     * @return array<InventoryMovement>
+     *
+     * @throws InventoryItemNotFoundException
+     * @throws InsufficientStockException
+     */
+    public function reverseOrderStock(Order $order, array $options = []): array
+    {
+        if ($order->items->isEmpty()) {
+            return [];
+        }
+
+        // Eager load relationships before transaction to reduce query overhead
+        $order->loadMissing(['items.sku.inventoryItem']);
+
+        // Sort items by inventory item ID to ensure stable lock ordering (deadlock prevention)
+        $sortedItems = $order->items->sortBy(function ($item) {
+            return $item->sku?->inventoryItem?->id ?? 0;
+        });
+
+        $lockedInventoryItems = [];
+
+        return DB::transaction(function () use ($sortedItems, $options, &$lockedInventoryItems, $order) {
+            $movements = [];
+
+            foreach ($sortedItems as $item) {
+                $sku = $item->sku;
+                if (! $sku) {
+                    throw new \RuntimeException('OrderItem is missing a valid product SKU relationship.');
+                }
+
+                // Lock row using fresh query to guarantee lock is acquired on the DB row
+                if (! isset($lockedInventoryItems[$sku->id])) {
+                    try {
+                        $inventoryItem = InventoryItem::query()
+                            ->where('product_sku_id', $sku->id)
+                            ->lockForUpdate()
+                            ->firstOrFail();
+
+                        $lockedInventoryItems[$sku->id] = $inventoryItem;
+                    } catch (ModelNotFoundException $e) {
+                        throw new InventoryItemNotFoundException($sku);
+                    }
+                }
+
+                // Locate the original order_deduction movement
+                /** @var InventoryMovement|null $deduction */
+                $deduction = InventoryMovement::query()
+                    ->where('movement_type', InventoryMovementType::ORDER_DEDUCTION)
+                    ->where('order_id', $order->id)
+                    ->where('order_item_id', $item->id)
+                    ->first();
+
+                // If no deduction happened, there is nothing to reverse (no-op)
+                if (! $deduction) {
+                    continue;
+                }
+
+                // Check duplicate cancellation_reversal AFTER lock is acquired
+                /** @var InventoryMovement|null $existingReversal */
+                $existingReversal = InventoryMovement::query()
+                    ->where('movement_type', InventoryMovementType::CANCELLATION_REVERSAL)
+                    ->where('order_id', $order->id)
+                    ->where('order_item_id', $item->id)
+                    ->first();
+
+                if ($existingReversal !== null) {
+                    $movements[] = $existingReversal;
+
+                    continue;
+                }
+
+                // Record cancellation reversal (direction IN, type CANCELLATION_REVERSAL, reason ORDER_CANCELLATION)
+                $movements[] = $this->recordMovement(
+                    $sku,
+                    $deduction->quantity,
+                    InventoryMovementType::CANCELLATION_REVERSAL,
+                    InventoryDirection::IN,
+                    InventoryMovementReason::ORDER_CANCELLATION,
                     array_merge($options, [
                         'order_id' => $order->id,
                         'order_item_id' => $item->id,

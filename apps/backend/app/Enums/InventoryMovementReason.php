@@ -14,4 +14,5 @@ enum InventoryMovementReason: string
     case EXPIRED_STOCK = 'expired_stock';
     case THEFT = 'theft';
     case WAREHOUSE_ADJUSTMENT = 'warehouse_adjustment';
+    case ORDER_CANCELLATION = 'order_cancellation';
 }
