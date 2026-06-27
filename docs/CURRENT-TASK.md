@@ -8,19 +8,19 @@ C2.1 Inventory movements and stock handling
 
 ## Current Subtask
 
-C2.1.6 Cancellation stock reversal
+C2.1.7 Low-stock warning
 
 ## Current Status
 
-Not Started. C2.1.5 Order stock deduction is fully completed, verified, and committed.
+Not Started. C2.1.6 Cancellation stock reversal is fully completed, verified, and committed.
 
 ## Next Subtask
 
-C2.1.7 Low-stock warning
+C2.1.8 Movement history and audit
 
 ## Goal
 
-Implement cancellation stock reversal to restore previously deducted stock back to the SKU's available balance when an order is cancelled. Reversal creates a corresponding `cancellation_reversal` trace (direction `in`) in `inventory_movements` atomically, prevents double reversal using order and item identity checks, and emits standard audit events.
+Implement low-stock warning trigger during inventory movements. When a movement causes a SKU's available quantity to fall to or below its resolved low-stock threshold, a `LowStockDetected` event is dispatched and a warning is logged in the system.
 
 ## Dependencies
 

@@ -6,6 +6,7 @@ use App\Enums\InventoryDirection;
 use App\Enums\InventoryMovementReason;
 use App\Enums\InventoryMovementType;
 use App\Events\AuditEvent;
+use App\Events\LowStockDetected;
 use App\Exceptions\InsufficientStockException;
 use App\Exceptions\InventoryItemNotFoundException;
 use App\Models\InventoryItem;
@@ -16,6 +17,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 
 class InventoryBalanceService
@@ -225,8 +227,14 @@ class InventoryBalanceService
                 'notes' => $options['notes'] ?? null,
             ]);
 
+            // Determine if the threshold is crossed
+            $threshold = $inventoryItem->resolvedLowStockThreshold();
+            $isLowStockCrossed = $threshold !== null
+                && $beforeAvailable > $threshold
+                && $inventoryItem->available_quantity <= $threshold;
+
             // Dispatch AuditEvent after successful transaction commit
-            DB::afterCommit(function () use ($movement, $sku, $type, $direction, $reason, $quantity, $beforeOnHand, $newOnHand, $beforeReserved, $newReserved, $options, $createdBy) {
+            DB::afterCommit(function () use ($movement, $sku, $type, $direction, $reason, $quantity, $beforeOnHand, $newOnHand, $beforeReserved, $newReserved, $options, $createdBy, $isLowStockCrossed, $threshold, $inventoryItem) {
                 $resolvedActorId = $options['created_by_user_id'] ?? $createdBy;
                 $actor = $options['actor'] ?? ($resolvedActorId ? (User::find($resolvedActorId) ?: Auth::user()) : null);
 
@@ -247,6 +255,19 @@ class InventoryBalanceService
                         'actor_user_id' => $resolvedActorId,
                     ]
                 ));
+
+                if ($isLowStockCrossed) {
+                    event(new LowStockDetected($sku, $inventoryItem->available_quantity, $threshold, $movement));
+
+                    Log::warning('Low stock detected.', [
+                        'sku_id' => $sku->id,
+                        'sku_code' => $sku->sku_code,
+                        'available_quantity' => $inventoryItem->available_quantity,
+                        'threshold' => $threshold,
+                        'movement_id' => $movement->id,
+                        'movement_public_id' => (string) $movement->id,
+                    ]);
+                }
             });
 
             return $movement;

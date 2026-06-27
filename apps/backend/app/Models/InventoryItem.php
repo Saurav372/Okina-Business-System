@@ -54,6 +54,22 @@ class InventoryItem extends Model
     }
 
     /**
+     * Alias for productSku.
+     */
+    public function sku(): BelongsTo
+    {
+        return $this->productSku();
+    }
+
+    /**
+     * Resolve the low stock warning threshold.
+     */
+    public function resolvedLowStockThreshold(): ?int
+    {
+        return $this->low_stock_threshold ?? $this->productSku?->low_stock_threshold;
+    }
+
+    /**
      * Recalculate and set the derived available quantity.
      */
     public function recalculateAvailable(): void
