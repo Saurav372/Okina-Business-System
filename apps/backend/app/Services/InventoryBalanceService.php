@@ -7,10 +7,13 @@ use App\Enums\InventoryMovementReason;
 use App\Enums\InventoryMovementType;
 use App\Events\AuditEvent;
 use App\Exceptions\InsufficientStockException;
+use App\Exceptions\InventoryItemNotFoundException;
 use App\Models\InventoryItem;
 use App\Models\InventoryMovement;
+use App\Models\Order;
 use App\Models\ProductSku;
 use App\Models\User;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -247,5 +250,83 @@ class InventoryBalanceService
 
             return $movement;
         });
+    }
+
+    /**
+     * Deduct stock for an entire order's items atomically.
+     *
+     * @return array<InventoryMovement>
+     *
+     * @throws InventoryItemNotFoundException
+     * @throws InsufficientStockException
+     */
+    public function deductOrderStock(Order $order, array $options = []): array
+    {
+        if ($order->items->isEmpty()) {
+            return [];
+        }
+
+        // Eager load relationships before transaction to reduce query overhead
+        $order->loadMissing(['items.sku.inventoryItem']);
+
+        // Sort items by inventory item ID to ensure stable lock ordering (deadlock prevention)
+        $sortedItems = $order->items->sortBy(function ($item) {
+            return $item->sku?->inventoryItem?->id ?? 0;
+        });
+
+        $lockedSkuIds = [];
+
+        return DB::transaction(function () use ($sortedItems, $options, &$lockedSkuIds, $order) {
+            $movements = [];
+
+            foreach ($sortedItems as $item) {
+                $sku = $item->sku;
+                if (! $sku) {
+                    throw new \RuntimeException('OrderItem is missing a valid product SKU relationship.');
+                }
+
+                // Lock row using fresh query to guarantee lock is acquired on the DB row
+                if (! isset($lockedSkuIds[$sku->id])) {
+                    try {
+                        $inventoryItem = InventoryItem::query()
+                            ->where('product_sku_id', $sku->id)
+                            ->lockForUpdate()
+                            ->firstOrFail();
+
+                        $lockedSkuIds[$sku->id] = true;
+                    } catch (ModelNotFoundException $e) {
+                        throw new InventoryItemNotFoundException($sku);
+                    }
+                }
+
+                // Check duplicate movement AFTER lock is acquired
+                /** @var InventoryMovement|null $existing */
+                $existing = InventoryMovement::query()
+                    ->where('movement_type', InventoryMovementType::ORDER_DEDUCTION)
+                    ->where('order_item_id', $item->id)
+                    ->first();
+
+                if ($existing !== null) {
+                    $movements[] = $existing;
+
+                    continue;
+                }
+
+                // Record deduction movement (direction OUT, type ORDER_DEDUCTION)
+                $movements[] = $this->recordMovement(
+                    $sku,
+                    $item->quantity,
+                    InventoryMovementType::ORDER_DEDUCTION,
+                    InventoryDirection::OUT,
+                    InventoryMovementReason::ORDER_FULFILLMENT,
+                    array_merge($options, [
+                        'order_id' => $order->id,
+                        'order_item_id' => $item->id,
+                    ])
+                );
+            }
+
+            return $movements;
+        }, 3);
     }
 }

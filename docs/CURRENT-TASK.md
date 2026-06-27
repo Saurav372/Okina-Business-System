@@ -8,47 +8,55 @@ C2.1 Inventory movements and stock handling
 
 ## Current Subtask
 
-C2.1.4 Manual adjustment
+C2.1.5 Order stock deduction
 
 ## Current Status
 
-Not Started. C2.1.3 Stock-out is fully completed, verified, and committed.
+Not Started. C2.1.4 Manual adjustment is fully completed, verified, and committed.
 
 ## Next Subtask
 
-C2.1.5 Order stock deduction
+C2.1.6 Cancellation stock reversal
 
 ## Goal
 
-Expose a public `adjust` API on `InventoryBalanceService` to manually adjust a SKU's stock balances (on-hand and/or reserved), record a matching trace in the append-only `inventory_movements` table atomically, and emit a standardized `inventory.stock_moved` audit event.
+Implement order stock deduction to decrease stock balances of SKUs in an order when staff executes the deduction. Record a matching `order_deduction` trace (direction `out`) for each order item in `inventory_movements` atomically, prevent duplicate/double deduction using order and item identity checks, and emit standard audit events.
 
 ## Dependencies
 
 - C2.1.1 SKU stock balance (Completed)
-- C2.1.3 Stock-out (Completed)
-- A4.6 Audit event/interface contract (Completed)
+- C2.1.4 Manual adjustment (Completed)
+- C1.1 Basic admin order and payment view (Completed)
 
 ## Required Deliverables
 
-- Implement public `adjust(ProductSku $sku, int $newOnHand, int $newReserved, InventoryMovementReason $reason, array $options = []): InventoryMovement` in `InventoryBalanceService`.
-- Validate that the adjustment changes at least one balance (on-hand or reserved). If no balance changes, throw an `InvalidArgumentException`.
-- Delegate the updates to the unified `recordMovement` primitive inside `InventoryBalanceService` under `InventoryDirection::ADJUST` direction and `InventoryMovementType::MANUAL_ADJUSTMENT` type.
-- Emit an `App\Events\AuditEvent` with the key `inventory.stock_moved`, the current authenticated user as the actor (or custom user via options), and a payload containing `movement_public_id`, `sku_public_id`, `movement_type`, `quantity`, `before_balance` (e.g. before on-hand), `after_balance` (e.g. after on-hand), and `reason` (reason code).
-- Create feature tests in `InventoryManualAdjustmentTest` verifying manual adjustments, validation rules, transactional integrity, enums casting, audit event emission, and idempotency.
+- Implement public `deductOrderStock(Order $order, array $options = []): array` in `InventoryBalanceService`.
+- For each item in the order, acquire a pessimistic lock (`SELECT ... FOR UPDATE`) on the corresponding `InventoryItem` row inside a database transaction.
+- Query `inventory_movements` to check if stock has already been deducted for this specific `order_item_id` (using type = `order_deduction`) to ensure idempotency and prevent double deductions.
+- Call the internal `recordMovement` primitive for each undeducted order item:
+  - `type` = `InventoryMovementType::ORDER_DEDUCTION`
+  - `direction` = `InventoryDirection::OUT`
+  - `quantity` = order item quantity
+  - `options` = merge options with `['order_id' => $order->id, 'order_item_id' => $item->id]`
+- Ensure database transaction rolls back completely if any order item fails deduction (e.g., due to insufficient stock, unless negative stock is enabled).
+- Dispatch the standard `inventory.stock_moved` audit event for each successfully recorded deduction movement.
+- Create feature tests in `InventoryOrderDeductionTest` verifying order stock deduction, error cases, transactional integrity, idempotency, and audit event emission.
 
 ## Acceptance Criteria
 
-- Adjusting balances updates `inventory_items.on_hand_quantity`, `inventory_items.reserved_quantity`, and the parent `product_skus.stock_quantity` atomically.
-- The operation records a matching trace in `inventory_movements` with `movement_type = 'manual_adjustment'` and `direction = 'adjust'`.
-- The operation dispatches the `inventory.stock_moved` audit event.
-- Retries with the same `idempotency_key` return the original movement safely and do not emit duplicate audit events.
+- Order stock deduction decreases `inventory_items.on_hand_quantity` and parent `product_skus.stock_quantity` for all order items atomically.
+- Each order item deduction records a matching trace in `inventory_movements` with `movement_type = 'order_deduction'` and `direction = 'out'`.
+- Double execution on the same order is prevented; repeated calls return the original movements without throwing errors or creating duplicate rows.
+- Standard invariants are protected (throws `InsufficientStockException` if stock goes below zero, unless `allow_negative_stock` is enabled).
+- Rolled back atomically if any item fails to deduct.
+- Dispatches the `inventory.stock_moved` audit event for each item.
 
 ## Tests Required
 
-- Integration tests for manual adjustment (on-hand change only, reserved change only, both changes).
-- Verification of database rollback on failure.
-- Verification of audit event emission.
-- Idempotency key tests.
+- Integration tests verifying successful stock deduction for all items in a website or sales order.
+- Invariant tests verifying stock deduction fails and rolls back completely if any single item's balance is insufficient.
+- Idempotency tests verifying repeat executions do not duplicate movements or emit extra audit events.
+- Audit event validation.
 
 ## Quality Requirements
 
@@ -59,4 +67,4 @@ Expose a public `adjust` API on `InventoryBalanceService` to manually adjust a S
 ## Files Likely Affected
 
 - `app/Services/InventoryBalanceService.php`
-- `tests/Feature/InventoryManualAdjustmentTest.php` (new)
+- `tests/Feature/InventoryOrderDeductionTest.php` (new)
