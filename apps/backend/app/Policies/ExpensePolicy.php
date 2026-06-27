@@ -70,4 +70,12 @@ class ExpensePolicy
     {
         return $user->hasPermissionTo('finance.approve_expenses');
     }
+
+    /**
+     * Determine whether the user can view expense reports.
+     */
+    public function viewExpenseReports(User $user): bool
+    {
+        return $user->hasPermissionTo('reports.view') || $user->hasPermissionTo('finance.manage_expenses');
+    }
 }

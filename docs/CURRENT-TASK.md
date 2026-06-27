@@ -8,46 +8,46 @@ C5.3 Expense management
 
 ## Current Subtask
 
-C5.3.4 Expense permissions
+C5.3.5 Expense reporting data
 
 ## Current Status
 
-Not Started. C5.3.3 Expense approval rules is fully completed, verified, and committed.
+Not Started. C5.3.4 Expense permissions is fully completed, verified, and committed.
 
 ## Next Subtask
 
-C5.3.5 Expense reporting data
+C5.4.1 Report scopes, date ranges, and authorization policy
 
 ## Goal
 
-Ensure that restricted users cannot see protected expense data. Enforce fine-grained permission boundaries so that only authorized roles can read, create, update, delete, or transition expenses.
+Ensure that expense entries are properly aggregated and available for financial reports. Expose optimized query scopes or a service layer that allows retrieval of expense totals grouped by category, status, and date range, enforcing correct role-based permission boundaries.
 
 ## Dependencies
 
-- A2.3 Role and permission model (Completed)
+- C5.3.1 Expense categories (Completed)
 - C5.3.2 Expense entry (Completed)
 - C5.3.3 Expense approval rules (Completed)
+- C5.3.4 Expense permissions (Completed)
 
 ## Required Deliverables
 
-- Audit and harden the existing `ExpensePolicy` to ensure all actions (viewAny, view, create, update, delete, submit, approve, reject) are correctly gated.
-- Verify that unauthorized staff roles receive `403` on all expense endpoints.
-- Confirm that the `finance.manage_expenses` and `finance.approve_expenses` permission assignments across all roles in `AccessControlSeeder.php` are correct and complete.
-- Add or expand tests asserting that each staff role's access boundaries are exactly right (no over-permission, no under-permission).
+- Implement query scopes or query methods on the `Expense` model/service to fetch expense summaries (e.g., total amount by category, total amount by status, monthly/daily trends within a date range).
+- Expose these summaries through an authorized endpoint or admin reporting catalog helper, ensuring only users with `finance.view_reports` or `finance.manage_expenses` (or relevant roles like Super Admin, Admin, and Finance Staff) can access them.
+- Add or expand tests asserting that the reporting data aggregates correctly (calculating correct decimal sums, respecting date ranges, and category filters).
+- Verify that N+1 queries are prevented when loading categories for the report grouping.
 
 ## Acceptance Criteria
 
-- Only users with `finance.manage_expenses` can: list, show, create, update, delete, and submit expenses.
-- Only users with `finance.approve_expenses` can: approve and reject expenses.
-- All other roles (Sales Staff, Inventory Staff, Production Staff, etc.) receive `403` on all expense endpoints.
-- No expense data leaks to unauthorized users (existence leakage is prevented — no `404` vs `403` discrepancy on expense lookups by public_id).
-- Permission grants in `AccessControlSeeder.php` match exactly the roles that should have access.
+- Reporting queries must allow filtering by `start_date`, `end_date`, `status`, and `expense_category_id`.
+- The aggregate response must return correct sums rounded properly (standard 2 decimal places).
+- Unauthorized roles (Sales, Inventory, Production Staff) must be blocked from accessing expense report queries/endpoints (returning `403`).
+- Eager loading of categories is enforced to prevent N+1 query regressions during aggregation.
 
 ## Tests Required
 
-- Feature tests for each staff role asserting they can or cannot access each expense endpoint.
-- Tests covering: `GET /admin/expenses`, `GET /admin/expenses/{id}`, `POST /admin/expenses`, `PUT /admin/expenses/{id}`, `DELETE /admin/expenses/{id}`, `POST /admin/expenses/{id}/submit`, `POST /admin/expenses/{id}/approve`, `POST /admin/expenses/{id}/reject`.
-- Tests confirming that unauthorized users get `403` and cannot distinguish between "not found" and "forbidden" for valid public IDs.
+- Integration/feature tests for expense reporting queries/endpoints.
+- Tests validating calculation accuracy of aggregated amounts under various filters (date range, status, categories).
+- Permission matrix tests verifying only authorized roles can retrieve the report aggregates.
 
 ## Quality Requirements
 
@@ -57,11 +57,11 @@ Ensure that restricted users cannot see protected expense data. Enforce fine-gra
 
 ## Files Likely Affected
 
+- `app/Models/Expense.php`
 - `app/Policies/ExpensePolicy.php`
-- `database/seeders/AccessControlSeeder.php`
-- `tests/Feature/ExpenseTest.php`
+- `tests/Feature/ExpenseReportingTest.php` (new or expanded)
 
 ## Tasks Not Included
 
-- Expense reporting data (handled in C5.3.5).
-- Audit log integration (handled in C6.1).
+- Rendering full graphical charts (handled in the frontend / UI tasks).
+- Broad financial reconciliation reports (handled in C5.4).

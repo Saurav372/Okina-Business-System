@@ -519,6 +519,8 @@ Verification note: C5.3.3 completed on 2026-06-26. Implemented state transition 
 
 Verification note: C5.3.4 completed on 2026-06-26. Audited and confirmed all eight expense endpoint policy gates (viewAny, view, create, update, delete, submit, approve, reject). Extended ExpenseTest.php with comprehensive role-by-role permission matrix tests covering Admin, Finance Staff, Sales Staff, Inventory Staff, and Production Staff. Added existence leakage prevention tests verifying that unauthorized users always receive 403 (not 404) on valid public IDs. All 32 ExpenseTest tests and all 511 global backend tests passed. Pint and PHPStan analyses are fully clean.
 
+Verification note: C5.3.5 completed on 2026-06-27. Implemented `ExpenseReportingService` supporting category and chronological monthly grouping (SQLite/MySQL query compatible). Validated filters (dates, status, categories) using a dedicated `ExpenseReportRequest` form request. Policy checks enforce role permissions via `viewExpenseReports`. Covered by 6 feature tests in `ExpenseReportingTest.php`. All tests passed, Pint formatted, and PHPStan clean.
+
 
 ## C6.1 Immutable Audit Log
 

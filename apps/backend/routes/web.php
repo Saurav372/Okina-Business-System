@@ -93,6 +93,7 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     ]);
 
     // Expenses admin routes
+    Route::get('/expenses/report', [ExpenseController::class, 'reportSummary'])->name('admin.expenses.report');
     Route::apiResource('/expenses', ExpenseController::class)->names([
         'index' => 'admin.expenses.index',
         'store' => 'admin.expenses.store',

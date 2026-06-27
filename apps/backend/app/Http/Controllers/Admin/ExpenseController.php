@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ApproveExpenseRequest;
+use App\Http\Requests\Admin\ExpenseReportRequest;
 use App\Http\Requests\Admin\RejectExpenseRequest;
 use App\Http\Requests\Admin\StoreExpenseRequest;
 use App\Http\Requests\Admin\SubmitExpenseRequest;
@@ -11,7 +12,9 @@ use App\Http\Requests\Admin\UpdateExpenseRequest;
 use App\Http\Resources\ExpenseResource;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
+use App\Services\ExpenseReportingService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
@@ -224,6 +227,18 @@ class ExpenseController extends Controller
 
             return new ExpenseResource($expense);
         });
+    }
+
+    /**
+     * Display a summary report of expenses.
+     */
+    public function reportSummary(ExpenseReportRequest $request, ExpenseReportingService $reportingService): JsonResponse
+    {
+        $this->authorize('viewExpenseReports', Expense::class);
+
+        $summary = $reportingService->generateSummary($request->validated());
+
+        return response()->json($summary);
     }
 
     /**
