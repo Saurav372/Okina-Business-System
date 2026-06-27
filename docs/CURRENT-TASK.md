@@ -8,45 +8,49 @@ C2.1 Inventory movements and stock handling
 
 ## Current Subtask
 
-C2.1.1 SKU stock balance
+C2.1.2 Stock-in
 
 ## Current Status
 
-Not Started. Parent task C5.3 Expense management is fully completed and committed.
+Not Started. C2.1.1 SKU stock balance is fully completed and committed.
 
 ## Next Subtask
 
-C2.1.2 Stock-in
+C2.1.3 Stock-out
 
 ## Goal
 
-Define and implement the `inventory_items` table to track SKU-level stock balances (`on_hand_quantity`, `reserved_quantity`, `available_quantity`). Expose these stock balance metrics per SKU, ensuring they are automatically initialized for new and existing SKUs.
+Create the append-only `inventory_movements` table. Implement stock-in operations where manual adjustments or purchase receipts create traceable movement records and increase the SKU's stock balance atomically.
 
 ## Dependencies
 
-- A3.2.4 SKUs (Completed)
+- C2.1.1 SKU stock balance (Completed)
 
 ## Required Deliverables
 
-- Create a database migration for the `inventory_items` table as defined in the schema plan.
-- Create the `InventoryItem` Eloquent model and define relationships with `ProductSku`.
-- Implement dynamic initialization (e.g., via a model observer or booting sequence) to ensure every `ProductSku` always has a corresponding `InventoryItem` row with default `0` quantities.
-- Expose the stock balance metrics (`on_hand_quantity`, `reserved_quantity`, `available_quantity`) in SKU details and resources, ensuring no internal numeric IDs leak.
-- Add unit and feature tests verifying that inventory item records are created alongside SKUs, and that balances are correctly queried.
+- Create database migration for the `inventory_movements` table as defined in the schema plan.
+- Create the `InventoryMovement` Eloquent model and define relationships.
+- Add stock-in capability to `InventoryBalanceService` (e.g. `stockIn(ProductSku $sku, int $quantity, array $meta = []): void`).
+- Ensure the service atomically:
+  - Validates input quantity is positive.
+  - Locks and updates the SKU's `InventoryItem` balance (increases `on_hand_quantity`).
+  - Records a detailed `InventoryMovement` with `movement_type = 'stock_in'`, `direction = 'in'`, snapshots of before/after quantities, reason/meta, and optional idempotency keys.
+  - Updates the cached `product_skus.stock_quantity` to match the new `available_quantity` within a DB transaction.
+- Create feature tests verifying stock-in behavior, calculations, rollback integrity, and unique idempotency keys.
 
 ## Acceptance Criteria
 
-- The `inventory_items` table must contain: `id`, `product_sku_id` (unique), `on_hand_quantity` (default 0), `reserved_quantity` (default 0), and `available_quantity` (default 0).
-- An `InventoryItem` record must be automatically created when a new `ProductSku` is created.
-- Existing `ProductSku` records in the database must be safely backfilled during migration.
-- Stock metrics are exposed in SKU resources, keeping database keys hidden.
-- Test coverage must assert automated record creation on SKU inserts and retrieval of balances.
+- `inventory_movements` table is created and properly indexed.
+- Stock-in updates both `inventory_items` and `product_skus` atomically.
+- All stock changes append a matching trace record to `inventory_movements`.
+- Negative or zero stock-in quantities are rejected with an exception.
+- Duplicate operations using the same idempotency key are rejected or ignored.
 
 ## Tests Required
 
-- Model tests verifying `ProductSku` to `InventoryItem` relationships.
-- Observer/creation tests verifying that inserting a `ProductSku` automatically creates its `InventoryItem` record.
-- Integration tests ensuring that query responses containing SKUs include the correct stock balances.
+- Integration tests for manual stock-in.
+- Tests verifying database rollback on failure.
+- Idempotency key tests to prevent duplicate stock-ins.
 
 ## Quality Requirements
 
@@ -56,12 +60,7 @@ Define and implement the `inventory_items` table to track SKU-level stock balanc
 
 ## Files Likely Affected
 
-- `app/Models/ProductSku.php`
-- `app/Models/InventoryItem.php` (new)
-- `database/migrations/[timestamp]_create_inventory_items_table.php` (new)
-- `tests/Feature/InventoryBalanceTest.php` (new)
-
-## Tasks Not Included
-
-- Stock movements record handling (handled in C2.1.2 / C2.1.3).
-- Order reservations and automatic stock deductions (handled in C2.1.5).
+- `app/Models/InventoryMovement.php` (new)
+- `database/migrations/[timestamp]_create_inventory_movements_table.php` (new)
+- `app/Services/InventoryBalanceService.php`
+- `tests/Feature/InventoryStockInTest.php` (new)
