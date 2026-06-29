@@ -2,14 +2,19 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\InventoryMovementReason;
+use App\Enums\VendorOrderStatus;
 use App\Events\AuditEvent;
 use App\Exceptions\PurchaseOrderImmutableException;
+use App\Exceptions\PurchaseOrderNotReceivableException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\PurchaseOrder\ReceiveVendorOrderItemStockRequest;
 use App\Http\Requests\PurchaseOrder\StoreVendorOrderItemRequest;
 use App\Http\Requests\PurchaseOrder\UpdateVendorOrderItemRequest;
 use App\Models\ProductSku;
 use App\Models\VendorOrder;
 use App\Models\VendorOrderItem;
+use App\Services\InventoryBalanceService;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
@@ -145,5 +150,101 @@ class VendorOrderItemController extends Controller
         });
 
         return response()->json(['message' => 'Purchase order item deleted successfully.']);
+    }
+
+    /**
+     * Receive stock for the specified purchase order item.
+     */
+    public function receive(ReceiveVendorOrderItemStockRequest $request, VendorOrder $purchaseOrder, VendorOrderItem $item): JsonResponse
+    {
+        Gate::authorize('update', $item);
+
+        $user = Auth::user();
+        $quantity = (int) $request->input('quantity');
+
+        try {
+            DB::transaction(function () use ($purchaseOrder, $item, $quantity, $user) {
+                // Lock parent and all items
+                $purchaseOrder = VendorOrder::where('id', $purchaseOrder->id)->lockForUpdate()->firstOrFail();
+                $items = $purchaseOrder->items()->lockForUpdate()->get();
+
+                // Verify route-model relationship
+                if ($item->vendor_order_id !== $purchaseOrder->id) {
+                    abort(404, 'Line item not found on this purchase order.');
+                }
+
+                // Verify PO status receivable state
+                if ($purchaseOrder->status !== VendorOrderStatus::ORDERED && $purchaseOrder->status !== VendorOrderStatus::PARTIALLY_RECEIVED) {
+                    throw new PurchaseOrderNotReceivableException(
+                        "Cannot receive stock on a purchase order that is in {$purchaseOrder->status->value} status."
+                    );
+                }
+
+                // Defensive lock check
+                $lockedItem = $items->firstWhere('id', $item->id);
+                if (! $lockedItem) {
+                    abort(404, 'Line item not found on this purchase order.');
+                }
+
+                // Validate remaining quantity
+                $remaining = $lockedItem->quantity_ordered - $lockedItem->quantity_received;
+                if ($quantity > $remaining) {
+                    throw ValidationException::withMessages([
+                        'quantity' => 'The received quantity cannot exceed the remaining ordered quantity.',
+                    ]);
+                }
+
+                // Mutate item quantity in memory
+                $lockedItem->quantity_received += $quantity;
+
+                // Record stock-in
+                $inventoryBalanceService = resolve(InventoryBalanceService::class);
+                $inventoryBalanceService->stockIn(
+                    $lockedItem->productSku,
+                    $quantity,
+                    InventoryMovementReason::PURCHASE_RECEIPT,
+                    [
+                        'vendor_order_id' => $purchaseOrder->id,
+                        'vendor_order_item_id' => $lockedItem->id,
+                        'created_by_user_id' => $user->id,
+                    ]
+                );
+
+                // Save item
+                $lockedItem->save();
+
+                // Recalculate parent status using in-memory collection
+                $allFullyReceived = $items->every(fn ($i) => $i->quantity_received === $i->quantity_ordered);
+                $targetStatus = $allFullyReceived ? VendorOrderStatus::RECEIVED : VendorOrderStatus::PARTIALLY_RECEIVED;
+
+                $purchaseOrder->transitionStatusTo($targetStatus);
+                $purchaseOrder->save();
+
+                // Synchronize persisted state before serializing the audit payload
+                $lockedItem->refresh();
+                $purchaseOrder->refresh();
+
+                DB::afterCommit(function () use ($purchaseOrder, $lockedItem, $quantity, $user) {
+                    event(new AuditEvent('purchase_orders.items.received', $user, [
+                        'vendor_order_id' => $purchaseOrder->id,
+                        'vendor_order_item_id' => $lockedItem->id,
+                        'received_quantity' => $quantity,
+                        'total_quantity_received' => $lockedItem->quantity_received,
+                        'remaining_quantity' => $lockedItem->quantity_ordered - $lockedItem->quantity_received,
+                        'actor_id' => $user->id,
+                    ]));
+                });
+            });
+        } catch (PurchaseOrderNotReceivableException $e) {
+            throw ValidationException::withMessages([
+                'quantity' => $e->getMessage(),
+            ]);
+        }
+
+        // Return structured response
+        return response()->json([
+            'item' => $item->refresh(),
+            'purchase_order' => $purchaseOrder->refresh(),
+        ]);
     }
 }

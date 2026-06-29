@@ -139,4 +139,6 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
         'update' => 'admin.purchase_orders.items.update',
         'destroy' => 'admin.purchase_orders.items.destroy',
     ]);
+    Route::post('/purchase-orders/{purchase_order}/items/{item}/receive', [VendorOrderItemController::class, 'receive'])
+        ->name('admin.purchase_orders.items.receive');
 });
