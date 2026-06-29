@@ -14,6 +14,7 @@ use App\Models\InventoryMovement;
 use App\Models\Order;
 use App\Models\ProductSku;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -524,7 +525,7 @@ class InventoryBalanceService
         }
         if (! empty($filters['occurred_to'])) {
             $occurredTo = $filters['occurred_to'];
-            if (is_string($occurredTo) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $occurredTo)) {
+            if (is_string($occurredTo) && Carbon::hasFormat($occurredTo, 'Y-m-d')) {
                 $occurredTo .= ' 23:59:59';
             }
             $query->where('occurred_at', '<=', $occurredTo);
