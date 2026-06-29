@@ -8,59 +8,51 @@ C2.2 Vendors and purchases
 
 ## Current Subtask
 
-C2.2.4 Purchase status
+C2.2.5 Stock receiving
 
 ## Current Status
 
-Not Started. C2.2.3 Purchase order items is fully completed, verified, and committed.
+Not Started. C2.2.4 Purchase status is fully completed, verified, and committed.
 
 ## Next Subtask
 
-C2.2.5 Stock receiving
+C2.2.6 Partial stock receiving
 
 ## Goal
 
-Implement purchase order status transition API endpoints — allowing authorized staff to advance a purchase order's `status` through the approved state machine: `draft → ordered → partially_received → received → closed` (and `cancelled` from applicable states). All transitions must enforce the status-transition rules already defined on `VendorOrder`, timestamp key lifecycle moments (`ordered_at`, `received_at`, `cancelled_at`), and emit audit events.
+Implement the API endpoint and business logic for receiving stock on a purchase order. When items are received, the system must update the `quantity_received` on `VendorOrderItem`, and atomically record an inventory movement that increases the SKU balance (using `InventoryBalanceService` or the core balance manager). This must ensure transaction safety, concurrency control, and audit logs.
 
 ## Dependencies
 
-- C2.2.2 Purchase order creation (Completed) — `VendorOrder` model, status transition logic, and all domain exceptions already implemented.
-- C2.2.3 Purchase order items (Completed) — items must exist before `draft → ordered` is practically meaningful.
+- C2.1.2 Inventory movement recording (Completed)
+- C2.2.3 Purchase order items (Completed)
+- C2.2.4 Purchase status (Completed)
 
 ## Required Deliverables
 
-- Implement a `POST /admin/purchase-orders/{purchase_order}/status` endpoint on `VendorOrderController` (or a dedicated action controller) that:
-  - Requires `purchases.manage` permission (via `VendorOrderPolicy@update`).
-  - Accepts a `status` field validated against the allowed `VendorOrderStatus` enum values.
-  - Calls `VendorOrder::transitionStatusTo()` (already implemented) and saves the record.
-  - Calls `VendorOrder::transitionPaymentStatusTo()` if a `payment_status` transition is requested simultaneously.
-  - Dispatches a structured `AuditEvent` with key `purchase_orders.status_updated` inside `DB::afterCommit`.
-  - Returns the updated purchase order as JSON.
-- Add a new route in `routes/web.php` for the status update endpoint.
-- Create `tests/Feature/PurchaseOrderStatusTest.php` covering:
-  - Valid transitions from each allowed state.
-  - Rejection of invalid transitions (e.g. `draft → received`) with 422.
-  - Rejection of transition to same state.
-  - Audit event payload validation.
-  - Permission guard (403 without `purchases.manage`).
-  - Timestamp fields (`ordered_at`, `received_at`, `cancelled_at`) are stamped on the correct transitions.
+- Create a `POST /admin/purchase-orders/{purchase_order}/items/{item}/receive` or similar endpoint to receive a specific quantity of items on a purchase order line.
+- Update `quantity_received` on the `VendorOrderItem`.
+- Increment the stock balance of the product SKU by dispatching a stock-in movement using the established patterns in `InventoryBalanceService`.
+- Transition the `VendorOrder` status to `partially_received` or `received` based on whether all items have been fully received.
+- Ensure only purchase orders in `ordered` or `partially_received` status can receive stock.
+- Handle concurrency and lock row updates.
+- Dispatch structured `AuditEvent` dispatches after successful commit.
+- Cover with tests verifying stock updates, status changes, validation constraints, and audit logs.
 
 ## Acceptance Criteria
 
-- Only permitted transitions allowed by `STATUS_TRANSITIONS` are accepted; invalid transitions return 422.
-- Each allowed transition updates the status and the appropriate lifecycle timestamp atomically.
-- `purchases.manage` permission is required; 403 returned otherwise.
-- An `AuditEvent` with key `purchase_orders.status_updated` is dispatched after commit for each successful transition.
+- Stock receiving is only permitted on ordered or partially received purchase orders.
+- Receiving stock increases the product SKU balance via the standard inventory balance logic.
+- Total order status automatically updates to `received` when all items are fully received.
+- Actions are fully authorized and audited.
 
 ## Tests Required
 
-- Feature tests in `PurchaseOrderStatusTest` verifying:
-  - All valid status transitions.
-  - Invalid transition rejection.
-  - Duplicate/same-state transition handling.
-  - Permission enforcement.
-  - Timestamp stamping per transition.
-  - Audit event dispatch validation.
+- Feature tests in `StockReceivingTest` or similar verifying:
+  - Successful stock receiving and balance increment.
+  - Automatic status transition when order is fully received.
+  - Immutability guards on non-ordered POs.
+  - Audit events.
 
 ## Quality Requirements
 
@@ -70,6 +62,6 @@ Implement purchase order status transition API endpoints — allowing authorized
 
 ## Files Likely Affected
 
-- `app/Http/Controllers/Admin/VendorOrderController.php` (add `updateStatus` action)
-- `routes/web.php` (add status route)
-- `tests/Feature/PurchaseOrderStatusTest.php` (new)
+- `app/Http/Controllers/Admin/VendorOrderItemController.php`
+- `routes/web.php`
+- `tests/Feature/StockReceivingTest.php`
