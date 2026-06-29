@@ -448,13 +448,23 @@ class InventoryBalanceService
 
     /**
      * Get the query builder for movement history with filters.
+     * Default ordering is occurred_at DESC, id DESC.
      *
      * @param  array<string, mixed>  $filters
      */
     public function movementHistoryQuery(array $filters): Builder
     {
+        // Normalize filters: treat empty strings as null
+        $filters = array_map(function ($value) {
+            return $value === '' ? null : $value;
+        }, $filters);
+
         $query = InventoryMovement::query()
-            ->with(['productSku', 'order', 'user']);
+            ->with([
+                'productSku:id,sku_code',
+                'order:id,public_id',
+                'user:id,name',
+            ]);
 
         // Filtering by product_sku_id / sku_code
         if (! empty($filters['product_sku_id'])) {
@@ -484,21 +494,27 @@ class InventoryBalanceService
             $query->where('purchase_stock_in_id', (int) $filters['purchase_stock_in_id']);
         }
 
-        // Filtering by movement_type and direction
+        // Filtering by movement_type and direction (ignoring invalid enum values)
         if (! empty($filters['movement_type'])) {
             $type = $filters['movement_type'];
             if ($type instanceof InventoryMovementType) {
                 $query->where('movement_type', $type);
-            } else {
-                $query->where('movement_type', $type);
+            } elseif (is_string($type)) {
+                $enumVal = InventoryMovementType::tryFrom($type);
+                if ($enumVal !== null) {
+                    $query->where('movement_type', $enumVal);
+                }
             }
         }
         if (! empty($filters['direction'])) {
             $direction = $filters['direction'];
             if ($direction instanceof InventoryDirection) {
                 $query->where('direction', $direction);
-            } else {
-                $query->where('direction', $direction);
+            } elseif (is_string($direction)) {
+                $enumVal = InventoryDirection::tryFrom($direction);
+                if ($enumVal !== null) {
+                    $query->where('direction', $enumVal);
+                }
             }
         }
 

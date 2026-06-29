@@ -110,6 +110,18 @@ class InventoryMovementHistoryTest extends TestCase
         $this->assertCount(2, $results);
         $this->assertTrue($results->contains('id', $m1->id));
         $this->assertTrue($results->contains('id', $m3->id));
+
+        // Filter with empty string (should be normalized to null/ignored)
+        $results = $this->service->getMovementHistory(['sku_code' => '']);
+        $this->assertCount(4, $results);
+
+        // Filter with invalid movement_type (should be ignored)
+        $results = $this->service->getMovementHistory(['movement_type' => 'invalid_movement_type']);
+        $this->assertCount(4, $results);
+
+        // Filter with invalid direction (should be ignored)
+        $results = $this->service->getMovementHistory(['direction' => 'invalid_direction']);
+        $this->assertCount(4, $results);
     }
 
     /**
