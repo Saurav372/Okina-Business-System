@@ -480,6 +480,8 @@ Verification note: C2.2.5 completed on 2026-06-29. Implemented `POST /admin/purc
 
 Verification note: C2.2.6 completed on 2026-06-29. Partial stock receiving is inherently supported and handled dynamically within C2.2.5's implementation. Multiple partial receiving increments are tracked and verified. Status transitions to `partially_received` immediately upon first receive, remaining in that state until all order lines are fully received, at which point the status shifts to `received`. Tested and verified via the `test_partial_receiving_twice_and_zero_remaining_regression` and `test_multi_item_po_status_advancement` tests.
 
+Verification note: C2.2.7 completed on 2026-06-29. Implemented database migration for `vendor_payments` table, `VendorPayment` model, backed enums `VendorPaymentStatus` and `VendorPaymentMethod`. Configured relations and `recalculatePaymentStatus()` in `VendorOrder`. Created validation rules in `StoreVendorPaymentRequest` using `Rule::enum`. Added `VendorPaymentController` wrapping execution inside `DB::transaction()`, acquiring `lockForUpdate` on parent PO and child payments collection, throwing custom domain exceptions, and triggering `AuditEvent` dispatches inside `DB::afterCommit` after non-optional model refreshes. Fully covered by 8 feature tests in `PurchaseOrderPaymentTest.php` including authorization, zero payments initial state, single/multiple partial payments, duplicate references, overpayment, zero remaining balance attempts, and database transaction rollbacks. All tests and Pint checks pass.
+
 
 
 

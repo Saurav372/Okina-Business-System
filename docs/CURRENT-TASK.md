@@ -8,25 +8,20 @@ C2.2 Vendors and purchases
 
 ## Current Subtask
 
-C2.2.7 Purchase payment tracking
+C2.2.8 Vendor-order history
 
 ## Current Status
 
-Not Started. C2.2.5 (Stock receiving) and C2.2.6 (Partial stock receiving) are fully completed, verified, and committed.
+Not Started. C2.2.7 (Purchase payment tracking) is fully completed, verified, and committed.
 
 ## Next Subtask
 
-C2.2.8 Vendor-order history
+C3.1 CRM lead module
 
 ## Goal
 
-Implement the API endpoint and business logic for tracking vendor payments and updating/reconciling the payment status (`payment_status`) on a purchase order (transitioning through unpaid, partially_paid, paid). This should register corresponding cash outflow movements, update vendor balances, emit audit events, and enforce authorization guards.
+Provide vendor order history view or API endpoint so that the vendor details/page can list all related purchase orders, items, received quantities, and payment status details.
 
 ## Dependencies
 
-- C5.1 Finance Payment And Balance Views
-- C2.2.2 Purchase order creation
-
-## Required Deliverables
-
-- Detailed implementation plan to transition payment status and record payment transactions.
+C2.2.1 - C2.2.7

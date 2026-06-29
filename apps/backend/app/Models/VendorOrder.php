@@ -231,4 +231,26 @@ class VendorOrder extends Model
     {
         return $this->belongsTo(User::class, 'updated_by_user_id');
     }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(VendorPayment::class, 'vendor_order_id');
+    }
+
+    public function recalculatePaymentStatus(int $totalPaidAmount): void
+    {
+        $orderTotal = $this->total_amount_minor;
+
+        if ($totalPaidAmount === 0) {
+            $target = VendorOrderPaymentStatus::UNPAID;
+        } elseif ($totalPaidAmount < $orderTotal) {
+            $target = VendorOrderPaymentStatus::PARTIALLY_PAID;
+        } else {
+            $target = VendorOrderPaymentStatus::PAID;
+        }
+
+        if ($this->payment_status !== $target) {
+            $this->transitionPaymentStatusTo($target);
+        }
+    }
 }

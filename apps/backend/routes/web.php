@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\SalesOrderController;
 use App\Http\Controllers\Admin\VendorController;
 use App\Http\Controllers\Admin\VendorOrderController;
 use App\Http\Controllers\Admin\VendorOrderItemController;
+use App\Http\Controllers\Admin\VendorPaymentController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\CustomerAuthController;
 use App\Http\Controllers\StoredFileAccessController;
@@ -129,6 +130,8 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     ]);
     Route::post('/purchase-orders/{purchase_order}/status', [VendorOrderController::class, 'updateStatus'])
         ->name('admin.purchase_orders.status.update');
+    Route::post('/purchase-orders/{purchase_order}/payments', [VendorPaymentController::class, 'store'])
+        ->name('admin.purchase_orders.payments.store');
 
     // Purchase Order Items admin routes
     Route::apiResource('/purchase-orders.items', VendorOrderItemController::class)->parameters([
