@@ -82,6 +82,10 @@ class VendorController extends Controller
             }
         }
 
+        if (! $vendor) {
+            abort(500, 'Failed to create vendor.');
+        }
+
         event(new AuditEvent('vendors.created', Auth::user(), [
             'vendor_id' => $vendor->id,
             'vendor_code' => $vendor->vendor_code,
