@@ -8,8 +8,10 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Str;
 
 #[Fillable([
@@ -72,8 +74,25 @@ class ProductSku extends Model
             $sku->stock_quantity ??= 0;
             $sku->allow_backorder ??= false;
         });
+
+        static::deleting(function (ProductSku $sku): void {
+            if ($sku->vendorOrderItems()->exists()) {
+                // Throw a QueryException to emulate DB restrict behavior
+                $connectionName = $sku->getConnection()->getName();
+                $sql = '';
+                $bindings = [];
+                $previous = new \Exception('Cannot delete ProductSku with attached VendorOrderItems');
+                throw new QueryException($connectionName, $sql, $bindings, $previous);
+            }
+        });
     }
 
+    public function vendorOrderItems(): HasMany
+    {
+        return $this->hasMany(VendorOrderItem::class, 'product_sku_id');
+    }
+
+    // Existing product relationship retained
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);

@@ -14,7 +14,6 @@ use App\Models\ProductCategory;
 use App\Models\ProductSku;
 use App\Models\Quotation;
 use App\Models\Refund;
-use App\Models\StoredFile;
 use App\Observers\ProductSkuObserver;
 use App\Policies\ExpenseCategoryPolicy;
 use App\Policies\ExpensePolicy;
@@ -25,7 +24,6 @@ use App\Policies\ProductCategoryPolicy;
 use App\Policies\ProductPolicy;
 use App\Policies\QuotationPolicy;
 use App\Policies\RefundPolicy;
-use App\Policies\StoredFilePolicy;
 use App\Support\Products\CustomizationOptionRules;
 use App\Support\Products\PublicCatalogRules;
 use Illuminate\Support\Facades\Gate;
@@ -47,7 +45,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Gate::policy(StoredFile::class, StoredFilePolicy::class);
+        if (config('database.default') === 'sqlite') {
+            \DB::statement('PRAGMA foreign_keys = ON;');
+        }
         Gate::policy(Order::class, OrderPolicy::class);
         Gate::policy(Product::class, ProductPolicy::class);
         Gate::policy(ProductCategory::class, ProductCategoryPolicy::class);

@@ -12,6 +12,8 @@ use App\Http\Controllers\Admin\QuotationController;
 use App\Http\Controllers\Admin\RefundController;
 use App\Http\Controllers\Admin\SalesOrderController;
 use App\Http\Controllers\Admin\VendorController;
+use App\Http\Controllers\Admin\VendorOrderController;
+use App\Http\Controllers\Admin\VendorOrderItemController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\CustomerAuthController;
 use App\Http\Controllers\StoredFileAccessController;
@@ -113,5 +115,26 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
         'show' => 'admin.vendors.show',
         'update' => 'admin.vendors.update',
         'destroy' => 'admin.vendors.destroy',
+    ]);
+
+    // Purchase Orders admin routes
+    Route::apiResource('/purchase-orders', VendorOrderController::class)->parameters([
+        'purchase-orders' => 'purchase_order',
+    ])->names([
+        'index' => 'admin.purchase_orders.index',
+        'store' => 'admin.purchase_orders.store',
+        'show' => 'admin.purchase_orders.show',
+        'update' => 'admin.purchase_orders.update',
+        'destroy' => 'admin.purchase_orders.destroy',
+    ]);
+
+    // Purchase Order Items admin routes
+    Route::apiResource('/purchase-orders.items', VendorOrderItemController::class)->parameters([
+        'purchase-orders' => 'purchase_order',
+        'items' => 'item',
+    ])->only(['store', 'update', 'destroy'])->names([
+        'store' => 'admin.purchase_orders.items.store',
+        'update' => 'admin.purchase_orders.items.update',
+        'destroy' => 'admin.purchase_orders.items.destroy',
     ]);
 });

@@ -8,50 +8,59 @@ C2.2 Vendors and purchases
 
 ## Current Subtask
 
-C2.2.1 Vendor management
+C2.2.4 Purchase status
 
 ## Current Status
 
-Completed. C2.2.1 Vendor management is fully completed, verified, and committed.
+Not Started. C2.2.3 Purchase order items is fully completed, verified, and committed.
 
 ## Next Subtask
 
-C2.2.2 Purchase order creation
+C2.2.5 Stock receiving
 
 ## Goal
 
-Implement the database schema, Eloquent model, policies, request validation, controller endpoints, and tests for managing vendors/suppliers. Authorized staff should be able to create, edit, show, list, and soft-delete/toggle statuses of vendors safely, while protecting procurement data from public/unauthorized access.
+Implement purchase order status transition API endpoints — allowing authorized staff to advance a purchase order's `status` through the approved state machine: `draft → ordered → partially_received → received → closed` (and `cancelled` from applicable states). All transitions must enforce the status-transition rules already defined on `VendorOrder`, timestamp key lifecycle moments (`ordered_at`, `received_at`, `cancelled_at`), and emit audit events.
 
 ## Dependencies
 
-- A2.3 Role and permission model (Completed)
-- C2.1 Inventory movements and stock handling (Completed)
+- C2.2.2 Purchase order creation (Completed) — `VendorOrder` model, status transition logic, and all domain exceptions already implemented.
+- C2.2.3 Purchase order items (Completed) — items must exist before `draft → ordered` is practically meaningful.
 
 ## Required Deliverables
 
-- Create database migration for the `vendors` table matching the schema details in `inventory-vendors-purchases-schema.md` (unique `vendor_code`, `name`, `status`, contact details, `country_code` defaulting to 'IN', user tracking fields `created_by_user_id`/`updated_by_user_id`, timestamps, and soft deletes `deleted_at`).
-- Create `App\Models\Vendor` Eloquent model with automatic `vendor_code` generation (e.g. prefix `VND-` followed by random uppercase characters), status enum casting (`active`, `inactive`, `blocked`), user tracking relations, and soft deletes.
-- Create `App\Policies\VendorPolicy` guarding access based on `vendors.manage` or role permissions.
-- Implement REST API controller `App\Http\Controllers\Admin\VendorController` under the admin route group prefix `/admin/vendors`.
-- Implement request validation requests `StoreVendorRequest` and `UpdateVendorRequest` verifying name, uniqueness of code, formats of email/phone, and allowed status enums.
-- Create `tests/Feature/VendorManagementTest.php` to validate:
-  - Unauthorized roles are denied access (403).
-  - Authorized roles can list (with paginated response), show, create (with auto-generated code if not provided), update, and toggle vendor statuses.
-  - Deleting a vendor performs soft deletion.
+- Implement a `POST /admin/purchase-orders/{purchase_order}/status` endpoint on `VendorOrderController` (or a dedicated action controller) that:
+  - Requires `purchases.manage` permission (via `VendorOrderPolicy@update`).
+  - Accepts a `status` field validated against the allowed `VendorOrderStatus` enum values.
+  - Calls `VendorOrder::transitionStatusTo()` (already implemented) and saves the record.
+  - Calls `VendorOrder::transitionPaymentStatusTo()` if a `payment_status` transition is requested simultaneously.
+  - Dispatches a structured `AuditEvent` with key `purchase_orders.status_updated` inside `DB::afterCommit`.
+  - Returns the updated purchase order as JSON.
+- Add a new route in `routes/web.php` for the status update endpoint.
+- Create `tests/Feature/PurchaseOrderStatusTest.php` covering:
+  - Valid transitions from each allowed state.
+  - Rejection of invalid transitions (e.g. `draft → received`) with 422.
+  - Rejection of transition to same state.
+  - Audit event payload validation.
+  - Permission guard (403 without `purchases.manage`).
+  - Timestamp fields (`ordered_at`, `received_at`, `cancelled_at`) are stamped on the correct transitions.
 
 ## Acceptance Criteria
 
-- Vendors can be successfully listed, created, updated, and soft-deleted/status-toggled by authorized roles.
-- Non-authorized staff are strictly blocked with 403 Forbidden.
-- Vendor code is guaranteed unique and matches format constraints.
+- Only permitted transitions allowed by `STATUS_TRANSITIONS` are accepted; invalid transitions return 422.
+- Each allowed transition updates the status and the appropriate lifecycle timestamp atomically.
+- `purchases.manage` permission is required; 403 returned otherwise.
+- An `AuditEvent` with key `purchase_orders.status_updated` is dispatched after commit for each successful transition.
 
 ## Tests Required
 
-- Feature tests in `VendorManagementTest` verifying:
-  - Role-based authorization gates.
-  - CRUD operations and input validation constraints.
-  - Unique code generation and integrity checks.
-  - Soft deletion and status toggles.
+- Feature tests in `PurchaseOrderStatusTest` verifying:
+  - All valid status transitions.
+  - Invalid transition rejection.
+  - Duplicate/same-state transition handling.
+  - Permission enforcement.
+  - Timestamp stamping per transition.
+  - Audit event dispatch validation.
 
 ## Quality Requirements
 
@@ -61,9 +70,6 @@ Implement the database schema, Eloquent model, policies, request validation, con
 
 ## Files Likely Affected
 
-- `database/migrations/2026_06_29_000000_create_vendors_table.php` (new)
-- `app/Models/Vendor.php` (new)
-- `app/Policies/VendorPolicy.php` (new)
-- `app/Http/Controllers/Admin/VendorController.php` (new)
-- `routes/web.php`
-- `tests/Feature/VendorManagementTest.php` (new)
+- `app/Http/Controllers/Admin/VendorOrderController.php` (add `updateStatus` action)
+- `routes/web.php` (add status route)
+- `tests/Feature/PurchaseOrderStatusTest.php` (new)

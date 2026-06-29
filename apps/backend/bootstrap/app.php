@@ -30,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 || $request->is('admin/refunds*')
                 || $request->is('admin/expense-categories*')
                 || $request->is('admin/expenses*')
-                || $request->is('admin/vendors*'),
+                || $request->is('admin/vendors*')
+                || $request->is('admin/purchase-orders*'),
         );
     })->create();
