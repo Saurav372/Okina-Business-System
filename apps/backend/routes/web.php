@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\QuotationController;
 use App\Http\Controllers\Admin\RefundController;
 use App\Http\Controllers\Admin\SalesOrderController;
+use App\Http\Controllers\Admin\VendorController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\CustomerAuthController;
 use App\Http\Controllers\StoredFileAccessController;
@@ -104,4 +105,13 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     Route::post('/expenses/{expense:public_id}/submit', [ExpenseController::class, 'submit'])->name('admin.expenses.submit');
     Route::post('/expenses/{expense:public_id}/approve', [ExpenseController::class, 'approve'])->name('admin.expenses.approve');
     Route::post('/expenses/{expense:public_id}/reject', [ExpenseController::class, 'reject'])->name('admin.expenses.reject');
+
+    // Vendors admin routes
+    Route::apiResource('/vendors', VendorController::class)->names([
+        'index' => 'admin.vendors.index',
+        'store' => 'admin.vendors.store',
+        'show' => 'admin.vendors.show',
+        'update' => 'admin.vendors.update',
+        'destroy' => 'admin.vendors.destroy',
+    ]);
 });

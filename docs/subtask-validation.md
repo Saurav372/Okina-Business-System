@@ -468,6 +468,8 @@ Verification note: C2.1.8 completed on 2026-06-29. Exposed query interface `getM
 | C2.2.7 | Purchase payment tracking | C5.1, C2.2.2 | Vendor payment status is trackable | Purchase payment tests | Purchases, Finance | Medium |
 | C2.2.8 | Vendor-order history | C2.2.1-C2.2.7 | Vendor page shows related purchase history | History tests | Vendors, Purchases | Low |
 
+Verification note: C2.2.1 completed on 2026-06-29. Implemented the `vendors` database migration with soft deletes, unique `vendor_code` constraint, and contact/tax fields. Added `Vendor` Eloquent model with `VendorStatus` backed enum casting, uppercase/trim mutators for `gstin` and `country_code`, and `scopeActive()`. Built `VendorController` supporting search whitelisting, creation with `VendorCodeGenerator` helper, and user tracking, all gated by `VendorPolicy` and `vendors.manage`/`vendors.view` permissions. Dispatched structured `AuditEvent` dispatches on create, update, and delete actions. Fully covered by 5 feature tests in `VendorManagementTest.php` with all tests passing, Pint checks passing, and PHPStan analysis returning zero errors.
+
 ## C5.1 Finance Payment And Balance Views
 
 | Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |

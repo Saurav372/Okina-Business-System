@@ -532,7 +532,7 @@ Verification note: C2.1.7 completed on 2026-06-27. Implemented low-stock warning
 
 | Subtask ID | Subtask Name | Status |
 |---|---|---|
-| C2.2.1 | Vendor management | Not Started |
+| C2.2.1 | Vendor management | Completed |
 | C2.2.2 | Purchase order creation | Not Started |
 | C2.2.3 | Purchase order items | Not Started |
 | C2.2.4 | Purchase status | Not Started |
@@ -540,6 +540,8 @@ Verification note: C2.1.7 completed on 2026-06-27. Implemented low-stock warning
 | C2.2.6 | Partial stock receiving | Not Started |
 | C2.2.7 | Purchase payment tracking | Not Started |
 | C2.2.8 | Vendor-order history | Not Started |
+
+Verification note: C2.2.1 completed on 2026-06-29. Implemented the `vendors` database migration with soft deletes, unique `vendor_code` constraint, and contact/tax fields. Added `Vendor` Eloquent model with `VendorStatus` backed enum casting, uppercase/trim mutators for `gstin` and `country_code`, and `scopeActive()`. Built `VendorController` supporting search whitelisting, creation with `VendorCodeGenerator` helper, and user tracking, all gated by `VendorPolicy` and `vendors.manage`/`vendors.view` permissions. Dispatched structured `AuditEvent` dispatches on create, update, and delete actions. Fully covered by 5 feature tests in `VendorManagementTest.php` with all tests passing, Pint checks passing, and PHPStan analysis returning zero errors.
 
 ### C5.2 Refund management
 
