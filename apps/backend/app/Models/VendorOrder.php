@@ -95,7 +95,7 @@ class VendorOrder extends Model
     public function canTransitionStatusTo(VendorOrderStatus $target): bool
     {
         if ($this->status === $target) {
-            return true;
+            return false;
         }
 
         $current = $this->status ? $this->status->value : 'draft';
@@ -110,7 +110,7 @@ class VendorOrder extends Model
     public function canTransitionPaymentStatusTo(VendorOrderPaymentStatus $target): bool
     {
         if ($this->payment_status === $target) {
-            return true;
+            return false;
         }
 
         $current = $this->payment_status ? $this->payment_status->value : 'unpaid';
@@ -126,7 +126,9 @@ class VendorOrder extends Model
     public function transitionStatusTo(VendorOrderStatus $target): void
     {
         if ($this->status === $target) {
-            return;
+            throw new InvalidPurchaseOrderStatusTransitionException(
+                "Cannot transition purchase order from {$this->status->value} to {$target->value}."
+            );
         }
 
         if (! $this->canTransitionStatusTo($target)) {
@@ -153,7 +155,9 @@ class VendorOrder extends Model
     public function transitionPaymentStatusTo(VendorOrderPaymentStatus $target): void
     {
         if ($this->payment_status === $target) {
-            return;
+            throw new InvalidPurchaseOrderPaymentStatusTransitionException(
+                "Cannot transition purchase order payment status from {$this->payment_status->value} to {$target->value}."
+            );
         }
 
         if (! $this->canTransitionPaymentStatusTo($target)) {

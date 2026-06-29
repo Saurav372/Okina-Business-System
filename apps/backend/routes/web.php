@@ -127,6 +127,8 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
         'update' => 'admin.purchase_orders.update',
         'destroy' => 'admin.purchase_orders.destroy',
     ]);
+    Route::post('/purchase-orders/{purchase_order}/status', [VendorOrderController::class, 'updateStatus'])
+        ->name('admin.purchase_orders.status.update');
 
     // Purchase Order Items admin routes
     Route::apiResource('/purchase-orders.items', VendorOrderItemController::class)->parameters([

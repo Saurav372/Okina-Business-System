@@ -6,10 +6,13 @@ use App\Enums\VendorOrderPaymentStatus;
 use App\Enums\VendorOrderStatus;
 use App\Enums\VendorStatus;
 use App\Events\AuditEvent;
+use App\Exceptions\InvalidPurchaseOrderPaymentStatusTransitionException;
+use App\Exceptions\InvalidPurchaseOrderStatusTransitionException;
 use App\Exceptions\PurchaseOrderImmutableException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PurchaseOrder\StoreVendorOrderRequest;
 use App\Http\Requests\PurchaseOrder\UpdateVendorOrderRequest;
+use App\Http\Requests\PurchaseOrder\UpdateVendorOrderStatusRequest;
 use App\Models\Vendor;
 use App\Models\VendorOrder;
 use App\Support\Purchases\PurchaseOrderCodeGenerator;
@@ -243,5 +246,58 @@ class VendorOrderController extends Controller
         });
 
         return response()->json(['message' => 'Purchase order deleted successfully.']);
+    }
+
+    /**
+     * Update the status of the specified resource.
+     */
+    public function updateStatus(UpdateVendorOrderStatusRequest $request, VendorOrder $purchaseOrder): JsonResponse
+    {
+        Gate::authorize('update', $purchaseOrder);
+
+        $user = Auth::user();
+
+        try {
+            DB::transaction(function () use ($request, $purchaseOrder, $user) {
+                $previousStatus = $purchaseOrder->status;
+                $previousPaymentStatus = $purchaseOrder->payment_status;
+
+                // Apply status transition first
+                $purchaseOrder->transitionStatusTo($request->enum('status', VendorOrderStatus::class));
+
+                // Apply payment status transition if provided
+                if ($request->filled('payment_status')) {
+                    $purchaseOrder->transitionPaymentStatusTo($request->enum('payment_status', VendorOrderPaymentStatus::class));
+                }
+
+                $purchaseOrder->save();
+
+                // Synchronize persisted state before serializing the audit payload
+                $purchaseOrder->refresh();
+
+                DB::afterCommit(function () use ($purchaseOrder, $previousStatus, $previousPaymentStatus, $user) {
+                    event(new AuditEvent('purchase_orders.status_updated', $user, [
+                        'vendor_order_id' => $purchaseOrder->id,
+                        'previous_status' => $previousStatus->value,
+                        'status' => $purchaseOrder->status->value,
+                        'previous_payment_status' => $previousPaymentStatus->value,
+                        'payment_status' => $purchaseOrder->payment_status->value,
+                        'ordered_at' => $purchaseOrder->ordered_at?->toIso8601String(),
+                        'received_at' => $purchaseOrder->received_at?->toIso8601String(),
+                        'cancelled_at' => $purchaseOrder->cancelled_at?->toIso8601String(),
+                    ]));
+                });
+            });
+        } catch (InvalidPurchaseOrderStatusTransitionException $e) {
+            throw ValidationException::withMessages([
+                'status' => $e->getMessage(),
+            ]);
+        } catch (InvalidPurchaseOrderPaymentStatusTransitionException $e) {
+            throw ValidationException::withMessages([
+                'payment_status' => $e->getMessage(),
+            ]);
+        }
+
+        return response()->json($purchaseOrder);
     }
 }

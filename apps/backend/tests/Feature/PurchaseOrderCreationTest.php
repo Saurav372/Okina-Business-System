@@ -314,12 +314,13 @@ class PurchaseOrderCreationTest extends TestCase
         $orderedAt = $po->ordered_at;
         $this->assertNotNull($orderedAt);
 
-        // Test idempotency: transitioning to same status does not overwrite ordered_at
-        Carbon::setTestNow(Carbon::now()->addHour());
-        $po->transitionStatusTo(VendorOrderStatus::ORDERED);
-        $po->save();
-
-        $this->assertEquals($orderedAt->toDateTimeString(), $po->ordered_at->toDateTimeString());
+        // Test idempotency: transitioning to same status throws exception
+        try {
+            $po->transitionStatusTo(VendorOrderStatus::ORDERED);
+            $this->fail('Expected InvalidPurchaseOrderStatusTransitionException was not thrown.');
+        } catch (InvalidPurchaseOrderStatusTransitionException $e) {
+            $this->assertEquals($orderedAt->toDateTimeString(), $po->ordered_at->toDateTimeString());
+        }
         Carbon::setTestNow(); // reset
     }
 
