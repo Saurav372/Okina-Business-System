@@ -9,6 +9,7 @@ use App\Exceptions\InvalidPurchaseOrderPaymentStatusTransitionException;
 use App\Exceptions\InvalidPurchaseOrderStatusTransitionException;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -252,5 +253,30 @@ class VendorOrder extends Model
         if ($this->payment_status !== $target) {
             $this->transitionPaymentStatusTo($target);
         }
+    }
+
+    public function scopeFilter(Builder $query, array $filters): Builder
+    {
+        if (! empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function ($q) use ($search) {
+                $q->where('public_id', 'like', "%{$search}%")
+                    ->orWhere('notes', 'like', "%{$search}%");
+            });
+        }
+
+        if (! empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        if (! empty($filters['payment_status'])) {
+            $query->where('payment_status', $filters['payment_status']);
+        }
+
+        if (! empty($filters['vendor_id'])) {
+            $query->where('vendor_id', $filters['vendor_id']);
+        }
+
+        return $query;
     }
 }

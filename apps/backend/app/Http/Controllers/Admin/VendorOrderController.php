@@ -35,21 +35,12 @@ class VendorOrderController extends Controller
         Gate::authorize('viewAny', VendorOrder::class);
 
         $query = VendorOrder::query()
-            ->with(['vendor:id,name,vendor_code']);
+            ->with(['vendor:id,name,vendor_code', 'creator:id,name'])
+            ->filter($request->only(['search', 'status', 'payment_status', 'vendor_id']))
+            ->orderByDesc('id');
 
-        if ($request->filled('search')) {
-            $search = $request->input('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('public_id', 'like', "%{$search}%")
-                    ->orWhere('notes', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->input('status'));
-        }
-
-        $orders = $query->paginate($request->integer('per_page', 15));
+        $perPage = min(max($request->integer('per_page', 15), 1), 100);
+        $orders = $query->paginate($perPage);
 
         return response()->json($orders);
     }

@@ -117,6 +117,8 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
         'update' => 'admin.vendors.update',
         'destroy' => 'admin.vendors.destroy',
     ]);
+    Route::get('/vendors/{vendor}/purchase-orders', [VendorController::class, 'purchaseOrders'])
+        ->name('admin.vendors.purchase_orders.index');
 
     // Purchase Orders admin routes
     Route::apiResource('/purchase-orders', VendorOrderController::class)->parameters([

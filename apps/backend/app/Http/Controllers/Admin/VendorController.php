@@ -142,4 +142,22 @@ class VendorController extends Controller
 
         return response()->json(['message' => 'Vendor soft-deleted successfully.']);
     }
+
+    /**
+     * Get the paginated purchase order history for the specified vendor.
+     */
+    public function purchaseOrders(Request $request, Vendor $vendor): JsonResponse
+    {
+        Gate::authorize('view', $vendor);
+
+        $query = $vendor->purchaseOrders()
+            ->with(['vendor:id,name,vendor_code', 'creator:id,name'])
+            ->filter($request->only(['search', 'status', 'payment_status']))
+            ->orderByDesc('id');
+
+        $perPage = min(max($request->integer('per_page', 15), 1), 100);
+        $orders = $query->paginate($perPage);
+
+        return response()->json($orders);
+    }
 }
