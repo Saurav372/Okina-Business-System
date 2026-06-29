@@ -8,61 +8,68 @@ C2.1 Inventory movements and stock handling
 
 ## Current Subtask
 
-C2.1.7 Low-stock warning
+C2.1.8 Movement history and audit
 
 ## Current Status
 
-Not Started. C2.1.6 Cancellation stock reversal is fully completed, verified, and committed.
+Completed. C2.1.8 Movement history and audit is fully completed, verified, and committed.
 
 ## Next Subtask
 
-C2.1.8 Movement history and audit
+C2.2.1 Vendor management
 
 ## Goal
 
-Implement low-stock warning trigger during inventory movements. When a movement causes a SKU's available quantity to fall to or below its resolved low-stock threshold, a `LowStockDetected` event is dispatched and a warning is logged in the system.
+Ensure all inventory movements are traceable, support comprehensive query filtering (by SKU, order, vendor order, type), and reliably emit `AuditEvent` dispatches on `inventory.stock_moved` with complete payload verification.
 
 ## Dependencies
 
-- C2.1.1 SKU stock balance (Completed)
+- C2.1.2 Stock-in (Completed)
+- C2.1.3 Stock-out (Completed)
 - C2.1.4 Manual adjustment (Completed)
 - C2.1.5 Order stock deduction (Completed)
+- C2.1.6 Cancellation stock reversal (Completed)
+- C2.1.7 Low-stock warning (Completed)
+- A4.6 Audit event/interface contract (Completed)
 
 ## Required Deliverables
 
-- Extend `InventoryMovementReason` enum to include `ORDER_CANCELLATION = 'order_cancellation'`.
-- Implement public `reverseOrderStock(Order $order, array $options = []): array` in `InventoryBalanceService`.
-- For each item in the order, eager load the SKU and its `InventoryItem` relation before the transaction.
-- Sort the order items by `sku.inventoryItem.id` to establish stable lock ordering (prevent deadlocks).
-- Run the entire loop inside a database transaction with a deadlock retry strategy (e.g. 3 attempts).
-- For each order item:
-  - Lock the row using a fresh query to guarantee row lock, throwing `InventoryItemNotFoundException` if missing.
-  - Locate the corresponding `order_deduction` movement for this `order_item_id`. If none exists, skip it.
-  - Check if a `cancellation_reversal` movement already exists for this `order_item_id` to prevent double reversal (idempotency check).
-  - If a reversal already exists, collect it (for idempotency return) and skip creating a new one. **Existing movements MUST NOT emit new `inventory.stock_moved` events.**
-  - If no reversal exists, call `recordMovement` to return the deducted quantity back to stock:
-    - `sku` = `$item->sku`
-    - `quantity` = quantity from the original deduction movement
-    - `type` = `InventoryMovementType::CANCELLATION_REVERSAL`
-    - `direction` = `InventoryDirection::IN`
-    - `reason` = `InventoryMovementReason::ORDER_CANCELLATION`
-    - `options` = merged options with `['order_id' => $order->id, 'order_item_id' => $item->id]`
-- Return the collected/created movement records.
-- Create feature tests in `InventoryCancellationReversalTest` verifying cancellation reversal, rollback, idempotency, negative stock updates, and audit event emission.
+- Expose a movement history query interface or helper method in `InventoryBalanceService` (or dedicated query class) supporting:
+  - Filtering by `product_sku_id` / `sku_code`.
+  - Filtering by `order_id` / `order_item_id`.
+  - Filtering by `vendor_order_id` / `vendor_order_item_id` / `purchase_stock_in_id`.
+  - Filtering by `movement_type` and `direction`.
+  - Filtering by `occurred_at` date ranges.
+  - Pagination and chronological sorting (newest first or oldest first).
+- Verify that every stock movement operation (stockIn, stockOut, adjust, deductOrderStock, reverseOrderStock) dispatches the `AuditEvent` with the payload schema:
+  - `movement_public_id`
+  - `sku_public_id`
+  - `movement_type`
+  - `direction`
+  - `reason`
+  - `quantity`
+  - `before_on_hand`
+  - `after_on_hand`
+  - `before_reserved`
+  - `after_reserved`
+  - `actor_user_id`
+- Create `tests/Feature/InventoryMovementHistoryTest.php` to validate:
+  - History query filters, pagination, and sorting.
+  - Audit event dispatches across all 5 movement types with exact payload checks.
+  - Idempotency checks block duplicate event emissions.
 
 ## Acceptance Criteria
 
-- Reversing stock increases `inventory_items.on_hand_quantity` and parent `product_skus.stock_quantity` back to initial balances.
-- Each reversal records a trace in `inventory_movements` with `movement_type = 'cancellation_reversal'` and `direction = 'in'`.
-- Double reversal is prevented; repeated calls return the original movements without writing duplicate rows or duplicate audit events.
-- Empty orders return `[]` immediately.
-- Dispatches the `inventory.stock_moved` audit event for each item.
+- History queries correctly return expected movements matching filters.
+- Every movement type records an immutable trace and dispatches an audit event.
+- Zero duplicate audit events emitted when an operation is skipped due to idempotency.
 
 ## Tests Required
 
-- Integration tests verifying successful stock reversal for all deducted items in an order.
-- Idempotency tests verifying repeat executions do not duplicate movements or emit extra audit events.
-- Audit event validation.
+- Feature tests in `InventoryMovementHistoryTest` verifying:
+  - History listing and filters.
+  - Complete coverage of `AuditEvent` payload structures for each movement type.
+  - Idempotency duplicate event avoidance.
 
 ## Quality Requirements
 
@@ -72,6 +79,5 @@ Implement low-stock warning trigger during inventory movements. When a movement 
 
 ## Files Likely Affected
 
-- `app/Enums/InventoryMovementReason.php`
 - `app/Services/InventoryBalanceService.php`
-- `tests/Feature/InventoryCancellationReversalTest.php` (new)
+- `tests/Feature/InventoryMovementHistoryTest.php` (new)

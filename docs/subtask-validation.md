@@ -453,6 +453,8 @@ Verification note: C2.1.6 completed on 2026-06-27. Implemented the `reverseOrder
 
 Verification note: C2.1.7 completed on 2026-06-27. Implemented low-stock warning detection inside `recordMovement` in `InventoryBalanceService`. Features dynamic threshold resolution encapsulated in `resolvedLowStockThreshold()` helper on `InventoryItem`, threshold crossing verification, after-commit dispatch of the structured `LowStockDetected` event (carrying ProductSku, available quantity, threshold, causing InventoryMovement), and structured context logging. Covered by 6 feature tests in `InventoryLowStockWarningTest.php` including sequences, override resolution, and multiple movement types.
 
+Verification note: C2.1.8 completed on 2026-06-29. Exposed query interface `getMovementHistory` and builder resolver `movementHistoryQuery` on `InventoryBalanceService` supporting whitelisted sorting, inclusive date-only range boundaries, and default eager loading. Verified that all 5 movement types dispatch the expected `AuditEvent` payload, and that idempotency locks prevent duplicate event dispatches. Tested via `InventoryMovementHistoryTest.php` with all tests passing, Pint formatting checked, and PHPStan analysis passing with zero errors.
+
 ## C2.2 Vendors And Purchases
 
 | Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |

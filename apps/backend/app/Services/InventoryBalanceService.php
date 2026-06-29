@@ -14,6 +14,8 @@ use App\Models\InventoryMovement;
 use App\Models\Order;
 use App\Models\ProductSku;
 use App\Models\User;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -442,5 +444,107 @@ class InventoryBalanceService
 
             return $movements;
         }, 3);
+    }
+
+    /**
+     * Get the query builder for movement history with filters.
+     *
+     * @param  array<string, mixed>  $filters
+     */
+    public function movementHistoryQuery(array $filters): Builder
+    {
+        $query = InventoryMovement::query()
+            ->with(['productSku', 'order', 'user']);
+
+        // Filtering by product_sku_id / sku_code
+        if (! empty($filters['product_sku_id'])) {
+            $query->where('product_sku_id', (int) $filters['product_sku_id']);
+        } elseif (! empty($filters['sku_code'])) {
+            $query->whereHas('productSku', function ($q) use ($filters) {
+                $q->where('sku_code', $filters['sku_code']);
+            });
+        }
+
+        // Filtering by order_id / order_item_id
+        if (! empty($filters['order_id'])) {
+            $query->where('order_id', (int) $filters['order_id']);
+        }
+        if (! empty($filters['order_item_id'])) {
+            $query->where('order_item_id', (int) $filters['order_item_id']);
+        }
+
+        // Filtering by vendor_order_id / vendor_order_item_id / purchase_stock_in_id
+        if (! empty($filters['vendor_order_id'])) {
+            $query->where('vendor_order_id', (int) $filters['vendor_order_id']);
+        }
+        if (! empty($filters['vendor_order_item_id'])) {
+            $query->where('vendor_order_item_id', (int) $filters['vendor_order_item_id']);
+        }
+        if (! empty($filters['purchase_stock_in_id'])) {
+            $query->where('purchase_stock_in_id', (int) $filters['purchase_stock_in_id']);
+        }
+
+        // Filtering by movement_type and direction
+        if (! empty($filters['movement_type'])) {
+            $type = $filters['movement_type'];
+            if ($type instanceof InventoryMovementType) {
+                $query->where('movement_type', $type);
+            } else {
+                $query->where('movement_type', $type);
+            }
+        }
+        if (! empty($filters['direction'])) {
+            $direction = $filters['direction'];
+            if ($direction instanceof InventoryDirection) {
+                $query->where('direction', $direction);
+            } else {
+                $query->where('direction', $direction);
+            }
+        }
+
+        // Filtering by occurred_at range (inclusive)
+        if (! empty($filters['occurred_from'])) {
+            $query->where('occurred_at', '>=', $filters['occurred_from']);
+        }
+        if (! empty($filters['occurred_to'])) {
+            $occurredTo = $filters['occurred_to'];
+            if (is_string($occurredTo) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $occurredTo)) {
+                $occurredTo .= ' 23:59:59';
+            }
+            $query->where('occurred_at', '<=', $occurredTo);
+        }
+
+        // Whitelist sortable columns
+        $allowedSortBy = [
+            'occurred_at',
+            'created_at',
+            'movement_type',
+            'direction',
+            'quantity',
+        ];
+
+        $sortBy = $filters['sort_by'] ?? 'occurred_at';
+        if (! in_array($sortBy, $allowedSortBy, true)) {
+            $sortBy = 'occurred_at';
+        }
+
+        $sortDirection = isset($filters['sort_direction']) && strtolower($filters['sort_direction']) === 'asc' ? 'asc' : 'desc';
+
+        $query->orderBy($sortBy, $sortDirection)
+            ->orderBy('id', $sortDirection);
+
+        return $query;
+    }
+
+    /**
+     * Get paginated movement history.
+     *
+     * @param  array<string, mixed>  $filters
+     */
+    public function getMovementHistory(array $filters = [], int $perPage = 15): LengthAwarePaginator
+    {
+        $perPage = max(1, min($perPage, 100));
+
+        return $this->movementHistoryQuery($filters)->paginate($perPage);
     }
 }
