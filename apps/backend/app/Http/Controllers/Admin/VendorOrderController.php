@@ -131,7 +131,7 @@ class VendorOrderController extends Controller
     {
         Gate::authorize('view', $purchaseOrder);
 
-        $purchaseOrder->load(['vendor:id,name,vendor_code']);
+        $purchaseOrder->load(['vendor:id,name,vendor_code', 'items.productSku']);
 
         return response()->json($purchaseOrder);
     }
