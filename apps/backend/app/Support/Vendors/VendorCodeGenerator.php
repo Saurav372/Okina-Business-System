@@ -2,6 +2,7 @@
 
 namespace App\Support\Vendors;
 
+use App\Models\Vendor;
 use Illuminate\Support\Str;
 
 class VendorCodeGenerator
@@ -11,6 +12,10 @@ class VendorCodeGenerator
      */
     public static function generate(): string
     {
-        return 'VND-'.Str::upper(Str::random(8));
+        do {
+            $code = 'VND-'.Str::upper(Str::random(8));
+        } while (Vendor::where('vendor_code', $code)->exists());
+
+        return $code;
     }
 }
