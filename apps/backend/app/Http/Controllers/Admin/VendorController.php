@@ -9,6 +9,7 @@ use App\Http\Requests\Vendor\StoreVendorRequest;
 use App\Http\Requests\Vendor\UpdateVendorRequest;
 use App\Models\Vendor;
 use App\Support\Vendors\VendorCodeGenerator;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -53,14 +54,33 @@ class VendorController extends Controller
     {
         Gate::authorize('create', Vendor::class);
 
-        $data = $request->validated();
-        if (empty($data['vendor_code'])) {
-            $data['vendor_code'] = VendorCodeGenerator::generate();
-        }
-        $data['status'] ??= VendorStatus::ACTIVE->value;
-        $data['created_by_user_id'] = Auth::id();
+        $attempts = 0;
+        $maxAttempts = 3;
+        $vendor = null;
 
-        $vendor = Vendor::create($data);
+        while ($attempts < $maxAttempts) {
+            try {
+                $attempts++;
+                $data = $request->validated();
+                if (empty($data['vendor_code'])) {
+                    $data['vendor_code'] = VendorCodeGenerator::generate();
+                }
+                $data['status'] ??= VendorStatus::ACTIVE->value;
+                $data['created_by_user_id'] = Auth::id();
+
+                $vendor = Vendor::create($data);
+                break;
+            } catch (QueryException $e) {
+                $isUniqueViolation = $e->getCode() === '23000'
+                    || str_contains($e->getMessage(), '1062 Duplicate entry')
+                    || str_contains($e->getMessage(), 'UNIQUE constraint failed: vendors.vendor_code');
+
+                if ($isUniqueViolation && empty($request->input('vendor_code')) && $attempts < $maxAttempts) {
+                    continue;
+                }
+                throw $e;
+            }
+        }
 
         event(new AuditEvent('vendors.created', Auth::user(), [
             'vendor_id' => $vendor->id,
