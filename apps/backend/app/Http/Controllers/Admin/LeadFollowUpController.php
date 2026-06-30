@@ -8,6 +8,7 @@ use App\Http\Requests\Lead\LeadFollowUpListRequest;
 use App\Http\Requests\Lead\StoreLeadFollowUpRequest;
 use App\Http\Requests\Lead\UpdateLeadFollowUpRequest;
 use App\Models\Lead;
+use App\Models\LeadActivity;
 use App\Models\LeadFollowUp;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -68,8 +69,11 @@ class LeadFollowUpController extends Controller
         $data['created_by_user_id'] = $request->user()->id;
         $data['status'] = LeadFollowUpStatus::PENDING->value;
 
-        $followUp = DB::transaction(function () use ($data) {
-            return LeadFollowUp::create($data);
+        $followUp = DB::transaction(function () use ($data, $request) {
+            $created = LeadFollowUp::create($data);
+            LeadActivity::recordFollowUpCreated($created, $request->user()->id);
+
+            return $created;
         });
 
         return response()->json($this->formatResponse($followUp), 201);
@@ -90,8 +94,16 @@ class LeadFollowUpController extends Controller
             $data['snoozed_until'] = null;
         }
 
-        $followUp = DB::transaction(function () use ($followUp, $data) {
+        $followUp = DB::transaction(function () use ($followUp, $data, $request) {
+            $previousDueAt = $followUp->due_at;
             $followUp->update($data);
+
+            if (array_key_exists('due_at', $data) && $previousDueAt !== null) {
+                $newDueAt = $followUp->due_at;
+                if ($newDueAt === null || ! $previousDueAt->eq($newDueAt)) {
+                    LeadActivity::recordFollowUpRescheduled($followUp, $previousDueAt, $request->user()->id);
+                }
+            }
 
             return $followUp;
         });
@@ -116,6 +128,8 @@ class LeadFollowUpController extends Controller
                 'snoozed_until' => null,
             ]);
 
+            LeadActivity::recordFollowUpCompleted($followUp, $request->user()->id);
+
             return $followUp;
         });
 
@@ -131,11 +145,13 @@ class LeadFollowUpController extends Controller
 
         $this->ensureMutable($followUp);
 
-        $followUp = DB::transaction(function () use ($followUp) {
+        $followUp = DB::transaction(function () use ($followUp, $request) {
             $followUp->update([
                 'status' => LeadFollowUpStatus::CANCELLED->value,
                 'snoozed_until' => null,
             ]);
+
+            LeadActivity::recordFollowUpCancelled($followUp, $request->user()->id);
 
             return $followUp;
         });

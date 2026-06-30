@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,6 +19,8 @@ const LEAD_ACTIVITY_TYPES = [
     'assignment',
     'follow_up_created',
     'follow_up_completed',
+    'follow_up_rescheduled',
+    'follow_up_cancelled',
     'quotation_created',
     'quotation_sent',
     'quotation_approved',
@@ -105,6 +108,95 @@ class LeadActivity extends Model
             'metadata' => [
                 'previous_assigned_to_user_id' => $previousUserId,
                 'new_assigned_to_user_id' => $newUserId,
+            ],
+            'customer_visible' => false,
+            'created_by_user_id' => $actorUserId,
+            'occurred_at' => now(),
+        ]);
+    }
+
+    /**
+     * Record a follow-up created activity.
+     */
+    public static function recordFollowUpCreated(
+        LeadFollowUp $followUp,
+        ?int $actorUserId = null,
+    ): self {
+        return self::create([
+            'lead_id' => $followUp->lead_id,
+            'activity_type' => 'follow_up_created',
+            'subject' => 'Follow-up task created',
+            'metadata' => [
+                'follow_up_id' => $followUp->id,
+                'due_at' => $followUp->due_at?->toIso8601String(),
+                'subject' => $followUp->subject,
+                'assigned_to_user_id' => $followUp->assigned_to_user_id,
+            ],
+            'customer_visible' => false,
+            'created_by_user_id' => $actorUserId,
+            'occurred_at' => now(),
+        ]);
+    }
+
+    /**
+     * Record a follow-up rescheduled activity.
+     */
+    public static function recordFollowUpRescheduled(
+        LeadFollowUp $followUp,
+        CarbonInterface $previousDueAt,
+        ?int $actorUserId = null,
+    ): self {
+        return self::create([
+            'lead_id' => $followUp->lead_id,
+            'activity_type' => 'follow_up_rescheduled',
+            'subject' => 'Follow-up task rescheduled',
+            'metadata' => [
+                'follow_up_id' => $followUp->id,
+                'previous_due_at' => $previousDueAt->toIso8601String(),
+                'new_due_at' => $followUp->due_at?->toIso8601String(),
+            ],
+            'customer_visible' => false,
+            'created_by_user_id' => $actorUserId,
+            'occurred_at' => now(),
+        ]);
+    }
+
+    /**
+     * Record a follow-up completed activity.
+     */
+    public static function recordFollowUpCompleted(
+        LeadFollowUp $followUp,
+        ?int $actorUserId = null,
+    ): self {
+        return self::create([
+            'lead_id' => $followUp->lead_id,
+            'activity_type' => 'follow_up_completed',
+            'subject' => 'Follow-up task completed',
+            'metadata' => [
+                'follow_up_id' => $followUp->id,
+                'completed_at' => $followUp->completed_at?->toIso8601String(),
+                'completed_by_user_id' => $followUp->completed_by_user_id,
+            ],
+            'customer_visible' => false,
+            'created_by_user_id' => $actorUserId,
+            'occurred_at' => now(),
+        ]);
+    }
+
+    /**
+     * Record a follow-up cancelled activity.
+     */
+    public static function recordFollowUpCancelled(
+        LeadFollowUp $followUp,
+        ?int $actorUserId = null,
+    ): self {
+        return self::create([
+            'lead_id' => $followUp->lead_id,
+            'activity_type' => 'follow_up_cancelled',
+            'subject' => 'Follow-up task cancelled',
+            'metadata' => [
+                'follow_up_id' => $followUp->id,
+                'cancelled_at' => now()->toIso8601String(),
             ],
             'customer_visible' => false,
             'created_by_user_id' => $actorUserId,

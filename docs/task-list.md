@@ -366,7 +366,7 @@ Verification note: C3.1.7 completed on 2026-06-23. Lead authorization, list, and
 | C3.2.2 | Create, reschedule, complete, and cancel follow-ups | Completed |
 | C3.2.3 | Due-today and overdue staff views | Completed |
 | C3.2.4 | Reminder event scheduling and notification handoff | Completed |
-| C3.2.5 | Lead activity timeline integration | Not Started |
+| C3.2.5 | Lead activity timeline integration | Completed |
 | C3.2.6 | Follow-up permissions and retry-safe regression tests | Not Started |
 
 Verification note: C3.2.1 completed on 2026-06-30. Implemented the `lead_follow_ups` migration with foreign key cascades on delete for `lead_id`, nullable unique index on `notification_key`, and composite query indexes. Added `LeadFollowUp` model with `LeadFollowUpStatus` backed enum casts, datetime casts, relationships, and scopes (`pending`, `completed`, `overdue`, `dueToday` using index-friendly `whereBetween`). Created `LeadFollowUpFactory` with states. Verified with `php artisan test --filter=LeadFollowUpTest` (7 tests, 43 assertions passed) and Pint formatting.
@@ -376,6 +376,8 @@ Verification note: C3.2.2 completed on 2026-06-30. Implemented the API endpoints
 Verification note: C3.2.3 completed on 2026-06-30. Implemented global listing endpoint `GET /admin/leads/follow-ups` with eager loading user relationship models prior to pagination (avoiding N+1 queries). Integrated mutual exclusivity validation rules in `LeadFollowUpListRequest` preventing concurrent uses of `status` and custom `filter` query strings. Added operational sorting utilizing `orderBy('due_at')->orderBy('id')` to display overdue and earliest due tasks first with stable pagination. Preserved filter query strings in pagination links with `withQueryString()`. Covered by 9 feature tests in `LeadFollowUpViewsTest.php`. All tests passed, Pint formatted, and PHPStan clean.
 
 Verification note: C3.2.4 completed on 2026-06-30. Implemented the custom event `LeadFollowUpDue` and the Artisan console command `crm:dispatch-follow-up-reminders` which streams pending follow-ups due now (`due_at <= now()`) utilizing memory-efficient `->lazy()`. Added deterministic sorting (`orderBy('due_at')->orderBy('id')`) and registered the command to run every minute in `routes/console.php`. Handed deduplication off entirely to the future C6.2 notification listener layer as recommended. Covered by 3 feature tests in `LeadFollowUpReminderTest.php` with all tests passing, Pint formatting applied, and PHPStan analysis clean.
+
+Verification note: C3.2.5 completed on 2026-06-30. Expanded `LEAD_ACTIVITY_TYPES` constant in `LeadActivity.php` with `'follow_up_rescheduled'` and `'follow_up_cancelled'`. Implemented static model helpers `recordFollowUpCreated()`, `recordFollowUpRescheduled()`, `recordFollowUpCompleted()`, and `recordFollowUpCancelled()` that log follow-up actions with domain-specific metadata (using `CarbonInterface` serialization and Carbon object comparison to check date changes). Wired these helpers to run inside the existing DB transactions of `LeadFollowUpController`. Covered by 5 feature tests in `LeadFollowUpTimelineTest.php` with all tests passing, Pint formatting applied, and PHPStan analysis clean.
 
 ### C4.1 Simple order processing
 
