@@ -587,30 +587,28 @@ Verification note: C5.3.5 completed on 2026-06-27. Implemented `ExpenseReporting
 |---|---|---|---|---|---|---|
 | C6.1.1 | Audit table design | A1.1.8, A4.6 | Audit stores actor, action, old/new values, source, related records | Schema tests/review | Audit, Database | High |
 | C6.1.2 | Order-change auditing | C6.1.1, A4.6, C1.1 | Order audit events create immutable audit records | Order audit tests | Orders, Audit | High |
-| C6.1.3 | Payment/refund auditing | C6.1.1, A4.6, C5.2 | Payment/refund audit events create immutable audit records | Payment audit tests | Payments, Finance, Audit | High |
-| C6.1.4 | Inventory auditing | C6.1.1, A4.6, C2.1 | Stock audit events create immutable audit records | Inventory audit tests | Inventory, Audit | High |
-| C6.1.5 | Customer/product auditing | C6.1.1, A4.6, A3 | Customer/product audit events create immutable audit records | Data audit tests | Customers, Products, Audit | Medium |
-| C6.1.6 | Permission-change auditing | C6.1.1, A4.6, A2.3 | Role/permission audit events create immutable audit records | Permission audit tests | Auth, Audit | High |
-| C6.1.7 | Sensitive-data masking | C6.1.1 | Secrets, passwords, tokens, private contents are never logged | Masking/security tests | Audit, Security | High |
-| C6.1.8 | Audit viewing permissions | C6.1.1, A2.3 | Only authorized roles can view audit logs | Permission tests | Audit, Auth | High |
-| C6.1.9 | Retention rules | C6.1.1 | Retention policy is defined and enforceable | Retention tests/review | Audit, Jobs | Medium |
+| C6.1.3 | Audit event integrations | C6.1.1, A4.6, C5.2, C2.1, A3, A2.3 | Payment/refund, stock, customer/product, and role/permission audit events create immutable records | Integration audit tests | Payments, Inventory, Customers, Products, Auth, Audit | High |
+| C6.1.4 | Sensitive-data masking | C6.1.1 | Secrets, passwords, tokens, private contents are never logged | Masking/security tests | Audit, Security | High |
+| C6.1.5 | Audit viewing permissions | C6.1.1, A2.3 | Only authorized roles can view audit logs | Permission tests | Audit, Auth | High |
+| C6.1.6 | Retention rules | C6.1.1 | Retention policy is defined and enforceable | Retention tests/review | Audit, Jobs | Medium |
 
 Verification note: C6.1.1 completed on 2026-06-30. Created backed enum `AuditActorType` (user, customer, system, job, provider) and migrated `audit_logs` and `audit_log_related_records` tables with UUID event_id, idempotency key unique constraints, composite query indexes, and MySQL check constraints. Implemented `AuditLog` and `AuditLogRelatedRecord` models with relations, array casts, and disabled `updated_at` (const UPDATED_AT = null). Enforced strong immutability checks throwing `LogicException` on save/update/delete events for existing records. Verified via 5 tests in `AuditTableDesignTest.php`. All tests passed, Pint formatted, and PHPStan analysis clean.
+
+Verification note: C6.1.2 completed on 2026-06-30. Implemented a generic `AuditEventListener` registered in `EventServiceProvider` that listens to the shared `AuditEvent` contract and writes immutable records to `audit_logs` and `audit_log_related_records`. Wired order-change audit events in `AdminOrderActionController` (order creation, status change, field mutations) capturing actor, old/new values, and relating records to the order and customer via `audit_log_related_records`. Verified via 4 tests in `OrderAuditingTest.php` (18 assertions). `php artisan test --filter=OrderAuditingTest` passed.
+
+Verification note: C6.1.3 completed on 2026-06-30. Extended the audit integration layer to cover all remaining business domains. Added 5 catalog definitions to `AuditEventCatalog` (`customers.customer_updated`, `products.product_updated`, `products.sku_updated`, `users.role_assigned`, `users.permission_updated`). Created `CustomerObserver` and `ProductObserver` dispatching audit events via `DB::afterCommit()`, filtering timestamp-only changes. Extended `ProductSkuObserver` with `updated()` firing `products.sku_updated`, excluding `stock_quantity` changes to avoid duplication with inventory events. Modified `User::assignRole()` and `User::syncRoles()` to dispatch `users.role_assigned` and `users.permission_updated` via `DB::afterCommit()`. Registered both new observers in `AppServiceProvider`. Fixed `OrderAuditingTest` fragility against new role-assignment audit logs in setUp. Created `AuditEventIntegrationsTest.php` (17 tests, DB-level assertions) covering: payment recorded, refund requested, refund approved, inventory stock-in, customer update, timestamp-only no-emit, product update, timestamp-only no-emit, SKU price update, SKU stock_quantity-only no-emit, role assignment, related-record linking, payload masking, idempotency, and immutability. `php artisan test` → 690 passed, 2 skipped, 0 failed (3869 assertions). `./vendor/bin/pint --test` → 443 files, PASS.
+
+Verification note: C6.1.4 completed on 2026-06-30. Implemented sensitive-data masking at the listener layer by injecting `AuditPayloadPolicy` into `AuditEventListener` and sanitizing the event payload at the very start of the write path. Added a comprehensive test suite `AuditSensitiveDataMaskingTest.php` verifying that sensitive keys (e.g. passwords, tokens, secrets, private keys, card numbers, CVVs, etc.) are recursively masked in `old_values`, `new_values`, and `metadata` columns, non-sensitive fields are preserved without modification, and masking is applied correctly across multiple event types (orders, payments, inventory, role assignment). Pint formatting and PHPStan static analysis passed.
 
 ## C6.4 Backup, Security And Regression Gates
 
 | Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |
 |---|---|---|---|---|---|---|
-| C6.4.1 | Database backup | A1.1 | Backup routine and storage destination documented/tested | Backup test | Database, Deployment | High |
-| C6.4.2 | Private-file backup | A4.1 | Private uploads are included in backup plan | File backup test | Files, Deployment | High |
-| C6.4.3 | Restore procedure | C6.4.1, C6.4.2 | Restore steps are documented and rehearsed | Restore rehearsal | Database, Files, Deployment | High |
-| C6.4.4 | Permission review | A2.3 | Role access matrix is reviewed before deploy | Permission regression tests | Auth, Admin | High |
-| C6.4.5 | Upload security review | A4.1 | Upload risks are reviewed and tests pass | Upload security tests | Files, Security | High |
-| C6.4.6 | Payment security review | A5.3, B3.3 | Webhook/payment secrets and verification are reviewed | Payment security tests | Payments, Security | High |
-| C6.4.7 | API security review | A2, B APIs | Auth, rate limits, CORS, and data leaks are reviewed | API security tests | API, Security | High |
-| C6.4.8 | Deployment checklist | A1.2 | Deployment steps, env vars, queues, scheduler are documented | Deployment dry-run | Deployment, All Modules | Medium |
-| C6.4.9 | Regression test checklist | All parent tasks | Critical user/admin/payment/file paths are listed | Regression checklist run | All Modules | High |
-| C6.4.10 | Rollback procedure | C6.4.8 | Rollback steps are documented and safe for migrations/files | Rollback review/test | Deployment, Database | High |
+| C6.4.1 | Backup and restore implementation | A1.1, A4.1 | SQL database and private uploads are archived together, and a validation routine restores the application state successfully | Backup/restore integration tests | Database, Files, Deployment | High |
+| C6.4.2 | Comprehensive application security review | A2.3, A4.1, A5.3, B3.3 | End-to-end security matrix checks pass, validating permissions, rate limits, CORS, file upload safety, and payment webhook signature validations | Security review integration tests | Auth, Files, Payments, API, Security | High |
+| C6.4.3 | Deployment checklist | A1.2 | Deployment steps, env vars, queues, scheduler are documented | Deployment dry-run | Deployment, All Modules | Medium |
+| C6.4.4 | Regression test checklist | All parent tasks | Critical user/admin/payment/file paths are listed | Regression checklist run | All Modules | High |
+| C6.4.5 | Rollback procedure | C6.4.3 | Rollback steps are documented and safe for migrations/files | Rollback review/test | Deployment, Database | High |
 
 
 
