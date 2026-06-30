@@ -2,51 +2,52 @@
 
 ## Current Parent Task
 
-C3.2 Follow-up workflow
+C6.1 Immutable audit log
 
 ## Current Subtask
 
-C3.2.6 Follow-up permissions and retry-safe regression tests
+C6.1.1 Audit table design
 
 ## Current Status
 
-Not Started. C3.2.5 (Lead activity timeline integration) is fully completed, verified, and committed.
+Not Started. C3.2 is fully completed, verified, and committed.
 
 ## Goal
 
-Create a comprehensive permission matrix and regression test suite verifying role-based access control (leads.view and leads.manage) and retry-safety of terminal state transitions.
+Create database migrations, Eloquent models, relationships, and unit tests for `audit_logs` and `audit_log_related_records` tables, ensuring they match all security constraints (e.g. append-only, FK cascades, nullability, unique keys, composite query indexes).
 
 ## Dependencies
 
-- C3.2.1 Lead Follow-up Data Model
-- C3.2.2 Create, reschedule, complete, and cancel follow-ups
-- C3.2.3 Due-today and overdue staff views
-- C3.2.4 Reminder event scheduling and notification handoff
-- C3.2.5 Lead activity timeline integration
+- A1.1.8 Files/audit/notifications schema plan
+- A4.6 Audit contracts/interfaces
+- C1.1 Basic admin order and payment view
 
 ## Required Deliverables
 
-1. A comprehensive test suite (`tests/Feature/LeadFollowUpPermissionsAndRegressionTest.php`) verifying:
-   - **Permission Matrix**: Roles with `leads.manage` can perform all actions; roles with `leads.view` can only list; users without these permissions receive 403; unauthenticated users receive 401.
-   - **Retry-Safety / Terminal States**: Verify that calling complete/cancel on already completed/cancelled follow-ups returns 422, preserving terminal states and preventing duplicate activity logs.
-   - **Data Leakage Protection**: Verify that unauthorized users receive 403 (or appropriate auth errors) when trying to access endpoints, and check that binding non-owned follow-ups returns 404 (due to scoped bindings).
+1. Database migration to create the `audit_logs` and `audit_log_related_records` tables.
+2. Eloquent models `AuditLog` and `AuditLogRelatedRecord` with appropriate:
+   - Relationships (`actorUser`, `actorCustomer`, `relatedRecords`, `auditLog`).
+   - Attribute casts (`old_values` => 'array', `new_values` => 'array', `metadata` => 'array', `occurred_at` => 'datetime').
+3. Model-level safety constraints:
+   - Make the models effectively append-only (prevent update/delete/forceDelete via Eloquent model events or custom methods).
+4. Unit/Feature tests checking migration integrity, schema structure, nullability constraints, foreign key configurations, unique constraints, and append-only immutability.
 
 ## Acceptance Criteria
 
-- All permission matrix tests pass cleanly.
-- Terminal state mutations return 422 on subsequent retries.
-- Unauthenticated requests receive 401.
-- Unauthorized requests receive 403.
-- Scope route model bindings return 404 on cross-lead access.
-- Code matches Pint formatting standards.
-- PHPStan analysis contains zero errors.
+- Database migrations run and roll back cleanly.
+- `AuditLog` table has unique index on `event_id`, unique nullable index on `idempotency_key`, and foreign keys referencing `users` and `customers`.
+- `AuditLogRelatedRecord` has foreign key referencing `audit_logs` with cascade on delete (if audit log is cleaned up, but audit log is append-only).
+- Models cast JSON fields to arrays.
+- Any attempt to update or delete `AuditLog` or `AuditLogRelatedRecord` via Eloquent throws an exception, preserving immutability.
+- Code conforms to Pint formatting.
+- PHPStan static analysis passes with zero errors.
 
 ## Tests Required
 
-- Full role-based authorization matrix tests (Super Admin, Sales Staff, Production/Inventory Staff, Unauthenticated).
-- Scoped route model binding mismatch tests (e.g. Lead A with Follow-up B).
-- Retry state transition tests (double complete, double cancel, cancel after complete, complete after cancel, update on completed).
-- Assertion that blocked operations do not generate duplicate timeline activity logs.
+- Migration success and rollback integrity tests.
+- Model relationships and cast checks.
+- Append-only immutability validation (asserting exceptions are thrown on delete, update, restore, or forceDelete).
+- Index and constraint checks.
 
 ## Quality Requirements
 
@@ -55,9 +56,13 @@ Create a comprehensive permission matrix and regression test suite verifying rol
 
 ## Files Likely Affected
 
-- `tests/Feature/LeadFollowUpPermissionsAndRegressionTest.php`
+- `database/migrations/*_create_audit_logs_table.php`
+- `app/Models/AuditLog.php`
+- `app/Models/AuditLogRelatedRecord.php`
+- `tests/Feature/AuditTableDesignTest.php`
 
 ## Tasks Not Included
 
-- Future notification engines (C6.2).
-- Sales dashboard UI implementation.
+- Hooking up audit listeners to orders, payments, inventory, or customers (handled in subsequent subtasks C6.1.2 - C6.1.6).
+- Audit viewing permissions/resource interface (C6.1.8).
+- Audit retention job execution (C6.1.9).

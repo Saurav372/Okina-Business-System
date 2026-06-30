@@ -595,6 +595,8 @@ Verification note: C5.3.5 completed on 2026-06-27. Implemented `ExpenseReporting
 | C6.1.8 | Audit viewing permissions | C6.1.1, A2.3 | Only authorized roles can view audit logs | Permission tests | Audit, Auth | High |
 | C6.1.9 | Retention rules | C6.1.1 | Retention policy is defined and enforceable | Retention tests/review | Audit, Jobs | Medium |
 
+Verification note: C6.1.1 completed on 2026-06-30. Created backed enum `AuditActorType` (user, customer, system, job, provider) and migrated `audit_logs` and `audit_log_related_records` tables with UUID event_id, idempotency key unique constraints, composite query indexes, and MySQL check constraints. Implemented `AuditLog` and `AuditLogRelatedRecord` models with relations, array casts, and disabled `updated_at` (const UPDATED_AT = null). Enforced strong immutability checks throwing `LogicException` on save/update/delete events for existing records. Verified via 5 tests in `AuditTableDesignTest.php`. All tests passed, Pint formatted, and PHPStan analysis clean.
+
 ## C6.4 Backup, Security And Regression Gates
 
 | Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |

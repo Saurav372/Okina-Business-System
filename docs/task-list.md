@@ -93,7 +93,7 @@ Verification note: completed on 2026-06-22. The customer tracking page is fully 
 | C2.1 | Inventory movements and stock handling | Project C | C2 | Implement SKU stock balance, stock-in, stock-out, manual adjustment, order stock deduction, cancellation reversal, low-stock warning, movement history, and audit. | A3.2, C1.1 | Checkout warnings, production, purchase | A/B/C | High | Medium | Inventory movement tests | Completed |
 | C2.2 | Vendors and purchases | Project C | C2 | Add vendor management, purchase orders, purchase items, purchase status, receiving, partial receiving, purchase payment tracking, and vendor-order history. | C2.1 | Inventory reports | C | High | Medium | Purchase stock-in tests | Completed |
 | C3.1 | CRM lead module | Project C | C3 | Capture website/manual leads, sources, UTM/referrer/page data, statuses, notes, assignments. | A2.3, A3.1, A4.3 | Quotations, follow-ups | B/C | High | Medium | Lead tests | Completed |
-| C3.2 | Follow-up workflow | Project C | C3 | Add follow-up due dates, reminders, sales dashboard, overdue view, and activity timeline. | C3.1, A4.4 | Notifications | C | Medium | Medium | Follow-up tests | Not Started |
+| C3.2 | Follow-up workflow | Project C | C3 | Add follow-up due dates, reminders, sales dashboard, overdue view, and activity timeline. | C3.1, A4.4 | Notifications | C | Medium | Medium | Follow-up tests | Completed |
 | C4.1 | Simple order processing | Project C | C4 | Allow authorized staff to change the main order status between Confirmed, In Production, Ready to Ship, Shipped, Delivered, and Cancelled. | C1.1 | Tracking | B/C | Medium | Medium | Status workflow tests | Completed |
 
 Verification note: completed on 2026-06-22. Status changes are implemented under admin controller endpoints, validating status rules and timestamps for confirmed, cancelled, ready to ship, shipped, and delivered states. Role-based permissions verify that only authorized staff roles can update status fields. Covered by `CustomerTrackingApiTest`.
@@ -105,7 +105,7 @@ Verification note: completed on 2026-06-22. Shipment details (courier name, trac
 | C5.2 | Refund management | Project C | C5 | Track refund requests, refund approvals, refund records, partial/full refunds, and payment-status recalculation without erasing original payment history. | A5.2, C5.1 | Reports/audit | C | Medium | Medium | Refund tests | Completed |
 | C5.3 | Expense management | Project C | C5 | Track approved business expenses separately from refunds, with permissions and reporting categories. | C5.1 | Reports/audit | C | Medium | Low | Expense tests | Completed |
 | C5.4 | Financial reports | Project C | C5 | Create payment, balance, refund, expense, sales, and protected finance reports. | C5.1, C5.2, C5.3 | Hardening | C | Medium | Low | Report accuracy tests | Not Started |
-| C6.1 | Immutable audit log | Project C | C6 | Implement audit table design, order-change auditing, payment/refund auditing, inventory auditing, customer/product auditing, permission-change auditing, sensitive-data masking, viewing permissions, and retention rules. | A4.6, A5.1, C1.1 | Finance/inventory hardening | A/C | High | Medium | Audit immutability tests | Not Started |
+| C6.1 | Immutable audit log | Project C | C6 | Implement audit table design, order-change auditing, payment/refund auditing, inventory auditing, customer/product auditing, permission-change auditing, sensitive-data masking, viewing permissions, and retention rules. | A4.6, A5.1, C1.1 | Finance/inventory hardening | A/C | High | Medium | Audit immutability tests | In Progress |
 | C6.2 | Notification implementation | Project C | C6 | Implement notification templates, channels, logs, retries, and deduplication. | A4.4, A4.5 | Automation | A/B/C | Medium | Medium | Notification tests | Not Started |
 | C6.3 | Google Sheets backup sync | Project C | C6 | Queue deduplicated sync jobs for leads, orders, payments, inventory, customers, follow-ups, vendors. | A4.3, A4.5, C6.2 | Backup/reporting | A/C | Medium | Medium | Sheets failure/retry tests | Not Started |
 | C6.4 | Backup, security, and regression gates | Project C | C6 | Define database backup, private-file backup, restore procedure, permission review, upload/payment/API security reviews, deployment checklist, regression checklist, and rollback procedure. | C6.1, C6.2, C6.3 | Production readiness | A/B/C | Medium | Medium | Full regression tests | Not Started |
@@ -615,7 +615,7 @@ Verification note: C5.3.4 completed on 2026-06-26. Audited and confirmed all eig
 
 | Subtask ID | Subtask Name | Status |
 |---|---|---|
-| C6.1.1 | Audit table design | Not Started |
+| C6.1.1 | Audit table design | Completed |
 | C6.1.2 | Order-change auditing | Not Started |
 | C6.1.3 | Payment/refund auditing | Not Started |
 | C6.1.4 | Inventory auditing | Not Started |
@@ -624,6 +624,8 @@ Verification note: C5.3.4 completed on 2026-06-26. Audited and confirmed all eig
 | C6.1.7 | Sensitive-data masking | Not Started |
 | C6.1.8 | Audit viewing permissions | Not Started |
 | C6.1.9 | Retention rules | Not Started |
+
+Verification note: C6.1.1 completed on 2026-06-30. Created backed enum `AuditActorType` (user, customer, system, job, provider) and migrated `audit_logs` and `audit_log_related_records` tables with UUID event_id, idempotency key unique constraints, composite query indexes, and MySQL check constraints. Implemented `AuditLog` and `AuditLogRelatedRecord` models with relations, array casts, and disabled `updated_at` (const UPDATED_AT = null). Enforced strong immutability checks throwing `LogicException` on save/update/delete events for existing records. Verified via 5 tests in `AuditTableDesignTest.php`. All tests passed, Pint formatted, and PHPStan analysis clean.
 
 ### C6.4 Backup, security, and regression gates
 
