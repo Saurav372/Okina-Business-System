@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminOrderActionController;
 use App\Http\Controllers\Admin\AdminOrderDesignFileController;
+use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\ExpenseCategoryController;
 use App\Http\Controllers\Admin\ExpenseController;
 use App\Http\Controllers\Admin\LeadActivityController;
@@ -156,4 +157,8 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     ]);
     Route::post('/purchase-orders/{purchase_order}/items/{item}/receive', [VendorOrderItemController::class, 'receive'])
         ->name('admin.purchase_orders.items.receive');
+
+    // Audit logs admin routes
+    Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('admin.audit_logs.index');
+    Route::get('/audit-logs/{audit_log}', [AuditLogController::class, 'show'])->name('admin.audit_logs.show');
 });

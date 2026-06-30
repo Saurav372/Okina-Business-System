@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Contracts\CustomizationOptionContract;
 use App\Contracts\PublicCatalogContract;
+use App\Models\AuditLog;
+use App\Models\Customer;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
 use App\Models\Lead;
@@ -15,7 +17,10 @@ use App\Models\ProductCategory;
 use App\Models\ProductSku;
 use App\Models\Quotation;
 use App\Models\Refund;
+use App\Observers\CustomerObserver;
+use App\Observers\ProductObserver;
 use App\Observers\ProductSkuObserver;
+use App\Policies\AuditLogPolicy;
 use App\Policies\ExpenseCategoryPolicy;
 use App\Policies\ExpensePolicy;
 use App\Policies\LeadFollowUpPolicy;
@@ -51,6 +56,7 @@ class AppServiceProvider extends ServiceProvider
         if (config('database.default') === 'sqlite') {
             DB::statement('PRAGMA foreign_keys = ON;');
         }
+        Gate::policy(AuditLog::class, AuditLogPolicy::class);
         Gate::policy(Order::class, OrderPolicy::class);
         Gate::policy(Product::class, ProductPolicy::class);
         Gate::policy(ProductCategory::class, ProductCategoryPolicy::class);
@@ -63,5 +69,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Expense::class, ExpensePolicy::class);
 
         ProductSku::observe(ProductSkuObserver::class);
+        Customer::observe(CustomerObserver::class);
+        Product::observe(ProductObserver::class);
     }
 }
