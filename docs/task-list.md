@@ -362,12 +362,14 @@ Verification note: C3.1.7 completed on 2026-06-23. Lead authorization, list, and
 
 | Subtask ID | Subtask Name | Status |
 |---|---|---|
-| C3.2.1 | Follow-up data model and ownership rules | Not Started |
+| C3.2.1 | Follow-up data model and ownership rules | Completed |
 | C3.2.2 | Create, reschedule, complete, and cancel follow-ups | Not Started |
 | C3.2.3 | Due-today and overdue staff views | Not Started |
 | C3.2.4 | Reminder event scheduling and notification handoff | Not Started |
 | C3.2.5 | Lead activity timeline integration | Not Started |
 | C3.2.6 | Follow-up permissions and retry-safe regression tests | Not Started |
+
+Verification note: C3.2.1 completed on 2026-06-30. Implemented the `lead_follow_ups` migration with foreign key cascades on delete for `lead_id`, nullable unique index on `notification_key`, and composite query indexes. Added `LeadFollowUp` model with `LeadFollowUpStatus` backed enum casts, datetime casts, relationships, and scopes (`pending`, `completed`, `overdue`, `dueToday` using index-friendly `whereBetween`). Created `LeadFollowUpFactory` with states. Verified with `php artisan test --filter=LeadFollowUpTest` (7 tests, 43 assertions passed) and Pint formatting.
 
 ### C4.1 Simple order processing
 
@@ -478,7 +480,7 @@ Verification note: C1.2.8 completed on 2026-06-23. The order confirmation transi
 | C1.3.5 | Customer approval | Completed |
 | C1.3.6 | Quotation revision | Completed |
 | C1.3.7 | Sales-order conversion | Completed |
-| C1.3.8 | Advance-payment recording | Not Started |
+| C1.3.8 | Advance-payment recording | Completed |
 
 Verification note: C1.3.1 completed on 2026-06-23. The bulk enquiry capture flow connects the website checkout quantity block and CRM Lead capture. Validated that checkout blocks bulk order quantities (item count >= 25) and returns a bulk handoff response advising next_step = bulk_enquiry (handled by CheckoutValidationService). The frontend then submits to the public leads capture API, creating a new lead with source = website_bulk_enquiry (handled by PublicLeadController). Covered by a dedicated feature integration test in `BulkEnquiryCaptureBridgeTest.php`. All 327 tests passed and Pint applied.
 

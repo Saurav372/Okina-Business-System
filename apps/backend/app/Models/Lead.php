@@ -208,4 +208,9 @@ class Lead extends Model
     {
         return $this->hasMany(LeadActivity::class)->orderBy('occurred_at');
     }
+
+    public function followUps(): HasMany
+    {
+        return $this->hasMany(LeadFollowUp::class);
+    }
 }

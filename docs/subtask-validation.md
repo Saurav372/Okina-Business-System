@@ -399,6 +399,14 @@ Verification note: C3.1.6 completed on 2026-06-23. The notes and activity timeli
 
 Verification note: C3.1.7 completed on 2026-06-23. Lead authorization, list, and detail views are fully implemented. Gated via `LeadPolicy::viewAny` and `LeadPolicy::view` requiring either `leads.view` or `leads.manage` permission. The list view returns a paginated structure mapped to safe summary fields (excludes internal IDs, requirements, UTM fields, referrer/landing URLs, and lost reason, but allows `assigned_to_user_id`), ordered newest first (`latest('created_at')`). The detail view returns full CRM data (includes UTM fields, requirements, landing page, etc., but hides internal database IDs `id`, `customer_id`, `created_by_user_id`). Covered by 10 feature tests in `LeadDetailListTest.php`. All 326 tests passed and Pint applied.
 
+## C3.2 Follow-Up Workflow
+
+| Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |
+|---|---|---|---|---|---|---|
+| C3.2.1 | Migration, Eloquent model, relations, factory, and unit tests for `lead_follow_ups` | C3.1, A2.3 | Migration runs/rolls back cleanly; model casts status to enum and timestamps to Carbon; relationships work; query scopes function correctly (including index-safe dueToday); nullable unique constraint enforces uniqueness except for multiple nulls | Schema validation, unique key, enum cast, timestamp cast, relationship, query scope, and factory tests | CRM, Database | High |
+
+Verification note: C3.2.1 completed on 2026-06-30. Implemented the `lead_follow_ups` migration with foreign key cascades on delete for `lead_id`, nullable unique index on `notification_key`, and composite query indexes. Added `LeadFollowUp` model with `LeadFollowUpStatus` backed enum casts, datetime casts, relationships, and scopes (`pending`, `completed`, `overdue`, `dueToday` using index-friendly `whereBetween`). Created `LeadFollowUpFactory` with states. Verified with `php artisan test --filter=LeadFollowUpTest` (7 tests, 43 assertions passed) and Pint formatting.
+
 ## C1.3 Quotations And Bulk-Order Conversion
 
 | Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |
