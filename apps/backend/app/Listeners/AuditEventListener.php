@@ -9,6 +9,7 @@ use App\Models\AuditLogRelatedRecord;
 use App\Models\Customer;
 use App\Models\User;
 use App\Support\Audit\AuditEventCatalog;
+use App\Support\Audit\AuditPayloadPolicy;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -18,22 +19,38 @@ class AuditEventListener
 {
     public function __construct(
         private readonly AuditEventCatalog $catalog,
+        private readonly AuditPayloadPolicy $policy,
     ) {}
 
     public function handle(AuditEvent $event): void
     {
-        $payload = $event->payload;
+        $payload = $this->policy->sanitize($event->payload);
 
         // Resolve the catalog definition first so we can use it as a fallback for subject_type
         $definition = $this->catalog->definition($event->key);
 
-        // Validate required fields — subject_type may be omitted if the catalog definition supplies it
+        // Validate required fields — subject_type may be omitted if the catalog definition supplies it.
+        // Resolution order: (1) explicit payload value, (2) catalog definition subjectType.
         $subjectType = $payload['subject_type'] ?? $definition?->subjectType ?? null;
 
         if (empty($subjectType)) {
-            // Log a warning for unregistered events that omit subject_type rather than
-            // throwing, to preserve backward compatibility with existing dispatchers.
-            Log::warning('AuditEvent missing subject_type — falling back to unknown.', [
+            // TODO(tech-debt): Remove this fallback once all legacy event dispatchers have been migrated.
+            //
+            // Migration path:
+            //   1. [done]    AuditEventListener supports payload → catalog → warning → "unknown" chain.
+            //   2. [pending] Migrate every legacy emitter to include 'subject_type' in its payload,
+            //                or ensure its catalog definition provides subjectType.
+            //   3. [pending] Add a test asserting every AuditEventDefinition in the catalog declares
+            //                a non-empty subjectType (prevents future regressions).
+            //   4. [pending] Remove this block and replace with:
+            //                    throw new \InvalidArgumentException(
+            //                        "AuditEvent payload must include 'subject_type' (or be registered "
+            //                        . "in the catalog with a subjectType). Event key: [{$event->key}]."
+            //                    );
+            //
+            // An audit record with subject_type = 'unknown' is queryable but not analytically useful.
+            // The "unknown" fallback exists only to keep the transition non-breaking.
+            Log::warning('AuditEvent missing subject_type — falling back to unknown. Migrate this emitter.', [
                 'event_key' => $event->key,
             ]);
             $subjectType = 'unknown';
