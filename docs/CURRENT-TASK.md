@@ -6,58 +6,60 @@ C3.2 Follow-up workflow
 
 ## Current Subtask
 
-C3.2.1 Follow-up data model and ownership rules
+C3.2.2 Create, reschedule, complete, and cancel follow-ups
 
 ## Current Status
 
-Not Started. C2.2 (Vendors and purchases) is fully completed, verified, and committed.
+Not Started. C3.2.1 (Follow-up data model and ownership rules) is fully completed, verified, and committed.
 
 ## Goal
 
-Implement the database migration, Eloquent model, relationships, factory, and unit tests for lead follow-ups (`lead_follow_ups` table) in accordance with the CRM and Quotations Schema Plan.
+Implement the API endpoints, controller actions, request validations, policies, and feature tests for creating, rescheduling, completing, and cancelling lead follow-ups.
 
 ## Dependencies
 
-- C3.1 CRM Lead Module
-- A2.3 Role and Permission Model
+- C3.2.1 Lead Follow-up Data Model
 
 ## Required Deliverables
 
-1. A database migration creating the `lead_follow_ups` table with composite indexes and constraints.
-2. `App\Models\LeadFollowUp` Eloquent model with relations, backed enums, and local query scopes.
-3. `Database\Factories\LeadFollowUpFactory` with state states.
-4. Unit/Feature tests in `tests/Unit/LeadFollowUpTest.php` or `tests/Feature/LeadFollowUpTest.php`.
+1. Controller and route definitions for CRUD/action operations on follow-ups (e.g. POST `/admin/leads/{lead}/follow-ups`, PATCH `/admin/leads/{lead}/follow-ups/{follow_up}`, POST `/admin/leads/{lead}/follow-ups/{follow_up}/complete`, POST `/admin/leads/{lead}/follow-ups/{follow_up}/cancel`).
+2. Request validation classes: `StoreLeadFollowUpRequest` and `UpdateLeadFollowUpRequest` (or unified).
+3. Authorization logic (wiring up `LeadFollowUpPolicy` or using `LeadPolicy`).
+4. Feature tests verifying creation, status transitions, validation rules, and permission checks.
 
 ## Acceptance Criteria
 
-- Migration runs and rolls back cleanly without data leakage or index duplication.
-- `LeadFollowUp` supports statuses: `pending`, `completed`, `snoozed`, `cancelled`.
-- Model has working relations: `lead`, `assignedTo`, `completedBy`, `createdBy`.
-- Database enforces FK constraints on lead and user relations.
-- Enforces unique nullable constraint on `notification_key`.
-- Local query scopes for `pending`, `completed`, `overdue`, and `dueToday` are defined.
+- Staff can create a new follow-up for a lead with a valid future `due_at` date.
+- Rescheduling updates the `due_at` timestamp.
+- Completing a follow-up transitions status to `completed`, updates `completed_at` to the current timestamp, and sets `completed_by_user_id` to the authenticated user.
+- Cancelling transitions status to `cancelled`.
+- Restricts actions on completed/cancelled follow-ups (terminal states).
+- Unauthorized users are blocked with 403.
+- Response payloads are public-safe (omitting internal database IDs).
 
 ## Tests Required
 
-- Migration schema and constraint tests.
-- Model relationship and scope verification.
-- Factory states verification.
+- Success/failure paths for creation, rescheduling, completion, and cancellation.
+- Request validation tests (e.g., verifying `due_at` cannot be in the past on creation).
+- Role/permission protection tests.
 
 ## Quality Requirements
 
-- No N+1 query vulnerability.
+- Eager loading relationships to avoid N+1 query risks.
 - Clean Laravel Pint code formatting.
 - PHPStan analysis with zero errors.
 
 ## Files Likely Affected
 
-- `app/Models/LeadFollowUp.php`
-- `database/migrations/*_create_lead_follow_ups_table.php`
-- `database/factories/LeadFollowUpFactory.php`
-- `tests/Feature/LeadFollowUpTest.php`
+- `routes/api.php` or `routes/web.php` (admin routes)
+- `app/Http/Controllers/Admin/LeadFollowUpController.php`
+- `app/Http/Requests/Lead/StoreLeadFollowUpRequest.php`
+- `app/Http/Requests/Lead/UpdateLeadFollowUpRequest.php`
+- `app/Policies/LeadFollowUpPolicy.php`
+- `tests/Feature/LeadFollowUpActionsTest.php`
 
 ## Tasks Not Included
 
-- API controller routes or form request validations for creating/rescheduling/completing/cancelling follow-ups (C3.2.2).
-- UI or dashboard lists for staff due-today or overdue follow-ups (C3.2.3).
-- Scheduler logic or queued notifications (C3.2.4).
+- Dashboard views and lists for due-today/overdue follow-ups (C3.2.3).
+- Notification scheduling/reminders (C3.2.4).
+- Lead activity timeline integration (C3.2.5).

@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\ExpenseCategoryController;
 use App\Http\Controllers\Admin\ExpenseController;
 use App\Http\Controllers\Admin\LeadActivityController;
 use App\Http\Controllers\Admin\LeadController;
+use App\Http\Controllers\Admin\LeadFollowUpController;
 use App\Http\Controllers\Admin\OrderDetailController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\QuotationController;
@@ -70,6 +71,14 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     Route::patch('/leads/{lead}', [LeadController::class, 'update'])->name('admin.leads.update');
     Route::get('/leads/{lead}/activities', [LeadActivityController::class, 'index'])->name('admin.leads.activities.index');
     Route::post('/leads/{lead}/activities', [LeadActivityController::class, 'store'])->name('admin.leads.activities.store');
+
+    Route::scopeBindings()->group(function () {
+        Route::post('/leads/{lead}/follow-ups', [LeadFollowUpController::class, 'store'])->name('admin.leads.follow_ups.store');
+        Route::patch('/leads/{lead}/follow-ups/{follow_up}', [LeadFollowUpController::class, 'update'])->name('admin.leads.follow_ups.update');
+        Route::post('/leads/{lead}/follow-ups/{follow_up}/complete', [LeadFollowUpController::class, 'complete'])->name('admin.leads.follow_ups.complete');
+        Route::post('/leads/{lead}/follow-ups/{follow_up}/cancel', [LeadFollowUpController::class, 'cancel'])->name('admin.leads.follow_ups.cancel');
+    });
+
     Route::post('/quotations', [QuotationController::class, 'store'])->name('admin.quotations.store');
     Route::patch('/quotations/{quotation:public_id}/status', [QuotationController::class, 'updateStatus'])->name('admin.quotations.status.update');
     Route::post('/quotations/{quotation:public_id}/convert', [QuotationController::class, 'convert'])->name('admin.quotations.convert');

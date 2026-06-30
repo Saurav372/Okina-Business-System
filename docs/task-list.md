@@ -363,13 +363,15 @@ Verification note: C3.1.7 completed on 2026-06-23. Lead authorization, list, and
 | Subtask ID | Subtask Name | Status |
 |---|---|---|
 | C3.2.1 | Follow-up data model and ownership rules | Completed |
-| C3.2.2 | Create, reschedule, complete, and cancel follow-ups | Not Started |
+| C3.2.2 | Create, reschedule, complete, and cancel follow-ups | Completed |
 | C3.2.3 | Due-today and overdue staff views | Not Started |
 | C3.2.4 | Reminder event scheduling and notification handoff | Not Started |
 | C3.2.5 | Lead activity timeline integration | Not Started |
 | C3.2.6 | Follow-up permissions and retry-safe regression tests | Not Started |
 
 Verification note: C3.2.1 completed on 2026-06-30. Implemented the `lead_follow_ups` migration with foreign key cascades on delete for `lead_id`, nullable unique index on `notification_key`, and composite query indexes. Added `LeadFollowUp` model with `LeadFollowUpStatus` backed enum casts, datetime casts, relationships, and scopes (`pending`, `completed`, `overdue`, `dueToday` using index-friendly `whereBetween`). Created `LeadFollowUpFactory` with states. Verified with `php artisan test --filter=LeadFollowUpTest` (7 tests, 43 assertions passed) and Pint formatting.
+
+Verification note: C3.2.2 completed on 2026-06-30. Implemented the API endpoints and controller actions for creating, rescheduling, completing, and cancelling follow-ups under `routes/web.php` using `scopeBindings()` nested route structures. Added form request validation, explicit policy checks for custom abilities, DB transaction safety, snooze clearing logic, and immutability assertions on terminal states. Exposed structured JSON responses containing nested user relations info. Covered by 8 feature tests in `LeadFollowUpActionsTest.php` with all tests passing, Pint formatting applied, and PHPStan analysis clean.
 
 ### C4.1 Simple order processing
 

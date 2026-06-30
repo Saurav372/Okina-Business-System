@@ -7,6 +7,7 @@ use App\Contracts\PublicCatalogContract;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
 use App\Models\Lead;
+use App\Models\LeadFollowUp;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
@@ -17,6 +18,7 @@ use App\Models\Refund;
 use App\Observers\ProductSkuObserver;
 use App\Policies\ExpenseCategoryPolicy;
 use App\Policies\ExpensePolicy;
+use App\Policies\LeadFollowUpPolicy;
 use App\Policies\LeadPolicy;
 use App\Policies\OrderPolicy;
 use App\Policies\PaymentPolicy;
@@ -26,6 +28,7 @@ use App\Policies\QuotationPolicy;
 use App\Policies\RefundPolicy;
 use App\Support\Products\CustomizationOptionRules;
 use App\Support\Products\PublicCatalogRules;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -46,12 +49,13 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         if (config('database.default') === 'sqlite') {
-            \DB::statement('PRAGMA foreign_keys = ON;');
+            DB::statement('PRAGMA foreign_keys = ON;');
         }
         Gate::policy(Order::class, OrderPolicy::class);
         Gate::policy(Product::class, ProductPolicy::class);
         Gate::policy(ProductCategory::class, ProductCategoryPolicy::class);
         Gate::policy(Lead::class, LeadPolicy::class);
+        Gate::policy(LeadFollowUp::class, LeadFollowUpPolicy::class);
         Gate::policy(Quotation::class, QuotationPolicy::class);
         Gate::policy(Payment::class, PaymentPolicy::class);
         Gate::policy(Refund::class, RefundPolicy::class);
