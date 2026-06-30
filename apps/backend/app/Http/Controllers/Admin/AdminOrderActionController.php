@@ -43,6 +43,21 @@ class AdminOrderActionController extends Controller
             ]);
         }
 
+        // Capture old values snapshot before updating
+        $oldValues = [
+            'status' => $currentStatus?->value,
+            'design_status' => $order->design_status,
+            'production_status' => $order->production_status,
+            'shipping_status' => $order->shipping_status,
+        ];
+
+        $newValues = [
+            'status' => $targetStatus?->value ?? $validated['status'],
+            'design_status' => $validated['design_status'],
+            'production_status' => $validated['production_status'],
+            'shipping_status' => $validated['shipping_status'],
+        ];
+
         // Auto-update timestamps based on status transitions
         if ($validated['status'] === 'confirmed' && $order->confirmed_at === null) {
             $order->confirmed_at = now();
@@ -61,6 +76,23 @@ class AdminOrderActionController extends Controller
         }
 
         $order->update($validated);
+
+        $actor = $request->user();
+
+        DB::afterCommit(function () use ($order, $actor, $oldValues, $newValues): void {
+            event(new AuditEvent('orders.order_edited', $actor, [
+                'subject_type' => 'order',
+                'subject_id' => $order->id,
+                'subject_public_id' => $order->public_id,
+                'customer_id' => $order->customer_id,
+                'customer_public_id' => $order->customer?->public_id,
+                'old_values' => $oldValues,
+                'new_values' => $newValues,
+                'metadata' => [
+                    'cancellation_reason' => $order->cancellation_reason ?? null,
+                ],
+            ]));
+        });
 
         if ($request->wantsJson()) {
             return response()->json([
