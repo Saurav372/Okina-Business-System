@@ -600,6 +600,8 @@ Verification note: C6.1.3 completed on 2026-06-30. Extended the audit integratio
 
 Verification note: C6.1.4 completed on 2026-06-30. Implemented sensitive-data masking at the listener layer by injecting `AuditPayloadPolicy` into `AuditEventListener` and sanitizing the event payload at the very start of the write path. Added a comprehensive test suite `AuditSensitiveDataMaskingTest.php` verifying that sensitive keys (e.g. passwords, tokens, secrets, private keys, card numbers, CVVs, etc.) are recursively masked in `old_values`, `new_values`, and `metadata` columns, non-sensitive fields are preserved without modification, and masking is applied correctly across multiple event types (orders, payments, inventory, role assignment). Pint formatting and PHPStan static analysis passed.
 
+Verification note: C6.1.5 completed on 2026-06-30. Created `AuditLogPolicy` to protect the `viewAny` and `view` actions on the `AuditLog` model, requiring the `audit.view` permission slug. Registered the policy in `AppServiceProvider`. Created `AuditLogController` exposing paginated index with query filters (by action, module, subject_type, subject_public_id) and show endpoints, registered under authenticated admin routes in `routes/web.php`. Created a comprehensive feature test suite `AuditViewingPermissionsTest.php` validating guest redirects, unauthorized role exclusions (Admin, Sales, Inventory, Production staff returning 403), authorized role accesses (Super Admin and Finance staff returning 200), and filter parameters. Pint formatting and PHPStan static analysis passed with zero errors.
+
 ## C6.4 Backup, Security And Regression Gates
 
 | Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |
