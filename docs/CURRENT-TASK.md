@@ -6,42 +6,42 @@ C6.1 Immutable audit log
 
 ## Current Subtask
 
-C6.1.5 Audit viewing permissions
+C6.1.6 Retention rules
 
 ## Current Status
 
-Not Started. C6.1.1, C6.1.2, C6.1.3, and C6.1.4 are fully completed, verified, and committed.
+Not Started. C6.1.1 through C6.1.5 are fully completed, verified, and committed.
 
 ## Goal
 
-Define and enforce role-based access control (RBAC) gates for retrieving or viewing the immutable audit logs. Ensure only staff members with the explicit permission (e.g. `audit.view` or `audit.manage`) can view, search, or inspect logs.
+Define and implement an audit log retention policy. Provide an automated Artisan command or scheduler job (e.g. `audit:prune`) to safely delete/archive audit logs older than a configurable number of days (e.g. 365 days or custom config value) without exceeding memory limits.
 
 ## Dependencies
 
 - C6.1.1 Audit table design
-- A2.3 Role and permission model
 
 ## Required Deliverables
 
-1. Audit viewing authorization gates:
-   - A policy or gate check (e.g., `AuditLogPolicy` mapped to `AuditLog`) enforcing viewing permissions.
-   - Integration with endpoints or Filament resources exposing audit logs.
-2. Feature/integration tests verifying:
-   - Staff with authorized permissions can access/view audit log resources.
-   - Unauthorized staff (e.g., generic staff, unauthorized roles) receive 403 Forbidden.
-   - Guests/unauthenticated requests receive 401 Unauthorized.
+1. Retention policy configuration and command:
+   - A configuration variable (e.g. in `config/audit.php` or `settings` service) specifying the retention period in days.
+   - An Artisan command `audit:prune` that queries and deletes audit logs older than the retention threshold.
+   - Streaming/chunking deletions to keep memory and lock durations low.
+2. Integration with scheduler in `routes/console.php`.
+3. Feature/Unit tests verifying:
+   - Logs older than the retention threshold are successfully deleted.
+   - Logs newer than the threshold are strictly preserved.
+   - Cascade deletes for `audit_log_related_records` work cleanly (via database constraints or clean deletes).
 
 ## Acceptance Criteria
 
-- All audit log retrieval is protected by authorization checks.
-- Zero authorization leaks (no unprivileged user can read any audit log content).
-- Test coverage ensures all staff roles are validated against the access matrix.
+- Old audit logs are automatically pruned according to the retention settings.
+- The pruning command uses chunking/lazy execution to protect DB performance.
 - Pint formatting and PHPStan static analysis pass with zero errors.
 
 ## Tests Required
 
-- Integration/Feature tests verifying role-based access control on audit viewing endpoints.
-- Authorization matrix validation for Super Admin, Admin, and other staff roles.
+- Integration tests verifying pruning commands delete the correct database rows.
+- Regression tests confirming younger records remain intact.
 
 ## Quality Requirements
 
@@ -50,11 +50,10 @@ Define and enforce role-based access control (RBAC) gates for retrieving or view
 
 ## Files Likely Affected
 
-- `app/Policies/AuditLogPolicy.php` (new policy)
-- `app/Providers/AppServiceProvider.php` (policy registration if needed)
-- `tests/Feature/AuditViewingPermissionsTest.php` (new test file)
+- `app/Console/Commands/PruneAuditLogs.php` (new command)
+- `routes/console.php` (schedule definition)
+- `tests/Feature/AuditRetentionTest.php` (new test file)
 
 ## Tasks Not Included
 
-- Retention rules (C6.1.6).
-- Google Sheets sync (C6.3).
+- Future audit backup/archiving mechanisms (C6.4.1).
