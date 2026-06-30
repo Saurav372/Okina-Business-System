@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\LeadFollowUpStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Lead\LeadFollowUpListRequest;
 use App\Http\Requests\Lead\StoreLeadFollowUpRequest;
 use App\Http\Requests\Lead\UpdateLeadFollowUpRequest;
 use App\Models\Lead;
@@ -15,6 +16,46 @@ use Illuminate\Validation\ValidationException;
 
 class LeadFollowUpController extends Controller
 {
+    /**
+     * Display a listing of lead follow-ups.
+     */
+    public function index(LeadFollowUpListRequest $request)
+    {
+        Gate::authorize('viewAny', LeadFollowUp::class);
+
+        $query = LeadFollowUp::query()
+            ->with([
+                'assignedTo',
+                'completedBy',
+                'createdBy',
+            ]);
+
+        // Filter by assigned user
+        if ($request->filled('assigned_to_user_id')) {
+            $query->where('assigned_to_user_id', $request->input('assigned_to_user_id'));
+        }
+
+        // Apply mutually exclusive status or custom filters
+        if ($request->input('filter') === 'overdue') {
+            $query->overdue();
+        } elseif ($request->input('filter') === 'due_today') {
+            $query->dueToday();
+        } elseif ($request->filled('status')) {
+            $status = LeadFollowUpStatus::from($request->input('status'));
+            $query->where('status', $status->value);
+        }
+
+        // Default sorting (ascending due_at, secondary id) and pagination preserving query strings
+        $followUps = $query->orderBy('due_at')
+            ->orderBy('id')
+            ->paginate($request->input('per_page', 15))
+            ->withQueryString();
+
+        $followUps->through(fn ($item) => $this->formatResponse($item));
+
+        return response()->json($followUps);
+    }
+
     /**
      * Store a newly created lead follow-up.
      */

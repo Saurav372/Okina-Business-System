@@ -364,7 +364,7 @@ Verification note: C3.1.7 completed on 2026-06-23. Lead authorization, list, and
 |---|---|---|
 | C3.2.1 | Follow-up data model and ownership rules | Completed |
 | C3.2.2 | Create, reschedule, complete, and cancel follow-ups | Completed |
-| C3.2.3 | Due-today and overdue staff views | Not Started |
+| C3.2.3 | Due-today and overdue staff views | Completed |
 | C3.2.4 | Reminder event scheduling and notification handoff | Not Started |
 | C3.2.5 | Lead activity timeline integration | Not Started |
 | C3.2.6 | Follow-up permissions and retry-safe regression tests | Not Started |
@@ -372,6 +372,8 @@ Verification note: C3.1.7 completed on 2026-06-23. Lead authorization, list, and
 Verification note: C3.2.1 completed on 2026-06-30. Implemented the `lead_follow_ups` migration with foreign key cascades on delete for `lead_id`, nullable unique index on `notification_key`, and composite query indexes. Added `LeadFollowUp` model with `LeadFollowUpStatus` backed enum casts, datetime casts, relationships, and scopes (`pending`, `completed`, `overdue`, `dueToday` using index-friendly `whereBetween`). Created `LeadFollowUpFactory` with states. Verified with `php artisan test --filter=LeadFollowUpTest` (7 tests, 43 assertions passed) and Pint formatting.
 
 Verification note: C3.2.2 completed on 2026-06-30. Implemented the API endpoints and controller actions for creating, rescheduling, completing, and cancelling follow-ups under `routes/web.php` using `scopeBindings()` nested route structures. Added form request validation, explicit policy checks for custom abilities, DB transaction safety, snooze clearing logic, and immutability assertions on terminal states. Exposed structured JSON responses containing nested user relations info. Covered by 8 feature tests in `LeadFollowUpActionsTest.php` with all tests passing, Pint formatting applied, and PHPStan analysis clean.
+
+Verification note: C3.2.3 completed on 2026-06-30. Implemented global listing endpoint `GET /admin/leads/follow-ups` with eager loading user relationship models prior to pagination (avoiding N+1 queries). Integrated mutual exclusivity validation rules in `LeadFollowUpListRequest` preventing concurrent uses of `status` and custom `filter` query strings. Added operational sorting utilizing `orderBy('due_at')->orderBy('id')` to display overdue and earliest due tasks first with stable pagination. Preserved filter query strings in pagination links with `withQueryString()`. Covered by 9 feature tests in `LeadFollowUpViewsTest.php`. All tests passed, Pint formatted, and PHPStan clean.
 
 ### C4.1 Simple order processing
 
