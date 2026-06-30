@@ -6,48 +6,42 @@ C6.1 Immutable audit log
 
 ## Current Subtask
 
-C6.1.1 Audit table design
+C6.1.5 Audit viewing permissions
 
 ## Current Status
 
-Not Started. C3.2 is fully completed, verified, and committed.
+Not Started. C6.1.1, C6.1.2, C6.1.3, and C6.1.4 are fully completed, verified, and committed.
 
 ## Goal
 
-Create database migrations, Eloquent models, relationships, and unit tests for `audit_logs` and `audit_log_related_records` tables, ensuring they match all security constraints (e.g. append-only, FK cascades, nullability, unique keys, composite query indexes).
+Define and enforce role-based access control (RBAC) gates for retrieving or viewing the immutable audit logs. Ensure only staff members with the explicit permission (e.g. `audit.view` or `audit.manage`) can view, search, or inspect logs.
 
 ## Dependencies
 
-- A1.1.8 Files/audit/notifications schema plan
-- A4.6 Audit contracts/interfaces
-- C1.1 Basic admin order and payment view
+- C6.1.1 Audit table design
+- A2.3 Role and permission model
 
 ## Required Deliverables
 
-1. Database migration to create the `audit_logs` and `audit_log_related_records` tables.
-2. Eloquent models `AuditLog` and `AuditLogRelatedRecord` with appropriate:
-   - Relationships (`actorUser`, `actorCustomer`, `relatedRecords`, `auditLog`).
-   - Attribute casts (`old_values` => 'array', `new_values` => 'array', `metadata` => 'array', `occurred_at` => 'datetime').
-3. Model-level safety constraints:
-   - Make the models effectively append-only (prevent update/delete/forceDelete via Eloquent model events or custom methods).
-4. Unit/Feature tests checking migration integrity, schema structure, nullability constraints, foreign key configurations, unique constraints, and append-only immutability.
+1. Audit viewing authorization gates:
+   - A policy or gate check (e.g., `AuditLogPolicy` mapped to `AuditLog`) enforcing viewing permissions.
+   - Integration with endpoints or Filament resources exposing audit logs.
+2. Feature/integration tests verifying:
+   - Staff with authorized permissions can access/view audit log resources.
+   - Unauthorized staff (e.g., generic staff, unauthorized roles) receive 403 Forbidden.
+   - Guests/unauthenticated requests receive 401 Unauthorized.
 
 ## Acceptance Criteria
 
-- Database migrations run and roll back cleanly.
-- `AuditLog` table has unique index on `event_id`, unique nullable index on `idempotency_key`, and foreign keys referencing `users` and `customers`.
-- `AuditLogRelatedRecord` has foreign key referencing `audit_logs` with cascade on delete (if audit log is cleaned up, but audit log is append-only).
-- Models cast JSON fields to arrays.
-- Any attempt to update or delete `AuditLog` or `AuditLogRelatedRecord` via Eloquent throws an exception, preserving immutability.
-- Code conforms to Pint formatting.
-- PHPStan static analysis passes with zero errors.
+- All audit log retrieval is protected by authorization checks.
+- Zero authorization leaks (no unprivileged user can read any audit log content).
+- Test coverage ensures all staff roles are validated against the access matrix.
+- Pint formatting and PHPStan static analysis pass with zero errors.
 
 ## Tests Required
 
-- Migration success and rollback integrity tests.
-- Model relationships and cast checks.
-- Append-only immutability validation (asserting exceptions are thrown on delete, update, restore, or forceDelete).
-- Index and constraint checks.
+- Integration/Feature tests verifying role-based access control on audit viewing endpoints.
+- Authorization matrix validation for Super Admin, Admin, and other staff roles.
 
 ## Quality Requirements
 
@@ -56,13 +50,11 @@ Create database migrations, Eloquent models, relationships, and unit tests for `
 
 ## Files Likely Affected
 
-- `database/migrations/*_create_audit_logs_table.php`
-- `app/Models/AuditLog.php`
-- `app/Models/AuditLogRelatedRecord.php`
-- `tests/Feature/AuditTableDesignTest.php`
+- `app/Policies/AuditLogPolicy.php` (new policy)
+- `app/Providers/AppServiceProvider.php` (policy registration if needed)
+- `tests/Feature/AuditViewingPermissionsTest.php` (new test file)
 
 ## Tasks Not Included
 
-- Hooking up audit listeners to orders, payments, inventory, or customers (handled in subsequent subtasks C6.1.2 - C6.1.6).
-- Audit viewing permissions/resource interface (C6.1.8).
-- Audit retention job execution (C6.1.9).
+- Retention rules (C6.1.6).
+- Google Sheets sync (C6.3).
