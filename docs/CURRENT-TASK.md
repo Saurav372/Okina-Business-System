@@ -6,39 +6,43 @@ C6.2 Notification implementation
 
 ## Current Subtask
 
-C6.2.1 Notification persistence and migration
+C6.2.2 Template management and safe variable rendering
 
 ## Current Status
 
-Not Started. C6.1 Parent Task is completed and verified.
+Not Started. C6.2.1 is completed and committed.
 
 ## Goal
 
-Create database migrations and Eloquent models for notification templates, notification logs, and notification delivery attempts, enforcing constraints, indexes, and relationships as defined in the schema design.
+Implement template management and a safe rendering service that resolves placeholders (e.g. `{{ variable }}`) in subjects and bodies, restricting variables to a whitelist (`allowed_variables`) and sanitizing any sensitive data to prevent security leaks.
 
 ## Dependencies
 
-- None (core database architecture is already set up).
+- C6.2.1 Notification persistence and migration
 
 ## Required Deliverables
 
-1. **Database Migrations**:
-   - Create tables: `notification_templates`, `notification_logs`, `notification_delivery_attempts` with all designated columns, indexes, foreign keys, and CHECK/UNIQUE constraints.
-2. **Eloquent Models**:
-   - `NotificationTemplate` with status and channel casts, user relationships, and default timestamp attributes.
-   - `NotificationLog` with status, recipient_type, channel casts, and relationships to templates, users, and customers.
-   - `NotificationDeliveryAttempt` with relationships and status/response snapshots.
-3. **Automated Tests**:
-   - `tests/Feature/NotificationSchemaTest.php` verifying schema structure, unique constraints (e.g. template key/channel/locale/version and dedupe keys), relationships, and migrations up/down clean execution.
+1. **Notification Rendering Engine**:
+   - A service `App\Support\Notifications\NotificationRenderer` that accepts a template (`NotificationTemplate`) and a key-value payload.
+   - Validates/filters payload variables against the template's `allowed_variables` whitelist.
+   - Replaces placeholders in the format `{{ variable }}` in both `subject_template` and `body_template`.
+   - Recursively masks or strips sensitive fields (e.g. keys containing `password`, `token`, `secret`, `cvv`, `card`) present in the payload.
+2. **Feature Tests**:
+   - `tests/Feature/NotificationTemplateRenderingTest.php` verifying:
+     - Successful placeholder replacement in subject and body.
+     - Filtering of variables not present in `allowed_variables`.
+     - Strict sanitization of sensitive payload keys.
+     - Graceful handling of missing placeholders.
 
 ## Acceptance Criteria
 
-- Database tables are successfully created with correct indexes and constraints.
-- Pint formatting and PHPStan analysis pass with zero errors.
+- Placeholder rendering works correctly.
+- Variable whitelisting and sensitive data sanitization prevent leaks.
+- Pint formatting and PHPStan static analysis pass with zero errors.
 
 ## Tests Required
 
-- Integration tests verifying schema creation, model relationships, and constraint handling.
+- Integration/Unit tests for the template rendering service verifying whitelisting, placeholder resolution, and sanitization.
 
 ## Quality Requirements
 
@@ -47,12 +51,9 @@ Create database migrations and Eloquent models for notification templates, notif
 
 ## Files Likely Affected
 
-- `database/migrations/[timestamp]_create_notifications_tables.php` (new migration)
-- `app/Models/NotificationTemplate.php` (new model)
-- `app/Models/NotificationLog.php` (new model)
-- `app/Models/NotificationDeliveryAttempt.php` (new model)
-- `tests/Feature/NotificationSchemaTest.php` (new test file)
+- `app/Support/Notifications/NotificationRenderer.php` (new service)
+- `tests/Feature/NotificationTemplateRenderingTest.php` (new test file)
 
 ## Tasks Not Included
 
-- Template variable rendering, queued job dispatch listeners, and third-party delivery adapters (C6.2.2 - C6.2.5).
+- Dispatch listeners, delivery queue workers, and provider adapters (C6.2.3 - C6.2.5).
