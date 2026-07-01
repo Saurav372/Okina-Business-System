@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\ExpenseCategoryController;
 use App\Http\Controllers\Admin\ExpenseController;
 use App\Http\Controllers\Admin\GoogleSheetsConnectionController;
+use App\Http\Controllers\Admin\GoogleSheetsSyncLogController;
 use App\Http\Controllers\Admin\LeadActivityController;
 use App\Http\Controllers\Admin\LeadController;
 use App\Http\Controllers\Admin\LeadFollowUpController;
@@ -170,4 +171,10 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
 
     // Google Sheets admin routes
     Route::post('/google-sheets/test-connection', [GoogleSheetsConnectionController::class, 'testConnection'])->name('admin.google_sheets.test_connection');
+    Route::get('/google-sheets/sync-logs', [GoogleSheetsSyncLogController::class, 'index'])->name('admin.google_sheets.sync_logs.index');
+    Route::get('/google-sheets/sync-logs/{google_sheets_sync_log}', [GoogleSheetsSyncLogController::class, 'show'])->name('admin.google_sheets.sync_logs.show');
+    Route::post('/google-sheets/sync-logs/{google_sheets_sync_log}/retry', [GoogleSheetsSyncLogController::class, 'retry'])->name('admin.google_sheets.sync_logs.retry');
+    Route::post('/google-sheets/sync-logs/bulk-retry', [GoogleSheetsSyncLogController::class, 'bulkRetry'])->name('admin.google_sheets.sync_logs.bulk_retry');
+    Route::post('/google-sheets/sync-logs/prune', [GoogleSheetsSyncLogController::class, 'prune'])->name('admin.google_sheets.sync_logs.prune');
+    Route::post('/google-sheets/sync-record', [GoogleSheetsSyncLogController::class, 'syncRecord'])->name('admin.google_sheets.sync_record');
 });

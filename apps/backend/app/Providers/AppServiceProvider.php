@@ -73,6 +73,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Refund::class, RefundPolicy::class);
         Gate::policy(ExpenseCategory::class, ExpenseCategoryPolicy::class);
         Gate::policy(Expense::class, ExpensePolicy::class);
+        Gate::policy(\App\Models\GoogleSheetsSyncLog::class, \App\Policies\GoogleSheetsSyncLogPolicy::class);
 
         ProductSku::observe(ProductSkuObserver::class);
         Customer::observe(CustomerObserver::class);

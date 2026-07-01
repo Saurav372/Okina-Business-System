@@ -459,8 +459,8 @@ Verification note: C6.2.3 completed on 2026-07-01. Implemented queued notificati
 | Subtask ID | Subtask Name | Status |
 |---|---|---|
 | C6.3.1 | Sheets connection configuration and access boundary | Completed |
-| C6.3.2 | Per-record sheet mapping and safe payload contract | Not Started |
-| C6.3.3 | Google Sheets queued sync pipeline | Not Started |
+| C6.3.2 | Per-record sheet mapping and safe payload contract | Completed |
+| C6.3.3 | Google Sheets queued sync pipeline | Completed |
 | C6.3.4 | Retry, idempotency, and sync log operations view | Not Started |
 | C6.3.5 | Non-blocking failure, recovery, and security regression tests | Not Started |
 
@@ -637,6 +637,23 @@ Verification note: C6.1.4 completed on 2026-06-30. Implemented sensitive-data ma
 Verification note: C6.1.5 completed on 2026-06-30. Created `AuditLogPolicy` to protect the `viewAny` and `view` actions on the `AuditLog` model, requiring the `audit.view` permission slug. Registered the policy in `AppServiceProvider`. Created `AuditLogController` exposing paginated index with query filters (by action, module, subject_type, subject_public_id) and show endpoints, registered under authenticated admin routes in `routes/web.php`. Created a comprehensive feature test suite `AuditViewingPermissionsTest.php` validating guest redirects, unauthorized role exclusions (Admin, Sales, Inventory, Production staff returning 403), authorized role accesses (Super Admin and Finance staff returning 200), and filter parameters. Pint formatting and PHPStan static analysis passed with zero errors.
 
 Verification note: C6.1.6 completed on 2026-07-01. Implemented audit log retention policy with a new configuration file `config/audit.php` and a chunked Artisan command `audit:prune` that resolves config at startup and deletes matching logs via DB query builder to bypass Eloquent immutability observers. Scheduled the pruning daily in `routes/console.php`. Covered by comprehensive feature tests in `AuditRetentionTest.php` validating boundary conditions, database cascade on related records, configuration normalization safety, and large datasets. Pint formatting and PHPStan static analysis passed.
+
+### C6.3 Google Sheets backup sync
+
+| Subtask ID | Subtask Name | Status |
+|---|---|---|
+| C6.3.1 | Connection configuration and access boundary | Completed |
+| C6.3.2 | Per-record sheet mapping and safe payload contract | Completed |
+| C6.3.3 | Queued sync pipeline | Completed |
+| C6.3.4 | Retry, idempotency, and sync log operations view | Completed |
+
+Verification note: C6.3.4 completed on 2026-07-01. Implemented a database-backed Google Sheets sync log table with indexes for dashboard efficiency. Created GoogleSheetsSyncLog model, GoogleSheetsSyncLogPolicy, and GoogleSheetsSyncLogController with routes for listing/filtering sync logs, showing detailed logs, retrying failed events, bulk-retrying failed events, triggering manual syncs, and pruning. Integrated logging into SyncRecordToGoogleSheetsJob to handle sync event lifecycle state changes (queued -> processing -> success/failed), capture queue metadata, and enforce strict payload privacy. Scheduled daily pruning of logs. All 8 tests in GoogleSheetsSyncLogTest passed. Pint and PHPStan analyses are fully clean.
+
+Verification note: C6.3.3 completed on 2026-07-01. Implemented transaction-safe model observer `GoogleSheetsSyncObserver` with `ShouldHandleEventsAfterCommit` that queues `SyncRecordToGoogleSheetsJob` on saved events when enabled. The queued job eagerly loads relations, resolves the explicit entity `unique_key`, and synchronizes the flat payload via `GoogleSheetsClient::syncRow`. Handled retry back-off for transient errors (429/timeout) and failed-fast for permanent errors (404/invalid config/empty keys). Covered by comprehensive integration tests in `GoogleSheetsSyncPipelineTest.php` (11 tests, 26 assertions). Pint formatting and PHPStan static analysis passed.
+
+Verification note: C6.3.1 completed on 2026-07-01. Installed `google/apiclient`, created `config/sheets.php` with credentials and spreadsheet ID environment bindings, implemented `GoogleSheetsClient` wrapper with private-key normalization and read-only scopes, created `ConnectionTestResult` DTO, and exposed a `POST /admin/google-sheets/test-connection` endpoint gated by the `settings.manage` permission. Covered by `GoogleSheetsConnectionTest.php`. Pint formatting and PHPStan static analysis passed.
+
+Verification note: C6.3.2 completed on 2026-07-01. Extended `config/sheets.php` with an `entities` key providing `sheet` name and `columns` (machine-key => human-label) for all 7 supported entities. Implemented `GoogleSheetsPayloadMapper` with pipeline architecture (resolveField → normalizeValue → formatValue → ordered output), explicit field allow-list, N+1 guard on relations, ISO-8601 UTC date conversion, enum value extraction, minor-unit decimal conversion, and strict flatness enforcement. Covered by `GoogleSheetsPayloadMappingTest.php` (11 tests, 196 assertions). Pint formatting and PHPStan static analysis passed.
 
 ### C6.4 Backup, security, and regression gates
 

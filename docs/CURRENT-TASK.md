@@ -2,58 +2,59 @@
 
 ## Current Parent Task
 
-C6.3 Google Sheets backup sync
+C6.4 Backup, security, and regression gates
 
 ## Current Subtask
 
-C6.3.1 Sheets connection configuration and access boundary
+C6.4.1 Backup and restore implementation
 
 ## Current Status
 
-Not Started. Parent task C6.2 is completed and committed.
+Not Started. C6.3 (Google Sheets backup sync) is fully completed (including C6.3.4 sync log and retry actions) and all tests pass. Ready to begin C6.4.1.
 
 ## Goal
 
-Implement connection settings, credentials storage, and access boundaries for Google Sheets integration, ensuring that configuration is secure, properly validated, and segregated.
+Implement a backup and restore utility that archives the SQL database and private uploads together, along with a validation/restore routine that successfully restores the application state.
 
 ## Dependencies
 
-- C6.2 Notification implementation (Completed)
+- A1.1 — Core database schema (Completed)
+- A4.1 — File upload service (Completed)
 
 ## Required Deliverables
 
-1. **Configuration File (`config/sheets.php`)**:
-   - Define Google Sheets integration credentials structure (client email, private key, spreadsheet ID, and sheets/tabs mapping).
-2. **Connection & Access Boundaries**:
-   - Implement `GoogleSheetsClient` / connection service to handle Google API credentials resolution.
-   - Enforce access boundaries: configuration settings are protected, and integration secrets are stored securely and never leaked.
-   - Implement connectivity check helper/methods.
-3. **Tests (`tests/Feature/GoogleSheetsConnectionTest.php`)**:
-   - Verify config resolution, connectivity check mocks, and policy/access gates.
+1. **Backup Command/Service**:
+   - An artisan command (e.g. `system:backup` or `backup:run`) that exports the database (SQL dump) and archives it together with the private storage files (from `storage/app/private` or the configured disk) into a single zip/tarball file.
+   - Cleans up old backup archives to prevent disk exhaustion.
+
+2. **Restore Command/Service**:
+   - An artisan command (e.g. `system:restore` or `backup:restore`) that takes a backup archive, restores the database schema and data, and restores the private uploads to their correct directory.
+   - Restores the application to a fully working, verified state.
+
+3. **Verification Tests**:
+   - Automated tests simulating the backup and restore process.
+   - Verify that data inserted before backup exists after restore, and uploaded files are correctly restored and accessible.
 
 ## Acceptance Criteria
 
-- Configuration is safely resolved and connection is validatable.
-- Policy gates properly restrict access to Google Sheets settings.
-- All tests pass cleanly.
-- Pint formatting and PHPStan static analysis pass with zero errors.
+- The backup process compiles the database and file storage into a single portable archive.
+- The restore process cleanly resets the current state and restores the archived state perfectly.
+- Handled safely in the test environment (using SQLite memory/file databases and local storage).
 
 ## Tests Required
 
-- Integration/Feature tests for config loading, connectivity check helper, and access policies in `tests/Feature/GoogleSheetsConnectionTest.php`.
+- `tests/Feature/BackupRestoreTest.php`:
+  - Verify `backup` command successfully creates a single archive containing database and files.
+  - Verify `restore` command successfully restores data and files.
+  - Verify system integrity after restore.
 
 ## Quality Requirements
 
 - Clean Laravel Pint formatting.
-- PHPStan analysis with zero errors.
+- PHPStan static analysis with zero errors.
 
 ## Files Likely Affected
 
-- `config/sheets.php` (new config)
-- `app/Support/GoogleSheets/GoogleSheetsClient.php` (new client service)
-- `tests/Feature/GoogleSheetsConnectionTest.php` (new test file)
-
-## Tasks Not Included
-
-- Per-record mapping (C6.3.2).
-- Google Sheets queued sync pipeline (C6.3.3).
+- `app/Console/Commands/BackupSystem.php` (new)
+- `app/Console/Commands/RestoreSystem.php` (new)
+- `tests/Feature/BackupRestoreTest.php` (new)

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Events\AuditEvent;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -9,6 +10,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 #[Fillable([
     'name',
@@ -99,6 +102,30 @@ class User extends Authenticatable
                 'assigned_at' => now(),
             ],
         ]);
+
+        $userId = $this->id;
+        $userEmail = $this->email;
+        $roleSlug = $role->slug;
+        $roleName = $role->name;
+        $roleId = $role->id;
+        $assignedById = $assignedBy?->id;
+        $actor = $assignedBy ?? Auth::user();
+
+        DB::afterCommit(static function () use ($userId, $userEmail, $roleSlug, $roleName, $roleId, $assignedById, $actor): void {
+            event(new AuditEvent('users.role_assigned', $actor, [
+                'subject_type' => 'user',
+                'subject_id' => $userId,
+                'subject_public_id' => $userEmail,
+                'role_id' => $roleId,
+                'new_values' => [
+                    'role_slug' => $roleSlug,
+                    'role_name' => $roleName,
+                ],
+                'metadata' => [
+                    'assigned_by_user_id' => $assignedById,
+                ],
+            ]));
+        });
     }
 
     public function syncRoles(array $roles, ?User $assignedBy = null): void
@@ -115,6 +142,25 @@ class User extends Authenticatable
         }
 
         $this->roles()->sync($sync);
+
+        $userId = $this->id;
+        $userEmail = $this->email;
+        $assignedById = $assignedBy?->id;
+        $actor = $assignedBy ?? Auth::user();
+
+        DB::afterCommit(static function () use ($userId, $userEmail, $roles, $assignedById, $actor): void {
+            event(new AuditEvent('users.permission_updated', $actor, [
+                'subject_type' => 'user',
+                'subject_id' => $userId,
+                'subject_public_id' => $userEmail,
+                'new_values' => [
+                    'roles_synced' => $roles,
+                ],
+                'metadata' => [
+                    'assigned_by_user_id' => $assignedById,
+                ],
+            ]));
+        });
     }
 
     public function canAccessDashboard(): bool

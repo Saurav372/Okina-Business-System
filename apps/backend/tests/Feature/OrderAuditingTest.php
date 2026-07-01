@@ -112,8 +112,7 @@ class OrderAuditingTest extends TestCase
             ])
             ->assertOk();
 
-        $auditLog = AuditLog::first();
-        $this->assertNotNull($auditLog);
+        $auditLog = AuditLog::where('subject_type', 'order')->firstOrFail();
         $this->assertEquals('order', $auditLog->subject_type);
         $this->assertEquals($order->id, $auditLog->subject_id);
         $this->assertEquals($order->public_id, $auditLog->subject_public_id);
@@ -150,7 +149,7 @@ class OrderAuditingTest extends TestCase
             ])
             ->assertOk();
 
-        $auditLog = AuditLog::first();
+        $auditLog = AuditLog::where('subject_type', 'order')->firstOrFail();
         $this->assertNotNull($auditLog);
 
         // Subject should be linked as related record

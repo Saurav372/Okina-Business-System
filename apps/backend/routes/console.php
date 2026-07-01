@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 
 Schedule::command('crm:dispatch-follow-up-reminders')->everyMinute();
 Schedule::command('audit:prune')->daily();
+Schedule::command('sheets:prune-logs')->daily();

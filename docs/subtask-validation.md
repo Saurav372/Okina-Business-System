@@ -624,6 +624,18 @@ Verification note: C6.2.4 completed on 2026-07-01. Implemented permission-gated 
 
 Verification note: C6.2.5 completed on 2026-07-01. Implemented transaction isolation boundaries and regression checks for the notification system. Wrapped core rendering steps in `SendNotificationJob` inside a try/catch block to log exceptions and mark logs as failed without bubbling up. Created `NotificationIsolationTest.php` asserting missing template transaction safety, rendering error isolation, queue retry transport exception persistence, transaction-safe `afterCommit` queueing, and `dedupe_key` duplicate dispatch prevention. Pint formatting and PHPStan static analysis passed.
 
+## C6.3 Google Sheets Backup Sync
+
+| Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |
+|---|---|---|---|---|---|---|
+| C6.3.1 | `config/sheets.php`, `GoogleSheetsClient`, `ConnectionTestResult`, test endpoint | A4.2 (settings) | Connection result returns structured success/error with spreadsheet title or typed error code; endpoint is permission-gated; credentials normalized at boot | Connection success/error/permission tests | GoogleSheets, Settings, Admin | Medium |
+| C6.3.2 | `GoogleSheetsPayloadMapper`, column config in `config/sheets.php`, mapping tests | C6.3.1 | Payloads are strictly flat scalars; dates are UTC ISO-8601; enums resolve to value/name; relations guarded for N+1; unsupported models throw immediately | Mapping, flatness, UTC conversion, N+1 guard, config uniqueness tests | GoogleSheets, All 7 entity models | Medium |
+| C6.3.3 | `SyncRecordToGoogleSheetsJob`, row write in `GoogleSheetsClient`, observer, deduplication | C6.3.1, C6.3.2, A4.3, A4.5 | Source saves not blocked; jobs dispatch after DB commit; quota errors retry with back-off; credential errors fail fast; `sheets.enabled = false` suppresses dispatch; deduplication prevents flooding | Observer dispatch, afterCommit, retry, quota error, credential error, deduplication, disabled-flag tests | GoogleSheets, All 7 entity models, Queue | High |
+
+Verification note: C6.3.1 completed on 2026-07-01. Installed `google/apiclient`, created `config/sheets.php` with credentials and spreadsheet ID environment bindings, implemented `GoogleSheetsClient` wrapper with private-key normalization and read-only scopes, created `ConnectionTestResult` DTO, and exposed a `POST /admin/google-sheets/test-connection` endpoint gated by the `settings.manage` permission. Covered by `GoogleSheetsConnectionTest.php`. Pint formatting and PHPStan static analysis passed.
+
+Verification note: C6.3.2 completed on 2026-07-01. Extended `config/sheets.php` with an `entities` key providing `sheet` name and `columns` (machine-key => human-label) for all 7 supported entities. Implemented `GoogleSheetsPayloadMapper` with pipeline architecture (resolveField → normalizeValue → formatValue → ordered output), explicit field allow-list, N+1 guard on relations, ISO-8601 UTC date conversion, enum value extraction, minor-unit decimal conversion, and strict flatness enforcement. Covered by `GoogleSheetsPayloadMappingTest.php` (11 tests, 196 assertions). Pint formatting and PHPStan static analysis passed.
+
 ## C6.4 Backup, Security And Regression Gates
 
 | Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |

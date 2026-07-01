@@ -40,6 +40,11 @@ class AuditEventContractTest extends TestCase
                 'inventory.stock_moved',
                 'finance.expense_recorded',
                 'orders.order_edited',
+                'customers.customer_updated',
+                'products.product_updated',
+                'products.sku_updated',
+                'users.role_assigned',
+                'users.permission_updated',
             ],
             $catalog->keys(),
         );
@@ -57,6 +62,12 @@ class AuditEventContractTest extends TestCase
         $this->assertSame('inventory', $catalog->definition('inventory.stock_moved')->module);
         $this->assertSame('finance', $catalog->definition('finance.expense_recorded')->module);
         $this->assertSame('orders', $catalog->definition('orders.order_edited')->module);
+        // C6.1.3 additions
+        $this->assertSame('customers', $catalog->definition('customers.customer_updated')->module);
+        $this->assertSame('products', $catalog->definition('products.product_updated')->module);
+        $this->assertSame('products', $catalog->definition('products.sku_updated')->module);
+        $this->assertSame('users', $catalog->definition('users.role_assigned')->module);
+        $this->assertSame('users', $catalog->definition('users.permission_updated')->module);
     }
 
     public function test_audit_event_definitions_expose_safe_payload_shape_and_masked_fields(): void

@@ -17,6 +17,10 @@ return [
         'project_id' => env('GOOGLE_SHEETS_PROJECT_ID'),
         'client_id' => env('GOOGLE_SHEETS_CLIENT_ID'),
     ],
+    'logging' => [
+        'store_payloads' => env('GOOGLE_SHEETS_LOG_STORE_PAYLOADS', true),
+        'prune_days' => env('GOOGLE_SHEETS_LOG_PRUNE_DAYS', 30),
+    ],
     'entities' => [
         Lead::class => [
             'sheet' => 'Leads',
