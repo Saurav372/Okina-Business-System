@@ -6,55 +6,55 @@ C6.2 Notification implementation
 
 ## Current Subtask
 
-C6.2.3 Queued notification dispatch and channel delivery
+C6.2.4 Notification log and delivery-attempt operations view
 
 ## Current Status
 
-Not Started. C6.2.2 is completed and committed.
+Not Started. C6.2.3 is completed and committed.
 
 ## Goal
 
-Implement the asynchronous queued notification dispatch pipeline, including a queued Job (`SendNotificationJob`), a dispatcher service (`NotificationDispatcher`), and channel delivery adapters (e.g., Log/Mock adapters for `email`, `sms`, `whatsapp`, and `database`) that log attempts and handle failures cleanly without blocking core business transactions.
+Expose admin endpoints to list and view `NotificationLog` records and their child `NotificationDeliveryAttempt` details, gated by policy-based role permissions.
 
 ## Dependencies
 
 - C6.2.1 Notification persistence and migration
-- C6.2.2 Template management and safe variable rendering
-- A4.3 Queue, job and retry foundation
+- C6.2.3 Queued notification dispatch and channel delivery
 
 ## Required Deliverables
 
-1. **Dispatcher Service (`App\Support\Notifications\NotificationDispatcher`)**:
-   - Creates `NotificationLog` records with status `pending`.
-   - Prevents duplicate notification creation using the unique `dedupe_key` constraint (catches unique constraint exceptions or checks early).
-   - Dispatches `SendNotificationJob` asynchronously outside the database transaction (using `DB::afterCommit` or Laravel queue rules).
-2. **Queued Job (`App\Jobs\SendNotificationJob`)**:
-   - Implements `ShouldQueue`.
-   - Handles template rendering using `NotificationRenderer`.
-   - Routes delivery to the appropriate channel adapter based on `channel`.
-   - Wraps delivery in `notification_delivery_attempts` logging (captures success, provider references, error messages, and response payloads).
-   - Updates `NotificationLog` status (`sent` or `failed`).
-3. **Channel Adapters**:
-   - A factory/registry or interface `App\Support\Notifications\Channels\NotificationChannelInterface` with a `send(NotificationLog $log): array` method.
-   - Implement lightweight adapters: `EmailChannel`, `SmsChannel`, `WhatsappChannel`, `DatabaseChannel` (writing to a database notification table or local log for development/testing).
+1. **Policy Gate (`App\Policies\NotificationLogPolicy`)**:
+   - Gated by authorization rules. Requires `notifications.view` permission slug for `viewAny` and `view` actions.
+   - Registers the policy in `AppServiceProvider`.
+2. **Controller (`App\Http\Controllers\Admin\NotificationLogController`)**:
+   - `index` action: Paginated list (1 to 100 limit, default 20), filtered by:
+     - `channel`
+     - `status`
+     - `recipient_address`
+     - `event_type`
+     - `recipient_user_id`
+     - `recipient_customer_id`
+   - Eager loads relations `deliveryAttempts` to prevent N+1 queries.
+   - `show` action: Exposes the full details of a specific log, including nested delivery attempts.
+3. **Route Registration**:
+   - `GET /admin/notification-logs` -> `NotificationLogController@index`
+   - `GET /admin/notification-logs/{notification_log}` -> `NotificationLogController@show`
+   - Under auth/dashboard.access middleware.
 4. **Feature Tests**:
-   - `tests/Feature/NotificationDeliveryTest.php` verifying:
-     - Dispatcher creates pending logs and queues the job.
-     - Deduplication key prevents duplicate notifications.
-     - Asynchronous queue execution successfully renders templates and delivers to adapters.
-     - Delivery attempts are successfully appended to `notification_delivery_attempts`.
-     - Log status updates to `sent` on success or `failed` on adapter failure.
+   - `tests/Feature/NotificationLogViewingTest.php` verifying:
+     - Authentication/authorization gate restrictions (e.g. guests redirect/reject, roles with `notifications.view` pass, others return 403).
+     - Query filters and bounds validation.
+     - Nested delivery attempts returned in detailed view.
 
 ## Acceptance Criteria
 
-- Notifications are dispatched asynchronously.
-- Log and attempt tables are updated correctly.
-- Deduplication key unique constraints are respected.
+- Operations endpoints are properly policy gated.
+- Paginated listing with filtering and detailed shows work correctly.
 - Pint formatting and PHPStan static analysis pass with zero errors.
 
 ## Tests Required
 
-- Integration tests verifying dispatcher, queue execution, adapter routing, and delivery attempt logging.
+- Integration/Feature tests for log listing, pagination bounds, filters, detail shows, and role access verification.
 
 ## Quality Requirements
 
@@ -63,12 +63,12 @@ Implement the asynchronous queued notification dispatch pipeline, including a qu
 
 ## Files Likely Affected
 
-- `app/Jobs/SendNotificationJob.php` (new job)
-- `app/Support/Notifications/NotificationDispatcher.php` (new service)
-- `app/Support/Notifications/Channels/NotificationChannelInterface.php` (new interface)
-- `app/Support/Notifications/Channels/...` (new adapters)
-- `tests/Feature/NotificationDeliveryTest.php` (new test file)
+- `app/Policies/NotificationLogPolicy.php` (new policy)
+- `app/Http/Controllers/Admin/NotificationLogController.php` (new controller)
+- `routes/web.php` (route updates)
+- `app/Providers/AppServiceProvider.php` (policy registration)
+- `tests/Feature/NotificationLogViewingTest.php` (new test file)
 
 ## Tasks Not Included
 
-- Operations admin view for notifications (C6.2.4) and isolation regression tests (C6.2.5).
+- Channel notification isolation and database regression tests (C6.2.5).
