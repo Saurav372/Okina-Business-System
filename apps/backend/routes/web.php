@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\AdminOrderDesignFileController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\ExpenseCategoryController;
 use App\Http\Controllers\Admin\ExpenseController;
+use App\Http\Controllers\Admin\GoogleSheetsConnectionController;
 use App\Http\Controllers\Admin\LeadActivityController;
 use App\Http\Controllers\Admin\LeadController;
 use App\Http\Controllers\Admin\LeadFollowUpController;
@@ -166,4 +167,7 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     // Notification logs admin routes
     Route::get('/notification-logs', [NotificationLogController::class, 'index'])->name('admin.notification_logs.index');
     Route::get('/notification-logs/{notification_log}', [NotificationLogController::class, 'show'])->name('admin.notification_logs.show');
+
+    // Google Sheets admin routes
+    Route::post('/google-sheets/test-connection', [GoogleSheetsConnectionController::class, 'testConnection'])->name('admin.google_sheets.test_connection');
 });

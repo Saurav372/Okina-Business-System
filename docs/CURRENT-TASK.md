@@ -2,45 +2,45 @@
 
 ## Current Parent Task
 
-C6.2 Notification implementation
+C6.3 Google Sheets backup sync
 
 ## Current Subtask
 
-C6.2.5 Notification isolation and regression tests
+C6.3.1 Sheets connection configuration and access boundary
 
 ## Current Status
 
-Not Started. C6.2.4 is completed and committed.
+Not Started. Parent task C6.2 is completed and committed.
 
 ## Goal
 
-Verify that notification dispatching is completely isolated from the business transactions, so that notification-related failures (e.g., missing templates, template rendering exceptions, or transport adapter errors) do not roll back or block the parent business transaction. In addition, verify that transaction-safe queueing (`afterCommit`) and unique constraint deduplication prevent duplicate dispatches and deliveries.
+Implement connection settings, credentials storage, and access boundaries for Google Sheets integration, ensuring that configuration is secure, properly validated, and segregated.
 
 ## Dependencies
 
-- C6.2.1 Notification persistence and migration
-- C6.2.3 Queued notification dispatch and channel delivery
-- C6.2.4 Notification log and delivery-attempt operations view
+- C6.2 Notification implementation (Completed)
 
 ## Required Deliverables
 
-1. **Feature Tests (`tests/Feature/NotificationIsolationTest.php`)**:
-   - Verify that when a business transaction publishes an event that triggers a notification, and the template is missing or rendering throws an exception, the business transaction still commits successfully.
-   - Verify that when a template has rendering/whitelist errors, the business transaction commits successfully and the notification status is updated to failed/skipped.
-   - Verify that when an adapter throws a transport exception during queued delivery execution, the job records the failure and respects retries without rolling back the database state of the attempt.
-   - Verify that the `afterCommit` dispatcher hook prevents notifications from being dispatched/sent if the business transaction rolls back.
-   - Verify that deduplication logic (via `dedupe_key` unique constraints) successfully prevents duplicate deliveries under concurrent dispatch attempts.
+1. **Configuration File (`config/sheets.php`)**:
+   - Define Google Sheets integration credentials structure (client email, private key, spreadsheet ID, and sheets/tabs mapping).
+2. **Connection & Access Boundaries**:
+   - Implement `GoogleSheetsClient` / connection service to handle Google API credentials resolution.
+   - Enforce access boundaries: configuration settings are protected, and integration secrets are stored securely and never leaked.
+   - Implement connectivity check helper/methods.
+3. **Tests (`tests/Feature/GoogleSheetsConnectionTest.php`)**:
+   - Verify config resolution, connectivity check mocks, and policy/access gates.
 
 ## Acceptance Criteria
 
-- Operations endpoints are properly policy gated.
-- Notification pipeline failures must not roll back source transactions.
+- Configuration is safely resolved and connection is validatable.
+- Policy gates properly restrict access to Google Sheets settings.
 - All tests pass cleanly.
 - Pint formatting and PHPStan static analysis pass with zero errors.
 
 ## Tests Required
 
-- Integration/Feature tests for notification dispatch isolation, transaction rollback safety, failure resilience, and concurrent deduplication in `tests/Feature/NotificationIsolationTest.php`.
+- Integration/Feature tests for config loading, connectivity check helper, and access policies in `tests/Feature/GoogleSheetsConnectionTest.php`.
 
 ## Quality Requirements
 
@@ -49,8 +49,11 @@ Verify that notification dispatching is completely isolated from the business tr
 
 ## Files Likely Affected
 
-- `tests/Feature/NotificationIsolationTest.php` (new test file)
+- `config/sheets.php` (new config)
+- `app/Support/GoogleSheets/GoogleSheetsClient.php` (new client service)
+- `tests/Feature/GoogleSheetsConnectionTest.php` (new test file)
 
 ## Tasks Not Included
 
-- Google Sheets backup sync (C6.3).
+- Per-record mapping (C6.3.2).
+- Google Sheets queued sync pipeline (C6.3.3).
