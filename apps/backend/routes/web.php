@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\ExpenseController;
 use App\Http\Controllers\Admin\LeadActivityController;
 use App\Http\Controllers\Admin\LeadController;
 use App\Http\Controllers\Admin\LeadFollowUpController;
+use App\Http\Controllers\Admin\NotificationLogController;
 use App\Http\Controllers\Admin\OrderDetailController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\QuotationController;
@@ -161,4 +162,8 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     // Audit logs admin routes
     Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('admin.audit_logs.index');
     Route::get('/audit-logs/{audit_log}', [AuditLogController::class, 'show'])->name('admin.audit_logs.show');
+
+    // Notification logs admin routes
+    Route::get('/notification-logs', [NotificationLogController::class, 'index'])->name('admin.notification_logs.index');
+    Route::get('/notification-logs/{notification_log}', [NotificationLogController::class, 'show'])->name('admin.notification_logs.show');
 });

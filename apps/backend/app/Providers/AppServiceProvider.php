@@ -10,6 +10,7 @@ use App\Models\Expense;
 use App\Models\ExpenseCategory;
 use App\Models\Lead;
 use App\Models\LeadFollowUp;
+use App\Models\NotificationLog;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
@@ -25,6 +26,7 @@ use App\Policies\ExpenseCategoryPolicy;
 use App\Policies\ExpensePolicy;
 use App\Policies\LeadFollowUpPolicy;
 use App\Policies\LeadPolicy;
+use App\Policies\NotificationLogPolicy;
 use App\Policies\OrderPolicy;
 use App\Policies\PaymentPolicy;
 use App\Policies\ProductCategoryPolicy;
@@ -57,6 +59,7 @@ class AppServiceProvider extends ServiceProvider
             DB::statement('PRAGMA foreign_keys = ON;');
         }
         Gate::policy(AuditLog::class, AuditLogPolicy::class);
+        Gate::policy(NotificationLog::class, NotificationLogPolicy::class);
         Gate::policy(Order::class, OrderPolicy::class);
         Gate::policy(Product::class, ProductPolicy::class);
         Gate::policy(ProductCategory::class, ProductCategoryPolicy::class);

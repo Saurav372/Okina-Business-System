@@ -38,6 +38,7 @@ class AccessControlSeeder extends Seeder
             ['name' => 'Approve Expenses', 'slug' => 'finance.approve_expenses', 'group' => 'finance', 'is_sensitive' => true],
             ['name' => 'View Reports', 'slug' => 'reports.view', 'group' => 'reports', 'is_sensitive' => false],
             ['name' => 'View Audit', 'slug' => 'audit.view', 'group' => 'audit', 'is_sensitive' => true],
+            ['name' => 'View Notifications', 'slug' => 'notifications.view', 'group' => 'notifications', 'is_sensitive' => true],
             ['name' => 'Manage Production', 'slug' => 'production.manage', 'group' => 'production', 'is_sensitive' => false],
             ['name' => 'Manage Files', 'slug' => 'files.download_private', 'group' => 'files', 'is_sensitive' => true],
             ['name' => 'Manage Settings', 'slug' => 'settings.manage', 'group' => 'settings', 'is_sensitive' => true],
@@ -85,6 +86,7 @@ class AccessControlSeeder extends Seeder
                     'reports.view',
                     'finance.manage_expenses',
                     'finance.approve_expenses',
+                    'notifications.view',
                 ],
             ],
             [

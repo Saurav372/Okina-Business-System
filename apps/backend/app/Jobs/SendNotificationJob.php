@@ -79,16 +79,33 @@ class SendNotificationJob implements ShouldQueue
         }
 
         // 2. Render templates
-        $processedPayload = $renderer->processPayload($template, $log->payload ?? []);
-        $subject = $renderer->renderString($template->subject_template ?? '', $processedPayload);
-        $body = $renderer->renderString($template->body_template, $processedPayload);
+        try {
+            $processedPayload = $renderer->processPayload($template, $log->payload ?? []);
+            $subject = $renderer->renderString($template->subject_template ?? '', $processedPayload);
+            $body = $renderer->renderString($template->body_template, $processedPayload);
 
-        // Update rendered content on the log
-        $log->subject_rendered = $subject;
-        $log->body_summary = substr($body, 0, 1000); // summary cap
-        $log->template_id = $template->id;
-        $log->template_version = $template->version;
-        $log->save();
+            // Update rendered content on the log
+            $log->subject_rendered = $subject;
+            $log->body_summary = substr($body, 0, 1000); // summary cap
+            $log->template_id = $template->id;
+            $log->template_version = $template->version;
+            $log->save();
+        } catch (Throwable $e) {
+            DB::transaction(function () use ($log, $e): void {
+                $log->status = NotificationLog::STATUS_FAILED;
+                $log->failed_at = now();
+                $log->save();
+
+                NotificationDeliveryAttempt::create([
+                    'notification_log_id' => $log->id,
+                    'status' => 'failed',
+                    'error_message' => 'Rendering failed: '.$e->getMessage(),
+                    'attempted_at' => now(),
+                ]);
+            });
+
+            return;
+        }
 
         // 3. Resolve adapter
         try {

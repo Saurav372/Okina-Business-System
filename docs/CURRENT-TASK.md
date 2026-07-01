@@ -6,55 +6,41 @@ C6.2 Notification implementation
 
 ## Current Subtask
 
-C6.2.4 Notification log and delivery-attempt operations view
+C6.2.5 Notification isolation and regression tests
 
 ## Current Status
 
-Not Started. C6.2.3 is completed and committed.
+Not Started. C6.2.4 is completed and committed.
 
 ## Goal
 
-Expose admin endpoints to list and view `NotificationLog` records and their child `NotificationDeliveryAttempt` details, gated by policy-based role permissions.
+Verify that notification dispatching is completely isolated from the business transactions, so that notification-related failures (e.g., missing templates, template rendering exceptions, or transport adapter errors) do not roll back or block the parent business transaction. In addition, verify that transaction-safe queueing (`afterCommit`) and unique constraint deduplication prevent duplicate dispatches and deliveries.
 
 ## Dependencies
 
 - C6.2.1 Notification persistence and migration
 - C6.2.3 Queued notification dispatch and channel delivery
+- C6.2.4 Notification log and delivery-attempt operations view
 
 ## Required Deliverables
 
-1. **Policy Gate (`App\Policies\NotificationLogPolicy`)**:
-   - Gated by authorization rules. Requires `notifications.view` permission slug for `viewAny` and `view` actions.
-   - Registers the policy in `AppServiceProvider`.
-2. **Controller (`App\Http\Controllers\Admin\NotificationLogController`)**:
-   - `index` action: Paginated list (1 to 100 limit, default 20), filtered by:
-     - `channel`
-     - `status`
-     - `recipient_address`
-     - `event_type`
-     - `recipient_user_id`
-     - `recipient_customer_id`
-   - Eager loads relations `deliveryAttempts` to prevent N+1 queries.
-   - `show` action: Exposes the full details of a specific log, including nested delivery attempts.
-3. **Route Registration**:
-   - `GET /admin/notification-logs` -> `NotificationLogController@index`
-   - `GET /admin/notification-logs/{notification_log}` -> `NotificationLogController@show`
-   - Under auth/dashboard.access middleware.
-4. **Feature Tests**:
-   - `tests/Feature/NotificationLogViewingTest.php` verifying:
-     - Authentication/authorization gate restrictions (e.g. guests redirect/reject, roles with `notifications.view` pass, others return 403).
-     - Query filters and bounds validation.
-     - Nested delivery attempts returned in detailed view.
+1. **Feature Tests (`tests/Feature/NotificationIsolationTest.php`)**:
+   - Verify that when a business transaction publishes an event that triggers a notification, and the template is missing or rendering throws an exception, the business transaction still commits successfully.
+   - Verify that when a template has rendering/whitelist errors, the business transaction commits successfully and the notification status is updated to failed/skipped.
+   - Verify that when an adapter throws a transport exception during queued delivery execution, the job records the failure and respects retries without rolling back the database state of the attempt.
+   - Verify that the `afterCommit` dispatcher hook prevents notifications from being dispatched/sent if the business transaction rolls back.
+   - Verify that deduplication logic (via `dedupe_key` unique constraints) successfully prevents duplicate deliveries under concurrent dispatch attempts.
 
 ## Acceptance Criteria
 
 - Operations endpoints are properly policy gated.
-- Paginated listing with filtering and detailed shows work correctly.
+- Notification pipeline failures must not roll back source transactions.
+- All tests pass cleanly.
 - Pint formatting and PHPStan static analysis pass with zero errors.
 
 ## Tests Required
 
-- Integration/Feature tests for log listing, pagination bounds, filters, detail shows, and role access verification.
+- Integration/Feature tests for notification dispatch isolation, transaction rollback safety, failure resilience, and concurrent deduplication in `tests/Feature/NotificationIsolationTest.php`.
 
 ## Quality Requirements
 
@@ -63,12 +49,8 @@ Expose admin endpoints to list and view `NotificationLog` records and their chil
 
 ## Files Likely Affected
 
-- `app/Policies/NotificationLogPolicy.php` (new policy)
-- `app/Http/Controllers/Admin/NotificationLogController.php` (new controller)
-- `routes/web.php` (route updates)
-- `app/Providers/AppServiceProvider.php` (policy registration)
-- `tests/Feature/NotificationLogViewingTest.php` (new test file)
+- `tests/Feature/NotificationIsolationTest.php` (new test file)
 
 ## Tasks Not Included
 
-- Channel notification isolation and database regression tests (C6.2.5).
+- Google Sheets backup sync (C6.3).
