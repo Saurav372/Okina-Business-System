@@ -458,11 +458,13 @@ Verification note: C6.2.3 completed on 2026-07-01. Implemented queued notificati
 
 | Subtask ID | Subtask Name | Status |
 |---|---|---|
-| C6.3.1 | Sheets connection configuration and access boundary | Not Started |
+| C6.3.1 | Sheets connection configuration and access boundary | Completed |
 | C6.3.2 | Per-record sheet mapping and safe payload contract | Not Started |
 | C6.3.3 | Google Sheets queued sync pipeline | Not Started |
 | C6.3.4 | Retry, idempotency, and sync log operations view | Not Started |
 | C6.3.5 | Non-blocking failure, recovery, and security regression tests | Not Started |
+
+Verification note: C6.3.1 completed on 2026-07-01. Installed `google/apiclient`, implemented [config/sheets.php](file:///e:/Saurav/Okina%20Business%20System/apps/backend/config/sheets.php) and client wrapper [GoogleSheetsClient.php](file:///e:/Saurav/Okina%20Business%20System/apps/backend/app/Support/GoogleSheets/GoogleSheetsClient.php) supporting credentials newline normalization, read-only privilege scopes (`Sheets::SPREADSHEETS_READONLY`), error logging, and metadata connectivity testing. Exposed administrative connection test endpoint `POST /admin/google-sheets/test-connection` gated under the existing `settings.manage` permission check, returning structured connection results in DTO [ConnectionTestResult.php](file:///e:/Saurav/Okina%20Business%20System/apps/backend/app/Support/GoogleSheets/ConnectionTestResult.php). Covered by comprehensive feature tests in [GoogleSheetsConnectionTest.php](file:///e:/Saurav/Okina%20Business%20System/apps/backend/tests/Feature/GoogleSheetsConnectionTest.php). Pint formatting and PHPStan static analysis passed.
 ### C1.2 Sales order creation
 
 | Subtask ID | Subtask Name | Status |
