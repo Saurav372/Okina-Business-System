@@ -439,12 +439,14 @@ Verification note: C5.1.6 completed on 2026-06-26. Verified full regression cove
 | Subtask ID | Subtask Name | Status |
 |---|---|---|
 | C6.2.1 | Notification persistence and migration | Completed |
-| C6.2.2 | Template management and safe variable rendering | Not Started |
+| C6.2.2 | Template management and safe variable rendering | Completed |
 | C6.2.3 | Queued notification dispatch and channel delivery | Not Started |
 | C6.2.4 | Notification log and delivery-attempt operations view | Not Started |
 | C6.2.5 | Notification isolation and regression tests | Not Started |
 
 Verification note: C6.2.1 completed on 2026-07-01. Implemented database migrations and Eloquent models (`NotificationTemplate`, `NotificationLog`, `NotificationDeliveryAttempt`) with all designated columns, indexes, foreign keys, and CHECK/UNIQUE constraints (including composite unique index `(template_key, channel, locale, version)` and unique `dedupe_key`). Configured model relationships, fillables, and JSON/datetime casts. Fixed existing `AuditTableDesignTest` migration step dependency by increasing rollback step count to 2. Covered by comprehensive feature tests in `NotificationSchemaTest.php` asserting schema structure, unique constraints, casts, and automatic cascade deletion. Pint formatting and PHPStan static analysis passed.
+
+Verification note: C6.2.2 completed on 2026-07-01. Implemented template variable rendering and security payload sanitization. Developed `NotificationPayloadSanitizer` separating concerns by recursively masking credential key prefixes matching a curated deny-list. Developed `NotificationRenderer` parsing `{{ variable }}` tags using regex pattern collapsers for spacing and punctuation, supporting dot-notation nested array lookups via `data_get`, restricting substitutions to non-scalar/Stringable types, and enforcing template `allowed_variables` whitelists (distinguishing null vs. empty states). Sanitization runs before filtering in the rendering pipeline. Verified by 8 tests in `NotificationTemplateRenderingTest.php`. Pint formatting and PHPStan static analysis passed.
 
 ### C6.3 Google Sheets backup sync
 
