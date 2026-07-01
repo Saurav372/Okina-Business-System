@@ -8,6 +8,7 @@ use App\Models\AuditLog;
 use App\Models\Customer;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
+use App\Models\InventoryMovement;
 use App\Models\Lead;
 use App\Models\LeadFollowUp;
 use App\Models\NotificationLog;
@@ -18,7 +19,9 @@ use App\Models\ProductCategory;
 use App\Models\ProductSku;
 use App\Models\Quotation;
 use App\Models\Refund;
+use App\Models\VendorOrder;
 use App\Observers\CustomerObserver;
+use App\Observers\GoogleSheetsSyncObserver;
 use App\Observers\ProductObserver;
 use App\Observers\ProductSkuObserver;
 use App\Policies\AuditLogPolicy;
@@ -74,5 +77,14 @@ class AppServiceProvider extends ServiceProvider
         ProductSku::observe(ProductSkuObserver::class);
         Customer::observe(CustomerObserver::class);
         Product::observe(ProductObserver::class);
+
+        // Google Sheets Sync Observers
+        Lead::observe(GoogleSheetsSyncObserver::class);
+        Order::observe(GoogleSheetsSyncObserver::class);
+        Payment::observe(GoogleSheetsSyncObserver::class);
+        InventoryMovement::observe(GoogleSheetsSyncObserver::class);
+        Customer::observe(GoogleSheetsSyncObserver::class);
+        LeadFollowUp::observe(GoogleSheetsSyncObserver::class);
+        VendorOrder::observe(GoogleSheetsSyncObserver::class);
     }
 }

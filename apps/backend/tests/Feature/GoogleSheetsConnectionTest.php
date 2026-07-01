@@ -40,8 +40,8 @@ class GoogleSheetsConnectionTest extends TestCase
         $client = new GoogleSheetsClient;
         $googleClient = $client->getClient();
 
-        // Verify that the scopes include the read-only spreadsheets scope
-        $this->assertContains(Sheets::SPREADSHEETS_READONLY, $googleClient->getScopes());
+        // Verify that the scopes include the spreadsheets scope
+        $this->assertContains(Sheets::SPREADSHEETS, $googleClient->getScopes());
     }
 
     /**

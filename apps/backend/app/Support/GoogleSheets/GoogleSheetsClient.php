@@ -47,8 +47,8 @@ class GoogleSheetsClient
             'client_x509_cert_url' => 'https://www.googleapis.com/robot/v1/metadata/x509/'.urlencode($clientEmail),
         ]);
 
-        // Minimum required scope for metadata inspection
-        $client->setScopes([Sheets::SPREADSHEETS_READONLY]);
+        // Request full read/write access to spreadsheet contents
+        $client->setScopes([Sheets::SPREADSHEETS]);
 
         $this->client = $client;
 
@@ -61,6 +61,133 @@ class GoogleSheetsClient
     public function getSheetsService(): Sheets
     {
         return new Sheets($this->getClient());
+    }
+
+    /**
+     * Synchronize a row payload by seeking an existing unique identifier match first.
+     */
+    public function syncRow(string $sheetName, array $columnKeys, array $rowValues, string $uniqueKey, string $uniqueValue): void
+    {
+        if ($uniqueValue === '') {
+            $this->appendRow($sheetName, $rowValues);
+
+            return;
+        }
+
+        // Determine column letter for lookup
+        $colIndex = array_search($uniqueKey, $columnKeys, true);
+        $columnLetter = 'A';
+        if ($colIndex !== false) {
+            $columnLetter = $this->getColumnLetter((int) $colIndex);
+        }
+
+        $rowIndex = $this->findRowByKey($sheetName, $uniqueValue, $columnLetter);
+
+        if ($rowIndex !== null) {
+            $this->updateRow($sheetName, $rowIndex, $rowValues);
+        } else {
+            $this->appendRow($sheetName, $rowValues);
+        }
+    }
+
+    /**
+     * Convert 0-based column index to Google Sheets column letter (e.g. 0 -> A, 25 -> Z, 26 -> AA).
+     */
+    public function getColumnLetter(int $colIndex): string
+    {
+        $letter = '';
+        while ($colIndex >= 0) {
+            $letter = chr(($colIndex % 26) + 65).$letter;
+            $colIndex = intval($colIndex / 26) - 1;
+        }
+
+        return $letter;
+    }
+
+    /**
+     * Find a matching row index (1-based index) by searching a single column range.
+     */
+    public function findRowByKey(string $sheetName, string $uniqueValue, string $columnLetter = 'A'): ?int
+    {
+        $spreadsheetId = Config::get('sheets.spreadsheet_id');
+
+        if (! $spreadsheetId) {
+            throw new \RuntimeException('Spreadsheet ID is not configured.');
+        }
+
+        $service = $this->getSheetsService();
+        $range = "{$sheetName}!{$columnLetter}:{$columnLetter}";
+
+        try {
+            $response = $service->spreadsheets_values->get($spreadsheetId, $range);
+            $values = $response->getValues();
+
+            if (! is_array($values)) {
+                return null;
+            }
+
+            foreach ($values as $index => $row) {
+                $cellValue = $row[0] ?? null;
+                if ($cellValue !== null && (string) $cellValue === $uniqueValue) {
+                    return $index + 1; // 1-based index
+                }
+            }
+        } catch (Throwable $e) {
+            Log::warning("Failed seeking row by key in sheet [{$sheetName}]: ".$e->getMessage());
+        }
+
+        return null;
+    }
+
+    /**
+     * Update an entire row range with the provided values.
+     */
+    public function updateRow(string $sheetName, int $rowIndex, array $rowValues): void
+    {
+        $spreadsheetId = Config::get('sheets.spreadsheet_id');
+
+        if (! $spreadsheetId) {
+            throw new \RuntimeException('Spreadsheet ID is not configured.');
+        }
+
+        $service = $this->getSheetsService();
+        // Target range A{rowIndex} onwards
+        $range = "{$sheetName}!A{$rowIndex}";
+
+        $body = new Sheets\ValueRange([
+            'values' => [$rowValues],
+        ]);
+
+        $params = [
+            'valueInputOption' => 'USER_ENTERED',
+        ];
+
+        $service->spreadsheets_values->update($spreadsheetId, $range, $body, $params);
+    }
+
+    /**
+     * Append a row to the end of the sheet.
+     */
+    public function appendRow(string $sheetName, array $rowValues): void
+    {
+        $spreadsheetId = Config::get('sheets.spreadsheet_id');
+
+        if (! $spreadsheetId) {
+            throw new \RuntimeException('Spreadsheet ID is not configured.');
+        }
+
+        $service = $this->getSheetsService();
+        $range = "{$sheetName}!A:A";
+
+        $body = new Sheets\ValueRange([
+            'values' => [$rowValues],
+        ]);
+
+        $params = [
+            'valueInputOption' => 'USER_ENTERED',
+        ];
+
+        $service->spreadsheets_values->append($spreadsheetId, $range, $body, $params);
     }
 
     /**
