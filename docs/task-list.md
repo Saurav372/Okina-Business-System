@@ -430,13 +430,9 @@ Verification note: C5.1.6 completed on 2026-06-26. Verified full regression cove
 
 | Subtask ID | Subtask Name | Status |
 |---|---|---|
-| C5.4.1 | Report scopes, date ranges, and authorization policy | Not Started |
-| C5.4.2 | Payment and outstanding-balance report | Not Started |
-| C5.4.3 | Refund report | Not Started |
-| C5.4.4 | Expense report | Not Started |
-| C5.4.5 | Sales report | Not Started |
-| C5.4.6 | Export and aggregate-data safeguards | Not Started |
-| C5.4.7 | Report accuracy and permission regression tests | Not Started |
+| C5.4.1 | Report query engine foundation | Not Started |
+| C5.4.2 | Financial report integrations | Not Started |
+| C5.4.3 | Report accuracy and permission regression tests | Not Started |
 
 ### C6.2 Notification implementation
 
@@ -444,11 +440,9 @@ Verification note: C5.1.6 completed on 2026-06-26. Verified full regression cove
 |---|---|---|
 | C6.2.1 | Notification persistence and migration | Not Started |
 | C6.2.2 | Template management and safe variable rendering | Not Started |
-| C6.2.3 | Event-to-recipient dispatch rules | Not Started |
-| C6.2.4 | Queued channel delivery adapters | Not Started |
-| C6.2.5 | Retry, idempotency, and provider-failure handling | Not Started |
-| C6.2.6 | Notification log and delivery-attempt operations view | Not Started |
-| C6.2.7 | Notification isolation and regression tests | Not Started |
+| C6.2.3 | Queued notification dispatch and channel delivery | Not Started |
+| C6.2.4 | Notification log and delivery-attempt operations view | Not Started |
+| C6.2.5 | Notification isolation and regression tests | Not Started |
 
 ### C6.3 Google Sheets backup sync
 
@@ -456,11 +450,9 @@ Verification note: C5.1.6 completed on 2026-06-26. Verified full regression cove
 |---|---|---|
 | C6.3.1 | Sheets connection configuration and access boundary | Not Started |
 | C6.3.2 | Per-record sheet mapping and safe payload contract | Not Started |
-| C6.3.3 | Source record projection for approved modules | Not Started |
-| C6.3.4 | Post-save sync job enqueueing | Not Started |
-| C6.3.5 | Delivery job, upsert, and provider response handling | Not Started |
-| C6.3.6 | Retry, idempotency, and sync log operations view | Not Started |
-| C6.3.7 | Non-blocking failure, recovery, and security regression tests | Not Started |
+| C6.3.3 | Google Sheets queued sync pipeline | Not Started |
+| C6.3.4 | Retry, idempotency, and sync log operations view | Not Started |
+| C6.3.5 | Non-blocking failure, recovery, and security regression tests | Not Started |
 ### C1.2 Sales order creation
 
 | Subtask ID | Subtask Name | Status |
@@ -504,7 +496,7 @@ Verification note: C1.3.5 completed on 2026-06-23. Customer approval and rejecti
 
 Verification note: C1.3.6 completed on 2026-06-23. Quotation revision snapshotting and version archiving is fully implemented. When a quotation's status transitions to revised, a snapshot of the current quotation's commercial terms (totals, line items snapshot, type, expiry date, previous status, customer note, and customer profile details) is persisted in the quotation_revisions table, the approval_token is redacted/excluded from the archive for security, and current_revision_number on the quotation is incremented sequentially. Concurrency is handled using pessimistic row locks (lockForUpdate) inside the transaction block. Formatted via Laravel Pint and validated via QuotationRevisionTest.php with 6 tests and 41 assertions. All 367 tests passed.
 
-Verification note: C1.3.7 completed on 2026-06-23. Approved quotations can be atomically converted to confirmed sales orders via POST /admin/quotations/{id}/convert. Conversion is blocked with 422 if the quotation is not approved, already converted, has no live customer_id, or contains any free-text items (product_sku_id = null) — ensuring order total integrity. All quotation totals are copied verbatim to the order. OrderItems are created with price_source = quotation_conversion. Idempotency is supported via conversion_idempotency_key. The operation uses lockForUpdate inside a DB transaction for TOCTOU safety. A QuotationApprovalEvent with event_type = converted is logged atomically. Formatted via Laravel Pint and validated via QuotationConversionTest.php with 12 tests and 65 assertions. All 379 tests passed.
+Verification note: C1.3.7 completed on 2026-06-23. Approved quotations can be atomically converted to confirmed sales orders via POST /admin/quotations/{id}/convert. Conversion is blocked with 422 if the quotation is not approved, already converted, has no live customer_id, or contains any free-text items (product_sku_id = null) â€” ensuring order total integrity. All quotation totals are copied verbatim to the order. OrderItems are created with price_source = quotation_conversion. Idempotency is supported via conversion_idempotency_key. The operation uses lockForUpdate inside a DB transaction for TOCTOU safety. A QuotationApprovalEvent with event_type = converted is logged atomically. Formatted via Laravel Pint and validated via QuotationConversionTest.php with 12 tests and 65 assertions. All 379 tests passed.
 
 Verification note: C1.3.8 completed on 2026-06-24. Advance/manual payment recording is fully implemented via POST /admin/orders/{order}/payments. Gated by `payments.record` permission and `OrderPolicy@recordPayment`. Validates that payment amount does not exceed the remaining balance and that the order is not in a terminal state (cancelled/refunded). Generates a unique receipt number starting with `RC-`. Emits `AuditEvent` with type `payments.payment_recorded`. Supports idempotency key verification. Verified via ManualPaymentRecordingTest.php with 8 tests and 31 assertions. All tests passed and Laravel Pint formatted.
 
@@ -616,31 +608,33 @@ Verification note: C5.3.4 completed on 2026-06-26. Audited and confirmed all eig
 | Subtask ID | Subtask Name | Status |
 |---|---|---|
 | C6.1.1 | Audit table design | Completed |
-| C6.1.2 | Order-change auditing | Not Started |
-| C6.1.3 | Payment/refund auditing | Not Started |
-| C6.1.4 | Inventory auditing | Not Started |
-| C6.1.5 | Customer/product auditing | Not Started |
-| C6.1.6 | Permission-change auditing | Not Started |
-| C6.1.7 | Sensitive-data masking | Not Started |
-| C6.1.8 | Audit viewing permissions | Not Started |
-| C6.1.9 | Retention rules | Not Started |
+| C6.1.2 | Order-change auditing | Completed |
+| C6.1.3 | Audit event integrations | Completed |
+| C6.1.4 | Sensitive-data masking | Completed |
+| C6.1.5 | Audit viewing permissions | Completed |
+| C6.1.6 | Retention rules | Completed |
 
 Verification note: C6.1.1 completed on 2026-06-30. Created backed enum `AuditActorType` (user, customer, system, job, provider) and migrated `audit_logs` and `audit_log_related_records` tables with UUID event_id, idempotency key unique constraints, composite query indexes, and MySQL check constraints. Implemented `AuditLog` and `AuditLogRelatedRecord` models with relations, array casts, and disabled `updated_at` (const UPDATED_AT = null). Enforced strong immutability checks throwing `LogicException` on save/update/delete events for existing records. Verified via 5 tests in `AuditTableDesignTest.php`. All tests passed, Pint formatted, and PHPStan analysis clean.
+
+Verification note: C6.1.2 completed on 2026-06-30. Implemented a generic `AuditEventListener` registered in `EventServiceProvider` that listens to the shared `AuditEvent` contract and writes immutable records to `audit_logs` and `audit_log_related_records`. Wired order-change audit events in `AdminOrderActionController` (order creation, status change, field mutations) capturing actor, old/new values, and relating records to the order and customer via `audit_log_related_records`. Verified via 4 tests in `OrderAuditingTest.php` (18 assertions). `php artisan test --filter=OrderAuditingTest` passed.
+
+Verification note: C6.1.3 completed on 2026-06-30. Extended the audit integration layer to cover all remaining business domains. Added 5 catalog definitions to `AuditEventCatalog` (`customers.customer_updated`, `products.product_updated`, `products.sku_updated`, `users.role_assigned`, `users.permission_updated`). Created `CustomerObserver` and `ProductObserver` dispatching audit events via `DB::afterCommit()`, filtering timestamp-only changes. Extended `ProductSkuObserver` with `updated()` firing `products.sku_updated`, excluding `stock_quantity` changes to avoid duplication with inventory events. Modified `User::assignRole()` and `User::syncRoles()` to dispatch `users.role_assigned` and `users.permission_updated` via `DB::afterCommit()`. Registered both new observers in `AppServiceProvider`. Fixed `OrderAuditingTest` fragility against new role-assignment audit logs in setUp. Created `AuditEventIntegrationsTest.php` (17 tests, DB-level assertions) covering: payment recorded, refund requested, refund approved, inventory stock-in, customer update, timestamp-only no-emit, product update, timestamp-only no-emit, SKU price update, SKU stock_quantity-only no-emit, role assignment, related-record linking, payload masking, idempotency, and immutability. `php artisan test` → 690 passed, 2 skipped, 0 failed (3869 assertions). `./vendor/bin/pint --test` → 443 files, PASS.
+
+Verification note: C6.1.4 completed on 2026-06-30. Implemented sensitive-data masking at the listener layer by injecting `AuditPayloadPolicy` into `AuditEventListener` and sanitizing the event payload at the very start of the write path. Added a comprehensive test suite `AuditSensitiveDataMaskingTest.php` verifying that sensitive keys (e.g. passwords, tokens, secrets, private keys, card numbers, CVVs, etc.) are recursively masked in `old_values`, `new_values`, and `metadata` columns, non-sensitive fields are preserved without modification, and masking is applied correctly across multiple event types (orders, payments, inventory, role assignment). Pint formatting and PHPStan static analysis passed.
+
+Verification note: C6.1.5 completed on 2026-06-30. Created `AuditLogPolicy` to protect the `viewAny` and `view` actions on the `AuditLog` model, requiring the `audit.view` permission slug. Registered the policy in `AppServiceProvider`. Created `AuditLogController` exposing paginated index with query filters (by action, module, subject_type, subject_public_id) and show endpoints, registered under authenticated admin routes in `routes/web.php`. Created a comprehensive feature test suite `AuditViewingPermissionsTest.php` validating guest redirects, unauthorized role exclusions (Admin, Sales, Inventory, Production staff returning 403), authorized role accesses (Super Admin and Finance staff returning 200), and filter parameters. Pint formatting and PHPStan static analysis passed with zero errors.
+
+Verification note: C6.1.6 completed on 2026-07-01. Implemented audit log retention policy with a new configuration file `config/audit.php` and a chunked Artisan command `audit:prune` that resolves config at startup and deletes matching logs via DB query builder to bypass Eloquent immutability observers. Scheduled the pruning daily in `routes/console.php`. Covered by comprehensive feature tests in `AuditRetentionTest.php` validating boundary conditions, database cascade on related records, configuration normalization safety, and large datasets. Pint formatting and PHPStan static analysis passed.
 
 ### C6.4 Backup, security, and regression gates
 
 | Subtask ID | Subtask Name | Status |
 |---|---|---|
-| C6.4.1 | Database backup | Not Started |
-| C6.4.2 | Private-file backup | Not Started |
-| C6.4.3 | Restore procedure | Not Started |
-| C6.4.4 | Permission review | Not Started |
-| C6.4.5 | Upload security review | Not Started |
-| C6.4.6 | Payment security review | Not Started |
-| C6.4.7 | API security review | Not Started |
-| C6.4.8 | Deployment checklist | Not Started |
-| C6.4.9 | Regression test checklist | Not Started |
-| C6.4.10 | Rollback procedure | Not Started |
+| C6.4.1 | Backup and restore implementation | Not Started |
+| C6.4.2 | Comprehensive application security review | Not Started |
+| C6.4.3 | Deployment checklist | Not Started |
+| C6.4.4 | Regression test checklist | Not Started |
+| C6.4.5 | Rollback procedure | Not Started |
 
 
 Verification note: completed on 2026-06-19. The implementation adds a shared Astro catalog fetch helper, a catalog layout, a root product listing page, a category listing page, a category detail page, and a product detail page wired to the backend public catalog API. 

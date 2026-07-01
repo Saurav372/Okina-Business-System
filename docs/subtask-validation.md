@@ -602,6 +602,8 @@ Verification note: C6.1.4 completed on 2026-06-30. Implemented sensitive-data ma
 
 Verification note: C6.1.5 completed on 2026-06-30. Created `AuditLogPolicy` to protect the `viewAny` and `view` actions on the `AuditLog` model, requiring the `audit.view` permission slug. Registered the policy in `AppServiceProvider`. Created `AuditLogController` exposing paginated index with query filters (by action, module, subject_type, subject_public_id) and show endpoints, registered under authenticated admin routes in `routes/web.php`. Created a comprehensive feature test suite `AuditViewingPermissionsTest.php` validating guest redirects, unauthorized role exclusions (Admin, Sales, Inventory, Production staff returning 403), authorized role accesses (Super Admin and Finance staff returning 200), and filter parameters. Pint formatting and PHPStan static analysis passed with zero errors.
 
+Verification note: C6.1.6 completed on 2026-07-01. Implemented audit log retention policy with a new configuration file `config/audit.php` and a chunked Artisan command `audit:prune` that resolves config at startup and deletes matching logs via DB query builder to bypass Eloquent immutability observers. Scheduled the pruning daily in `routes/console.php`. Covered by comprehensive feature tests in `AuditRetentionTest.php` validating boundary conditions, database cascade on related records, configuration normalization safety, and large datasets. Pint formatting and PHPStan static analysis passed.
+
 ## C6.4 Backup, Security And Regression Gates
 
 | Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |
