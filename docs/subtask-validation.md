@@ -604,6 +604,18 @@ Verification note: C6.1.5 completed on 2026-06-30. Created `AuditLogPolicy` to p
 
 Verification note: C6.1.6 completed on 2026-07-01. Implemented audit log retention policy with a new configuration file `config/audit.php` and a chunked Artisan command `audit:prune` that resolves config at startup and deletes matching logs via DB query builder to bypass Eloquent immutability observers. Scheduled the pruning daily in `routes/console.php`. Covered by comprehensive feature tests in `AuditRetentionTest.php` validating boundary conditions, database cascade on related records, configuration normalization safety, and large datasets. Pint formatting and PHPStan static analysis passed.
 
+## C6.2 Notification Implementation
+
+| Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |
+|---|---|---|---|---|---|---|
+| C6.2.1 | Notification persistence and migration | None | Database tables are created with correct columns, indexes, check constraints, and unique keys | Schema tests/review | Notifications, Database | Medium |
+| C6.2.2 | Template management and safe variable rendering | C6.2.1 | Template rendering resolves placeholders safely without leaking secrets | Template rendering tests | Notifications | Medium |
+| C6.2.3 | Queued notification dispatch and channel delivery | C6.2.1, A4.3 | Dispatch triggers queues and reaches designated channel adapters | Delivery tests | Notifications | High |
+| C6.2.4 | Notification log and delivery-attempt operations view | C6.2.1 | Logs show sent status and provider reference details | Logs visibility tests | Notifications | Medium |
+| C6.2.5 | Notification isolation and regression tests | C6.2.3 | Failures do not block source transactions and retries/deduplication prevent double dispatch | Regression/retry tests | Notifications | High |
+
+Verification note: C6.2.1 completed on 2026-07-01. Implemented database migrations and Eloquent models (`NotificationTemplate`, `NotificationLog`, `NotificationDeliveryAttempt`) with all designated columns, indexes, foreign keys, and CHECK/UNIQUE constraints (including composite unique index `(template_key, channel, locale, version)` and unique `dedupe_key`). Configured model relationships, fillables, and JSON/datetime casts. Fixed existing `AuditTableDesignTest` migration step dependency by increasing rollback step count to 2. Covered by comprehensive feature tests in `NotificationSchemaTest.php` asserting schema structure, unique constraints, casts, and automatic cascade deletion. Pint formatting and PHPStan static analysis passed.
+
 ## C6.4 Backup, Security And Regression Gates
 
 | Subtask ID | Exact output/deliverable | Dependencies | Acceptance criteria | Tests required | Affected modules | Complexity |

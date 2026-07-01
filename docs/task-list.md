@@ -105,7 +105,7 @@ Verification note: completed on 2026-06-22. Shipment details (courier name, trac
 | C5.2 | Refund management | Project C | C5 | Track refund requests, refund approvals, refund records, partial/full refunds, and payment-status recalculation without erasing original payment history. | A5.2, C5.1 | Reports/audit | C | Medium | Medium | Refund tests | Completed |
 | C5.3 | Expense management | Project C | C5 | Track approved business expenses separately from refunds, with permissions and reporting categories. | C5.1 | Reports/audit | C | Medium | Low | Expense tests | Completed |
 | C5.4 | Financial reports | Project C | C5 | Create payment, balance, refund, expense, sales, and protected finance reports. | C5.1, C5.2, C5.3 | Hardening | C | Medium | Low | Report accuracy tests | Not Started |
-| C6.1 | Immutable audit log | Project C | C6 | Implement audit table design, order-change auditing, payment/refund auditing, inventory auditing, customer/product auditing, permission-change auditing, sensitive-data masking, viewing permissions, and retention rules. | A4.6, A5.1, C1.1 | Finance/inventory hardening | A/C | High | Medium | Audit immutability tests | In Progress |
+| C6.1 | Immutable audit log | Project C | C6 | Implement audit table design, order-change auditing, payment/refund auditing, inventory auditing, customer/product auditing, permission-change auditing, sensitive-data masking, viewing permissions, and retention rules. | A4.6, A5.1, C1.1 | Finance/inventory hardening | A/C | High | Medium | Audit immutability tests | Completed |
 | C6.2 | Notification implementation | Project C | C6 | Implement notification templates, channels, logs, retries, and deduplication. | A4.4, A4.5 | Automation | A/B/C | Medium | Medium | Notification tests | Not Started |
 | C6.3 | Google Sheets backup sync | Project C | C6 | Queue deduplicated sync jobs for leads, orders, payments, inventory, customers, follow-ups, vendors. | A4.3, A4.5, C6.2 | Backup/reporting | A/C | Medium | Medium | Sheets failure/retry tests | Not Started |
 | C6.4 | Backup, security, and regression gates | Project C | C6 | Define database backup, private-file backup, restore procedure, permission review, upload/payment/API security reviews, deployment checklist, regression checklist, and rollback procedure. | C6.1, C6.2, C6.3 | Production readiness | A/B/C | Medium | Medium | Full regression tests | Not Started |
@@ -438,11 +438,13 @@ Verification note: C5.1.6 completed on 2026-06-26. Verified full regression cove
 
 | Subtask ID | Subtask Name | Status |
 |---|---|---|
-| C6.2.1 | Notification persistence and migration | Not Started |
+| C6.2.1 | Notification persistence and migration | Completed |
 | C6.2.2 | Template management and safe variable rendering | Not Started |
 | C6.2.3 | Queued notification dispatch and channel delivery | Not Started |
 | C6.2.4 | Notification log and delivery-attempt operations view | Not Started |
 | C6.2.5 | Notification isolation and regression tests | Not Started |
+
+Verification note: C6.2.1 completed on 2026-07-01. Implemented database migrations and Eloquent models (`NotificationTemplate`, `NotificationLog`, `NotificationDeliveryAttempt`) with all designated columns, indexes, foreign keys, and CHECK/UNIQUE constraints (including composite unique index `(template_key, channel, locale, version)` and unique `dedupe_key`). Configured model relationships, fillables, and JSON/datetime casts. Fixed existing `AuditTableDesignTest` migration step dependency by increasing rollback step count to 2. Covered by comprehensive feature tests in `NotificationSchemaTest.php` asserting schema structure, unique constraints, casts, and automatic cascade deletion. Pint formatting and PHPStan static analysis passed.
 
 ### C6.3 Google Sheets backup sync
 
