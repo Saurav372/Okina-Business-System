@@ -2,46 +2,43 @@
 
 ## Current Parent Task
 
-C6.1 Immutable audit log
+C6.2 Notification implementation
 
 ## Current Subtask
 
-C6.1.6 Retention rules
+C6.2.1 Notification persistence and migration
 
 ## Current Status
 
-Not Started. C6.1.1 through C6.1.5 are fully completed, verified, and committed.
+Not Started. C6.1 Parent Task is completed and verified.
 
 ## Goal
 
-Define and implement an audit log retention policy. Provide an automated Artisan command or scheduler job (e.g. `audit:prune`) to safely delete/archive audit logs older than a configurable number of days (e.g. 365 days or custom config value) without exceeding memory limits.
+Create database migrations and Eloquent models for notification templates, notification logs, and notification delivery attempts, enforcing constraints, indexes, and relationships as defined in the schema design.
 
 ## Dependencies
 
-- C6.1.1 Audit table design
+- None (core database architecture is already set up).
 
 ## Required Deliverables
 
-1. Retention policy configuration and command:
-   - A configuration variable (e.g. in `config/audit.php` or `settings` service) specifying the retention period in days.
-   - An Artisan command `audit:prune` that queries and deletes audit logs older than the retention threshold.
-   - Streaming/chunking deletions to keep memory and lock durations low.
-2. Integration with scheduler in `routes/console.php`.
-3. Feature/Unit tests verifying:
-   - Logs older than the retention threshold are successfully deleted.
-   - Logs newer than the threshold are strictly preserved.
-   - Cascade deletes for `audit_log_related_records` work cleanly (via database constraints or clean deletes).
+1. **Database Migrations**:
+   - Create tables: `notification_templates`, `notification_logs`, `notification_delivery_attempts` with all designated columns, indexes, foreign keys, and CHECK/UNIQUE constraints.
+2. **Eloquent Models**:
+   - `NotificationTemplate` with status and channel casts, user relationships, and default timestamp attributes.
+   - `NotificationLog` with status, recipient_type, channel casts, and relationships to templates, users, and customers.
+   - `NotificationDeliveryAttempt` with relationships and status/response snapshots.
+3. **Automated Tests**:
+   - `tests/Feature/NotificationSchemaTest.php` verifying schema structure, unique constraints (e.g. template key/channel/locale/version and dedupe keys), relationships, and migrations up/down clean execution.
 
 ## Acceptance Criteria
 
-- Old audit logs are automatically pruned according to the retention settings.
-- The pruning command uses chunking/lazy execution to protect DB performance.
-- Pint formatting and PHPStan static analysis pass with zero errors.
+- Database tables are successfully created with correct indexes and constraints.
+- Pint formatting and PHPStan analysis pass with zero errors.
 
 ## Tests Required
 
-- Integration tests verifying pruning commands delete the correct database rows.
-- Regression tests confirming younger records remain intact.
+- Integration tests verifying schema creation, model relationships, and constraint handling.
 
 ## Quality Requirements
 
@@ -50,10 +47,12 @@ Define and implement an audit log retention policy. Provide an automated Artisan
 
 ## Files Likely Affected
 
-- `app/Console/Commands/PruneAuditLogs.php` (new command)
-- `routes/console.php` (schedule definition)
-- `tests/Feature/AuditRetentionTest.php` (new test file)
+- `database/migrations/[timestamp]_create_notifications_tables.php` (new migration)
+- `app/Models/NotificationTemplate.php` (new model)
+- `app/Models/NotificationLog.php` (new model)
+- `app/Models/NotificationDeliveryAttempt.php` (new model)
+- `tests/Feature/NotificationSchemaTest.php` (new test file)
 
 ## Tasks Not Included
 
-- Future audit backup/archiving mechanisms (C6.4.1).
+- Template variable rendering, queued job dispatch listeners, and third-party delivery adapters (C6.2.2 - C6.2.5).
