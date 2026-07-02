@@ -6,11 +6,11 @@ C6.4 Backup, security, and regression gates
 
 ## Current Subtask
 
-C6.4.1 Backup and restore implementation
+C6.4.2 Comprehensive application security review
 
 ## Current Status
 
-Not Started. C6.3 (Google Sheets backup sync) is fully completed (including C6.3.4 sync log and retry actions) and all tests pass. Ready to begin C6.4.1.
+Not Started. C6.4.1 (Backup and restore implementation) is fully completed and verified by tests. Ready to begin C6.4.2.
 
 ## Goal
 
