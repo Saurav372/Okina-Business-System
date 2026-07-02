@@ -83,21 +83,36 @@ Use this runbook when the failed release introduced no new database migrations.
 ### Scenario 2: Reversible Migrations Rollback
 Use this runbook when migrations were run but can be safely reversed without data loss.
 
-1. **Rollback Migrations**: Reverse the database changes to the state prior to the release:
+> [!WARNING]
+> **When NOT to use migrate:rollback**:
+> Only execute database migration rollbacks if:
+> 1. Every migration being rolled back implements a valid, tested `down()` method.
+> 2. No irreversible data transformations or destructive column drops have occurred.
+> 3. The application code is also being reverted to the matching release commit.
+>
+> If any of these conditions are not met, **do not** use `migrate:rollback`. Instead, proceed to **Scenario 3 (Full Application Recovery)** to restore the system state from a verified backup.
+
+1. **Enable Maintenance Mode**: Verify that maintenance mode is active before altering the schema:
+   ```bash
+   php artisan down
+   ```
+2. **Rollback Migrations**: Reverse the database changes to the state prior to the release:
    ```bash
    php artisan migrate:rollback --step=[NUMBER_OF_MIGRATIONS]
    ```
-2. **Revert Git Codebase**: Roll back to the stable codebase commit (Step 1 of Scenario 1).
-3. **Execute Caches & Restart Queue Workers**: Follow Steps 2-5 of Scenario 1.
+3. **Revert Git Codebase**: Roll back to the stable codebase commit (Step 1 of Scenario 1).
+4. **Execute Caches & Restart Queue Workers**: Follow Steps 2-5 of Scenario 1.
 
 ---
 
 ### Scenario 3: Full Application Recovery
 Use this runbook in the event of destructive database failures, corrupted schema updates, or failed migration rollbacks.
 
-1. **Verify Backup Integrity**: Before performing the destructive restore command, verify that the backup ZIP file generated prior to deployment exists and is valid:
-   - Identify the correct backup ZIP filename in `storage/app/private/backups/backup-YYYY-MM-DD-timestamp.zip`.
-   - Verify that the ZIP is not empty and matches the pre-deployment timestamp.
+1. **Verify Backup Integrity**: Before performing the destructive restore command, verify the following details to ensure the correct backup state:
+   - **Correct File Selection**: Identify the correct backup ZIP in `storage/app/private/backups/`.
+   - **Timestamp Audit**: Match the backup generation timestamp with the time immediately preceding the failed deployment.
+   - **Application Version Check**: Ensure the backup's `manifest.json` specifies the application version corresponding to the stable git commit hash you are checking out.
+   - **Environment Parity**: Confirm that the backup matches the target environment (do not restore staging backups to production).
 2. **Revert Git Codebase**: Checkout the stable codebase commit:
    ```bash
    git checkout [STABLE_COMMIT_HASH]

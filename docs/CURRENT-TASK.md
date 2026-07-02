@@ -2,44 +2,48 @@
 
 ## Current Parent Task
 
-C6.4 Backup, security, and regression gates
+C5.4 Financial reports
 
 ## Current Subtask
 
-C6.4.5 Rollback procedure
+C5.4.1 Report query engine foundation
 
 ## Current Status
 
-Completed. Parent Task C6.4 is fully completed. All regression gates and deployment files are finalized.
+Not Started. Parent Task C6.4 is fully completed. Ready to begin C5.4.1.
 
 ## Goal
 
-Create a comprehensive and production-ready Rollback Procedure runbook (`docs/ROLLBACK-PROCEDURE.md`). The document details how to reverse deployments safely, restore previous code versions and database states synchronously, handle migrations rollback, rebuild caches, reset queues, and verify health after a rollback event.
+Implement the financial report query engine foundation. Build database query logic and filters to retrieve aggregates and grouped results for payment, outstanding balance, refund, expense, and sales data.
 
 ## Dependencies
 
-- C6.4.3 — Deployment checklist (Completed)
+- C5.1 — Finance payment and balance views (Completed)
+- C5.2 — Refund management (Completed)
+- C5.3 — Expense management (Completed)
 
 ## Required Deliverables
 
-1. **Rollback Procedure Runbook**:
-   - `docs/ROLLBACK-PROCEDURE.md` containing detailed rollback strategies, database/filesystem state synchronization guidelines, step-by-step restoration commands (using the custom backup restore tools), cache management, queue resets, and post-rollback health checks.
+1. **Query Engine Classes**:
+   - Query engines and services to run aggregated reports on payments, balances, refunds, expenses, and sales data.
+2. **Filters & Date Parsing**:
+   - Input validation, date parsing, and grouping mechanics (by category or monthly grouping).
 
 ## Acceptance Criteria
 
-- **Synchronized State Guidelines**: Explains when database restoration is required versus when standard git/migration rollback is sufficient to prevent data mismatch.
-- **Actionable Restoration Commands**: Specific, copy-pasteable commands for checking out stable code commits, executing migration rollbacks (`php artisan migrate:rollback`), restoring database backups using the custom `system:restore` command, clearing performance caches, and restarting queue workers.
-- **Post-Rollback Health Checks**: Steps to verify the system has returned to a completely stable previous state.
+- **Parity with API Contracts**: Grouping by category and grouping by month must return the exact JSON keys, structures, and decimal string precision specified in the master build plan/context (e.g. `currency: "INR"`, `total_amount`, `approved_amount`, etc.).
+- **Query Optimizations**: No N+1 query risks. Eager load all relations. Large records must use paging or chunking where needed.
 
 ## Tests Required
 
-- **Rollback Runbook Verification** (Manual document review).
+- **Automated query tests** (Feature tests checking calculations and filters).
 
 ## Quality Requirements
 
-- Correct Markdown formatting.
-- Thorough and clear structure.
+- Laravel Pint formatting checks pass.
+- PHPStan static analysis runs with zero errors.
 
 ## Files Likely Affected
 
-- `docs/ROLLBACK-PROCEDURE.md` (new)
+- `app/Services/FinanceReportService.php` (new)
+- `tests/Feature/FinanceReportTest.php` (new)
