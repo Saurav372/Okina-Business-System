@@ -143,7 +143,7 @@ class GoogleSheetsPayloadMappingTest extends TestCase
         // Bypass factory's booted() display_name override by using direct DB insert
         $customer = Customer::factory()->create();
         // Update directly via DB to bypass Eloquent observer/cast overrides
-        \Illuminate\Support\Facades\DB::table('customers')
+        DB::table('customers')
             ->where('id', $customer->id)
             ->update(['display_name' => 'John Doe']);
         $customer->refresh(); // Re-read from DB so in-memory matches

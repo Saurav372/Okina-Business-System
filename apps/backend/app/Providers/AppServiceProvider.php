@@ -8,6 +8,7 @@ use App\Models\AuditLog;
 use App\Models\Customer;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
+use App\Models\GoogleSheetsSyncLog;
 use App\Models\InventoryMovement;
 use App\Models\Lead;
 use App\Models\LeadFollowUp;
@@ -27,6 +28,7 @@ use App\Observers\ProductSkuObserver;
 use App\Policies\AuditLogPolicy;
 use App\Policies\ExpenseCategoryPolicy;
 use App\Policies\ExpensePolicy;
+use App\Policies\GoogleSheetsSyncLogPolicy;
 use App\Policies\LeadFollowUpPolicy;
 use App\Policies\LeadPolicy;
 use App\Policies\NotificationLogPolicy;
@@ -73,7 +75,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Refund::class, RefundPolicy::class);
         Gate::policy(ExpenseCategory::class, ExpenseCategoryPolicy::class);
         Gate::policy(Expense::class, ExpensePolicy::class);
-        Gate::policy(\App\Models\GoogleSheetsSyncLog::class, \App\Policies\GoogleSheetsSyncLogPolicy::class);
+        Gate::policy(GoogleSheetsSyncLog::class, GoogleSheetsSyncLogPolicy::class);
 
         ProductSku::observe(ProductSkuObserver::class);
         Customer::observe(CustomerObserver::class);
