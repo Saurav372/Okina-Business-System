@@ -10,30 +10,30 @@ C6.4.5 Rollback procedure
 
 ## Current Status
 
-Not Started. C6.4.4 (Regression test checklist) is fully completed and verified. Ready to begin C6.4.5.
+Completed. Parent Task C6.4 is fully completed. All regression gates and deployment files are finalized.
 
 ## Goal
 
-Create a comprehensive Regression Test Checklist document (`docs/REGRESSION-TEST-CHECKLIST.md`) listing all critical user, admin, payment, file upload, and integration paths. The checklist serves as a regression gate to verify system stability across all core application areas before any major deployment.
+Create a comprehensive and production-ready Rollback Procedure runbook (`docs/ROLLBACK-PROCEDURE.md`). The document details how to reverse deployments safely, restore previous code versions and database states synchronously, handle migrations rollback, rebuild caches, reset queues, and verify health after a rollback event.
 
 ## Dependencies
 
-- All parent tasks (Completed)
+- C6.4.3 — Deployment checklist (Completed)
 
 ## Required Deliverables
 
-1. **Regression Test Checklist Document**:
-   - `docs/REGRESSION-TEST-CHECKLIST.md` detailing the system-wide regression test criteria, critical execution flows, test types (unit/feature vs manual), step-by-step verification procedures for each functional module, and expected outcomes.
+1. **Rollback Procedure Runbook**:
+   - `docs/ROLLBACK-PROCEDURE.md` containing detailed rollback strategies, database/filesystem state synchronization guidelines, step-by-step restoration commands (using the custom backup restore tools), cache management, queue resets, and post-rollback health checks.
 
 ## Acceptance Criteria
 
-- **Exhaustive Scope**: Covers all critical modules including Authentication, Catalog, Cart/Checkout, Payments & Webhooks, File Uploads, Order Management, Notifications, and Backups.
-- **Actionable Steps**: Each test case must specify pre-conditions, input data, execution steps (CLI, API, or UI), and explicit post-conditions / verification assertions.
-- **Gate Validation**: Instructions on how to compile, execute, and verify the test gates (including running the entire test suite and manual verification scripts) before production release.
+- **Synchronized State Guidelines**: Explains when database restoration is required versus when standard git/migration rollback is sufficient to prevent data mismatch.
+- **Actionable Restoration Commands**: Specific, copy-pasteable commands for checking out stable code commits, executing migration rollbacks (`php artisan migrate:rollback`), restoring database backups using the custom `system:restore` command, clearing performance caches, and restarting queue workers.
+- **Post-Rollback Health Checks**: Steps to verify the system has returned to a completely stable previous state.
 
 ## Tests Required
 
-- **Regression Checklist Verification** (Manual document review).
+- **Rollback Runbook Verification** (Manual document review).
 
 ## Quality Requirements
 
@@ -42,4 +42,4 @@ Create a comprehensive Regression Test Checklist document (`docs/REGRESSION-TEST
 
 ## Files Likely Affected
 
-- `docs/REGRESSION-TEST-CHECKLIST.md` (new)
+- `docs/ROLLBACK-PROCEDURE.md` (new)

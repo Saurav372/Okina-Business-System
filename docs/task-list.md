@@ -671,7 +671,9 @@ Verification note: C6.4.2 completed on 2026-07-02. Conducted comprehensive secur
 Verification note: C6.4.3 completed on 2026-07-02. Formulated a production-ready deployment checklist and runbook in `docs/DEPLOYMENT-CHECKLIST.md`. It covers target system prerequisites (PHP settings, DB, Node, SSL), secrets management & rotation rules, full environment variable matrix details, sequential deployment instructions (maintenance flow, pre-migrate backup, optimized performance caches, queue/bytecode restarts, Astro frontend build), detailed post-deployment operational health checks, and a rollback recovery procedure.
 
 Verification note: C6.4.4 completed on 2026-07-02. Created a system-wide regression test checklist and release gate in `docs/REGRESSION-TEST-CHECKLIST.md`. It maps functional modules to their corresponding automated PHPUnit tests and manual verification steps, establishes strict pass/fail release gate criteria, defines a priority matrix for quick checks, specifies mobile/desktop browser validation matrices, and prescribes performance smoke check target thresholds.
-| C6.4.5 | Rollback procedure | Not Started |
+| C6.4.5 | Rollback procedure | Completed |
+
+Verification note: C6.4.5 completed on 2026-07-02. Formulated a production rollback procedure runbook in `docs/ROLLBACK-PROCEDURE.md`. It covers immediate response workflows ("Stop the Bleeding" instructions), roll-forward guidelines, a detailed rollback decision matrix (Code-Only, Reversible Migrations, Full Application Recovery), step-by-step recovery scenarios (reverting git codebase, rolling back migrations, restoring database/files using the custom `system:restore` utility), queue job state and external integrations audit guidelines, post-rollback health checks, and incident closure post-mortems.
 
 
 Verification note: completed on 2026-06-19. The implementation adds a shared Astro catalog fetch helper, a catalog layout, a root product listing page, a category listing page, a category detail page, and a product detail page wired to the backend public catalog API. 
