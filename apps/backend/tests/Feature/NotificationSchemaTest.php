@@ -35,8 +35,10 @@ class NotificationSchemaTest extends TestCase
         $this->assertTrue(Schema::hasTable('notification_logs'));
         $this->assertTrue(Schema::hasTable('notification_delivery_attempts'));
 
-        // Roll back the last migration step
-        $this->artisan('migrate:rollback', ['--step' => 1]);
+        // Roll back notifications and any newer migrations dynamically
+        while (Schema::hasTable('notification_templates')) {
+            $this->artisan('migrate:rollback', ['--step' => 1]);
+        }
 
         $this->assertFalse(Schema::hasTable('notification_delivery_attempts'));
         $this->assertFalse(Schema::hasTable('notification_logs'));

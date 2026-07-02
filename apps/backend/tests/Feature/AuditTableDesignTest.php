@@ -35,8 +35,10 @@ class AuditTableDesignTest extends TestCase
         $this->assertTrue(DB::getSchemaBuilder()->hasTable('audit_logs'));
         $this->assertTrue(DB::getSchemaBuilder()->hasTable('audit_log_related_records'));
 
-        // Rollback audit logs and any newer migrations (Notifications)
-        $this->artisan('migrate:rollback', ['--step' => 2]);
+        // Rollback audit logs and any newer migrations dynamically
+        while (DB::getSchemaBuilder()->hasTable('audit_logs')) {
+            $this->artisan('migrate:rollback', ['--step' => 1]);
+        }
 
         $this->assertFalse(DB::getSchemaBuilder()->hasTable('audit_log_related_records'));
         $this->assertFalse(DB::getSchemaBuilder()->hasTable('audit_logs'));
