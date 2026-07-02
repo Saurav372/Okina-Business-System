@@ -6,47 +6,46 @@ C6.4 Backup, security, and regression gates
 
 ## Current Subtask
 
-C6.4.2 Comprehensive application security review
+C6.4.3 Deployment checklist
 
 ## Current Status
 
-Not Started. C6.4.1 (Backup and restore implementation) is fully completed and verified by tests. Ready to begin C6.4.2.
+Not Started. C6.4.2 (Comprehensive application security review) is fully completed and verified by tests. Ready to begin C6.4.3.
 
 ## Goal
 
-Implement a backup and restore utility that archives the SQL database and private uploads together, along with a validation/restore routine that successfully restores the application state.
+Ensure the system is fully hardened against security vulnerabilities. Run a comprehensive security review matrix and build automated integration tests verifying permissions, rate limiting, CORS configuration, file upload safety, and payment webhook signature validation.
 
 ## Dependencies
 
-- A1.1 — Core database schema (Completed)
+- A2.3 — Role and permission model (Completed)
 - A4.1 — File upload service (Completed)
+- A5.3 — Payment gateway service contract (Completed)
+- B3.3 — Payment webhook handling (Completed)
 
 ## Required Deliverables
 
-1. **Backup Command/Service**:
-   - An artisan command (e.g. `system:backup` or `backup:run`) that exports the database (SQL dump) and archives it together with the private storage files (from `storage/app/private` or the configured disk) into a single zip/tarball file.
-   - Cleans up old backup archives to prevent disk exhaustion.
-
-2. **Restore Command/Service**:
-   - An artisan command (e.g. `system:restore` or `backup:restore`) that takes a backup archive, restores the database schema and data, and restores the private uploads to their correct directory.
-   - Restores the application to a fully working, verified state.
-
-3. **Verification Tests**:
-   - Automated tests simulating the backup and restore process.
-   - Verify that data inserted before backup exists after restore, and uploaded files are correctly restored and accessible.
+1. **Security Review Test Suite**:
+   - `tests/Feature/SecurityReviewTest.php` containing automated tests that assert security controls are active and correctly configured.
+2. **Security Fixes/Hardening**:
+   - Address any gaps discovered in permissions, rate limits, CORS headers, upload validators, or signature checks.
 
 ## Acceptance Criteria
 
-- The backup process compiles the database and file storage into a single portable archive.
-- The restore process cleanly resets the current state and restores the archived state perfectly.
-- Handled safely in the test environment (using SQLite memory/file databases and local storage).
+- **Permission Matrix**: Verify all admin endpoints reject unauthorized users with `403` and allow authorized roles.
+- **Rate Limiting**: Verify login, password resets, checkout, and webhook endpoints have active rate limiting.
+- **CORS Configuration**: Verify CORS headers restrict requests to authorized origins.
+- **File Upload Safety**: Verify file upload API blocks executable files, validates MIME types, and respects size limits.
+- **Webhook Signatures**: Verify Cashfree webhook endpoint rejects payloads without correct signature headers or with spoofed hashes.
 
 ## Tests Required
 
-- `tests/Feature/BackupRestoreTest.php`:
-  - Verify `backup` command successfully creates a single archive containing database and files.
-  - Verify `restore` command successfully restores data and files.
-  - Verify system integrity after restore.
+- `tests/Feature/SecurityReviewTest.php`:
+  - `test_admin_endpoint_permissions_matrix`
+  - `test_rate_limiting_active_on_sensitive_routes`
+  - `test_cors_origins_restricted`
+  - `test_file_upload_extensions_and_size_restrictions`
+  - `test_payment_webhook_signature_verification`
 
 ## Quality Requirements
 
@@ -55,6 +54,5 @@ Implement a backup and restore utility that archives the SQL database and privat
 
 ## Files Likely Affected
 
-- `app/Console/Commands/BackupSystem.php` (new)
-- `app/Console/Commands/RestoreSystem.php` (new)
-- `tests/Feature/BackupRestoreTest.php` (new)
+- `app/Http/Controllers/Api/PaymentWebhookController.php` (if signature check is missing or bypassable)
+- `tests/Feature/SecurityReviewTest.php` (new)

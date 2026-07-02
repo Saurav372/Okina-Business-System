@@ -57,6 +57,6 @@ Route::middleware(['web', 'customer.access'])->withoutMiddleware(ValidateCsrfTok
     Route::post('/orders/{order}/reorder', [CustomerApiController::class, 'reorder']);
 });
 
-Route::prefix('webhooks')->group(function () {
+Route::prefix('webhooks')->middleware('throttle:5,1')->group(function () {
     Route::post('/payments/cashfree', [PaymentWebhookController::class, 'cashfree']);
 });
