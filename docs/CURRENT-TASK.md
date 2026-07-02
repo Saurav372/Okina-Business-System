@@ -6,53 +6,40 @@ C6.4 Backup, security, and regression gates
 
 ## Current Subtask
 
-C6.4.3 Deployment checklist
+C6.4.4 Regression test checklist
 
 ## Current Status
 
-Not Started. C6.4.2 (Comprehensive application security review) is fully completed and verified by tests. Ready to begin C6.4.3.
+Not Started. C6.4.3 (Deployment checklist) is fully completed and verified. Ready to begin C6.4.4.
 
 ## Goal
 
-Ensure the system is fully hardened against security vulnerabilities. Run a comprehensive security review matrix and build automated integration tests verifying permissions, rate limiting, CORS configuration, file upload safety, and payment webhook signature validation.
+Provide a clear, complete, and production-ready Deployment Checklist and runbook. Document all setup steps, environment variable configurations, queue and job setups, cron scheduler actions, and storage/permission rules to verify a successful deployment dry-run.
 
 ## Dependencies
 
-- A2.3 — Role and permission model (Completed)
-- A4.1 — File upload service (Completed)
-- A5.3 — Payment gateway service contract (Completed)
-- B3.3 — Payment webhook handling (Completed)
+- A1.2 — Host deployment configuration (Completed)
 
 ## Required Deliverables
 
-1. **Security Review Test Suite**:
-   - `tests/Feature/SecurityReviewTest.php` containing automated tests that assert security controls are active and correctly configured.
-2. **Security Fixes/Hardening**:
-   - Address any gaps discovered in permissions, rate limits, CORS headers, upload validators, or signature checks.
+1. **Deployment Checklist Document**:
+   - `docs/DEPLOYMENT-CHECKLIST.md` containing absolute setup guidelines, environment variable matrices, system configurations (supervisor queues, system cron scheduler), database migrations, build targets, and verification steps.
 
 ## Acceptance Criteria
 
-- **Permission Matrix**: Verify all admin endpoints reject unauthorized users with `403` and allow authorized roles.
-- **Rate Limiting**: Verify login, password resets, checkout, and webhook endpoints have active rate limiting.
-- **CORS Configuration**: Verify CORS headers restrict requests to authorized origins.
-- **File Upload Safety**: Verify file upload API blocks executable files, validates MIME types, and respects size limits.
-- **Webhook Signatures**: Verify Cashfree webhook endpoint rejects payloads without correct signature headers or with spoofed hashes.
+- **Comprehensive Configuration**: Detailed mappings for all essential environment variables (`APP_KEY`, database credentials, file storage paths, Google Sheets client configs, Cashfree settings).
+- **Execution Runbook**: Step-by-step instructions from cloning the repository to starting queue workers, scheduling cron commands, building frontends, and initial backup testing.
+- **Dry-run validation**: Clear checklist to perform verification steps on a fresh production-like host container/server.
 
 ## Tests Required
 
-- `tests/Feature/SecurityReviewTest.php`:
-  - `test_admin_endpoint_permissions_matrix`
-  - `test_rate_limiting_active_on_sensitive_routes`
-  - `test_cors_origins_restricted`
-  - `test_file_upload_extensions_and_size_restrictions`
-  - `test_payment_webhook_signature_verification`
+- **Deployment Dry-Run verification** (Manual checklist verify).
 
 ## Quality Requirements
 
-- Clean Laravel Pint formatting.
-- PHPStan static analysis with zero errors.
+- Correct Markdown formatting.
+- Absolute clarity and readability.
 
 ## Files Likely Affected
 
-- `app/Http/Controllers/Api/PaymentWebhookController.php` (if signature check is missing or bypassable)
-- `tests/Feature/SecurityReviewTest.php` (new)
+- `docs/DEPLOYMENT-CHECKLIST.md` (new)

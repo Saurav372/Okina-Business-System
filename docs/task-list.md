@@ -661,12 +661,14 @@ Verification note: C6.3.2 completed on 2026-07-01. Extended `config/sheets.php` 
 |---|---|---|
 | C6.4.1 | Backup and restore implementation | Completed |
 | C6.4.2 | Comprehensive application security review | Completed |
-| C6.4.3 | Deployment checklist | Not Started |
+| C6.4.3 | Deployment checklist | Completed |
 | C6.4.4 | Regression test checklist | Not Started |
 
 Verification note: C6.4.1 completed on 2026-07-02. Implemented `config/backup.php` configuration, `BackupService` for SQL serialization and ZIP compilation, `RestoreService` with dry-run manifest/checksum validation and drop-table retry loops, and Artisan commands `system:backup` and `system:restore`. Added automated tests verifying backup generation, manifest checks, pruning, and restore loops. All 4 tests in `BackupRestoreTest.php` passed. Pint and PHPStan analyses are fully clean.
 
 Verification note: C6.4.2 completed on 2026-07-02. Conducted comprehensive security audit of CORS (restricted to Astro frontend local origins), File Upload safety (restricted to <5MB and allowed mime types/extensions, preventing php execution uploads), and webhook validation. Applied `throttle:5,1` rate limiting to Cashfree webhook endpoint `/api/webhooks/payments/cashfree`. Added automated integration tests verifying Admin permissions gating, API CORS checks, upload validation safety, webhook signature verification, and route rate limits. All 5 tests in `SecurityReviewTest.php` passed. Pint and PHPStan analyses are fully clean.
+
+Verification note: C6.4.3 completed on 2026-07-02. Formulated a production-ready deployment checklist and runbook in `docs/DEPLOYMENT-CHECKLIST.md`. It covers target system prerequisites (PHP settings, DB, Node, SSL), secrets management & rotation rules, full environment variable matrix details, sequential deployment instructions (maintenance flow, pre-migrate backup, optimized performance caches, queue/bytecode restarts, Astro frontend build), detailed post-deployment operational health checks, and a rollback recovery procedure.
 | C6.4.5 | Rollback procedure | Not Started |
 
 
