@@ -7,7 +7,7 @@ Form Components (Phase 1)
 U1.1.3 Select Dropdown
 
 ## Status
-Pending Approval
+Completed
 
 ## Goal
 Build a standard select input component that integrates with the `<x-form.wrapper>`.

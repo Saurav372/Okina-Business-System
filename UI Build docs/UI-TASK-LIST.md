@@ -48,7 +48,7 @@ Detailed validation for each subtask is maintained in `UI-SUBTASK-VALIDATION.md`
 | **U1.1** | **Form Components** | Foundation | 1 | **Milestone** | U0.5 | Milestone |
 | U1.1.1 | Form Wrapper | Foundation | 1 | Form wrapper component. | U0.5 | Completed |
 | U1.1.2 | Input Field | Foundation | 1 | Standard text/number input. | U1.1.1 | Completed |
-| U1.1.3 | Select Dropdown | Foundation | 1 | Standard select input. | U1.1.1 | Pending |
+| U1.1.3 | Select Dropdown | Foundation | 1 | Standard select input. | U1.1.1 | Completed |
 | U1.1.4 | SearchBox | Foundation | 1 | Search input with debounce. | U1.1.1 | Pending |
 | U1.1.5 | DatePicker | Foundation | 1 | Date selection component. | U1.1.1 | Pending |
 | U1.1.6 | FileUpload | Foundation | 1 | File upload with preview. | U1.1.1 | Pending |
