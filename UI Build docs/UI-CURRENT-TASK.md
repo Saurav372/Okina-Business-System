@@ -4,23 +4,24 @@
 Data & Table (Phase 1)
 
 ## Current Subtask
-U1.2.1 DataTable
+U1.2.2 Pagination
 
 ## Status
 Completed
 
 ## Goal
-Build a foundational DataTable component with support for sorting, column definitions, and empty states.
+Build a standardized Pagination component designed for server-side paginated data (e.g., standard Laravel LengthAwarePaginator outputs).
 
 ## Dependencies
 **Depends On:**
-- U0.5 Layout Templates (Completed)
+- U1.2.1 DataTable (Completed)
 
 ## Required Deliverables
-- A Blade component (`<x-table>`) tailored for displaying tabular data.
-- Must inherit standard typography and surface tokens.
-- Provide a consistent, accessible UI for data presentation.
+- A Blade component (`<x-table.pagination>` or `<x-pagination>`) tailored for rendering page links.
+- Must inherit standard typography and motion tokens (hover states on page numbers).
+- Provide a responsive layout (e.g., collapsing page numbers to "Previous/Next" on mobile).
 
 ## Completed Prerequisites
 - U0.5 Layout Templates
-- U1.1 Form Components (Complete Milestone)
+- U1.1 Form Components
+- U1.2.1 DataTable

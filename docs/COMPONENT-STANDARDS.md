@@ -70,7 +70,14 @@ Avoid duplicating logic and CSS definitions. Build complex components by composi
 - Do not hardcode dimensions or colors inside the SVG path.
 - The `<svg>` tag must forward attributes explicitly using `{{ $attributes->class(['w-5 h-5']) }}` so sizes and colors can be overridden per instance.
 
-## 8. Validation Checklist
+## 8. Query String Preservation (Pagination & Filters)
+When building components that navigate data states (such as Pagination):
+- The component must **not** attempt to reconstruct or append query strings manually.
+- The component strictly renders URLs provided to it (e.g., `$paginator->nextPageUrl()`).
+- Controllers, Livewire components, or services hold the responsibility to configure query preservation (e.g., calling `withQueryString()` or `appends()`) before injecting the paginator into the view.
+- This maintains clean separation of responsibilities between UI rendering and application routing logic.
+
+## 9. Validation Checklist
 Before any component is marked complete, verify:
 1. Prop typings and defaults are strictly defined.
 2. No duplicated styling logic exists (leverages composition).

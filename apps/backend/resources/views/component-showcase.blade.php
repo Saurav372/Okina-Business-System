@@ -343,6 +343,50 @@
             </div>
         </section>
 
+        <!-- PAGINATION COMPONENT TESTS -->
+        <h1 class="text-2xl font-bold mt-16 pt-8 border-t">Pagination Component Testing</h1>
+        
+        @php
+            $mockFirstPage = new \Illuminate\Pagination\LengthAwarePaginator(collect(range(1, 10)), 582, 10, 1, ['path' => url()->current()]);
+            $mockMiddlePage = new \Illuminate\Pagination\LengthAwarePaginator(collect(range(1, 10)), 582, 10, 29, ['path' => url()->current()]);
+            $mockLastPage = new \Illuminate\Pagination\LengthAwarePaginator(collect(range(1, 2)), 582, 10, 59, ['path' => url()->current()]);
+            $mockZeroResults = new \Illuminate\Pagination\LengthAwarePaginator(collect([]), 0, 10, 1, ['path' => url()->current()]);
+            $mockSimplePaginator = new \Illuminate\Pagination\Paginator(collect(range(1, 10)), 10, 2, ['path' => url()->current()]);
+            $mockSimplePaginator->hasMorePagesWhen(true);
+        @endphp
+
+        <section class="space-y-8">
+            <!-- 1. First Page -->
+            <div class="space-y-2">
+                <h2 class="text-xl font-semibold border-b pb-2">1. First Page</h2>
+                <x-table.pagination :paginator="$mockFirstPage" />
+            </div>
+
+            <!-- 2. Middle Page -->
+            <div class="space-y-2">
+                <h2 class="text-xl font-semibold border-b pb-2">2. Middle Page</h2>
+                <x-table.pagination :paginator="$mockMiddlePage" />
+            </div>
+
+            <!-- 3. Last Page -->
+            <div class="space-y-2">
+                <h2 class="text-xl font-semibold border-b pb-2">3. Last Page</h2>
+                <x-table.pagination :paginator="$mockLastPage" />
+            </div>
+
+            <!-- 4. Zero Results -->
+            <div class="space-y-2">
+                <h2 class="text-xl font-semibold border-b pb-2">4. Zero Results</h2>
+                <x-table.pagination :paginator="$mockZeroResults" />
+            </div>
+            
+            <!-- 5. Simple Paginator (No total) -->
+            <div class="space-y-2">
+                <h2 class="text-xl font-semibold border-b pb-2">5. Simple Paginator (Cursor/Paginator)</h2>
+                <x-table.pagination :paginator="$mockSimplePaginator" />
+            </div>
+        </section>
+
     </div>
 </body>
 </html>
