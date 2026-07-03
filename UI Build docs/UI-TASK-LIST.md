@@ -43,7 +43,7 @@ Detailed validation for each subtask is maintained in `UI-SUBTASK-VALIDATION.md`
 | U0.1.5 | Motion & Animation Tokens | Foundation | 0 | Define motion durations, easings, and transitions. <br> **Acceptance:** Duration scale, Easing scale, Transition tokens, Focus animations, Hover animations, Reduced motion support defined and documented. | U0.1.4 | Completed |
 | U0.2 | Admin Route Groups | Foundation | 0.5 | Setup admin route groups and auth/permission middleware. | U0.1.5 | Completed |
 | U0.3 | Navigation Config | Foundation | 0.5 | Centralize sidebar links and role-based visibility rules. | U0.2 | Completed |
-| U0.4 | Breadcrumb Builder | Foundation | 0.5 | Automated breadcrumb generation strategy. | U0.2 | Pending |
+| U0.4 | Breadcrumb Builder | Foundation | 0.5 | Automated breadcrumb generation strategy. | U0.2 | Completed |
 | U0.5 | Layout Templates | Foundation | 0.5 | Create app, admin, customer, auth, and guest blade layouts. | U0.1.5 | Pending |
 | **U1.1** | **Form Components** | Foundation | 1 | **Milestone** | U0.5 | Milestone |
 | U1.1.1 | Form Wrapper | Foundation | 1 | Form wrapper component. | U0.5 | Pending |
