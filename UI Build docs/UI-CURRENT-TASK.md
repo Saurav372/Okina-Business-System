@@ -1,95 +1,90 @@
 # Current Task
 
 ## Current Parent Task
-U0.1 Design System & Tokens
+Foundation (Phase 0.5)
 
 ## Current Subtask
-U0.1.5 Motion & Animation Tokens
+U0.3 Navigation Config
 
 ## Status
 Pending Approval
 
 ## Layer
-Shared
+Backend / Config
 
 ## Backend Status
-✅ Backend Ready
-No backend implementation required.
+🚧 Backend Implementation Required
+This task requires setting up centralized navigation configuration.
 
 ## Goal
-Define motion durations, easings, and transitions.
+Centralize sidebar links and role-based visibility rules.
 
 ---
 
 ## Dependencies
 **Depends On:**
-- U0.1.4 Breakpoints (Completed)
+- U0.2 Admin Route Groups (Completed)
 
 **Blocks:**
-- U0.2 Admin Route Groups
+- U0.5 Layout Templates
 
 ---
 
 ## Required Deliverables
-- Duration scale
-- Easing scale
-- Transition tokens
-- Focus animations
-- Hover animations
-- Reduced motion support
+- A centralized configuration (e.g., config file or service class) defining navigation links
+- Role-based visibility rules for navigation items
+- Hierarchy support (nested links)
+- Icon references for navigation items
 
 ---
 
 ## Files To Modify
-- `apps/backend/resources/css/app.css`
+- `config/navigation.php` (or similar)
+- Associated Services or View Composers as needed
 
 ## Files Not To Create
-- `motion.css`
-- `animations.css`
-*(Unless explicitly approved)*
+- Complex UI components (this is just the configuration structure)
 
 ---
 
 ## Architecture Rules
-- Use semantic CSS variables and Tailwind v4 theme extensions.
-- No breaking changes.
+- Use a single source of truth for navigation to ensure consistency between the sidebar and mobile menus.
+- Navigation structure should define the intended route, label, icon, and required permission/role.
 
 ---
 
 ## Related Components
 This task affects:
-- All Interactive Components
-- Transitions and Overlays
+- Sidebar Component
+- Mobile Menu Component
+- Breadcrumbs
 
 ---
 
 ## Acceptance Criteria
-- [ ] Duration scale defined
-- [ ] Easing scale defined
-- [ ] Transition tokens defined
-- [ ] Focus animations defined
-- [ ] Hover animations defined
-- [ ] Reduced motion support documented/implemented
+- [ ] Centralized navigation configuration exists
+- [ ] Items support labels, routes, icons, and permissions
+- [ ] Items support nested children
+- [ ] Logic to filter navigation items based on current user permissions
 
 ---
 
 ## Validation Checklist
 Use: `UI-SUBTASK-VALIDATION.md`
-Section: **U0.1.5 Motion & Animation Tokens**
+Section: **Admin Page Validation Template (Tier 2 Modules: U3.x - U7.x)** *(Note: Config Phase)*
 
 ---
 
 ## Out Of Scope
 Do NOT:
-- Build components
-- Define layouts
+- Build the Sidebar component itself (that's later in U0.5 / U1.1)
+- Build the Layouts (U0.5)
 
 ---
 
 ## References
 - UI Task List
 - UI AI Prompt Sequence
-- UI Subtask Validation
 
 ---
 
