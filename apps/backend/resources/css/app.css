@@ -231,9 +231,51 @@
     /* Custom Brand Easings (Optional spring/bounce effects) */
     --ease-bounce: cubic-bezier(0.175, 0.885, 0.32, 1.275);
     
+    /* Semantic Motion Tokens */
+    --motion-fast: var(--duration-150);
+    --motion-normal: var(--duration-300);
+    --motion-slow: var(--duration-500);
+    --motion-ease: var(--ease-out);
+
     /* Animation Scales for Hover/Active states */
     --motion-scale-hover: 1.02;
     --motion-scale-active: 0.98;
+
+    /* ======================================================
+       BORDER RADIUS TOKENS
+    ====================================================== */
+    --radius-none: 0;
+    --radius-sm: 0.125rem;
+    --radius-md: 0.375rem;
+    --radius-lg: 0.5rem;
+    --radius-xl: 0.75rem;
+    --radius-2xl: 1rem;
+    --radius-full: 9999px;
+
+    /* ======================================================
+       SHADOW & ELEVATION TOKENS
+    ====================================================== */
+    --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+    /* ======================================================
+       Z-INDEX TOKENS
+    ====================================================== */
+    --z-dropdown: 40;
+    --z-sticky: 50;
+    --z-modal: 60;
+    --z-toast: 70;
+    --z-tooltip: 80;
+
+    /* ======================================================
+       FOCUS RING TOKENS
+    ====================================================== */
+    --focus-ring-color: var(--color-primary);
+    --focus-ring-width: 2px;
+    --focus-ring-offset: 2px;
 }
 
 /* ======================================================
@@ -243,9 +285,9 @@
 /* Focus Animation Defaults */
 @layer base {
     *:focus-visible {
-        outline: 2px solid var(--color-primary);
-        outline-offset: 2px;
-        transition: outline-color var(--duration-150) var(--ease-out);
+        outline: var(--focus-ring-width) solid var(--focus-ring-color);
+        outline-offset: var(--focus-ring-offset);
+        transition: outline-color var(--motion-fast) var(--motion-ease);
     }
 }
 
