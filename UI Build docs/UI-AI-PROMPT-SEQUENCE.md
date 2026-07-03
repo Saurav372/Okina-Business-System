@@ -24,12 +24,14 @@ If `UI Build docs/UI-CURRENT-TASK.md` says the current subtask is blocked or pen
 - **Respect Existing Coding Style:** Follow the existing project naming conventions, folder structure, formatting, and coding style unless the current task explicitly introduces a new standard.
 - **Never create placeholder UI:** Every implemented screen must connect to real backend data unless the current task explicitly allows mock content. No fake metrics, orders, or hardcoded tables.
 - **Existing Component Check:** Search for an existing component before creating a new one. If an equivalent exists, reuse or extend it. Do not duplicate components.
+- **Existing Utility Check:** Before introducing new CSS utilities, helper classes, or JavaScript helpers, search for an existing implementation and reuse or extend it where appropriate.
 - **File Creation Rules:** Do not create new files unless required. Prefer modifying existing components. Explain why a new file is necessary before creating it.
 - **Scope Protection:** If additional improvements are discovered outside the approved subtask, report them, do not implement them. 
 - **Avoid Large Refactors:** Do not perform opportunistic refactoring while implementing an unrelated task.
 - **Respect Existing Tests:** Never modify existing backend tests unless the current task explicitly requires updating them. Existing tests are treated as behavioral contracts.
-- **Astro Frontend Rule:** If the current task belongs to the Astro frontend (Phase 8), consume Laravel APIs only. Never duplicate business rules or validation logic from Laravel. Treat Laravel as the absolute source of truth.
+- **Astro Frontend Rule:** If the current task belongs to the Astro frontend (Phase 8), consume Laravel APIs only. Astro should also consume the shared Design System. Do not create a separate visual language for the frontend. Never duplicate business rules or validation logic from Laravel. Treat Laravel as the absolute source of truth.
 - **Astro Head Rule:** SEO metadata should be generated through a shared Astro layout/component. Do not duplicate `<head>` meta tag templates across pages. Child pages should override metadata only when necessary, otherwise they must inherit from the shared layout.
+- **Animation Library Rule:** Use native CSS transitions, Motion Tokens, Alpine.js (Blade), and Astro View Transitions. Do not introduce GSAP, Three.js, or other animation libraries unless the current task explicitly requires advanced marketing animations or 3D visualization and the user approves.
 
 ## Architecture Preservation Rules
 
@@ -40,6 +42,8 @@ If `UI Build docs/UI-CURRENT-TASK.md` says the current subtask is blocked or pen
 - Never move validation or business logic into Blade templates.
 - Never change API contracts without approval.
 - Keep presentation strictly separate from business logic. (Controllers remain thin).
+- Never duplicate Design System tokens.
+- Never hardcode colors, typography, spacing, or motion values in components.
 - **SEO Data Source:** SEO metadata should originate from backend-managed SEO fields whenever available. Do not hardcode page metadata unless the page is intentionally static.
 - **Global Indexing:** Public pages must be indexed unless explicitly excluded. Private pages (dashboard, checkout, portal) must be noindex by default.
 - **URL Quality:** Public URLs must be stable, human-readable, slug-based, and lowercase.
@@ -53,6 +57,7 @@ Before any screen is marked complete, it must satisfy:
 - **State handling:** Loading state, Empty state, and Error state implemented.
 - **Validation:** Real-time client-side validation reflecting backend rules.
 - **Performance:** Server-side pagination, no N+1 queries, optimized images, lazy loading, CLS safe, LCP optimized.
+- **Motion:** Uses project motion tokens. Respects `prefers-reduced-motion`.
 - **Public Pages SEO (Astro Only):** Semantic HTML, single correct H1, Meta Title, Meta Description, Canonical link, Robots directives (index/noindex), Product/Breadcrumb Schema (Structured Data), Image Alt text, Open Graph, Twitter Cards, Internal Links. Admin pages do NOT require SEO.
 
 ## Mandatory Git Restore Point Gate
@@ -169,8 +174,13 @@ Rules:
 - Do not remove or redesign existing functionality outside the approved scope.
 - Never create placeholder UI. Connect to real backend data.
 - Keep business logic in Services. Controllers remain thin. Do not move logic into Blade.
-- Use CSS Variables and Theme Tokens.
-- Build responsive, accessible HTML.
+- Use Design System Tokens only (Color, Typography, Spacing, Motion).
+- Never hardcode UI values in components unless explicitly approved.
+- Build responsive, accessible HTML. Use:
+  - Design System Tokens
+  - Shared Components
+  - Motion Tokens
+  - Existing Layouts
 - For public pages, build SEO at the same time: Meta Title, Meta Description, Canonical, Robots directives (index/noindex), Open Graph, Twitter Cards, Structured Data, Image Alt text, and Internal linking where applicable.
 - Apply Content Negotiation (wantsJson) where backend integration is required.
 
@@ -240,6 +250,7 @@ Check:
 - Component still works in all instances
 - Layout responsive breakpoints remain intact
 - Mobile navigation still works
+- Motion regression (transitions, durations, reduced-motion behavior preserved)
 - Backend tests still pass (Zero Regression)
 - SEO regression (Canonicals unchanged, Meta generation still works, Schema still valid, Robots directives preserved)
 
@@ -276,6 +287,12 @@ UI Correctness:
 - Accessibility (ARIA labels, contrast)
 - Layout matches patterns
 
+Motion Review:
+- Uses motion tokens
+- No hardcoded durations/easing
+- Respects `prefers-reduced-motion`
+- No unnecessary animation libraries introduced
+
 SEO Correctness (Public Pages Only):
 - Heading hierarchy: Single H1, logical H2-H6 structure
 - Meta Title & Description present
@@ -295,7 +312,9 @@ Laravel Quality:
 
 Performance:
 - No duplicate database queries
+- No unnecessary CSS
 - No unnecessary JavaScript
+- No unused JavaScript dependencies introduced
 - Components reused where appropriate
 
 Return findings ordered by severity.
@@ -335,6 +354,8 @@ Improve:
 - Accessibility
 - Removal of duplication
 - Responsiveness
+- Design system consistency
+- Motion consistency
 
 Return proposed changes before implementation.
 ```

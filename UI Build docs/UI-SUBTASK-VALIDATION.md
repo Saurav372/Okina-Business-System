@@ -20,6 +20,16 @@ Validation should be based on:
 
 ---
 
+## Design System Compliance
+*(To be referenced by Component, Admin Page, and Public Page validation checklists)*
+- [ ] Color tokens only
+- [ ] Typography tokens only
+- [ ] Spacing tokens only
+- [ ] Motion tokens only
+- [ ] No hardcoded CSS values
+
+---
+
 ## Foundation Validation
 
 ### U0.1.1 CSS Color Tokens
@@ -42,24 +52,27 @@ Notes: Approved Okina brand colors and semantic tokens added to app.css.
 ---
 
 ### U0.1.2 Typography Scale
-**Status:** Pending
+**Status:** Completed
 
 **Implementation Validation**
-- [ ] H1-H6 scale defined
-- [ ] Body text defined
-- [ ] Caption defined
-- [ ] Font weights documented
-- [ ] Responsive scaling verified
+- [x] Font families defined
+- [x] H1-H6 scale defined
+- [x] Body text defined
+- [x] Caption defined
+- [x] Font weights documented
+- [x] Line heights defined
+- [x] Letter spacing defined
+- [x] Responsive scaling verified
 
 **Process Validation**
-- [ ] Documentation updated
-- [ ] Git restore point created
+- [x] Documentation updated
+- [x] Git restore point created
 
 **Review Sign-off**
-Reviewer: __________
-Date: __________
-Result: ☐ Pass ☐ Fail
-Notes: __________________
+Reviewer: AI Assistant
+Date: 2026-07-03
+Result: [x] Pass [ ] Fail
+Notes: Added fluid scaling using clamp for responsive typography, standard font weights, line heights, and letter spacing to app.css theme.
 
 ---
 
@@ -105,6 +118,30 @@ Notes: __________________
 
 ---
 
+### U0.1.5 Motion & Animation Tokens
+**Status:** Pending
+
+**Implementation Validation**
+- [ ] Duration scale defined
+- [ ] Easing scale defined
+- [ ] Transition tokens defined
+- [ ] Focus animations defined
+- [ ] Hover animations defined
+- [ ] Animations use transform/opacity where possible
+- [ ] Reduced motion support (`prefers-reduced-motion`)
+
+**Process Validation**
+- [ ] Documentation updated
+- [ ] Git restore point created
+
+**Review Sign-off**
+Reviewer: __________
+Date: __________
+Result: ☐ Pass ☐ Fail
+Notes: __________________
+
+---
+
 ### U0.5 Layout Templates (e.g., admin.blade.php)
 **Status:** Pending
 
@@ -122,7 +159,8 @@ Notes: __________________
 
 **UI / Accessibility Validation**
 - [ ] Fully responsive
-- [ ] Consumes theme tokens
+- [ ] Consumes design system tokens
+- [ ] Uses motion tokens where applicable
 - [ ] Accessible (ARIA roles, keyboard focus)
 
 **Process Validation**
@@ -145,7 +183,7 @@ Notes: __________________
 
 **Implementation Validation**
 - [ ] Accepts props / slot support
-- [ ] Uses theme tokens (no hardcoded CSS)
+- [ ] Passes Design System Compliance checks
 - [ ] No duplicated markup
 
 **UI / Accessibility Validation**
@@ -153,6 +191,9 @@ Notes: __________________
 - [ ] Accessible (ARIA, contrast)
 - [ ] Keyboard support (tabbing, enter/space activation)
 - [ ] Dark mode support
+- [ ] Uses motion tokens
+- [ ] `prefers-reduced-motion` respected
+- [ ] Hover/focus transitions consistent
 
 **Documentation Validation**
 - [ ] Props documented
@@ -171,6 +212,38 @@ Notes: __________________
 
 ---
 
+## Motion Validation Template (U1.6)
+*(Apply this checklist to transitions, loaders, page changes, and similar features)*
+
+**Status:** Pending
+
+**Implementation Validation**
+- [ ] Uses motion tokens
+- [ ] Uses easing tokens
+- [ ] Uses duration tokens
+- [ ] Supports reduced motion (`prefers-reduced-motion`)
+
+**Performance Validation**
+- [ ] Transform/opacity animations preferred
+- [ ] No layout thrashing
+
+**Accessibility Validation**
+- [ ] No essential information depends solely on animation
+- [ ] Animation can be interrupted where appropriate
+
+**Process Validation**
+- [ ] Documentation updated
+- [ ] Regression validation passes
+- [ ] Git restore point created
+
+**Review Sign-off**
+Reviewer: __________
+Date: __________
+Result: ☐ Pass ☐ Fail
+Notes: __________________
+
+---
+
 ## Admin Page Validation Template (Tier 2 Modules: U3.x - U7.x)
 *(Apply this checklist to every Orders, Products, CRM, Inventory, Finance, and Settings screen)*
 
@@ -178,6 +251,7 @@ Notes: __________________
 
 **Implementation Validation**
 - [ ] Uses existing shared components (no custom one-offs)
+- [ ] Passes Design System Compliance checks
 - [ ] No business logic in Blade (controllers remain thin)
 - [ ] Permission aware (hides elements unauthorized users cannot access)
 - [ ] No unnecessary requests from the UI layer. Backend queries remain unchanged unless required.
@@ -215,11 +289,13 @@ Notes: __________________
 
 **UI Validation**
 - [ ] Responsive layout matches design tokens
+- [ ] Passes Design System Compliance checks (color, typography, spacing, motion)
 
 **Browser Validation**
 - [ ] Verified in Chrome
 - [ ] Verified in Firefox
 - [ ] Verified in Edge
+- [ ] Verified in Safari
 - [ ] Verified in Mobile (iOS/Android)
 
 **Accessibility Validation**

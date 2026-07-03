@@ -12,6 +12,9 @@ Parent tasks are organizational milestones.
 A parent task is marked Completed only when every child subtask is Completed.
 Parent tasks are never implemented directly unless explicitly stated.
 
+## Shared Design System Rule
+All public-facing customer pages must use the shared Design System (Color, Typography, Spacing, Motion) to prevent the Astro frontend from drifting visually from the admin panel over time.
+
 ## SEO Rule
 All public-facing customer pages must implement their SEO acceptance criteria during development.
 SEO is not implemented during Release. Release only validates compliance.
@@ -34,13 +37,14 @@ Detailed validation for each subtask is maintained in `UI-SUBTASK-VALIDATION.md`
 |---|---|---|---|---|---|---|
 | **U0.1** | **Design System & Tokens** | Foundation | 0 | **Milestone** | None | Milestone |
 | U0.1.1 | CSS Color Tokens | Foundation | 0 | Define semantic CSS color variables. | None | Completed |
-| U0.1.2 | Typography Scale | Foundation | 0 | Define H1-H6, body, and caption sizes/weights. | U0.1.1 | Pending |
+| U0.1.2 | Typography Scale | Foundation | 0 | Define H1-H6, body, and caption sizes/weights. | U0.1.1 | Completed |
 | U0.1.3 | Spacing Scale | Foundation | 0 | Define gap, padding, and margin scales. | U0.1.2 | Pending |
 | U0.1.4 | Breakpoints | Foundation | 0 | Define responsive breakpoints. | U0.1.3 | Pending |
-| U0.2 | Admin Route Groups | Foundation | 0.5 | Setup admin route groups and auth/permission middleware. | U0.1.4 | Pending |
+| U0.1.5 | Motion & Animation Tokens | Foundation | 0 | Define motion durations, easings, and transitions. <br> **Acceptance:** Duration scale, Easing scale, Transition tokens, Focus animations, Hover animations, Reduced motion support defined and documented. | U0.1.4 | Pending |
+| U0.2 | Admin Route Groups | Foundation | 0.5 | Setup admin route groups and auth/permission middleware. | U0.1.5 | Pending |
 | U0.3 | Navigation Config | Foundation | 0.5 | Centralize sidebar links and role-based visibility rules. | U0.2 | Pending |
 | U0.4 | Breadcrumb Builder | Foundation | 0.5 | Automated breadcrumb generation strategy. | U0.2 | Pending |
-| U0.5 | Layout Templates | Foundation | 0.5 | Create app, admin, customer, auth, and guest blade layouts. | U0.1.4 | Pending |
+| U0.5 | Layout Templates | Foundation | 0.5 | Create app, admin, customer, auth, and guest blade layouts. | U0.1.5 | Pending |
 | **U1.1** | **Form Components** | Foundation | 1 | **Milestone** | U0.5 | Milestone |
 | U1.1.1 | Form Wrapper | Foundation | 1 | Form wrapper component. | U0.5 | Pending |
 | U1.1.2 | Input Field | Foundation | 1 | Standard text/number input. | U1.1.1 | Pending |
@@ -68,12 +72,19 @@ Detailed validation for each subtask is maintained in `UI-SUBTASK-VALIDATION.md`
 | U1.5.1 | Button & Badge | Foundation | 1 | Buttons and status badges. | U0.5 | Pending |
 | U1.5.2 | Avatar | Foundation | 1 | User profile image. | U0.5 | Pending |
 | U1.5.3 | FileCard & Preview | Foundation | 1 | Media display. | U0.5 | Pending |
-| U1.6 | UI Component Showcase | Foundation | 1.5 | `/admin/ui` route to display and document all reusable components. | U1.1, U1.2, U1.3, U1.4, U1.5 | Pending |
+| **U1.6** | **Motion & Feedback** | Foundation | 1 | **Milestone** | U0.1.5, U0.5 | Milestone |
+| U1.6.1 | Transition Utilities | Foundation | 1 | Reusable transition wrappers. | U0.1.5, U0.5 | Pending |
+| U1.6.2 | Loading Indicators | Foundation | 1 | Spinners and loading states. | U0.1.5, U0.5 | Pending |
+| U1.6.3 | Progress Indicators | Foundation | 1 | Progress bars. | U0.1.5, U0.5 | Pending |
+| U1.6.4 | Skeleton Animation | Foundation | 1 | Shimmer effects for skeletons. | U0.1.5, U0.5 | Pending |
+| U1.6.5 | Scroll Animations | Foundation | 1 | Scroll-triggered reveals. | U0.1.5, U0.5 | Pending |
+| U1.6.6 | Page Transitions | Foundation | 1 | View transition API integration. | U0.1.5, U0.5 | Pending |
+| U1.7 | UI Component Showcase | Foundation | 1.5 | `/admin/ui` route to display and document all reusable components, design tokens, and motion patterns. | U1.1, U1.2, U1.3, U1.4, U1.5, U1.6 | Pending |
 | U2.1 | Application Shell | Foundation | 2 | Wire up Sidebar and Topbar with dynamic user session and navigation data. | U0.3, U0.5, U1.3 | Pending |
 | **U2.2** | **Dashboard** | Foundation | 2 | **Milestone** | U2.1 | Milestone |
-| U2.2.1 | Widgets | Foundation | 2 | KPI stat cards. | U2.1, U1.2.4 | Pending |
+| U2.2.1 | Widgets | Foundation | 2 | KPI stat cards. | U2.1, U1.2.4, U1.6 | Pending |
 | U2.2.2 | Recent Activity | Foundation | 2 | Timeline of recent system events. | U2.1, U1.2.3 | Pending |
-| U2.2.3 | Charts | Foundation | 2 | Data visualizations. | U2.1 | Pending |
+| U2.2.3 | Charts | Foundation | 2 | Data visualizations. | U2.1, U1.6 | Pending |
 | U2.2.4 | Quick Actions | Foundation | 2 | Common action buttons. | U2.1, U1.5.1 | Pending |
 | U2.2.5 | Notification Center | Foundation | 2 | Alerts and messages panel. | U2.1, U1.4.3 | Pending |
 
@@ -139,7 +150,7 @@ Detailed validation for each subtask is maintained in `UI-SUBTASK-VALIDATION.md`
 
 | Task ID | Task Name | Tier | Phase | Description & Acceptance | Depends On | Status |
 |---|---|---|---|---|---|---|
-| U9.1 | UI Polish & QA | Release | 9 | Final micro-interactions and visual bug fixes. | All Tasks | Pending |
+| U9.1 | UI Polish & QA | Release | 9 | Verify all implemented motion, timings, easing, and transitions match the design system, plus visual bug fixes. | All Tasks | Pending |
 | U9.2 | SEO Validation | Release | 9 | Validate Schema, Canonical, Meta Tags, and internal links for public pages. | U9.1 | Pending |
 | U9.2.1| Search Console Readiness | Release | 9 | Check robots.txt, sitemap.xml, canonical, 404, redirects, structured data, hreflang, feed validation. | U9.2 | Pending |
 | U9.3 | Accessibility Audit | Release | 9 | ARIA, contrast, and keyboard navigation review. | U9.2.1 | Pending |

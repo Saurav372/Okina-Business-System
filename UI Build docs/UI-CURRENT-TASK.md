@@ -4,7 +4,7 @@
 U0.1 Design System & Tokens
 
 ## Current Subtask
-U0.1.2 Typography Scale
+U0.1.3 Spacing Scale
 
 ## Status
 Pending Approval
@@ -17,24 +17,24 @@ Shared
 No backend implementation required.
 
 ## Goal
-Define the responsive typography scale including headings (H1-H6), body text, captions, and standard font weights.
+Define the spacing scale including gap, padding, and margin scales.
 
 ---
 
 ## Dependencies
 **Depends On:**
-- U0.1.1 CSS Color Tokens (Completed)
+- U0.1.2 Typography Scale (Completed)
 
 **Blocks:**
-- U0.1.3 Spacing Scale
+- U0.1.4 Breakpoints
 
 ---
 
 ## Required Deliverables
-- Heading scale (H1-H6)
-- Body text definition
-- Caption definition
-- Font weights (e.g. normal, medium, semibold, bold)
+- Gap scale
+- Padding scale
+- Margin scale
+- Usage consistency
 
 ---
 
@@ -42,47 +42,43 @@ Define the responsive typography scale including headings (H1-H6), body text, ca
 - `apps/backend/resources/css/app.css`
 
 ## Files Not To Create
-- `typography.css`
+- `spacing.css`
 *(Unless explicitly approved)*
 
 ---
 
 ## Architecture Rules
 - Use semantic CSS variables and Tailwind v4 theme extensions.
-- Ensure the scale handles responsive resizing.
 - No breaking changes.
 
 ---
 
 ## Related Components
 This task affects:
-- All Text Elements
-- Future Layouts
-- Future Components
+- All Layouts
+- All Components
 
 ---
 
 ## Acceptance Criteria
-- [ ] H1-H6 scale defined
-- [ ] Body text defined
-- [ ] Caption defined
-- [ ] Font weights documented
-- [ ] Responsive scaling verified
+- [ ] Gap scale defined
+- [ ] Padding scale defined
+- [ ] Margin scale defined
+- [ ] Usage consistency defined
 
 ---
 
 ## Validation Checklist
 Use: `UI-SUBTASK-VALIDATION.md`
-Section: **U0.1.2 Typography Scale**
+Section: **U0.1.3 Spacing Scale**
 
 ---
 
 ## Out Of Scope
 Do NOT:
-- Define spacing or breakpoints (these are separate subtasks)
+- Define breakpoints or motion tokens (these are separate subtasks)
 - Build layouts
 - Build components
-- Build pages
 
 ---
 
