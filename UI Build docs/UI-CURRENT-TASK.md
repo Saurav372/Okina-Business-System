@@ -4,7 +4,7 @@
 U0.1 Design System & Tokens
 
 ## Current Subtask
-U0.1.4 Breakpoints
+U0.1.5 Motion & Animation Tokens
 
 ## Status
 Pending Approval
@@ -17,29 +17,26 @@ Shared
 No backend implementation required.
 
 ## Goal
-Define the responsive breakpoint system for the shared design system using a mobile-first approach.
+Define motion durations, easings, and transitions.
 
 ---
 
 ## Dependencies
 **Depends On:**
-- U0.1.3 Spacing Scale (Completed)
+- U0.1.4 Breakpoints (Completed)
 
 **Blocks:**
-- U0.1.5 Motion & Animation Tokens
+- U0.2 Admin Route Groups
 
 ---
 
 ## Required Deliverables
-- Base breakpoint (0px)
-- xs (360px)
-- sm (480px)
-- md (640px)
-- lg (768px)
-- xl (1024px)
-- 2xl (1280px)
-- 3xl (1536px)
-- Tailwind v4 breakpoint configuration
+- Duration scale
+- Easing scale
+- Transition tokens
+- Focus animations
+- Hover animations
+- Reduced motion support
 
 ---
 
@@ -47,7 +44,8 @@ Define the responsive breakpoint system for the shared design system using a mob
 - `apps/backend/resources/css/app.css`
 
 ## Files Not To Create
-- `breakpoints.css`
+- `motion.css`
+- `animations.css`
 *(Unless explicitly approved)*
 
 ---
@@ -60,36 +58,31 @@ Define the responsive breakpoint system for the shared design system using a mob
 
 ## Related Components
 This task affects:
-- All Layouts
-- All Components
-- Responsive Behavior
+- All Interactive Components
+- Transitions and Overlays
 
 ---
 
 ## Acceptance Criteria
-- [ ] Base styles work from 320px+
-- [ ] xs breakpoint defined
-- [ ] sm breakpoint defined
-- [ ] md breakpoint defined
-- [ ] lg breakpoint defined
-- [ ] xl breakpoint defined
-- [ ] 2xl breakpoint defined
-- [ ] 3xl breakpoint defined
+- [ ] Duration scale defined
+- [ ] Easing scale defined
+- [ ] Transition tokens defined
+- [ ] Focus animations defined
+- [ ] Hover animations defined
+- [ ] Reduced motion support documented/implemented
 
 ---
 
 ## Validation Checklist
 Use: `UI-SUBTASK-VALIDATION.md`
-Section: **U0.1.4 Breakpoints**
+Section: **U0.1.5 Motion & Animation Tokens**
 
 ---
 
 ## Out Of Scope
 Do NOT:
-- Define motion tokens (these are separate subtasks)
-- Build layouts
 - Build components
-- Define spacing tokens
+- Define layouts
 
 ---
 

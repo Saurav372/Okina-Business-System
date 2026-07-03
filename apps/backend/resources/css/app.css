@@ -207,4 +207,56 @@
     --breakpoint-xl: 64rem; /* 1024px */
     --breakpoint-2xl: 80rem; /* 1280px */
     --breakpoint-3xl: 96rem; /* 1536px */
+
+    /* ======================================================
+       MOTION & ANIMATION TOKENS
+    ====================================================== */
+
+    /* Duration Scale */
+    --duration-75: 75ms;
+    --duration-100: 100ms;
+    --duration-150: 150ms;
+    --duration-200: 200ms;
+    --duration-300: 300ms;
+    --duration-500: 500ms;
+    --duration-700: 700ms;
+    --duration-1000: 1000ms;
+
+    /* Easing Scale */
+    --ease-linear: linear;
+    --ease-in: cubic-bezier(0.4, 0, 1, 1);
+    --ease-out: cubic-bezier(0, 0, 0.2, 1);
+    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Custom Brand Easings (Optional spring/bounce effects) */
+    --ease-bounce: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    
+    /* Animation Scales for Hover/Active states */
+    --motion-scale-hover: 1.02;
+    --motion-scale-active: 0.98;
+}
+
+/* ======================================================
+   GLOBAL MOTION RULES
+====================================================== */
+
+/* Focus Animation Defaults */
+@layer base {
+    *:focus-visible {
+        outline: 2px solid var(--color-primary);
+        outline-offset: 2px;
+        transition: outline-color var(--duration-150) var(--ease-out);
+    }
+}
+
+/* Reduced Motion Override */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
 }
