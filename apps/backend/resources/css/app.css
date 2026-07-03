@@ -141,4 +141,10 @@
     --spacing-80: 20rem;
     --spacing-96: 24rem;
     --spacing-128: 32rem;
+    /* Breakpoints (Tailwind Defaults) */
+    --breakpoint-sm: 40rem; /* 640px (Small/Mobile Landscape) */
+    --breakpoint-md: 48rem; /* 768px (Medium/Tablet) */
+    --breakpoint-lg: 64rem; /* 1024px (Large/Desktop) */
+    --breakpoint-xl: 80rem; /* 1280px (Extra Large/Wide Desktop) */
+    --breakpoint-2xl: 96rem; /* 1536px (2X Large/Ultra Wide) */
 }

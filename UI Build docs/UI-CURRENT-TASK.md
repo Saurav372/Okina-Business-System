@@ -4,7 +4,7 @@
 U0.1 Design System & Tokens
 
 ## Current Subtask
-U0.1.3 Spacing Scale
+U0.1.4 Breakpoints
 
 ## Status
 Pending Approval
@@ -17,24 +17,24 @@ Shared
 No backend implementation required.
 
 ## Goal
-Define the spacing scale including gap, padding, and margin scales.
+Define the responsive breakpoints for the design system.
 
 ---
 
 ## Dependencies
 **Depends On:**
-- U0.1.2 Typography Scale (Completed)
+- U0.1.3 Spacing Scale (Completed)
 
 **Blocks:**
-- U0.1.4 Breakpoints
+- U0.1.5 Motion & Animation Tokens
 
 ---
 
 ## Required Deliverables
-- Gap scale
-- Padding scale
-- Margin scale
-- Usage consistency
+- Mobile breakpoint
+- Tablet breakpoint
+- Desktop breakpoint
+- Wide Desktop breakpoint
 
 ---
 
@@ -42,7 +42,7 @@ Define the spacing scale including gap, padding, and margin scales.
 - `apps/backend/resources/css/app.css`
 
 ## Files Not To Create
-- `spacing.css`
+- `breakpoints.css`
 *(Unless explicitly approved)*
 
 ---
@@ -57,28 +57,30 @@ Define the spacing scale including gap, padding, and margin scales.
 This task affects:
 - All Layouts
 - All Components
+- Responsive Behavior
 
 ---
 
 ## Acceptance Criteria
-- [ ] Gap scale defined
-- [ ] Padding scale defined
-- [ ] Margin scale defined
-- [ ] Usage consistency defined
+- [ ] Mobile breakpoint defined
+- [ ] Tablet breakpoint defined
+- [ ] Desktop breakpoint defined
+- [ ] Wide Desktop breakpoint defined
 
 ---
 
 ## Validation Checklist
 Use: `UI-SUBTASK-VALIDATION.md`
-Section: **U0.1.3 Spacing Scale**
+Section: **U0.1.4 Breakpoints**
 
 ---
 
 ## Out Of Scope
 Do NOT:
-- Define breakpoints or motion tokens (these are separate subtasks)
+- Define motion tokens (these are separate subtasks)
 - Build layouts
 - Build components
+- Define spacing tokens
 
 ---
 
