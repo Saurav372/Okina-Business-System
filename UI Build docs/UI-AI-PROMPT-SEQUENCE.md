@@ -15,7 +15,16 @@ The default workflow is **inspect first, then ask**.
 
 Do not code, build, scaffold, install dependencies, or edit application files unless the latest user message explicitly approves implementation/building/fixing for the current subtask.
 
-If the user says Proceed, check, compare, verify, review, inspect, plan, or summarize, use Sequence 1, 2, 4, 6, 8, 9, 10, or 11 only. Stop after reporting findings and ask before implementation.
+"Proceed" only authorizes inspection and planning.
+
+Implementation requires explicit approval of the proposed implementation plan.
+
+Examples:
+✓ "Approve the implementation plan"
+✓ "Proceed with implementation"
+✓ "Implement the approved plan"
+
+Without this approval, do not modify code.
 
 If `UI Build docs/UI-CURRENT-TASK.md` says the current subtask is blocked or pending, do not implement it. Report the status and ask for approval.
 
@@ -77,19 +86,30 @@ Rules:
 
 To execute a task efficiently, run through these sequences in order:
 
-**Sequence 1** (Inspect) 
-↓ 
-**Sequence 2** (Dependency Check) 
-↓ 
-**Sequence 3** (Implement) 
-↓ 
-**Sequence 8** (Code Review) 
-↓ 
-**Sequence 7** (Update Documentation) 
-↓ 
-**Sequence 12** (Git Commit) 
-↓ 
-**Next Task**
+Sequence 1
+Inspect
+↓
+Sequence 2
+Dependency Check
+↓
+Sequence 2.5
+Implementation Plan
+↓
+User Approval
+↓
+Sequence 3
+Implementation
+↓
+Sequence 8
+Review
+↓
+Sequence 7
+Documentation
+↓
+Sequence 12
+Git
+↓
+Next Task
 
 ---
 
@@ -99,6 +119,7 @@ To execute a task efficiently, run through these sequences in order:
 |---|---|
 | Starting a subtask and you are not sure what exists yet | Sequence 1 |
 | The task touches shared components, layouts, or routing | Sequence 2 |
+| Dependencies verified, you need an implementation plan | Sequence 2.5 |
 | Scope is clear and you explicitly approve implementation | Sequence 3 |
 | All subtasks under a parent are believed done | Sequence 4 |
 | You are moving from one subtask to the next | Sequence 5 |
@@ -156,6 +177,60 @@ Search the codebase to identify the actual:
 Return a short impact summary based on actual file inspection and say whether it is safe to proceed.
 ```
 
+## Sequence 2.5: Implementation Plan & Approval
+
+Use this immediately before Sequence 3.
+
+```text
+Read:
+1. UI Build docs/UI-CURRENT-TASK.md
+2. Related source files
+3. Related shared components/layouts (if applicable)
+
+Do NOT implement yet.
+
+Prepare a detailed implementation plan.
+
+The plan must include:
+
+## Goal
+Summarize the current subtask.
+
+## Proposed Changes
+List every file that will be modified.
+
+For each file explain:
+- Why it needs to change.
+- What will be added.
+- What will be modified.
+- What will remain unchanged.
+
+## New Files
+List any new files required.
+If none are needed, explicitly state: "No new files will be created."
+
+## Existing Components
+Identify reusable components.
+State whether they will:
+- Reuse
+- Extend
+- Remain unchanged
+
+## Risk Assessment
+List:
+- Possible regressions
+- Dependency risks
+- Architecture concerns
+
+## Validation Plan
+Explain how the implementation will be verified.
+
+## Questions
+If any design or architecture decisions require user approval, ask them now.
+
+Stop here. Do NOT implement anything until the user explicitly approves the implementation plan.
+```
+
 ## Sequence 3: Implement Current Subtask
 
 Use this only after the start-task check is clear and the user approves implementation.
@@ -164,6 +239,15 @@ Use this only after the start-task check is clear and the user approves implemen
 Read UI Build docs/UI-CURRENT-TASK.md.
 
 If the task references architecture, routing, shared layouts, theme tokens, or design system rules, consult the UI Implementation Plan artifact before implementation.
+
+Only execute after:
+✓ Sequence 1 complete
+✓ Sequence 2 complete
+✓ Sequence 2.5 approved by the user
+
+If approval has not been given:
+Stop.
+Do not modify code.
 
 Implement only the current subtask.
 
