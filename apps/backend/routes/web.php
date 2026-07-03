@@ -178,3 +178,6 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     Route::post('/google-sheets/sync-logs/prune', [GoogleSheetsSyncLogController::class, 'prune'])->name('admin.google_sheets.sync_logs.prune');
     Route::post('/google-sheets/sync-record', [GoogleSheetsSyncLogController::class, 'syncRecord'])->name('admin.google_sheets.sync_record');
 });
+
+// Temporary test route for UI Select Component
+Route::view('/admin/ui/test-select', 'test-select');
