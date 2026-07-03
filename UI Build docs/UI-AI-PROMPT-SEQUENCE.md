@@ -15,7 +15,7 @@ The default workflow is **inspect first, then ask**.
 
 Do not code, build, scaffold, install dependencies, or edit application files unless the latest user message explicitly approves implementation/building/fixing for the current subtask.
 
-If the user says check, compare, verify, review, inspect, plan, or summarize, use Sequence 1, 2, 4, 6, 8, 9, 10, or 11 only. Stop after reporting findings and ask before implementation.
+If the user says Proceed, check, compare, verify, review, inspect, plan, or summarize, use Sequence 1, 2, 4, 6, 8, 9, 10, or 11 only. Stop after reporting findings and ask before implementation.
 
 If `UI Build docs/UI-CURRENT-TASK.md` says the current subtask is blocked or pending, do not implement it. Report the status and ask for approval.
 
