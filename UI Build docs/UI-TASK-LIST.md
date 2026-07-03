@@ -39,7 +39,7 @@ Detailed validation for each subtask is maintained in `UI-SUBTASK-VALIDATION.md`
 | U0.1.1 | CSS Color Tokens | Foundation | 0 | Define semantic CSS color variables. | None | Completed |
 | U0.1.2 | Typography Scale | Foundation | 0 | Define H1-H6, body, and caption sizes/weights. | U0.1.1 | Completed |
 | U0.1.3 | Spacing Scale | Foundation | 0 | Define gap, padding, and margin scales. | U0.1.2 | Completed |
-| U0.1.4 | Breakpoints | Foundation | 0 | Define responsive breakpoints. | U0.1.3 | Completed |
+| U0.1.4 | Breakpoints | Foundation | 0 | Define a mobile-first responsive breakpoint system (Base, xs, sm, md, lg, xl, 2xl, 3xl). | U0.1.3 | Completed |
 | U0.1.5 | Motion & Animation Tokens | Foundation | 0 | Define motion durations, easings, and transitions. <br> **Acceptance:** Duration scale, Easing scale, Transition tokens, Focus animations, Hover animations, Reduced motion support defined and documented. | U0.1.4 | Pending |
 | U0.2 | Admin Route Groups | Foundation | 0.5 | Setup admin route groups and auth/permission middleware. | U0.1.5 | Pending |
 | U0.3 | Navigation Config | Foundation | 0.5 | Centralize sidebar links and role-based visibility rules. | U0.2 | Pending |

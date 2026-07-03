@@ -17,7 +17,7 @@ Shared
 No backend implementation required.
 
 ## Goal
-Define the responsive breakpoints for the design system.
+Define the responsive breakpoint system for the shared design system using a mobile-first approach.
 
 ---
 
@@ -31,10 +31,15 @@ Define the responsive breakpoints for the design system.
 ---
 
 ## Required Deliverables
-- Mobile breakpoint
-- Tablet breakpoint
-- Desktop breakpoint
-- Wide Desktop breakpoint
+- Base breakpoint (0px)
+- xs (360px)
+- sm (480px)
+- md (640px)
+- lg (768px)
+- xl (1024px)
+- 2xl (1280px)
+- 3xl (1536px)
+- Tailwind v4 breakpoint configuration
 
 ---
 
@@ -62,10 +67,14 @@ This task affects:
 ---
 
 ## Acceptance Criteria
-- [ ] Mobile breakpoint defined
-- [ ] Tablet breakpoint defined
-- [ ] Desktop breakpoint defined
-- [ ] Wide Desktop breakpoint defined
+- [ ] Base styles work from 320px+
+- [ ] xs breakpoint defined
+- [ ] sm breakpoint defined
+- [ ] md breakpoint defined
+- [ ] lg breakpoint defined
+- [ ] xl breakpoint defined
+- [ ] 2xl breakpoint defined
+- [ ] 3xl breakpoint defined
 
 ---
 
