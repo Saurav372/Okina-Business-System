@@ -1,107 +1,23 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Admin Dashboard | Okina Craft</title>
-    <style>
-        :root {
-            color-scheme: light;
-            --bg: #f8fafc;
-            --panel: #ffffff;
-            --text: #0f172a;
-            --muted: #475569;
-            --line: #cbd5e1;
-            --accent: #0f766e;
-            --accent-strong: #115e59;
-        }
-
-        * { box-sizing: border-box; }
-        body {
-            margin: 0;
-            min-height: 100vh;
-            font-family: Arial, Helvetica, sans-serif;
-            color: var(--text);
-            background:
-                linear-gradient(180deg, rgba(15, 118, 110, 0.06), transparent 26%),
-                var(--bg);
-        }
-        header, main {
-            width: min(100%, 1100px);
-            margin: 0 auto;
-            padding: 24px;
-        }
-        header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            border-bottom: 1px solid var(--line);
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(8px);
-        }
-        h1 {
-            margin: 0;
-            font-size: 1.5rem;
-        }
-        p {
-            margin: 8px 0 0;
-            color: var(--muted);
-            line-height: 1.5;
-        }
-        .panel {
-            margin-top: 24px;
-            padding: 24px;
-            border: 1px solid var(--line);
-            border-radius: 12px;
-            background: var(--panel);
-            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
-        }
-        button {
-            appearance: none;
-            border: 0;
-            border-radius: 10px;
-            padding: 12px 16px;
-            background: var(--accent);
-            color: #fff;
-            font: inherit;
-            font-weight: 700;
-            cursor: pointer;
-        }
-        button:hover {
-            background: var(--accent-strong);
-        }
-        .status {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            border: 1px solid var(--line);
-            border-radius: 999px;
-            color: var(--muted);
-            background: #f8fafc;
-        }
-    </style>
-</head>
-<body>
-    <header>
+<x-layouts.admin title="Admin Dashboard | Okina Craft">
+    <div class="mb-6 flex items-center justify-between">
         <div>
-            <h1>Okina Craft Admin</h1>
-            <p>Protected staff area for backend operations.</p>
+            <h1 class="text-2xl font-semibold text-surface-900">Okina Craft Admin</h1>
+            <p class="text-surface-500 mt-1">Protected staff area for backend operations.</p>
         </div>
 
         <form method="POST" action="{{ route('admin.logout') }}">
             @csrf
-            <button type="submit">Logout</button>
+            <button type="submit" class="bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                Logout
+            </button>
         </form>
-    </header>
+    </div>
 
-    <main>
-        <div class="panel">
-            <div class="status">Authenticated staff session active</div>
-            <p>This placeholder dashboard confirms the admin gate is working. Later tasks will add the real business modules here.</p>
+    <div class="bg-surface-0 border border-surface-200 rounded-xl p-6 shadow-sm">
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-50 border border-surface-200 text-sm text-surface-600 mb-4">
+            <svg class="w-4 h-4 text-success-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            Authenticated staff session active
         </div>
-    </main>
-</body>
-</html>
+        <p class="text-surface-700 leading-relaxed">This placeholder dashboard confirms the admin gate is working. Later tasks will add the real business modules here.</p>
+    </div>
+</x-layouts.admin>
