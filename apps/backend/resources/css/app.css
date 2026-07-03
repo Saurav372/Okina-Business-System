@@ -6,6 +6,10 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
+    /* ======================================================
+       COLOR TOKENS
+    ====================================================== */
+
     /* Palette Tokens - Primary (Brand Blue) */
     --color-primary-50: #EFF8FF;
     --color-primary-100: #D8F0FF;
@@ -45,6 +49,45 @@
     --color-neutral-900: #111827;
     --color-neutral-950: #030712;
 
+    /* Palette Tokens - Success */
+    --color-success-50: #ECFDF5;
+    --color-success-100: #D1FAE5;
+    --color-success-200: #A7F3D0;
+    --color-success-300: #6EE7B7;
+    --color-success-400: #34D399;
+    --color-success-500: #10B981;
+    --color-success-600: #059669;
+    --color-success-700: #047857;
+    --color-success-800: #065F46;
+    --color-success-900: #064E3B;
+    --color-success-950: #022C22;
+
+    /* Palette Tokens - Warning */
+    --color-warning-50: #FFFBEB;
+    --color-warning-100: #FEF3C7;
+    --color-warning-200: #FDE68A;
+    --color-warning-300: #FCD34D;
+    --color-warning-400: #FBBF24;
+    --color-warning-500: #F59E0B;
+    --color-warning-600: #D97706;
+    --color-warning-700: #B45309;
+    --color-warning-800: #92400E;
+    --color-warning-900: #78350F;
+    --color-warning-950: #451A03;
+
+    /* Palette Tokens - Danger */
+    --color-danger-50: #FEF2F2;
+    --color-danger-100: #FEE2E2;
+    --color-danger-200: #FECACA;
+    --color-danger-300: #FCA5A5;
+    --color-danger-400: #F87171;
+    --color-danger-500: #EF4444;
+    --color-danger-600: #DC2626;
+    --color-danger-700: #B91C1C;
+    --color-danger-800: #991B1B;
+    --color-danger-900: #7F1D1D;
+    --color-danger-950: #450A0A;
+
     /* Semantic Tokens (Prefixed with --color- to generate Tailwind utilities) */
     --color-primary: var(--color-primary-500);
     --color-primary-hover: var(--color-primary-600);
@@ -64,10 +107,15 @@
     --color-border: var(--color-neutral-200);
     --color-border-hover: var(--color-neutral-300);
 
-    --color-success: #10b981;
-    --color-warning: #f59e0b;
-    --color-danger: #ef4444;
-    --color-info: #0ea5e9;
+    --color-success: var(--color-success-500);
+    --color-warning: var(--color-warning-500);
+    --color-danger: var(--color-danger-500);
+    --color-info: var(--color-primary-500);
+
+    /* ======================================================
+       TYPOGRAPHY TOKENS
+    ====================================================== */
+
     /* Typography Scale (Responsive with clamp) */
     --text-h1: clamp(2.25rem, 4vw + 1rem, 3.5rem);
     --text-h1--line-height: 1.1;
@@ -122,7 +170,12 @@
     --tracking-wide: 0.025em;
     --tracking-wider: 0.05em;
     --tracking-widest: 0.1em;
-    /* Spacing Scale (8-point system, 1 unit = 0.25rem = 4px) */
+
+    /* ======================================================
+       SPACING TOKENS
+    ====================================================== */
+
+    /* Design system spacing scale based on a 4px base unit */
     --spacing-0: 0px;
     --spacing-1: 0.25rem;
     --spacing-2: 0.5rem;
@@ -141,6 +194,11 @@
     --spacing-80: 20rem;
     --spacing-96: 24rem;
     --spacing-128: 32rem;
+
+    /* ======================================================
+       BREAKPOINT TOKENS
+    ====================================================== */
+
     /* Breakpoints (Mobile-first responsive system) */
     --breakpoint-xs: 22.5rem; /* 360px */
     --breakpoint-sm: 30rem; /* 480px */
