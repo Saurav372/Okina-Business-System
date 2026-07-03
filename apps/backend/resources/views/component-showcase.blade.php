@@ -160,6 +160,72 @@
             </div>
         </section>
 
+        <!-- FILE UPLOAD COMPONENT TESTS -->
+        <h1 class="text-2xl font-bold mt-16 pt-8 border-t">File Upload Component Testing</h1>
+
+        <!-- 1. Standard Single File -->
+        <section class="space-y-4">
+            <h2 class="text-xl font-semibold border-b pb-2">1. Standard Single File</h2>
+            <x-form.file id="file1" label="Upload Document" />
+        </section>
+
+        <!-- 2. Multiple Files -->
+        <section class="space-y-4">
+            <h2 class="text-xl font-semibold border-b pb-2">2. Multiple Files</h2>
+            <x-form.file id="file2" label="Upload Attachments" multiple />
+        </section>
+
+        <!-- 3. Accept Images Only -->
+        <section class="space-y-4">
+            <h2 class="text-xl font-semibold border-b pb-2">3. Accept Specific Types (Images)</h2>
+            <x-form.file id="file3" label="Profile Picture" accept="image/*" />
+        </section>
+        
+        <!-- 4. Accept PDFs Only -->
+        <section class="space-y-4">
+            <h2 class="text-xl font-semibold border-b pb-2">4. Accept Specific Types (PDF)</h2>
+            <x-form.file id="file4" label="Upload Resume" accept=".pdf" />
+        </section>
+
+        <!-- 5. Required & Error State -->
+        <section class="space-y-4 flex gap-8">
+            <div class="flex-1 space-y-4">
+                <h2 class="text-xl font-semibold border-b pb-2">5a. Required State</h2>
+                <x-form.file id="file5a" label="Verification Document" required />
+            </div>
+            <div class="flex-1 space-y-4">
+                <h2 class="text-xl font-semibold border-b pb-2">5b. Error State</h2>
+                <x-form.file id="file5b" label="Tax Form" error="File size exceeds 5MB limit." />
+            </div>
+        </section>
+
+        <!-- 6. Hint & Disabled State -->
+        <section class="space-y-4 flex gap-8">
+            <div class="flex-1 space-y-4">
+                <h2 class="text-xl font-semibold border-b pb-2">6a. Hint State</h2>
+                <x-form.file id="file6a" label="Cover Letter" hint="Must be a PDF or DOCX file." />
+            </div>
+            <div class="flex-1 space-y-4">
+                <h2 class="text-xl font-semibold border-b pb-2">6b. Disabled State</h2>
+                <x-form.file id="file6b" label="Archived Contract" disabled />
+            </div>
+        </section>
+
+        <!-- 7. Filename Edge Cases Test -->
+        <section class="space-y-4">
+            <h2 class="text-xl font-semibold border-b pb-2">7. Filename Edge Cases (Manual Test)</h2>
+            <p class="text-sm text-[color:var(--color-text-muted)] mb-2">
+                Upload files with the following characteristics to verify layout stability:
+                <ul class="list-disc pl-5 text-sm text-[color:var(--color-text-muted)]">
+                    <li>Very long filename</li>
+                    <li>Filename containing spaces (e.g. <code>Purchase Order - Final.pdf</code>)</li>
+                    <li>Filename containing Unicode characters (e.g. <code>报价单_最终版本.pdf</code>)</li>
+                    <li>Filename with a very long extension</li>
+                </ul>
+            </p>
+            <x-form.file id="file7" label="Edge Case Test" />
+        </section>
+
     </div>
 </body>
 </html>

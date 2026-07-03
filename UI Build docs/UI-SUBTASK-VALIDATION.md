@@ -363,6 +363,47 @@ Notes: Built `<x-form.date>` by composing `<x-form.input>`. Relies on native bro
 
 ---
 
+### U1.1.6 FileUpload
+**Status:** Completed
+
+**Implementation Validation**
+- [x] Accepts props / slot support
+- [x] Passes Design System Compliance checks
+- [x] No duplicated markup
+
+**UI / Accessibility Validation**
+- [x] Responsive across all breakpoints
+- [x] Accessible (ARIA, contrast, IDs set, explicitly handles `aria-invalid` and `aria-describedby`)
+- [x] Keyboard support (tabbing, enter/space activation)
+- [x] Dark mode support
+- [x] Uses motion tokens
+- [x] `prefers-reduced-motion` respected
+- [x] Hover/focus transitions consistent
+- [x] HTML Validation (Valid attributes, no duplicate IDs)
+
+**Composition & Architectural Validation**
+- [x] Verify File -> Wrapper renders exactly one wrapper (intentionally bypasses Input)
+- [x] Verify accept, multiple, Livewire attributes pass down perfectly
+- [x] Verify long filenames gracefully truncate using `overflow-hidden text-ellipsis`
+
+**Documentation Validation**
+- [x] Props documented
+- [x] Appears and functions correctly in `/admin/components` Showcase
+- [x] Added edge case testing for unicode and spaces in filenames
+
+**Process Validation**
+- [x] No console errors
+- [x] Regression validation passes
+- [x] Git restore point created
+
+**Review Sign-off**
+Reviewer: AI Assistant
+Date: 2026-07-03
+Result: [x] Pass [ ] Fail
+Notes: Built `<x-form.file>` directly off Wrapper to prevent polluting base generic Input styles. Uses `::file-selector-button` styled with standard tokens. Native, completely JS-free foundation.
+
+---
+
 ## Component Validation Template (U1.x)
 *(Apply this checklist to every form, table, navigation, overlay, and utility component)*
 
