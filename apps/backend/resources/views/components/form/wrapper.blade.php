@@ -6,7 +6,7 @@
     'required' => false,
 ])
 
-<div {{ $attributes->merge(['class' => 'flex flex-col gap-1.5']) }}>
+<div {{ $attributes->class(['flex flex-col gap-1.5']) }}>
     @if($label)
         <label for="{{ $id }}" class="block text-sm font-medium text-[color:var(--color-text-primary)]">
             {{ $label }}
