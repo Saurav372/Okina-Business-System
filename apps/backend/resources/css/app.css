@@ -4,6 +4,68 @@
 @source '../../storage/framework/views/*.php';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* Palette Tokens - Primary (Brand Blue) */
+    --color-primary-50: #EFF8FF;
+    --color-primary-100: #D8F0FF;
+    --color-primary-200: #B5E3FF;
+    --color-primary-300: #84D2FF;
+    --color-primary-400: #5BC2FF;
+    --color-primary-500: #44B6F9;
+    --color-primary-600: #219AE8;
+    --color-primary-700: #197CC1;
+    --color-primary-800: #165F94;
+    --color-primary-900: #123E61;
+    --color-primary-950: #0A2237;
+
+    /* Palette Tokens - Secondary (Logo Red) */
+    --color-secondary-50: #FFF3F3;
+    --color-secondary-100: #FFE3E5;
+    --color-secondary-200: #FFC8CC;
+    --color-secondary-300: #FFA3AA;
+    --color-secondary-400: #FF707A;
+    --color-secondary-500: #E53945;
+    --color-secondary-600: #CC2635;
+    --color-secondary-700: #AA1E2A;
+    --color-secondary-800: #891A24;
+    --color-secondary-900: #66161D;
+    --color-secondary-950: #3A090D;
+
+    /* Palette Tokens - Neutral */
+    --color-neutral-50: #FAFBFC;
+    --color-neutral-100: #F4F6F8;
+    --color-neutral-200: #E6E9EE;
+    --color-neutral-300: #D1D5DB;
+    --color-neutral-400: #9CA3AF;
+    --color-neutral-500: #6B7280;
+    --color-neutral-600: #4B5563;
+    --color-neutral-700: #374151;
+    --color-neutral-800: #1F2937;
+    --color-neutral-900: #111827;
+    --color-neutral-950: #030712;
+
+    /* Semantic Tokens (Prefixed with --color- to generate Tailwind utilities) */
+    --color-primary: var(--color-primary-500);
+    --color-primary-hover: var(--color-primary-600);
+    --color-primary-active: var(--color-primary-700);
+
+    --color-secondary: var(--color-secondary-500);
+    --color-secondary-hover: var(--color-secondary-600);
+
+    --color-background: var(--color-neutral-50);
+    --color-surface: #ffffff;
+    --color-surface-secondary: var(--color-neutral-100);
+
+    --color-text-primary: var(--color-neutral-900);
+    --color-text-secondary: var(--color-neutral-600);
+    --color-text-muted: var(--color-neutral-400);
+
+    --color-border: var(--color-neutral-200);
+    --color-border-hover: var(--color-neutral-300);
+
+    --color-success: #10b981;
+    --color-warning: #f59e0b;
+    --color-danger: #ef4444;
+    --color-info: #0ea5e9;
 }
