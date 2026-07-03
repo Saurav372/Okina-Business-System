@@ -109,6 +109,57 @@
             <x-form.search id="search6" label="Search Products" disabled value="Unable to search" />
         </section>
 
+        <!-- DATE COMPONENT TESTS -->
+        <h1 class="text-2xl font-bold mt-16 pt-8 border-t">Date Component Testing</h1>
+
+        <!-- 1. Standard Empty Date -->
+        <section class="space-y-4">
+            <h2 class="text-xl font-semibold border-b pb-2">1. Standard Empty Date</h2>
+            <x-form.date id="date1" label="Invoice Date" />
+        </section>
+
+        <!-- 2. Prefilled ISO Date -->
+        <section class="space-y-4">
+            <h2 class="text-xl font-semibold border-b pb-2">2. Prefilled ISO Date (YYYY-MM-DD)</h2>
+            <x-form.date id="date2" label="Delivery Date" value="2026-07-03" />
+        </section>
+
+        <!-- 3. Min and Max Limits -->
+        <section class="space-y-4">
+            <h2 class="text-xl font-semibold border-b pb-2">3. Min, Max, and Step Attributes</h2>
+            <x-form.date id="date3" label="Select a date in 2026 (Every 7 days)" min="2026-01-01" max="2026-12-31" step="7" />
+        </section>
+
+        <!-- 4. Required state -->
+        <section class="space-y-4">
+            <h2 class="text-xl font-semibold border-b pb-2">4. Required State</h2>
+            <x-form.date id="date4" label="Date of Birth" required />
+        </section>
+        
+        <!-- 5. Error state -->
+        <section class="space-y-4">
+            <h2 class="text-xl font-semibold border-b pb-2">5. Error State</h2>
+            <x-form.date id="date5" label="Expiration Date" error="Date must be in the future." />
+        </section>
+        
+        <!-- 6. Hint state -->
+        <section class="space-y-4">
+            <h2 class="text-xl font-semibold border-b pb-2">6. Hint State</h2>
+            <x-form.date id="date6" label="Start Date" hint="The first day of the billing cycle." />
+        </section>
+
+        <!-- 7. Disabled / Readonly states -->
+        <section class="space-y-4 flex gap-8">
+            <div class="flex-1 space-y-4">
+                <h2 class="text-xl font-semibold border-b pb-2">7a. Disabled</h2>
+                <x-form.date id="date7a" label="Created At" value="2024-01-01" disabled />
+            </div>
+            <div class="flex-1 space-y-4">
+                <h2 class="text-xl font-semibold border-b pb-2">7b. Readonly</h2>
+                <x-form.date id="date7b" label="Updated At" value="2024-01-02" readonly />
+            </div>
+        </section>
+
     </div>
 </body>
 </html>
