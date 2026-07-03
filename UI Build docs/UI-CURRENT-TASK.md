@@ -4,7 +4,7 @@
 U0.1 Design System & Tokens
 
 ## Current Subtask
-U0.1.1 CSS Color Tokens
+U0.1.2 Typography Scale
 
 ## Status
 Pending Approval
@@ -17,85 +17,76 @@ Shared
 No backend implementation required.
 
 ## Goal
-Create the semantic design token system for colors within the admin UI.
+Define the responsive typography scale including headings (H1-H6), body text, captions, and standard font weights.
 
 ---
 
 ## Dependencies
 **Depends On:**
-- None
+- U0.1.1 CSS Color Tokens (Completed)
 
 **Blocks:**
-- U0.1.2 Typography Scale
+- U0.1.3 Spacing Scale
 
 ---
 
 ## Required Deliverables
-- Semantic color tokens
-- Surface tokens
-- Border tokens
-- Text tokens
-- State tokens
-- Shadow tokens (if applicable)
+- Heading scale (H1-H6)
+- Body text definition
+- Caption definition
+- Font weights (e.g. normal, medium, semibold, bold)
 
 ---
 
 ## Files To Modify
-- `resources/css/admin.css` (or equivalent main CSS file for the admin panel)
+- `apps/backend/resources/css/app.css`
 
 ## Files Not To Create
-- `theme.css`
-- `tokens.css`
-- `colors.css`
+- `typography.css`
 *(Unless explicitly approved)*
 
 ---
 
 ## Architecture Rules
-- Use semantic CSS variables only.
-- No hardcoded colors.
-- Follow design token naming conventions.
-- Preserve existing styles.
+- Use semantic CSS variables and Tailwind v4 theme extensions.
+- Ensure the scale handles responsive resizing.
 - No breaking changes.
 
 ---
 
 ## Related Components
 This task affects:
+- All Text Elements
 - Future Layouts
-- Future Buttons
-- Future Forms
-- Future Cards
+- Future Components
 
 ---
 
 ## Acceptance Criteria
-- [ ] Semantic color tokens defined
-- [ ] No hardcoded colors
-- [ ] Existing CSS not broken
-- [ ] Dark mode compatible (if applicable)
+- [ ] H1-H6 scale defined
+- [ ] Body text defined
+- [ ] Caption defined
+- [ ] Font weights documented
+- [ ] Responsive scaling verified
 
 ---
 
 ## Validation Checklist
 Use: `UI-SUBTASK-VALIDATION.md`
-Section: **U0.1.1 CSS Color Tokens**
+Section: **U0.1.2 Typography Scale**
 
 ---
 
 ## Out Of Scope
 Do NOT:
-- Define typography, spacing, or breakpoints (these are separate subtasks)
+- Define spacing or breakpoints (these are separate subtasks)
 - Build layouts
 - Build components
 - Build pages
-- Change routes
-- Modify controllers
 
 ---
 
 ## References
-- UI Implementation Plan
 - UI Task List
 - UI AI Prompt Sequence
 - UI Subtask Validation
@@ -105,10 +96,9 @@ Do NOT:
 ## Workflow Reminder
 Follow:
 1. UI AI Prompt Sequence
-2. UI Implementation Plan
-3. UI Subtask Validation
-4. Update documentation
-5. Create Git restore point
+2. UI Subtask Validation
+3. Update documentation
+4. Create Git restore point
 
 ---
 
