@@ -404,6 +404,47 @@ Notes: Built `<x-form.file>` directly off Wrapper to prevent polluting base gene
 
 ---
 
+### U1.2.1 DataTable
+**Status:** Completed
+
+**Implementation Validation**
+- [x] Accepts props / slot support
+- [x] Passes Design System Compliance checks
+- [x] No duplicated markup
+
+**UI / Accessibility Validation**
+- [x] Responsive across all breakpoints (verified `overflow-x-auto` is strictly on the wrapper)
+- [x] Accessible (ARIA, contrast, IDs set, added `scope="col"` to headings)
+- [x] Keyboard support (tabbing, enter/space activation for sort headers)
+- [x] Dark mode support
+- [x] Uses motion tokens
+- [x] `prefers-reduced-motion` respected
+- [x] Hover/focus transitions consistent
+- [x] HTML Validation (Valid attributes, no duplicate IDs)
+
+**Composition & Architectural Validation**
+- [x] Verify composable slot-based structure perfectly matches HTML semantics (`thead`, `tbody`, etc.)
+- [x] Verify vertical alignment holds for cells containing action buttons/badges (`align-middle`)
+- [x] Verify sorting chevron logic purely handles UI state, deferring behavioral logic to the developer.
+
+**Documentation Validation**
+- [x] Props documented
+- [x] Appears and functions correctly in `/admin/components` Showcase
+- [x] Future specialized table components (Pagination, Search, Filters, Bulk Actions) explicitly mapped in deferred scope documentation.
+
+**Process Validation**
+- [x] No console errors
+- [x] Regression validation passes
+- [x] Git restore point created
+
+**Review Sign-off**
+Reviewer: AI Assistant
+Date: 2026-07-03
+Result: [x] Pass [ ] Fail
+Notes: Built `<x-table>` suite. Adopted strict HTML mirrored composition yielding maximum flexibility for cell content without JS arrays.
+
+---
+
 ## Component Validation Template (U1.x)
 *(Apply this checklist to every form, table, navigation, overlay, and utility component)*
 

@@ -226,6 +226,123 @@
             <x-form.file id="file7" label="Edge Case Test" />
         </section>
 
+        <!-- DATATABLE COMPONENT TESTS -->
+        <h1 class="text-2xl font-bold mt-16 pt-8 border-t">DataTable Component Testing</h1>
+
+        <!-- 1. Fully Populated Table -->
+        <section class="space-y-4">
+            <h2 class="text-xl font-semibold border-b pb-2">1. Standard Populated Table (Sortable & Aligned)</h2>
+            <x-table>
+                <x-table.head>
+                    <x-table.row>
+                        <x-table.heading sortable direction="asc">Invoice ID</x-table.heading>
+                        <x-table.heading sortable direction="desc">Client Name</x-table.heading>
+                        <x-table.heading sortable>Status</x-table.heading>
+                        <x-table.heading>Description (Long text)</x-table.heading>
+                        <x-table.heading align="right">Amount</x-table.heading>
+                        <x-table.heading align="center">Actions</x-table.heading>
+                    </x-table.row>
+                </x-table.head>
+                <x-table.body>
+                    <x-table.row>
+                        <x-table.cell>INV-2026-001</x-table.cell>
+                        <x-table.cell>Acme Corp</x-table.cell>
+                        <x-table.cell>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">Paid</span>
+                        </x-table.cell>
+                        <x-table.cell class="whitespace-normal max-w-xs">Annual software licensing renewal for enterprise tier. Includes priority support and custom SLA.</x-table.cell>
+                        <x-table.cell align="right">$4,500.00</x-table.cell>
+                        <x-table.cell align="center">
+                            <button type="button" class="text-[color:var(--color-primary)] hover:underline">View</button>
+                        </x-table.cell>
+                    </x-table.row>
+                    <x-table.row>
+                        <x-table.cell>INV-2026-002</x-table.cell>
+                        <x-table.cell>Global Industries</x-table.cell>
+                        <x-table.cell>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">Pending</span>
+                        </x-table.cell>
+                        <x-table.cell class="whitespace-normal max-w-xs">Q3 Consulting retainer.</x-table.cell>
+                        <x-table.cell align="right">$12,000.00</x-table.cell>
+                        <x-table.cell align="center">
+                            <button type="button" class="text-[color:var(--color-primary)] hover:underline">View</button>
+                        </x-table.cell>
+                    </x-table.row>
+                    <x-table.row>
+                        <x-table.cell>INV-2026-003</x-table.cell>
+                        <x-table.cell>Stark Labs</x-table.cell>
+                        <x-table.cell>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">Overdue</span>
+                        </x-table.cell>
+                        <x-table.cell class="whitespace-normal max-w-xs">Hardware deployment.</x-table.cell>
+                        <x-table.cell align="right">$850.50</x-table.cell>
+                        <x-table.cell align="center">
+                            <button type="button" class="text-[color:var(--color-primary)] hover:underline">View</button>
+                        </x-table.cell>
+                    </x-table.row>
+                </x-table.body>
+            </x-table>
+        </section>
+
+        <!-- 2. Single Row Table -->
+        <section class="space-y-4">
+            <h2 class="text-xl font-semibold border-b pb-2">2. Single Row Table</h2>
+            <x-table>
+                <x-table.head>
+                    <x-table.row>
+                        <x-table.heading>User ID</x-table.heading>
+                        <x-table.heading>Email</x-table.heading>
+                        <x-table.heading>Role</x-table.heading>
+                    </x-table.row>
+                </x-table.head>
+                <x-table.body>
+                    <x-table.row>
+                        <x-table.cell>USR-1</x-table.cell>
+                        <x-table.cell>admin@okina.local</x-table.cell>
+                        <x-table.cell>Administrator</x-table.cell>
+                    </x-table.row>
+                </x-table.body>
+            </x-table>
+        </section>
+
+        <!-- 3. Empty Table States -->
+        <section class="space-y-4">
+            <h2 class="text-xl font-semibold border-b pb-2">3. Empty Table States</h2>
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                <!-- Default empty state -->
+                <div class="space-y-2">
+                    <h3 class="text-sm font-medium text-[color:var(--color-text-muted)]">Default Empty State</h3>
+                    <x-table>
+                        <x-table.head>
+                            <x-table.row>
+                                <x-table.heading>ID</x-table.heading>
+                                <x-table.heading>Name</x-table.heading>
+                            </x-table.row>
+                        </x-table.head>
+                        <x-table.body>
+                            <x-table.empty colspan="2" />
+                        </x-table.body>
+                    </x-table>
+                </div>
+
+                <!-- Custom empty state -->
+                <div class="space-y-2">
+                    <h3 class="text-sm font-medium text-[color:var(--color-text-muted)]">Custom Empty Message</h3>
+                    <x-table>
+                        <x-table.head>
+                            <x-table.row>
+                                <x-table.heading>SKU</x-table.heading>
+                                <x-table.heading>Product</x-table.heading>
+                            </x-table.row>
+                        </x-table.head>
+                        <x-table.body>
+                            <x-table.empty colspan="2" message="No products found matching your search." />
+                        </x-table.body>
+                    </x-table>
+                </div>
+            </div>
+        </section>
+
     </div>
 </body>
 </html>

@@ -1,30 +1,26 @@
 # Current Task
 
 ## Current Parent Task
-Form Components (Phase 1)
+Data & Table (Phase 1)
 
 ## Current Subtask
-U1.1.6 FileUpload
+U1.2.1 DataTable
 
 ## Status
 Completed
 
 ## Goal
-Build a file upload component with standard UI and preview capabilities.
+Build a foundational DataTable component with support for sorting, column definitions, and empty states.
 
 ## Dependencies
 **Depends On:**
-- U1.1.1 Form Wrapper (Completed)
+- U0.5 Layout Templates (Completed)
 
 ## Required Deliverables
-- A Blade component (`<x-form.file>` or similar) tailored for file selection/upload.
-- Must inherit standard form component traits (label, hint, error, wrapper).
-- Provide a consistent, accessible UI for selecting files.
+- A Blade component (`<x-table>`) tailored for displaying tabular data.
+- Must inherit standard typography and surface tokens.
+- Provide a consistent, accessible UI for data presentation.
 
 ## Completed Prerequisites
 - U0.5 Layout Templates
-- U1.1.1 Form Wrapper
-- U1.1.2 Input Field
-- U1.1.3 Select Dropdown
-- U1.1.4 SearchBox
-- U1.1.5 DatePicker
+- U1.1 Form Components (Complete Milestone)
