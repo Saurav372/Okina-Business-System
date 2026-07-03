@@ -69,6 +69,46 @@
             <h2 class="text-xl font-semibold border-b pb-2">8. Attribute Forwarding (wire:model)</h2>
             <x-form.select id="test8" label="Livewire Select" :options="$options" wire:model.live="status" data-custom="test" class="shadow-lg" />
         </section>
+
+        <!-- SEARCH COMPONENT TESTS -->
+        <h1 class="text-2xl font-bold mt-16 pt-8 border-t">Search Component Testing</h1>
+
+        <!-- 1. Standard Search -->
+        <section class="space-y-4">
+            <h2 class="text-xl font-semibold border-b pb-2">1. Standard Search</h2>
+            <x-form.search id="search1" label="Search Products" />
+        </section>
+
+        <!-- 2. Pre-filled / Long String Search -->
+        <section class="space-y-4">
+            <h2 class="text-xl font-semibold border-b pb-2">2. Pre-filled / Long String</h2>
+            <x-form.search id="search2" label="Search Products" value="A very long search query that should eventually trigger horizontal scrolling in the input field" />
+        </section>
+
+        <!-- 3. Livewire Forwarding -->
+        <section class="space-y-4">
+            <h2 class="text-xl font-semibold border-b pb-2">3. Livewire Forwarding</h2>
+            <x-form.search id="search3" label="Search Products" wire:model.live.debounce.300ms="searchQuery" />
+        </section>
+
+        <!-- 4. Error State -->
+        <section class="space-y-4">
+            <h2 class="text-xl font-semibold border-b pb-2">4. Error State</h2>
+            <x-form.search id="search4" label="Search Products" error="Invalid search term provided." />
+        </section>
+
+        <!-- 5. Hint State -->
+        <section class="space-y-4">
+            <h2 class="text-xl font-semibold border-b pb-2">5. Hint State</h2>
+            <x-form.search id="search5" label="Search Products" hint="Enter SKU, product name, or barcode." />
+        </section>
+
+        <!-- 6. Disabled State -->
+        <section class="space-y-4">
+            <h2 class="text-xl font-semibold border-b pb-2">6. Disabled State</h2>
+            <x-form.search id="search6" label="Search Products" disabled value="Unable to search" />
+        </section>
+
     </div>
 </body>
 </html>
