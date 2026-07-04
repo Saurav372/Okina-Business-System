@@ -228,12 +228,53 @@
 
         <!-- DATATABLE COMPONENT TESTS -->
         <h1 class="text-2xl font-bold mt-16 pt-8 border-t">DataTable Component Testing</h1>
+        <p class="text-sm text-[color:var(--color-text-muted)] mt-2">Examples of all DataTable states and variations</p>
 
-        <!-- 1. Fully Populated Table -->
-        <section class="space-y-4">
+        <!-- 1. Fully Populated Table with Toolbar & Footer -->
+        <section class="space-y-4 mt-8">
             <h2 class="text-xl font-semibold border-b pb-2">1. Standard Populated Table (Sortable & Aligned)</h2>
             <x-table>
-                <x-table.head>
+                <x-slot:toolbar>
+                    <!-- Left Side: Search & Filters -->
+                    <div class="flex items-center gap-3">
+                        <div class="relative">
+                            <x-icons.search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <input type="text" placeholder="Search invoices..." class="pl-9 pr-8 py-[7px] text-sm border border-[color:var(--color-border)] rounded-[var(--radius-md)] bg-white w-64 focus:ring-[length:var(--focus-ring-width)] focus:ring-[color:var(--color-primary-300)] focus:border-[color:var(--color-primary-400)] focus:outline-none placeholder:text-gray-400" />
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-medium text-gray-400 border border-gray-200 rounded px-1.5 bg-gray-50">/</span>
+                        </div>
+                        
+                        <button type="button" class="inline-flex items-center gap-2 px-3 py-[7px] text-sm font-medium text-[color:var(--color-text-secondary)] bg-white border border-[color:var(--color-border)] rounded-[var(--radius-md)] hover:bg-gray-50 transition-colors">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                            Status
+                            <x-icons.chevron-down class="w-4 h-4 text-gray-400" />
+                        </button>
+
+                        <button type="button" class="inline-flex items-center gap-2 px-3 py-[7px] text-sm font-medium text-[color:var(--color-text-secondary)] bg-white border border-[color:var(--color-border)] rounded-[var(--radius-md)] hover:bg-gray-50 transition-colors">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            Date range
+                            <x-icons.chevron-down class="w-4 h-4 text-gray-400" />
+                        </button>
+
+                        <button type="button" class="inline-flex items-center gap-2 px-3 py-[7px] text-sm font-medium text-[color:var(--color-text-secondary)] bg-white border border-[color:var(--color-border)] rounded-[var(--radius-md)] hover:bg-gray-50 transition-colors">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            Columns
+                        </button>
+                    </div>
+
+                    <!-- Right Side: Actions -->
+                    <div class="flex items-center gap-3">
+                        <button type="button" class="inline-flex items-center gap-2 px-3 py-[7px] text-sm font-medium text-[color:var(--color-text-secondary)] bg-white border border-[color:var(--color-border)] rounded-[var(--radius-md)] hover:bg-gray-50 transition-colors">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                            Export
+                        </button>
+                        <button type="button" class="inline-flex items-center gap-2 px-4 py-[7px] text-sm font-medium text-white bg-[color:var(--color-primary-600)] border border-transparent rounded-[var(--radius-md)] hover:bg-[color:var(--color-primary-700)] transition-colors shadow-sm">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            New Invoice
+                        </button>
+                    </div>
+                </x-slot:toolbar>
+
+                <x-table.head class="bg-[#f8fafc]">
                     <x-table.row>
                         <x-table.heading sortable direction="asc">Invoice ID</x-table.heading>
                         <x-table.heading sortable direction="desc">Client Name</x-table.heading>
@@ -245,48 +286,79 @@
                 </x-table.head>
                 <x-table.body>
                     <x-table.row>
-                        <x-table.cell>INV-2026-001</x-table.cell>
+                        <x-table.cell>
+                            <a href="#" class="text-blue-600 hover:underline font-medium">INV-2026-001</a>
+                        </x-table.cell>
                         <x-table.cell>Acme Corp</x-table.cell>
                         <x-table.cell>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">Paid</span>
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-green-100 text-green-700 uppercase tracking-wide">
+                                <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                Paid
+                            </span>
                         </x-table.cell>
                         <x-table.cell class="max-w-xs" wrap>Annual software licensing renewal for enterprise tier. Includes priority support and custom SLA.</x-table.cell>
                         <x-table.cell align="right">$4,500.00</x-table.cell>
                         <x-table.cell align="center">
-                            <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-[color:var(--color-primary-100)] text-[color:var(--color-text-muted)] hover:text-[color:var(--color-primary)] transition-colors">
+                            <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-[color:var(--color-primary-50)] text-[color:var(--color-text-muted)] hover:text-[color:var(--color-primary)] transition-colors">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
                             </button>
                         </x-table.cell>
                     </x-table.row>
                     <x-table.row>
-                        <x-table.cell>INV-2026-002</x-table.cell>
+                        <x-table.cell>
+                            <a href="#" class="text-blue-600 hover:underline font-medium">INV-2026-002</a>
+                        </x-table.cell>
                         <x-table.cell>Global Industries</x-table.cell>
                         <x-table.cell>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">Pending</span>
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-yellow-100 text-yellow-700 uppercase tracking-wide">
+                                <span class="w-1.5 h-1.5 rounded-full bg-yellow-500"></span>
+                                Pending
+                            </span>
                         </x-table.cell>
                         <x-table.cell class="max-w-xs" wrap>Q3 Consulting retainer.</x-table.cell>
                         <x-table.cell align="right">$12,000.00</x-table.cell>
                         <x-table.cell align="center">
-                            <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-[color:var(--color-primary-100)] text-[color:var(--color-text-muted)] hover:text-[color:var(--color-primary)] transition-colors">
+                            <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-[color:var(--color-primary-50)] text-[color:var(--color-text-muted)] hover:text-[color:var(--color-primary)] transition-colors">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
                             </button>
                         </x-table.cell>
                     </x-table.row>
                     <x-table.row>
-                        <x-table.cell>INV-2026-003</x-table.cell>
+                        <x-table.cell>
+                            <a href="#" class="text-blue-600 hover:underline font-medium">INV-2026-003</a>
+                        </x-table.cell>
                         <x-table.cell>Stark Labs</x-table.cell>
                         <x-table.cell>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">Overdue</span>
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-red-100 text-red-700 uppercase tracking-wide">
+                                <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                                Overdue
+                            </span>
                         </x-table.cell>
                         <x-table.cell class="max-w-xs" wrap>Hardware deployment.</x-table.cell>
                         <x-table.cell align="right">$850.50</x-table.cell>
                         <x-table.cell align="center">
-                            <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-[color:var(--color-primary-100)] text-[color:var(--color-text-muted)] hover:text-[color:var(--color-primary)] transition-colors">
+                            <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-[color:var(--color-primary-50)] text-[color:var(--color-text-muted)] hover:text-[color:var(--color-primary)] transition-colors">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
                             </button>
                         </x-table.cell>
                     </x-table.row>
                 </x-table.body>
+                <x-slot:footer>
+                    <div class="px-5 py-4 border-t border-[color:var(--color-border)] flex items-center justify-between">
+                        <span class="text-sm text-gray-500">Showing 1 to 3 of 3 results</span>
+                        <div class="flex items-center gap-1">
+                            <button type="button" disabled class="inline-flex items-center justify-center w-8 h-8 rounded-[var(--radius-md)] border border-gray-200 text-gray-400 bg-gray-50 cursor-not-allowed">
+                                <x-icons.chevron-down class="w-4 h-4 rotate-90" />
+                            </button>
+                            <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-[var(--radius-md)] border border-blue-200 text-blue-600 bg-blue-50 font-medium text-sm">
+                                1
+                            </button>
+                            <button type="button" disabled class="inline-flex items-center justify-center w-8 h-8 rounded-[var(--radius-md)] border border-gray-200 text-gray-400 bg-gray-50 cursor-not-allowed">
+                                <x-icons.chevron-down class="w-4 h-4 -rotate-90" />
+                            </button>
+                        </div>
+                    </div>
+                </x-slot:footer>
             </x-table>
         </section>
 
@@ -294,11 +366,12 @@
         <section class="space-y-4">
             <h2 class="text-xl font-semibold border-b pb-2">2. Single Row Table</h2>
             <x-table>
-                <x-table.head>
+                <x-table.head class="bg-[#f8fafc]">
                     <x-table.row>
                         <x-table.heading>User ID</x-table.heading>
                         <x-table.heading>Email</x-table.heading>
                         <x-table.heading>Role</x-table.heading>
+                        <x-table.heading align="center">Actions</x-table.heading>
                     </x-table.row>
                 </x-table.head>
                 <x-table.body>
@@ -306,6 +379,11 @@
                         <x-table.cell>USR-1</x-table.cell>
                         <x-table.cell>admin@okina.local</x-table.cell>
                         <x-table.cell>Administrator</x-table.cell>
+                        <x-table.cell align="center">
+                            <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-[color:var(--color-primary-50)] text-[color:var(--color-text-muted)] hover:text-[color:var(--color-primary)] transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
+                            </button>
+                        </x-table.cell>
                     </x-table.row>
                 </x-table.body>
             </x-table>
@@ -319,14 +397,18 @@
                 <div class="space-y-2">
                     <h3 class="text-sm font-medium text-[color:var(--color-text-muted)]">Default Empty State</h3>
                     <x-table>
-                        <x-table.head>
-                            <x-table.row>
-                                <x-table.heading>ID</x-table.heading>
-                                <x-table.heading>Name</x-table.heading>
-                            </x-table.row>
-                        </x-table.head>
                         <x-table.body>
-                            <x-table.empty colspan="2" />
+                            <x-table.empty colspan="1">
+                                <x-slot:icon>
+                                    <x-icons.inbox class="w-6 h-6 text-gray-400" />
+                                </x-slot:icon>
+                                <x-slot:action>
+                                    <button type="button" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                        <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                                        Refresh
+                                    </button>
+                                </x-slot:action>
+                            </x-table.empty>
                         </x-table.body>
                     </x-table>
                 </div>
@@ -335,14 +417,18 @@
                 <div class="space-y-2">
                     <h3 class="text-sm font-medium text-[color:var(--color-text-muted)]">Custom Empty Message</h3>
                     <x-table>
-                        <x-table.head>
-                            <x-table.row>
-                                <x-table.heading>SKU</x-table.heading>
-                                <x-table.heading>Product</x-table.heading>
-                            </x-table.row>
-                        </x-table.head>
                         <x-table.body>
-                            <x-table.empty colspan="2" message="No products found matching your search." />
+                            <x-table.empty colspan="1" title="No products found matching your search." description="Try adjusting your search or filter to find what you need.">
+                                <x-slot:icon>
+                                    <x-icons.search class="w-6 h-6 text-gray-400" />
+                                </x-slot:icon>
+                                <x-slot:action>
+                                    <button type="button" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                        <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                                        Clear filters
+                                    </button>
+                                </x-slot:action>
+                            </x-table.empty>
                         </x-table.body>
                     </x-table>
                 </div>
