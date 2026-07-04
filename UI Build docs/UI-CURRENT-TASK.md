@@ -1,26 +1,32 @@
 # Current Task
 
 ## Current Parent Task
-Data & Table (Phase 1)
+Foundation (Phase 1.5)
 
 ## Current Subtask
-U1.2.4 StatsGrid
+U1.7 UI Component Showcase
 
 ## Goal
-Build a StatsGrid component for rendering key metrics and KPI cards.
+Redesign the entire `/admin/components` page into a proper design system playground, similar to what you see in professional UI libraries.
 
 ## Dependencies
 **Depends On:**
-- U0.5 Layout Templates (Completed)
+- U1.1, U1.2, U1.3, U1.4, U1.5, U1.6
 
 ## Required Deliverables
-- A Blade component for displaying a stat card (e.g., `<x-stat-card>`).
-- A container or grid component for organizing multiple stat cards (e.g., `<x-stats-grid>`).
-- Must support icons, trend indicators (up/down/neutral), values, and labels.
+- Left sidebar with component navigation
+- Responsive preview modes (Desktop / Tablet / Mobile)
+- Max-width wrappers for mobile-first components
+- Design token display
+- Light/Dark mode toggle (optional/prep)
+- Copy component code button
+- Component variants displayed in separate preview cards
 
 ## Completed Prerequisites
+- U0.1 Design System & Tokens
 - U0.5 Layout Templates
 - U1.1 Form Components
 - U1.2.1 DataTable
 - U1.2.2 Pagination
 - U1.2.3 Timeline
+- U1.2.4 StatsGrid

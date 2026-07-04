@@ -588,6 +588,108 @@
             </div>
         </section>
 
+
+        <!-- STATS COMPONENT TESTS -->
+        <h1 class="text-2xl font-bold mt-16 pt-8 border-t">Stats Component Testing</h1>
+
+        <section class="space-y-4">
+            <h2 class="text-lg font-semibold text-[color:var(--color-text-primary)] mb-6">Stats Grid Overview</h2>
+            
+            <x-stat.grid>
+                <!-- 1. Positive Trend -->
+                <x-stat.card 
+                    label="Total Revenue" 
+                    value="₹84,500" 
+                    trend="18%" 
+                    trendDirection="up"
+                    description="vs last month"
+                >
+                    <x-slot:icon>
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </x-slot:icon>
+                </x-stat.card>
+
+                <!-- 2. Negative Trend -->
+                <x-stat.card 
+                    label="Bounce Rate" 
+                    value="42.3%" 
+                    trend="4.1%" 
+                    trendDirection="down"
+                    description="vs last week"
+                >
+                    <x-slot:icon>
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                    </x-slot:icon>
+                </x-stat.card>
+
+                <!-- 3. Neutral Trend -->
+                <x-stat.card 
+                    label="Active Subscriptions" 
+                    value="1,204" 
+                    trend="0%" 
+                    trendDirection="neutral"
+                    description="vs last month"
+                >
+                    <x-slot:icon>
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    </x-slot:icon>
+                </x-stat.card>
+
+                <!-- 4. Description Only (No Trend) -->
+                <x-stat.card 
+                    label="Total Customers" 
+                    value="8,409" 
+                    description="Across 12 regions"
+                >
+                    <x-slot:icon>
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </x-slot:icon>
+                </x-stat.card>
+
+                <!-- 5. Long Label & Large Number (Hover label for Tooltip) -->
+                <x-stat.card 
+                    label="Estimated Annual Recurring Revenue for Q4 (Projected)" 
+                    value="₹12,450,000" 
+                    trend="+₹250k" 
+                    trendDirection="up"
+                >
+                    <x-slot:icon>
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                    </x-slot:icon>
+                </x-stat.card>
+                
+                <!-- 6. No Icon -->
+                <x-stat.card 
+                    label="Average Order Value" 
+                    value="₹1,250" 
+                    trend="5%" 
+                    trendDirection="up"
+                />
+
+                <!-- 7. Interactive / Clickable Card -->
+                <x-stat.card 
+                    label="Pending Tickets" 
+                    value="14" 
+                    trend="3" 
+                    trendDirection="down"
+                    description="Action required"
+                    href="/admin/tickets"
+                >
+                    <x-slot:icon>
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                    </x-slot:icon>
+                </x-stat.card>
+                
+                <!-- 8. Fallback / Invalid Trend (Should render neutral) -->
+                <x-stat.card 
+                    label="System Uptime" 
+                    value="99.99%" 
+                    trend="0.01%" 
+                    trendDirection="invalid-status"
+                />
+            </x-stat.grid>
+        </section>
+
     </div>
 </body>
 </html>
