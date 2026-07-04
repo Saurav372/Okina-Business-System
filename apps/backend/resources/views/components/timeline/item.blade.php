@@ -10,9 +10,9 @@
     $statusClasses = [
         'default' => 'text-[color:var(--color-text-muted)] border-[color:var(--color-border)] bg-[color:var(--color-surface)]',
         'success' => 'text-white border-transparent bg-green-500',
-        'warning' => 'text-[color:var(--color-warning)] border-[color:var(--color-warning)] bg-[color:var(--color-surface)]',
-        'danger'  => 'text-[color:var(--color-danger)] border-[color:var(--color-danger)] bg-[color:var(--color-surface)]',
-        'info'    => 'text-[color:var(--color-info)] border-[color:var(--color-info)] bg-[color:var(--color-surface)]',
+        'warning' => 'text-white border-transparent bg-amber-500',
+        'danger'  => 'text-white border-transparent bg-red-500',
+        'info'    => 'text-white border-transparent bg-blue-500',
     ];
 
     $lineStyleClasses = [

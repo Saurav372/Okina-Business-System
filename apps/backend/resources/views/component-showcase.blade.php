@@ -507,8 +507,8 @@
                     <!-- Top Section: Order Info -->
                     <div class="flex gap-5 mb-8 bg-gray-50 rounded-xl p-3">
                         <div class="w-[120px] h-[120px] rounded-xl overflow-hidden flex-shrink-0 relative">
-                            <!-- In production: src="{{ $order->product_image }}" -->
-                            <img src="{{ $order->image_url ?? 'https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?q=80&w=400&auto=format&fit=crop' }}" alt="Product Image" class="w-full h-full object-cover" />
+                            {{-- In production: src="{{ $order->product_image }}" --}}
+                            <img src="https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?q=80&w=400&auto=format&fit=crop" alt="Product Image" class="w-full h-full object-cover" />
                             <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
                                 <span class="text-white font-semibold text-xs tracking-widest uppercase">Okina Craft</span>
                             </div>
@@ -517,7 +517,7 @@
                         <div class="flex flex-col justify-center">
                             <div class="mb-2">
                                 <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-green-100 text-green-700">
-                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                    <x-heroicon-o-shopping-cart class="w-3.5 h-3.5" stroke-width="2" />
                                     Order Confirmed
                                 </span>
                             </div>
@@ -533,7 +533,7 @@
                             <!-- Success Status -->
                             <x-timeline.item status="success" title="Order Placed" timestamp="Jul 4, 2026 • 12:05 PM">
                                 <x-slot:icon>
-                                    <svg class="w-5 h-5 text-current" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                                    <x-heroicon-o-check class="w-5 h-5 text-current" stroke-width="2.5" />
                                 </x-slot:icon>
                                 Your order has been successfully placed.
                             </x-timeline.item>
@@ -541,7 +541,7 @@
                             <!-- Info Status -->
                             <x-timeline.item status="info" title="Payment Processing" timestamp="Jul 4, 2026 • 12:07 PM">
                                 <x-slot:icon>
-                                    <svg class="w-5 h-5 text-current" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <x-heroicon-o-clock class="w-5 h-5 text-current" stroke-width="2" />
                                 </x-slot:icon>
                                 <x-slot:badge>
                                     <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-blue-100 text-blue-700">Processing</span>
@@ -552,7 +552,7 @@
                             <!-- Success Status -->
                             <x-timeline.item status="success" title="Payment Confirmed" timestamp="Jul 4, 2026 • 12:09 PM">
                                 <x-slot:icon>
-                                    <svg class="w-5 h-5 text-current" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                                    <x-heroicon-o-check class="w-5 h-5 text-current" stroke-width="2.5" />
                                 </x-slot:icon>
                                 Payment of ₹3,850.00 was successfully captured.
                             </x-timeline.item>
@@ -560,7 +560,7 @@
                             <!-- Warning Status -->
                             <x-timeline.item status="warning" title="Stock Warning" timestamp="Jul 4, 2026 • 12:15 PM" lineStyle="dashed">
                                 <x-slot:icon>
-                                    <svg class="w-5 h-5 text-current" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01"></path></svg>
+                                    <x-heroicon-o-exclamation-circle class="w-5 h-5 text-current" stroke-width="2.5" />
                                 </x-slot:icon>
                                 Only 2 items left in stock for "Ceramic Coffee Mug - Black".
                             </x-timeline.item>
@@ -568,7 +568,7 @@
                             <!-- Danger Status -->
                             <x-timeline.item status="danger" title="Shipping Delayed" timestamp="Jul 4, 2026 • 12:25 PM" lineStyle="dashed">
                                 <x-slot:icon>
-                                    <svg class="w-5 h-5 text-current" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8n-2-2h-2m-4-14H9m12 0h.01"></path><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <x-heroicon-o-truck class="w-5 h-5 text-current" stroke-width="2" />
                                 </x-slot:icon>
                                 <p class="mb-1">There is a delay due to high courier volume.</p>
                                 <p>Expected delivery: 2-3 business days.</p>
@@ -579,7 +579,7 @@
                     <!-- Bottom Section: Action -->
                     <div class="mt-6">
                         <button type="button" class="w-full flex items-center justify-center gap-2 py-3 px-4 border-2 border-blue-100 text-blue-600 rounded-xl hover:bg-blue-50 font-semibold transition-colors">
-                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                            <x-heroicon-o-cube class="w-5 h-5" stroke-width="2" />
                             View Order Details
                         </button>
                     </div>
