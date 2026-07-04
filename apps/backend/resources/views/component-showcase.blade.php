@@ -387,6 +387,50 @@
             </div>
         </section>
 
+        <!-- TIMELINE COMPONENT TESTS -->
+        <h1 class="text-2xl font-bold mt-16 pt-8 border-t">Timeline Component Testing</h1>
+
+        <section class="space-y-4">
+            <h2 class="text-xl font-semibold border-b pb-2">1. Standard Timeline with All Statuses</h2>
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <x-timeline as="ol">
+                    <!-- Default Status -->
+                    <x-timeline.item title="Order Placed" timestamp="Just now" datetime="2026-07-04T12:00:00Z">
+                        Order #12345 has been placed by the customer.
+                    </x-timeline.item>
+
+                    <!-- Info Status with custom badge -->
+                    <x-timeline.item status="info" title="Payment Processing" timestamp="2 minutes ago">
+                        <x-slot:badge>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">Processing</span>
+                        </x-slot:badge>
+                        Payment is currently being processed via Stripe.
+                    </x-timeline.item>
+
+                    <!-- Success Status with Icon -->
+                    <x-timeline.item status="success" title="Payment Confirmed" timestamp="Jul 4, 2026 12:05 PM">
+                        <x-slot:icon>
+                            <svg class="w-4 h-4 text-current" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </x-slot:icon>
+                        Payment of $150.00 was successfully captured.
+                    </x-timeline.item>
+
+                    <!-- Warning Status -->
+                    <x-timeline.item status="warning" title="Stock Warning" timestamp="Jul 4, 2026 12:15 PM" lineStyle="dashed">
+                        Only 2 items left in stock for SKU-992.
+                    </x-timeline.item>
+
+                    <!-- Danger Status (Multiline Content) -->
+                    <x-timeline.item status="danger" title="Shipping Delayed">
+                        <p class="mb-2">There was an issue with the shipping provider.</p>
+                        <p>Expected delay: 2-3 business days. Please contact the customer to notify them of this change in schedule.</p>
+                    </x-timeline.item>
+                </x-timeline>
+            </div>
+        </section>
+
     </div>
 </body>
 </html>
