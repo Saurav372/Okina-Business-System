@@ -8,11 +8,11 @@
 
 @php
     $statusClasses = [
-        'default' => 'text-[color:var(--color-text-muted)] border-[color:var(--color-border)] bg-[color:var(--color-surface)]',
-        'success' => 'text-[color:var(--color-success)] border-[color:var(--color-success)] bg-[color:var(--color-surface)]',
-        'warning' => 'text-[color:var(--color-warning)] border-[color:var(--color-warning)] bg-[color:var(--color-surface)]',
-        'danger'  => 'text-[color:var(--color-danger)] border-[color:var(--color-danger)] bg-[color:var(--color-surface)]',
-        'info'    => 'text-[color:var(--color-info)] border-[color:var(--color-info)] bg-[color:var(--color-surface)]',
+        'default' => 'text-[color:var(--color-text-muted)] border-[color:var(--color-border)]',
+        'success' => 'text-[color:var(--color-success)] border-[color:var(--color-success)]',
+        'warning' => 'text-[color:var(--color-warning)] border-[color:var(--color-warning)]',
+        'danger'  => 'text-[color:var(--color-danger)] border-[color:var(--color-danger)]',
+        'info'    => 'text-[color:var(--color-info)] border-[color:var(--color-info)]',
     ];
 
     $lineStyleClasses = [
@@ -25,27 +25,30 @@
     $currentLineClass = $lineStyleClasses[$lineStyle] ?? $lineStyleClasses['solid'];
 @endphp
 
-<li {{ $attributes->class(['relative ps-[var(--spacing-10)] group block']) }}>
+<li {{ $attributes->class([
+    'relative ps-10 block',
+    '[&:last-child>.connector-line]:hidden'
+]) }}>
     <!-- Connector Line -->
-    <span class="absolute top-[var(--spacing-6)] bottom-[-var(--spacing-6)] left-[calc(var(--spacing-5)-1px)] w-[2px] border-l-[2px] {{ $currentLineClass }} border-[color:var(--color-border)] group-last:hidden" aria-hidden="true"></span>
+    <span class="connector-line absolute top-6 -bottom-6 left-[19px] w-[2px] border-l-[2px] {{ $currentLineClass }} border-[color:var(--color-border)]" aria-hidden="true"></span>
     
     <!-- Icon or Dot -->
-    <span class="absolute left-0 top-[var(--spacing-1)] flex items-center justify-center w-[var(--spacing-10)] h-[var(--spacing-6)]" aria-hidden="true">
+    <span class="absolute left-0 top-1 flex items-center justify-center w-10 h-6" aria-hidden="true">
         @if(isset($icon))
-            <span class="w-[var(--spacing-5)] h-[var(--spacing-5)] flex items-center justify-center {{ $currentStatusClass }} bg-transparent border-none">
+            <span class="w-5 h-5 flex items-center justify-center {{ $currentStatusClass }} bg-[color:var(--color-surface)]">
                 {{ $icon }}
             </span>
         @else
             <!-- Default decorative dot -->
-            <span class="w-[var(--spacing-3)] h-[var(--spacing-3)] rounded-full border-[2px] {{ $currentStatusClass }} z-10"></span>
+            <span class="w-3 h-3 rounded-full border-[2px] {{ $currentStatusClass }} z-10 bg-[color:var(--color-surface)]"></span>
         @endif
     </span>
 
-    <div class="flex flex-col gap-[var(--spacing-1)]">
+    <div class="flex flex-col gap-1">
         @if($title || isset($badge))
-            <div class="flex items-center gap-[var(--spacing-3)] flex-wrap">
+            <div class="flex items-center gap-3 flex-wrap">
                 @if($title)
-                    <span class="text-[length:var(--text-body)] font-[number:var(--font-weight-medium)] text-[color:var(--color-text-primary)] leading-tight">
+                    <span class="text-[15px] font-medium text-[color:var(--color-text-primary)] leading-tight">
                         {{ $title }}
                     </span>
                 @endif
@@ -56,13 +59,13 @@
         @endif
         
         @if($timestamp)
-            <time @if($datetime) datetime="{{ $datetime }}" @endif class="text-[length:var(--text-caption)] text-[color:var(--color-text-muted)] block">
+            <time @if($datetime) datetime="{{ $datetime }}" @endif class="text-xs text-slate-500 block mt-0.5">
                 {{ $timestamp }}
             </time>
         @endif
 
         @if($slot->isNotEmpty())
-            <div class="text-[length:var(--text-body)] text-[color:var(--color-text-secondary)] mt-[var(--spacing-2)]">
+            <div class="text-[15px] leading-[1.6] text-slate-500 mt-2">
                 {{ $slot }}
             </div>
         @endif
