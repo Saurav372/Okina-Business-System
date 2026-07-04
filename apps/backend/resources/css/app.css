@@ -302,3 +302,21 @@
         scroll-behavior: auto !important;
     }
 }
+
+/* ======================================================
+   CUSTOM SCROLLBAR (Premium Aesthetics)
+====================================================== */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 8px; /* Horizontal scrollbar thickness */
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--color-neutral-300);
+    border-radius: var(--radius-full);
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--color-neutral-400);
+}
