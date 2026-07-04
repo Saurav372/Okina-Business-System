@@ -26,46 +26,49 @@
 @endphp
 
 <li {{ $attributes->class([
-    'relative ps-10 block',
+    'relative ps-14 block',
     '[&:last-child>.connector-line]:hidden'
 ]) }}>
     <!-- Connector Line -->
-    <span class="connector-line absolute top-6 -bottom-6 left-[19px] w-[2px] border-l-[2px] {{ $currentLineClass }} border-[color:var(--color-border)]" aria-hidden="true"></span>
+    <span class="connector-line absolute top-1 -bottom-6 left-[15px] w-[2px] border-l-[2px] {{ $currentLineClass }} border-slate-300 z-0" aria-hidden="true"></span>
     
     <!-- Icon or Dot -->
-    <span class="absolute left-0 top-1 flex items-center justify-center w-10 h-6" aria-hidden="true">
+    <span class="absolute left-0 top-1 flex items-center justify-center w-8 h-8 rounded-full border-[2px] {{ $currentStatusClass }} z-10 bg-[color:var(--color-surface)]" aria-hidden="true">
         @if(isset($icon))
-            <span class="w-5 h-5 flex items-center justify-center {{ $currentStatusClass }} bg-[color:var(--color-surface)]">
+            <span class="w-4 h-4 flex items-center justify-center">
                 {{ $icon }}
             </span>
         @else
             <!-- Default decorative dot -->
-            <span class="w-3 h-3 rounded-full border-[2px] {{ $currentStatusClass }} z-10 bg-[color:var(--color-surface)]"></span>
+            @php
+                $dotClass = str_replace(['text-[color:var(--', 'text-'], ['bg-[color:var(--', 'bg-'], $currentStatusClass);
+            @endphp
+            <span class="w-2.5 h-2.5 rounded-full {{ $dotClass }}"></span>
         @endif
     </span>
 
-    <div class="flex flex-col gap-1">
+    <div class="flex flex-col gap-1 pb-4">
         @if($title || isset($badge))
-            <div class="flex items-center gap-3 flex-wrap">
+            <div class="flex items-center gap-3 flex-wrap pt-1.5">
                 @if($title)
-                    <span class="text-[15px] font-medium text-[color:var(--color-text-primary)] leading-tight">
+                    <span class="text-[15px] font-semibold text-[color:var(--color-text-primary)] leading-none">
                         {{ $title }}
                     </span>
                 @endif
                 @if(isset($badge))
-                    {{ $badge }}
+                    <div class="flex items-center">{{ $badge }}</div>
                 @endif
             </div>
         @endif
         
         @if($timestamp)
-            <time @if($datetime) datetime="{{ $datetime }}" @endif class="text-xs text-slate-500 block mt-0.5">
+            <time @if($datetime) datetime="{{ $datetime }}" @endif class="text-xs text-[color:var(--color-text-muted)] block mt-1">
                 {{ $timestamp }}
             </time>
         @endif
 
         @if($slot->isNotEmpty())
-            <div class="text-[15px] leading-[1.6] text-slate-500 mt-2">
+            <div class="text-[15px] leading-[1.6] text-slate-500 mt-2 max-w-2xl">
                 {{ $slot }}
             </div>
         @endif
