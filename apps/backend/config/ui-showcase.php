@@ -1,0 +1,57 @@
+<?php
+
+return [
+
+    /*
+    |--------------------------------------------------------------------------
+    | Showcase Viewports
+    |--------------------------------------------------------------------------
+    |
+    | Define the standard responsive viewports used across the component
+    | showcase. These values are used to constrain the preview area to
+    | realistic device dimensions rather than arbitrary breakpoints.
+    |
+    */
+
+    'viewports' => [
+        'mobile'  => 'max-w-[390px]',
+        'tablet'  => 'max-w-[768px]',
+        'desktop' => 'w-full',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Component Categories
+    |--------------------------------------------------------------------------
+    |
+    | Define the organizational structure of the UI component library here.
+    | This registry automatically generates the sidebar navigation and
+    | structurally groups the component preview sections.
+    |
+    */
+
+    'categories' => [
+        'Forms' => [
+            'Input' => 'form-input',
+            'Select' => 'form-select',
+            'Checkbox' => 'form-checkbox',
+        ],
+        'Data Display' => [
+            'DataTable' => 'data-table',
+            'Timeline' => 'timeline',
+            'Stats Grid' => 'stats-grid',
+            'Badge' => 'badge',
+            'Card' => 'card',
+        ],
+        'Navigation' => [
+            'Pagination' => 'pagination',
+            'Breadcrumb' => 'breadcrumb',
+        ],
+        'Feedback' => [
+            'Alert' => 'alert',
+            'Toast' => 'toast',
+            'Spinner' => 'spinner',
+        ],
+    ],
+
+];
