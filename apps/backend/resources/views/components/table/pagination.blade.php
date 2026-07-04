@@ -6,6 +6,18 @@
     $total = $isLengthAware ? $paginator->total() : null;
     $firstItem = $paginator->firstItem() ?? 0;
     $lastItem = $paginator->lastItem() ?? 0;
+    
+    $elements = [];
+    if ($isLengthAware) {
+        $window = \Illuminate\Pagination\UrlWindow::make($paginator);
+        $elements = array_filter([
+            $window['first'],
+            is_array($window['slider']) ? '...' : null,
+            $window['slider'],
+            is_array($window['last']) ? '...' : null,
+            $window['last'],
+        ]);
+    }
 @endphp
 
 @if ($total === 0 || ($total === null && $firstItem === 0))
@@ -88,8 +100,8 @@
                         @endif
 
                         {{-- Pagination Elements --}}
-                        @if (method_exists($paginator, 'elements'))
-                            @foreach ($paginator->elements() as $element)
+                        @if (!empty($elements))
+                            @foreach ($elements as $element)
                                 {{-- "Three Dots" Separator --}}
                                 @if (is_string($element))
                                     <span aria-hidden="true" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-[color:var(--color-text-muted)] border border-[color:var(--color-border)] bg-[color:var(--color-surface)]">{{ $element }}</span>
