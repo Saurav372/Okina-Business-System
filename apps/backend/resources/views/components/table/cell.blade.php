@@ -1,5 +1,6 @@
 @props([
-    'align' => 'left'
+    'align' => 'left',
+    'wrap' => false
 ])
 
 @php
@@ -12,7 +13,8 @@
 
 <td {{ $attributes->class([
     'px-[var(--spacing-4)] py-[var(--spacing-3)]',
-    'whitespace-nowrap align-middle',
+    'align-middle',
+    $wrap ? 'whitespace-normal' : 'whitespace-nowrap',
     $alignmentClasses
 ]) }}>
     {{ $slot }}

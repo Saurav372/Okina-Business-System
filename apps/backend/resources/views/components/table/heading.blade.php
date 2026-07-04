@@ -1,7 +1,8 @@
 @props([
     'sortable' => false,
     'direction' => null,
-    'align' => 'left'
+    'align' => 'left',
+    'wrap' => false
 ])
 
 @php
@@ -14,7 +15,8 @@
 
 <th scope="col" {{ $attributes->class([
     'px-[var(--spacing-4)] py-[var(--spacing-3)]',
-    'font-semibold whitespace-nowrap',
+    'font-semibold',
+    $wrap ? 'whitespace-normal' : 'whitespace-nowrap',
     $alignmentClasses
 ]) }}>
     @if($sortable)

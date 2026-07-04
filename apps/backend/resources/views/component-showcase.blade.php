@@ -250,7 +250,7 @@
                         <x-table.cell>
                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">Paid</span>
                         </x-table.cell>
-                        <x-table.cell class="whitespace-normal max-w-xs">Annual software licensing renewal for enterprise tier. Includes priority support and custom SLA.</x-table.cell>
+                        <x-table.cell class="max-w-xs" wrap>Annual software licensing renewal for enterprise tier. Includes priority support and custom SLA.</x-table.cell>
                         <x-table.cell align="right">$4,500.00</x-table.cell>
                         <x-table.cell align="center">
                             <button type="button" class="text-[color:var(--color-primary)] hover:underline">View</button>
@@ -262,7 +262,7 @@
                         <x-table.cell>
                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">Pending</span>
                         </x-table.cell>
-                        <x-table.cell class="whitespace-normal max-w-xs">Q3 Consulting retainer.</x-table.cell>
+                        <x-table.cell class="max-w-xs" wrap>Q3 Consulting retainer.</x-table.cell>
                         <x-table.cell align="right">$12,000.00</x-table.cell>
                         <x-table.cell align="center">
                             <button type="button" class="text-[color:var(--color-primary)] hover:underline">View</button>
@@ -274,7 +274,7 @@
                         <x-table.cell>
                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">Overdue</span>
                         </x-table.cell>
-                        <x-table.cell class="whitespace-normal max-w-xs">Hardware deployment.</x-table.cell>
+                        <x-table.cell class="max-w-xs" wrap>Hardware deployment.</x-table.cell>
                         <x-table.cell align="right">$850.50</x-table.cell>
                         <x-table.cell align="center">
                             <button type="button" class="text-[color:var(--color-primary)] hover:underline">View</button>
