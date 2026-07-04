@@ -40,6 +40,7 @@ return [
             'DataTable' => 'data-table',
             'Timeline' => 'timeline',
             'Stats Grid' => 'stats-grid',
+            'Empty State' => 'empty-state',
             'Badge' => 'badge',
             'Card' => 'card',
         ],

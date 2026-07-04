@@ -5,26 +5,23 @@
 ])
 
 <tr>
-    <td colspan="{{ $colspan }}" class="px-[var(--spacing-6)] py-16 text-center">
-        <div class="flex flex-col items-center justify-center space-y-4">
-            <div class="flex items-center justify-center w-14 h-14 rounded-full bg-[color:var(--color-surface-secondary)] border border-[color:var(--color-border)]">
-                @if (isset($icon))
+    <td colspan="{{ $colspan }}" class="px-[var(--spacing-6)]">
+        <x-empty-state 
+            :title="$title" 
+            :description="$description"
+            size="sm"
+        >
+            @if (isset($icon))
+                <x-slot:icon>
                     {{ $icon }}
-                @else
-                    <x-icons.inbox class="w-6 h-6 text-[color:var(--color-text-muted)]" />
-                @endif
-            </div>
-            
-            <div class="space-y-1">
-                <h3 class="text-base font-bold text-[color:var(--color-text-primary)]">{{ $title }}</h3>
-                <p class="text-sm text-[color:var(--color-text-muted)]">{{ $description }}</p>
-            </div>
-            
-            @if (isset($action))
-                <div class="pt-2">
-                    {{ $action }}
-                </div>
+                </x-slot:icon>
             @endif
-        </div>
+
+            @if (isset($action))
+                <x-slot:actions>
+                    {{ $action }}
+                </x-slot:actions>
+            @endif
+        </x-empty-state>
     </td>
 </tr>

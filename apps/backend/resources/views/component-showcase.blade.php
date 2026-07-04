@@ -187,6 +187,173 @@ HTML;
                                 </section>
                             @endif
 
+                            {{-- Empty State --}}
+                            @if(isset($categories['Data Display']['Empty State']))
+                                @php
+                                    $emptyStateCodePage = <<<'HTML'
+<div class="p-8 bg-[color:var(--color-surface-primary)] rounded-lg shadow-sm">
+    <x-empty-state 
+        title="No users found" 
+        description="Get started by creating a new user or inviting your team members."
+        size="lg"
+    >
+        <x-slot:icon>
+            <svg class="w-10 h-10 text-current" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+        </x-slot:icon>
+        <x-slot:actions>
+            <button class="px-4 py-2 bg-[color:var(--color-primary-600)] text-white rounded-md font-medium text-sm">Add User</button>
+            <button class="px-4 py-2 bg-transparent text-[color:var(--color-text-primary)] border border-[color:var(--color-border)] rounded-md font-medium text-sm">Learn More</button>
+        </x-slot:actions>
+    </x-empty-state>
+</div>
+HTML;
+
+                                    $emptyStateCodeSearch = <<<'HTML'
+<div class="p-4 bg-[color:var(--color-surface-primary)] rounded-lg border border-[color:var(--color-border)]">
+    <x-empty-state 
+        title="No results found for 'query'" 
+        description="We couldn't find anything matching your search. Please try a different term."
+        size="md"
+    >
+        <x-slot:icon>
+            <svg class="w-6 h-6 text-current" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+            </svg>
+        </x-slot:icon>
+        <x-slot:actions>
+            <button class="text-sm font-medium text-[color:var(--color-primary-600)] hover:underline">Clear Search</button>
+        </x-slot:actions>
+    </x-empty-state>
+</div>
+HTML;
+
+                                    $emptyStateCodeTable = <<<'HTML'
+<table class="w-full text-left text-sm whitespace-nowrap">
+    <thead class="uppercase tracking-wider border-b border-[color:var(--color-border)] bg-[color:var(--color-surface-secondary)] text-[color:var(--color-text-muted)] text-xs">
+        <tr>
+            <th scope="col" class="px-6 py-4 font-medium">Invoice</th>
+            <th scope="col" class="px-6 py-4 font-medium">Amount</th>
+            <th scope="col" class="px-6 py-4 font-medium">Status</th>
+        </tr>
+    </thead>
+    <tbody class="divide-y divide-[color:var(--color-border)] bg-[color:var(--color-surface-primary)]">
+        <x-table.empty 
+            colspan="3" 
+            title="No pending invoices" 
+            description="You're all caught up! There are no unpaid invoices."
+        >
+            <x-slot:icon>
+                <svg class="w-5 h-5 text-current" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+            </x-slot:icon>
+            <x-slot:actions>
+                <button class="text-[13px] font-medium text-[color:var(--color-primary-600)] hover:underline">Create Invoice</button>
+            </x-slot:actions>
+        </x-table.empty>
+    </tbody>
+</table>
+HTML;
+                                @endphp
+                                <section id="{{ $categories['Data Display']['Empty State'] }}" class="js-section scroll-mt-8">
+                                    <h2 class="text-2xl font-bold border-b border-[color:var(--color-border)] pb-4 mb-8">Empty State</h2>
+                                    
+                                    <div class="space-y-8">
+                                        <x-showcase.preview title="Standalone Page (Large)" :code="$emptyStateCodePage" id="preview-empty-state-lg" defaultViewport="desktop">
+                                            <div class="p-8 bg-[color:var(--color-surface-primary)] rounded-lg shadow-sm border border-[color:var(--color-border)] w-full">
+                                                <x-empty-state 
+                                                    title="No users found" 
+                                                    description="Get started by creating a new user or inviting your team members to collaborate."
+                                                    size="lg"
+                                                >
+                                                    <x-slot:icon>
+                                                        <svg class="w-10 h-10 text-current" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                                        </svg>
+                                                    </x-slot:icon>
+                                                    <x-slot:actions>
+                                                        <button class="px-4 py-2 bg-[color:var(--color-primary-600)] text-white rounded-md font-medium text-sm">Add User</button>
+                                                        <button class="px-4 py-2 bg-transparent text-[color:var(--color-text-primary)] border border-[color:var(--color-border)] rounded-md font-medium text-sm">Learn More</button>
+                                                    </x-slot:actions>
+                                                </x-empty-state>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <x-showcase.preview title="Search Results (Medium)" :code="$emptyStateCodeSearch" id="preview-empty-state-md" defaultViewport="tablet">
+                                            <div class="p-4 bg-[color:var(--color-surface-primary)] rounded-lg border border-[color:var(--color-border)] w-full">
+                                                <x-empty-state 
+                                                    title="No results found for 'query'" 
+                                                    description="We couldn't find anything matching your search. Please try a different term."
+                                                    size="md"
+                                                >
+                                                    <x-slot:icon>
+                                                        <svg class="w-6 h-6 text-current" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                                                        </svg>
+                                                    </x-slot:icon>
+                                                    <x-slot:actions>
+                                                        <button class="text-sm font-medium text-[color:var(--color-primary-600)] hover:underline">Clear Search</button>
+                                                    </x-slot:actions>
+                                                </x-empty-state>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <x-showcase.preview title="Table Layout (Small)" :code="$emptyStateCodeTable" id="preview-empty-state-sm" defaultViewport="desktop">
+                                            <div class="overflow-x-auto rounded-lg border border-[color:var(--color-border)] w-full bg-[color:var(--color-surface-primary)]">
+                                                <table class="w-full text-left text-sm whitespace-nowrap">
+                                                    <thead class="uppercase tracking-wider border-b border-[color:var(--color-border)] bg-[color:var(--color-surface-secondary)] text-[color:var(--color-text-muted)] text-xs">
+                                                        <tr>
+                                                            <th scope="col" class="px-6 py-4 font-medium">Invoice</th>
+                                                            <th scope="col" class="px-6 py-4 font-medium">Amount</th>
+                                                            <th scope="col" class="px-6 py-4 font-medium">Status</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody class="divide-y divide-[color:var(--color-border)]">
+                                                        <x-table.empty 
+                                                            colspan="3" 
+                                                            title="No pending invoices" 
+                                                            description="You're all caught up! There are no unpaid invoices."
+                                                        >
+                                                            <x-slot:icon>
+                                                                <svg class="w-5 h-5 text-current" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                                </svg>
+                                                            </x-slot:icon>
+                                                            <x-slot:actions>
+                                                                <button class="text-[13px] font-medium text-[color:var(--color-primary-600)] hover:underline">Create Invoice</button>
+                                                            </x-slot:actions>
+                                                        </x-table.empty>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </x-showcase.preview>
+                                        
+                                        @php
+                                            $emptyStateCodeUpload = <<<'HTML'
+<div class="p-8 border-2 border-dashed border-[color:var(--color-border)] bg-[color:var(--color-surface-secondary)] rounded-xl w-full">
+    <x-empty-state 
+        title="Upload a file" 
+        description="Drag and drop your files here or click to browse."
+        size="md"
+    />
+</div>
+HTML;
+                                        @endphp
+                                        <x-showcase.preview title="Upload Placeholder (Fallback Icon)" :code="$emptyStateCodeUpload" id="preview-empty-state-upload" defaultViewport="tablet">
+                                            <div class="p-8 border-2 border-dashed border-[color:var(--color-border)] bg-[color:var(--color-surface-secondary)] rounded-xl w-full">
+                                                <x-empty-state 
+                                                    title="Upload a file" 
+                                                    description="Drag and drop your files here or click to browse."
+                                                    size="md"
+                                                />
+                                            </div>
+                                        </x-showcase.preview>
+                                    </div>
+                                </section>
+                            @endif
+
                         </div>
                     @endif
 

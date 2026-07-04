@@ -57,7 +57,7 @@ Detailed validation for each subtask is maintained in `UI-SUBTASK-VALIDATION.md`
 | U1.2.2 | Pagination | Foundation | 1 | Server-side pagination controls. | U1.2.1 | Completed |
 | U1.2.3 | Timeline | Foundation | 1 | Chronological event list. | U0.5 | Completed |
 | U1.2.4 | StatsGrid | Foundation | 1 | Grid for key metrics. | U0.5 | Completed |
-| U1.2.5 | EmptyState | Foundation | 1 | Placeholder for empty data. | U0.5 | Pending |
+| U1.2.5 | EmptyState | Foundation | 1 | Placeholder for empty data. | U0.5 | Completed |
 | **U1.3** | **Navigation** | Foundation | 1 | **Milestone** | U0.5 | Milestone |
 | U1.3.1 | Tabs | Foundation | 1 | Tabbed navigation. | U0.5 | Pending |
 | U1.3.2 | Breadcrumb | Foundation | 1 | Hierarchical links. | U0.5 | Pending |
