@@ -6,8 +6,8 @@
     <title>Select Component Playground</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-[color:var(--color-background)] p-8 text-[color:var(--color-text-primary)]">
-    <div class="max-w-2xl mx-auto space-y-12">
+<body class="bg-gradient-to-br from-[color:var(--color-background)] to-[color:var(--color-primary-50)] min-h-screen p-8 text-[color:var(--color-text-primary)]">
+    <div class="max-w-6xl mx-auto space-y-12">
         <h1 class="text-2xl font-bold">Select Component Testing</h1>
 
         @php
@@ -253,7 +253,9 @@
                         <x-table.cell class="max-w-xs" wrap>Annual software licensing renewal for enterprise tier. Includes priority support and custom SLA.</x-table.cell>
                         <x-table.cell align="right">$4,500.00</x-table.cell>
                         <x-table.cell align="center">
-                            <button type="button" class="text-[color:var(--color-primary)] hover:underline">View</button>
+                            <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-[color:var(--color-primary-100)] text-[color:var(--color-text-muted)] hover:text-[color:var(--color-primary)] transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
+                            </button>
                         </x-table.cell>
                     </x-table.row>
                     <x-table.row>
@@ -265,7 +267,9 @@
                         <x-table.cell class="max-w-xs" wrap>Q3 Consulting retainer.</x-table.cell>
                         <x-table.cell align="right">$12,000.00</x-table.cell>
                         <x-table.cell align="center">
-                            <button type="button" class="text-[color:var(--color-primary)] hover:underline">View</button>
+                            <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-[color:var(--color-primary-100)] text-[color:var(--color-text-muted)] hover:text-[color:var(--color-primary)] transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
+                            </button>
                         </x-table.cell>
                     </x-table.row>
                     <x-table.row>
@@ -277,7 +281,9 @@
                         <x-table.cell class="max-w-xs" wrap>Hardware deployment.</x-table.cell>
                         <x-table.cell align="right">$850.50</x-table.cell>
                         <x-table.cell align="center">
-                            <button type="button" class="text-[color:var(--color-primary)] hover:underline">View</button>
+                            <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-[color:var(--color-primary-100)] text-[color:var(--color-text-muted)] hover:text-[color:var(--color-primary)] transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
+                            </button>
                         </x-table.cell>
                     </x-table.row>
                 </x-table.body>
