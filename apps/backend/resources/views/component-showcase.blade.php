@@ -498,43 +498,92 @@
         <h1 class="text-2xl font-bold mt-16 pt-8 border-t">Timeline Component Testing</h1>
 
         <section class="space-y-4">
-            <h2 class="text-xl font-semibold border-b pb-2">1. Standard Timeline with All Statuses</h2>
-            <div class="bg-white p-6 rounded-lg shadow-sm">
-                <x-timeline as="ol">
-                    <!-- Default Status -->
-                    <x-timeline.item title="Order Placed" timestamp="Just now" datetime="2026-07-04T12:00:00Z">
-                        Order #12345 has been placed by the customer.
-                    </x-timeline.item>
+            <h2 class="text-lg font-semibold border-b pb-2">Order Timeline Card</h2>
+            <div class="flex justify-center bg-gray-50 p-8 rounded-xl border border-gray-100">
+                
+                <!-- The Order Card -->
+                <div class="bg-white rounded-[24px] shadow-sm border border-[color:var(--color-border)] w-full max-w-xl overflow-hidden p-6">
+                    
+                    <!-- Top Section: Order Info -->
+                    <div class="flex gap-5 mb-8 bg-gray-50 rounded-xl p-3">
+                        <div class="w-[120px] h-[120px] rounded-xl overflow-hidden flex-shrink-0 relative">
+                            <img src="https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?q=80&w=400&auto=format&fit=crop" alt="Black Mug" class="w-full h-full object-cover" />
+                            <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                <span class="text-white font-semibold text-xs tracking-widest uppercase">Okina Craft</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-col justify-center">
+                            <div class="mb-2">
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-green-100 text-green-700">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                    Order Confirmed
+                                </span>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 leading-tight mb-1">Order #ORD-2026-001245</h3>
+                            <div class="text-[22px] font-semibold text-gray-900 mb-1 tabular-nums tracking-tight">₹3,850<span class="text-[15px] font-medium text-gray-500">.00</span></div>
+                            <p class="text-[13px] text-gray-500">Placed on Jul 4, 2026 • 12:05 PM</p>
+                        </div>
+                    </div>
 
-                    <!-- Info Status with custom badge -->
-                    <x-timeline.item status="info" title="Payment Processing" timestamp="2 minutes ago">
-                        <x-slot:badge>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">Processing</span>
-                        </x-slot:badge>
-                        Payment is currently being processed via Stripe.
-                    </x-timeline.item>
+                    <!-- Middle Section: Timeline -->
+                    <div class="px-2">
+                        <x-timeline as="ol">
+                            <!-- Success Status -->
+                            <x-timeline.item status="success" title="Order Placed" timestamp="Jul 4, 2026 • 12:05 PM">
+                                <x-slot:icon>
+                                    <svg class="w-4 h-4 text-current" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                                </x-slot:icon>
+                                Your order has been successfully placed.
+                            </x-timeline.item>
 
-                    <!-- Success Status with Icon -->
-                    <x-timeline.item status="success" title="Payment Confirmed" timestamp="Jul 4, 2026 12:05 PM">
-                        <x-slot:icon>
-                            <svg class="w-4 h-4 text-current" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                            </svg>
-                        </x-slot:icon>
-                        Payment of $150.00 was successfully captured.
-                    </x-timeline.item>
+                            <!-- Info Status -->
+                            <x-timeline.item status="info" title="Payment Processing" timestamp="Jul 4, 2026 • 12:07 PM">
+                                <x-slot:icon>
+                                    <svg class="w-4 h-4 text-current" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </x-slot:icon>
+                                <x-slot:badge>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-blue-100 text-blue-700">Processing</span>
+                                </x-slot:badge>
+                                We are processing your payment via Razorpay.
+                            </x-timeline.item>
 
-                    <!-- Warning Status -->
-                    <x-timeline.item status="warning" title="Stock Warning" timestamp="Jul 4, 2026 12:15 PM" lineStyle="dashed">
-                        Only 2 items left in stock for SKU-992.
-                    </x-timeline.item>
+                            <!-- Success Status -->
+                            <x-timeline.item status="success" title="Payment Confirmed" timestamp="Jul 4, 2026 • 12:09 PM">
+                                <x-slot:icon>
+                                    <svg class="w-4 h-4 text-current" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                                </x-slot:icon>
+                                Payment of ₹3,850.00 was successfully captured.
+                            </x-timeline.item>
 
-                    <!-- Danger Status (Multiline Content) -->
-                    <x-timeline.item status="danger" title="Shipping Delayed">
-                        <p class="mb-2">There was an issue with the shipping provider.</p>
-                        <p>Expected delay: 2-3 business days. Please contact the customer to notify them of this change in schedule.</p>
-                    </x-timeline.item>
-                </x-timeline>
+                            <!-- Warning Status -->
+                            <x-timeline.item status="warning" title="Stock Warning" timestamp="Jul 4, 2026 • 12:15 PM" lineStyle="dashed">
+                                <x-slot:icon>
+                                    <svg class="w-4 h-4 text-current" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                </x-slot:icon>
+                                Only 2 items left in stock for "Ceramic Coffee Mug - Black".
+                            </x-timeline.item>
+
+                            <!-- Danger Status -->
+                            <x-timeline.item status="danger" title="Shipping Delayed" timestamp="Jul 4, 2026 • 12:25 PM" lineStyle="dashed">
+                                <x-slot:icon>
+                                    <svg class="w-4 h-4 text-current" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8n-2-2h-2m-4-14H9m12 0h.01"></path><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </x-slot:icon>
+                                <p class="mb-1">There is a delay due to high courier volume.</p>
+                                <p>Expected delivery: 2-3 business days.</p>
+                            </x-timeline.item>
+                        </x-timeline>
+                    </div>
+
+                    <!-- Bottom Section: Action -->
+                    <div class="mt-6">
+                        <button type="button" class="w-full flex items-center justify-center gap-2 py-3 px-4 border-2 border-blue-100 text-blue-600 rounded-xl hover:bg-blue-50 font-semibold transition-colors">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                            View Order Details
+                        </button>
+                    </div>
+
+                </div>
             </div>
         </section>
 

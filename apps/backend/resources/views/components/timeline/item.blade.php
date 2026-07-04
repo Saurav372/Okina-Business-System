@@ -8,11 +8,11 @@
 
 @php
     $statusClasses = [
-        'default' => 'text-[color:var(--color-text-muted)] border-[color:var(--color-border)]',
-        'success' => 'text-[color:var(--color-success)] border-[color:var(--color-success)]',
-        'warning' => 'text-[color:var(--color-warning)] border-[color:var(--color-warning)]',
-        'danger'  => 'text-[color:var(--color-danger)] border-[color:var(--color-danger)]',
-        'info'    => 'text-[color:var(--color-info)] border-[color:var(--color-info)]',
+        'default' => 'text-[color:var(--color-text-muted)] border-[color:var(--color-border)] bg-[color:var(--color-surface)]',
+        'success' => 'text-white border-transparent bg-green-500',
+        'warning' => 'text-[color:var(--color-warning)] border-[color:var(--color-warning)] bg-[color:var(--color-surface)]',
+        'danger'  => 'text-[color:var(--color-danger)] border-[color:var(--color-danger)] bg-[color:var(--color-surface)]',
+        'info'    => 'text-[color:var(--color-info)] border-[color:var(--color-info)] bg-[color:var(--color-surface)]',
     ];
 
     $lineStyleClasses = [
@@ -30,10 +30,10 @@
     '[&:last-child>.connector-line]:hidden'
 ]) }}>
     <!-- Connector Line -->
-    <span class="connector-line absolute top-1 -bottom-6 left-[15px] w-[2px] border-l-[2px] {{ $currentLineClass }} border-slate-300 z-0" aria-hidden="true"></span>
+    <span class="connector-line absolute top-1 -bottom-6 left-[15px] w-[2px] border-l-[2px] {{ $currentLineClass }} border-slate-200 z-0" aria-hidden="true"></span>
     
     <!-- Icon or Dot -->
-    <span class="absolute left-0 top-1 flex items-center justify-center w-8 h-8 rounded-full border-[2px] {{ $currentStatusClass }} z-10 bg-[color:var(--color-surface)]" aria-hidden="true">
+    <span class="absolute left-0 top-1 flex items-center justify-center w-8 h-8 rounded-full border-[2px] {{ $currentStatusClass }} z-10" aria-hidden="true">
         @if(isset($icon))
             <span class="w-4 h-4 flex items-center justify-center">
                 {{ $icon }}
@@ -47,11 +47,17 @@
         @endif
     </span>
 
-    <div class="flex flex-col gap-1 pb-4">
+    <div class="flex flex-col gap-1 pb-6">
+        @if($timestamp)
+            <time @if($datetime) datetime="{{ $datetime }}" @endif class="text-[13px] text-slate-500 block">
+                {{ $timestamp }}
+            </time>
+        @endif
+
         @if($title || isset($badge))
-            <div class="flex items-center gap-3 flex-wrap pt-1.5">
+            <div class="flex items-center gap-3 flex-wrap mt-0.5">
                 @if($title)
-                    <span class="text-[15px] font-semibold text-[color:var(--color-text-primary)] leading-none">
+                    <span class="text-[16px] font-semibold text-[color:var(--color-text-primary)] leading-none">
                         {{ $title }}
                     </span>
                 @endif
@@ -60,15 +66,9 @@
                 @endif
             </div>
         @endif
-        
-        @if($timestamp)
-            <time @if($datetime) datetime="{{ $datetime }}" @endif class="text-xs text-[color:var(--color-text-muted)] block mt-1">
-                {{ $timestamp }}
-            </time>
-        @endif
 
         @if($slot->isNotEmpty())
-            <div class="text-[15px] leading-[1.6] text-slate-500 mt-2 max-w-2xl">
+            <div class="text-[15px] leading-[1.6] text-slate-600 mt-1 max-w-2xl">
                 {{ $slot }}
             </div>
         @endif
