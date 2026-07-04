@@ -9,13 +9,13 @@
 @endphp
 
 @if ($total === 0 || ($total === null && $firstItem === 0))
-    <nav aria-label="{{ __('Pagination') }}" class="flex items-center justify-between border-t border-[color:var(--color-border)] px-[var(--spacing-4)] py-[var(--spacing-3)] sm:px-[var(--spacing-6)] bg-[color:var(--color-surface)] rounded-b-[var(--radius-lg)]">
+    <nav aria-label="{{ __('Pagination Navigation') }}" class="flex items-center justify-between border-t border-[color:var(--color-border)] px-[var(--spacing-4)] py-[var(--spacing-3)] sm:px-[var(--spacing-6)] bg-[color:var(--color-surface)] rounded-b-[var(--radius-lg)]">
         <p class="text-[length:var(--text-sm)] text-[color:var(--color-text-muted)]">
             {{ __('No results found') }}
         </p>
     </nav>
 @else
-    <nav aria-label="{{ __('Pagination') }}" class="flex items-center justify-between border-t border-[color:var(--color-border)] px-[var(--spacing-4)] py-[var(--spacing-3)] sm:px-[var(--spacing-6)] bg-[color:var(--color-surface)] rounded-b-[var(--radius-lg)]">
+    <nav aria-label="{{ __('Pagination Navigation') }}" class="flex items-center justify-between border-t border-[color:var(--color-border)] px-[var(--spacing-4)] py-[var(--spacing-3)] sm:px-[var(--spacing-6)] bg-[color:var(--color-surface)] rounded-b-[var(--radius-lg)]">
         
         <!-- Mobile View -->
         <div class="flex flex-1 items-center justify-between sm:hidden">
