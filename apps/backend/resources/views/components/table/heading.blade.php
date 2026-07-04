@@ -15,12 +15,12 @@
 
 <th scope="col" {{ $attributes->class([
     'px-[var(--spacing-4)] py-[var(--spacing-3)]',
-    'font-semibold uppercase tracking-wider',
+    'font-semibold uppercase tracking-[0.03em] text-[12px] text-slate-500',
     $wrap ? 'whitespace-normal' : 'whitespace-nowrap',
     $alignmentClasses
 ]) }}>
     @if($sortable)
-        <button type="button" class="group inline-flex items-center gap-1 uppercase tracking-wider {{ $align === 'right' ? 'justify-end' : ($align === 'center' ? 'justify-center' : 'justify-start') }} focus:outline-none focus-visible:ring-[length:var(--focus-ring-width)] focus-visible:ring-[color:var(--focus-ring-color)] rounded-[var(--radius-sm)]">
+        <button type="button" class="group inline-flex items-center gap-1 uppercase tracking-[0.03em] text-[12px] {{ $align === 'right' ? 'justify-end' : ($align === 'center' ? 'justify-center' : 'justify-start') }} focus:outline-none focus-visible:ring-[length:var(--focus-ring-width)] focus-visible:ring-[color:var(--focus-ring-color)] rounded-[var(--radius-sm)]">
             <span>{{ $slot }}</span>
             
             <span class="ml-1 flex-none flex items-center">

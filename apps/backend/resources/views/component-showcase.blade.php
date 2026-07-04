@@ -6,7 +6,7 @@
     <title>Select Component Playground</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-gradient-to-br from-[color:var(--color-background)] to-[color:var(--color-primary-50)] min-h-screen p-8 text-[color:var(--color-text-primary)]">
+<body class="antialiased bg-gradient-to-br from-[color:var(--color-background)] to-[color:var(--color-primary-50)] min-h-screen p-8 text-[color:var(--color-text-primary)]">
     <div class="max-w-6xl mx-auto space-y-12">
         <h1 class="text-2xl font-bold">Select Component Testing</h1>
 
@@ -227,19 +227,19 @@
         </section>
 
         <!-- DATATABLE COMPONENT TESTS -->
-        <h1 class="text-2xl font-bold mt-16 pt-8 border-t">DataTable Component Testing</h1>
-        <p class="text-sm text-[color:var(--color-text-muted)] mt-2">Examples of all DataTable states and variations</p>
+        <h1 class="text-[20px] font-semibold mt-16 pt-8 border-t">DataTable Component Testing</h1>
+        <p class="text-[15px] leading-[24px] text-[color:var(--color-text-muted)] mt-2">Examples of all DataTable states and variations</p>
 
         <!-- 1. Fully Populated Table with Toolbar & Footer -->
         <section class="space-y-4 mt-8">
-            <h2 class="text-xl font-semibold border-b pb-2">1. Standard Populated Table (Sortable & Aligned)</h2>
+            <h2 class="text-lg font-semibold border-b pb-2">Standard Table</h2>
             <x-table>
                 <x-slot:toolbar>
                     <!-- Left Side: Search & Filters -->
                     <div class="flex items-center gap-3">
                         <div class="relative">
                             <x-icons.search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                            <input type="text" placeholder="Search invoices..." class="pl-9 pr-8 py-[7px] text-sm border border-[color:var(--color-border)] rounded-[var(--radius-md)] bg-white w-64 focus:ring-[length:var(--focus-ring-width)] focus:ring-[color:var(--color-primary-300)] focus:border-[color:var(--color-primary-400)] focus:outline-none placeholder:text-gray-400" />
+                            <input type="text" placeholder="Search invoices..." class="pl-9 pr-8 py-[7px] text-[15px] border border-[color:var(--color-border)] rounded-[var(--radius-md)] bg-white w-64 focus:ring-[length:var(--focus-ring-width)] focus:ring-[color:var(--color-primary-300)] focus:border-[color:var(--color-primary-400)] focus:outline-none placeholder:text-slate-500" />
                             <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-medium text-gray-400 border border-gray-200 rounded px-1.5 bg-gray-50">/</span>
                         </div>
                         
@@ -276,12 +276,12 @@
 
                 <x-table.head class="bg-[#f8fafc]">
                     <x-table.row>
-                        <x-table.heading sortable direction="asc">Invoice ID</x-table.heading>
-                        <x-table.heading sortable direction="desc">Client Name</x-table.heading>
-                        <x-table.heading sortable>Status</x-table.heading>
-                        <x-table.heading>Description (Long text)</x-table.heading>
-                        <x-table.heading align="right">Amount</x-table.heading>
-                        <x-table.heading align="center">Actions</x-table.heading>
+                        <x-table.heading class="w-[140px]" sortable direction="asc">Invoice ID</x-table.heading>
+                        <x-table.heading class="w-[200px]" sortable direction="desc">Client Name</x-table.heading>
+                        <x-table.heading class="w-[140px]" sortable>Status</x-table.heading>
+                        <x-table.heading class="w-auto">Description (Long text)</x-table.heading>
+                        <x-table.heading class="w-[140px]" align="right">Amount</x-table.heading>
+                        <x-table.heading class="w-[60px]" align="center">Actions</x-table.heading>
                     </x-table.row>
                 </x-table.head>
                 <x-table.body>
@@ -291,15 +291,20 @@
                         </x-table.cell>
                         <x-table.cell>Acme Corp</x-table.cell>
                         <x-table.cell>
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-green-100 text-green-700 uppercase tracking-wide">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 tracking-normal">
                                 <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
                                 Paid
                             </span>
                         </x-table.cell>
-                        <x-table.cell class="max-w-xs" wrap>Annual software licensing renewal for enterprise tier. Includes priority support and custom SLA.</x-table.cell>
-                        <x-table.cell align="right">$4,500.00</x-table.cell>
+                        <x-table.cell wrap>
+                            <div class="leading-[1.6]">
+                                Annual software licensing renewal for enterprise tier.
+                                <div class="text-slate-500 mt-1">Includes priority support and custom SLA.</div>
+                            </div>
+                        </x-table.cell>
+                        <x-table.cell align="right" class="font-semibold tabular-nums">$4,500.00</x-table.cell>
                         <x-table.cell align="center">
-                            <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-[color:var(--color-primary-50)] text-[color:var(--color-text-muted)] hover:text-[color:var(--color-primary)] transition-colors">
+                            <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-md hover:bg-slate-100 text-[color:var(--color-text-muted)] transition-colors">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
                             </button>
                         </x-table.cell>
@@ -310,15 +315,20 @@
                         </x-table.cell>
                         <x-table.cell>Global Industries</x-table.cell>
                         <x-table.cell>
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-yellow-100 text-yellow-700 uppercase tracking-wide">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700 tracking-normal">
                                 <span class="w-1.5 h-1.5 rounded-full bg-yellow-500"></span>
                                 Pending
                             </span>
                         </x-table.cell>
-                        <x-table.cell class="max-w-xs" wrap>Q3 Consulting retainer.</x-table.cell>
-                        <x-table.cell align="right">$12,000.00</x-table.cell>
+                        <x-table.cell wrap>
+                            <div class="leading-[1.6]">
+                                Q3 Consulting retainer.
+                                <div class="text-slate-500 mt-1">Design system and engineering hours.</div>
+                            </div>
+                        </x-table.cell>
+                        <x-table.cell align="right" class="font-semibold tabular-nums">$12,000.00</x-table.cell>
                         <x-table.cell align="center">
-                            <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-[color:var(--color-primary-50)] text-[color:var(--color-text-muted)] hover:text-[color:var(--color-primary)] transition-colors">
+                            <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-md hover:bg-slate-100 text-[color:var(--color-text-muted)] transition-colors">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
                             </button>
                         </x-table.cell>
@@ -329,15 +339,20 @@
                         </x-table.cell>
                         <x-table.cell>Stark Labs</x-table.cell>
                         <x-table.cell>
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-red-100 text-red-700 uppercase tracking-wide">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 tracking-normal">
                                 <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
                                 Overdue
                             </span>
                         </x-table.cell>
-                        <x-table.cell class="max-w-xs" wrap>Hardware deployment.</x-table.cell>
-                        <x-table.cell align="right">$850.50</x-table.cell>
+                        <x-table.cell wrap>
+                            <div class="leading-[1.6]">
+                                Hardware deployment.
+                                <div class="text-slate-500 mt-1">Installation of 50 remote workstations.</div>
+                            </div>
+                        </x-table.cell>
+                        <x-table.cell align="right" class="font-semibold tabular-nums">$850.50</x-table.cell>
                         <x-table.cell align="center">
-                            <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-[color:var(--color-primary-50)] text-[color:var(--color-text-muted)] hover:text-[color:var(--color-primary)] transition-colors">
+                            <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-md hover:bg-slate-100 text-[color:var(--color-text-muted)] transition-colors">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
                             </button>
                         </x-table.cell>
@@ -364,7 +379,7 @@
 
         <!-- 2. Single Row Table -->
         <section class="space-y-4">
-            <h2 class="text-xl font-semibold border-b pb-2">2. Single Row Table</h2>
+            <h2 class="text-lg font-semibold border-b pb-2">Single Row Table</h2>
             <x-table>
                 <x-table.head class="bg-[#f8fafc]">
                     <x-table.row>
@@ -380,7 +395,7 @@
                         <x-table.cell>admin@okina.local</x-table.cell>
                         <x-table.cell>Administrator</x-table.cell>
                         <x-table.cell align="center">
-                            <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-[color:var(--color-primary-50)] text-[color:var(--color-text-muted)] hover:text-[color:var(--color-primary)] transition-colors">
+                            <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-md hover:bg-slate-100 text-[color:var(--color-text-muted)] transition-colors">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
                             </button>
                         </x-table.cell>
@@ -391,7 +406,7 @@
 
         <!-- 3. Empty Table States -->
         <section class="space-y-4">
-            <h2 class="text-xl font-semibold border-b pb-2">3. Empty Table States</h2>
+            <h2 class="text-lg font-semibold border-b pb-2">Empty States</h2>
             <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
                 <!-- Default empty state -->
                 <div class="space-y-2">

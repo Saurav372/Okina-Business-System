@@ -6,7 +6,7 @@
     @endif
     
     <div class="w-full overflow-x-auto custom-scrollbar">
-        <table {{ $attributes->class(['w-full text-left text-[length:var(--text-sm)] text-[color:var(--color-text-primary)] border-collapse']) }}>
+        <table {{ $attributes->class(['w-full text-left text-[15px] leading-[24px] text-[color:var(--color-text-primary)] border-collapse']) }}>
             {{ $slot }}
         </table>
     </div>
