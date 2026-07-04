@@ -4,24 +4,23 @@
 Data & Table (Phase 1)
 
 ## Current Subtask
-U1.2.2 Pagination
-
-## Status
-Completed
+U1.2.4 StatsGrid
 
 ## Goal
-Build a standardized Pagination component designed for server-side paginated data (e.g., standard Laravel LengthAwarePaginator outputs).
+Build a StatsGrid component for rendering key metrics and KPI cards.
 
 ## Dependencies
 **Depends On:**
-- U1.2.1 DataTable (Completed)
+- U0.5 Layout Templates (Completed)
 
 ## Required Deliverables
-- A Blade component (`<x-table.pagination>` or `<x-pagination>`) tailored for rendering page links.
-- Must inherit standard typography and motion tokens (hover states on page numbers).
-- Provide a responsive layout (e.g., collapsing page numbers to "Previous/Next" on mobile).
+- A Blade component for displaying a stat card (e.g., `<x-stat-card>`).
+- A container or grid component for organizing multiple stat cards (e.g., `<x-stats-grid>`).
+- Must support icons, trend indicators (up/down/neutral), values, and labels.
 
 ## Completed Prerequisites
 - U0.5 Layout Templates
 - U1.1 Form Components
 - U1.2.1 DataTable
+- U1.2.2 Pagination
+- U1.2.3 Timeline
