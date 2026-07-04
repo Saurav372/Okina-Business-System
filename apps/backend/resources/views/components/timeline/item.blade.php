@@ -35,9 +35,7 @@
     <!-- Icon or Dot -->
     <span class="absolute left-0 top-1 flex items-center justify-center w-8 h-8 rounded-full border-[2px] {{ $currentStatusClass }} z-10" aria-hidden="true">
         @if(isset($icon))
-            <span class="w-4 h-4 flex items-center justify-center">
-                {{ $icon }}
-            </span>
+            {{ $icon }}
         @else
             <!-- Default decorative dot -->
             @php
