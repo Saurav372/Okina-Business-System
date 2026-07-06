@@ -59,7 +59,7 @@ Detailed validation for each subtask is maintained in `UI-SUBTASK-VALIDATION.md`
 | U1.2.4 | StatsGrid | Foundation | 1 | Grid for key metrics. | U0.5 | Completed |
 | U1.2.5 | EmptyState | Foundation | 1 | Placeholder for empty data. | U0.5 | Completed |
 | **U1.3** | **Navigation** | Foundation | 1 | **Milestone** | U0.5 | Milestone |
-| U1.3.1 | Tabs | Foundation | 1 | Tabbed navigation. | U0.5 | Pending |
+| U1.3.1 | Tabs | Foundation | 1 | Tabbed navigation. | U0.5 | Completed |
 | U1.3.2 | Breadcrumb | Foundation | 1 | Hierarchical links. | U0.5 | Pending |
 | U1.3.3 | Dropdown | Foundation | 1 | Context menu dropdown. | U0.5 | Pending |
 | U1.3.4 | Stepper | Foundation | 1 | Multi-step wizard indicator. | U0.5 | Pending |
@@ -79,7 +79,7 @@ Detailed validation for each subtask is maintained in `UI-SUBTASK-VALIDATION.md`
 | U1.6.4 | Skeleton Animation | Foundation | 1 | Shimmer effects for skeletons. | U0.1.5, U0.5 | Pending |
 | U1.6.5 | Scroll Animations | Foundation | 1 | Scroll-triggered reveals. | U0.1.5, U0.5 | Pending |
 | U1.6.6 | Page Transitions | Foundation | 1 | View transition API integration. | U0.1.5, U0.5 | Pending |
-| U1.7 | UI Component Showcase | Foundation | 1.5 | `/admin/ui` route to display and document all reusable components, design tokens, and motion patterns. | U1.1, U1.2, U1.3, U1.4, U1.5, U1.6 | Pending |
+| U1.7 | UI Component Showcase | Foundation | 1.5 | `/admin/components` route to display and document all reusable components, design tokens, and motion patterns. | U1.1, U1.2, U1.3, U1.4, U1.5, U1.6 | Pending |
 | U2.1 | Application Shell | Foundation | 2 | Wire up Sidebar and Topbar with dynamic user session and navigation data. | U0.3, U0.5, U1.3 | Pending |
 | **U2.2** | **Dashboard** | Foundation | 2 | **Milestone** | U2.1 | Milestone |
 | U2.2.1 | Widgets | Foundation | 2 | KPI stat cards. | U2.1, U1.2.4, U1.6 | Pending |

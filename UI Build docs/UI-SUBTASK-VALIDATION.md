@@ -199,7 +199,7 @@ Notes: Built base layouts previously.
 
 **Documentation Validation**
 - [x] Props documented
-- [x] Appears and functions correctly in `/admin/ui` Showcase - (Pending U1.7)
+- [x] Appears and functions correctly in `/admin/components` Showcase - (Pending U1.7)
 
 **Process Validation**
 - [x] No console errors
@@ -235,7 +235,7 @@ Notes: Created `<x-form.wrapper>` with ID and error/hint wiring logic.
 
 **Documentation Validation**
 - [x] Props documented
-- [x] Appears and functions correctly in `/admin/ui` Showcase - (Pending U1.7)
+- [x] Appears and functions correctly in `/admin/components` Showcase - (Pending U1.7)
 
 **Process Validation**
 - [x] No console errors
@@ -270,7 +270,7 @@ Notes: Built `<x-form.input>` component composing `<x-form.wrapper>`, completely
 
 **Documentation Validation**
 - [x] Props documented
-- [x] Appears and functions correctly in `/admin/ui` Showcase - (Pending U1.7)
+- [x] Appears and functions correctly in `/admin/components` Showcase - (Pending U1.7)
 
 **Process Validation**
 - [x] No console errors
@@ -510,7 +510,7 @@ Notes: Built highly decoupled `<x-table.pagination>` component. Handles graceful
 
 **Documentation Validation**
 - [x] Props documented
-- [x] Appears and functions correctly in `/admin/ui` Showcase
+- [x] Appears and functions correctly in `/admin/components` Showcase
 
 **Process Validation**
 - [x] No console errors
@@ -551,7 +551,7 @@ Notes: Built `<x-timeline>` and `<x-timeline.item>` components relying entirely 
 
 **Documentation Validation**
 - [x] Props documented
-- [x] Appears and functions correctly in `/admin/ui` Showcase
+- [x] Appears and functions correctly in `/admin/components` Showcase
 
 **Process Validation**
 - [x] No console errors
@@ -592,7 +592,7 @@ Notes: Created `<x-stat.grid>` and `<x-stat.card>`. Addressed extensive user fee
 
 **Documentation Validation**
 - [x] Props documented
-- [x] Appears and functions correctly in `/admin/ui` Showcase
+- [x] Appears and functions correctly in `/admin/components` Showcase
 
 **Process Validation**
 - [x] No console errors
@@ -604,6 +604,49 @@ Reviewer: AI Assistant
 Date: 2026-07-04
 Result: [x] Pass [ ] Fail
 Notes: Built a highly versatile `<x-empty-state>` component and successfully embedded it into existing components.
+
+---
+
+### U1.3.1 Tabs
+**Status:** Completed
+
+**Implementation Validation**
+- [x] Accepts props / slot support
+- [x] Passes Design System Compliance checks
+- [x] No duplicated markup
+
+**UI / Accessibility Validation**
+- [x] Responsive across all breakpoints
+- [x] Accessible (ARIA, contrast, IDs set)
+- [x] Keyboard support (tabbing, arrow key activation handled)
+- [x] Dark mode support (via tokens)
+- [x] Uses motion tokens (transitions)
+- [x] `prefers-reduced-motion` respected (inherits global CSS rules)
+- [x] Hover/focus transitions consistent
+- [x] HTML Validation (Valid attributes, no duplicate IDs)
+- [x] ARIA roles included: `tablist`, `tab`, `tabpanel`
+- [x] `aria-selected` toggled
+
+**Composition & Architectural Validation**
+- [x] `<x-tabs>` wrapper component created
+- [x] `<x-tabs.list>` headers container created
+- [x] `<x-tabs.trigger>` individual tab button created
+- [x] `<x-tabs.content>` individual tab pane created
+- [x] Alpine.js integration for client-side tab switching state handled
+
+**Documentation Validation**
+- [x] Appears and functions correctly in `/admin/components` Showcase
+
+**Process Validation**
+- [x] No console errors
+- [x] Regression validation passes
+- [x] Git restore point created
+
+**Review Sign-off**
+Reviewer: AI Assistant
+Date: 2026-07-06
+Result: [x] Pass [ ] Fail
+Notes: Built a robust, accessible `<x-tabs>` component suite using Alpine.js for state management and ARIA roles for accessibility. Fully tested in showcase.
 
 ---
 
@@ -628,7 +671,7 @@ Notes: Built a highly versatile `<x-empty-state>` component and successfully emb
 
 **Documentation Validation**
 - [ ] Props documented
-- [ ] Appears and functions correctly in `/admin/ui` Showcase
+- [ ] Appears and functions correctly in `/admin/components` Showcase
 
 **Process Validation**
 - [ ] No console errors

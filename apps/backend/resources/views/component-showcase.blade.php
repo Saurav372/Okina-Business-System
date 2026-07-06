@@ -357,6 +357,83 @@ HTML;
                         </div>
                     @endif
 
+                    {{-- 3. Navigation --}}
+                    @if(isset($categories['Navigation']))
+                        <div class="space-y-16">
+                            
+                            {{-- Tabs --}}
+                            @if(isset($categories['Navigation']['Tabs']))
+                                @php
+                                    $tabsCode = <<<'HTML'
+<x-tabs defaultTab="account">
+    <x-tabs.list>
+        <x-tabs.trigger value="account">Account</x-tabs.trigger>
+        <x-tabs.trigger value="password">Password</x-tabs.trigger>
+        <x-tabs.trigger value="notifications">Notifications</x-tabs.trigger>
+        <x-tabs.trigger value="billing" disabled>Billing</x-tabs.trigger>
+    </x-tabs.list>
+    
+    <div class="p-4 bg-[color:var(--color-surface-primary)] border border-t-0 border-[color:var(--color-border)] rounded-b-md">
+        <x-tabs.content value="account">
+            <h3 class="text-lg font-medium">Account Settings</h3>
+            <p class="text-sm text-[color:var(--color-text-muted)] mt-1">Update your account details here.</p>
+        </x-tabs.content>
+        <x-tabs.content value="password">
+            <h3 class="text-lg font-medium">Change Password</h3>
+            <p class="text-sm text-[color:var(--color-text-muted)] mt-1">Ensure your account is using a long, random password.</p>
+        </x-tabs.content>
+        <x-tabs.content value="notifications">
+            <h3 class="text-lg font-medium">Notification Preferences</h3>
+            <p class="text-sm text-[color:var(--color-text-muted)] mt-1">Choose what we can notify you about.</p>
+        </x-tabs.content>
+        <x-tabs.content value="billing">
+            <h3 class="text-lg font-medium">Billing Information</h3>
+            <p class="text-sm text-[color:var(--color-text-muted)] mt-1">Manage your payment methods.</p>
+        </x-tabs.content>
+    </div>
+</x-tabs>
+HTML;
+                                @endphp
+                                <section id="{{ $categories['Navigation']['Tabs'] }}" class="js-section scroll-mt-8">
+                                    <h2 class="text-2xl font-bold border-b border-[color:var(--color-border)] pb-4 mb-8">Tabs</h2>
+                                    
+                                    <x-showcase.preview title="Standard Tabs" :code="$tabsCode" id="preview-tabs">
+                                        <div class="w-full max-w-2xl">
+                                            <x-tabs defaultTab="account">
+                                                <x-tabs.list>
+                                                    <x-tabs.trigger value="account">Account</x-tabs.trigger>
+                                                    <x-tabs.trigger value="password">Password</x-tabs.trigger>
+                                                    <x-tabs.trigger value="notifications">Notifications</x-tabs.trigger>
+                                                    <x-tabs.trigger value="billing" disabled>Billing</x-tabs.trigger>
+                                                </x-tabs.list>
+                                                
+                                                <div class="p-4 bg-[color:var(--color-surface-primary)] border border-t-0 border-[color:var(--color-border)] rounded-b-md">
+                                                    <x-tabs.content value="account">
+                                                        <h3 class="text-lg font-medium">Account Settings</h3>
+                                                        <p class="text-sm text-[color:var(--color-text-muted)] mt-1">Update your account details here.</p>
+                                                    </x-tabs.content>
+                                                    <x-tabs.content value="password">
+                                                        <h3 class="text-lg font-medium">Change Password</h3>
+                                                        <p class="text-sm text-[color:var(--color-text-muted)] mt-1">Ensure your account is using a long, random password.</p>
+                                                    </x-tabs.content>
+                                                    <x-tabs.content value="notifications">
+                                                        <h3 class="text-lg font-medium">Notification Preferences</h3>
+                                                        <p class="text-sm text-[color:var(--color-text-muted)] mt-1">Choose what we can notify you about.</p>
+                                                    </x-tabs.content>
+                                                    <x-tabs.content value="billing">
+                                                        <h3 class="text-lg font-medium">Billing Information</h3>
+                                                        <p class="text-sm text-[color:var(--color-text-muted)] mt-1">Manage your payment methods.</p>
+                                                    </x-tabs.content>
+                                                </div>
+                                            </x-tabs>
+                                        </div>
+                                    </x-showcase.preview>
+                                </section>
+                            @endif
+
+                        </div>
+                    @endif
+
                 </div>
             </div>
         </main>

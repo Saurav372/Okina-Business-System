@@ -45,6 +45,7 @@ return [
             'Card' => 'card',
         ],
         'Navigation' => [
+            'Tabs' => 'tabs',
             'Pagination' => 'pagination',
             'Breadcrumb' => 'breadcrumb',
         ],
