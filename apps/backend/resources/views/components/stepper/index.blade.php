@@ -39,7 +39,7 @@
 
 <nav 
     aria-label="Progress" 
-    {{ $attributes->merge(['class' => 'w-full']) }}
+    {{ $attributes->merge(['class' => 'w-full min-w-0']) }}
     style="
         --step-circle-size: {{ $sizeValues['circle'] }};
         --step-font-size: {{ $sizeValues['font'] }};
