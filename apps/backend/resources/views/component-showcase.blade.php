@@ -2171,5 +2171,6 @@ HTML;
             
         });
     </script>
+    <x-toast />
 </body>
 </html>
