@@ -525,6 +525,368 @@ HTML;
                                 </section>
                             @endif
 
+                            {{-- Dropdown --}}
+                            @if(isset($categories['Navigation']['Dropdown']))
+                                @php
+                                    $dropdownBasicCode = <<<'HTML'
+<x-dropdown>
+    <x-dropdown.trigger>
+        <button class="px-4 py-2 text-sm font-semibold bg-white border border-[color:var(--color-border)] rounded-lg shadow-sm hover:bg-[color:var(--color-surface-secondary)] transition-colors">
+            Actions
+        </button>
+    </x-dropdown.trigger>
+    <x-dropdown.content>
+        <x-dropdown.header>Options</x-dropdown.header>
+        <x-dropdown.item href="#profile" as="link">Profile</x-dropdown.item>
+        <x-dropdown.item href="#settings" as="link">Settings</x-dropdown.item>
+        <x-dropdown.divider />
+        <x-dropdown.item variant="danger">Logout</x-dropdown.item>
+    </x-dropdown.content>
+</x-dropdown>
+HTML;
+
+                                    $dropdownIconsCode = <<<'HTML'
+<x-dropdown>
+    <x-dropdown.trigger>
+        <button class="px-4 py-2 text-sm font-semibold bg-white border border-[color:var(--color-border)] rounded-lg shadow-sm hover:bg-[color:var(--color-surface-secondary)] transition-colors">
+            Manage Document
+        </button>
+    </x-dropdown.trigger>
+    <x-dropdown.content>
+        <x-dropdown.item shortcut="Ctrl+E">
+            <x-slot:icon>
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+            </x-slot:icon>
+            Edit
+        </x-dropdown.item>
+        <x-dropdown.item shortcut="Ctrl+D">
+            <x-slot:icon>
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>
+            </x-slot:icon>
+            Duplicate
+        </x-dropdown.item>
+        <x-dropdown.divider />
+        <x-dropdown.item variant="danger" shortcut="Del">
+            <x-slot:icon>
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+            </x-slot:icon>
+            Delete
+        </x-dropdown.item>
+    </x-dropdown.content>
+</x-dropdown>
+HTML;
+
+                                    $dropdownConfirmCode = <<<'HTML'
+<x-dropdown @dropdown-confirm="if (!confirm($event.detail.message)) $event.preventDefault()">
+    <x-dropdown.trigger>
+        <button class="px-4 py-2 text-sm font-semibold bg-white border border-[color:var(--color-border)] rounded-lg shadow-sm hover:bg-[color:var(--color-surface-secondary)] transition-colors">
+            Database Settings
+        </button>
+    </x-dropdown.trigger>
+    <x-dropdown.content>
+        <x-dropdown.item as="submit" confirm="Are you sure you want to run database migrations?">
+            Run Migrations
+        </x-dropdown.item>
+        <x-dropdown.item variant="danger" confirm="Are you sure you want to permanently drop the database?">
+            Drop Database
+        </x-dropdown.item>
+    </x-dropdown.content>
+</x-dropdown>
+HTML;
+
+                                    $dropdownKeepOpenCode = <<<'HTML'
+<x-dropdown :closeOnClick="false">
+    <x-dropdown.trigger>
+        <button class="px-4 py-2 text-sm font-semibold bg-white border border-[color:var(--color-border)] rounded-lg shadow-sm hover:bg-[color:var(--color-surface-secondary)] transition-colors">
+            Filter Options
+        </button>
+    </x-dropdown.trigger>
+    <x-dropdown.content width="sm">
+        <x-dropdown.header>Include Status</x-dropdown.header>
+        <label class="flex items-center gap-2 px-4 py-2 text-sm font-medium hover:bg-[color:var(--color-surface-secondary)] cursor-pointer">
+            <input type="checkbox" checked class="rounded border-[color:var(--color-border)] text-[color:var(--color-primary)] focus:ring-[color:var(--color-primary-500)]">
+            <span>Pending</span>
+        </label>
+        <label class="flex items-center gap-2 px-4 py-2 text-sm font-medium hover:bg-[color:var(--color-surface-secondary)] cursor-pointer">
+            <input type="checkbox" checked class="rounded border-[color:var(--color-border)] text-[color:var(--color-primary)] focus:ring-[color:var(--color-primary-500)]">
+            <span>Completed</span>
+        </label>
+        <label class="flex items-center gap-2 px-4 py-2 text-sm font-medium hover:bg-[color:var(--color-surface-secondary)] cursor-pointer">
+            <input type="checkbox" class="rounded border-[color:var(--color-border)] text-[color:var(--color-primary)] focus:ring-[color:var(--color-primary-500)]">
+            <span>Archived</span>
+        </label>
+    </x-dropdown.content>
+</x-dropdown>
+HTML;
+
+                                    $dropdownStatesCode = <<<'HTML'
+<x-dropdown>
+    <x-dropdown.trigger>
+        <button class="px-4 py-2 text-sm font-semibold bg-white border border-[color:var(--color-border)] rounded-lg shadow-sm hover:bg-[color:var(--color-surface-secondary)] transition-colors">
+            File Actions
+        </button>
+    </x-dropdown.trigger>
+    <x-dropdown.content>
+        <x-dropdown.item disabled>
+            <x-slot:icon>
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+            </x-slot:icon>
+            Download (Disabled)
+        </x-dropdown.item>
+        <x-dropdown.item busy>
+            Converting File...
+        </x-dropdown.item>
+        <x-dropdown.item busy>
+            <x-slot:busyIcon>
+                <svg class="animate-bounce h-4 w-4 text-[color:var(--color-primary-500)]" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+            </x-slot:busyIcon>
+            Custom Loader...
+        </x-dropdown.item>
+    </x-dropdown.content>
+</x-dropdown>
+HTML;
+                                @endphp
+
+                                <section id="{{ $categories['Navigation']['Dropdown'] }}" class="js-section scroll-mt-8 mt-16">
+                                    <h2 class="text-2xl font-bold border-b border-[color:var(--color-border)] pb-4 mb-8">Dropdown</h2>
+
+                                    <div class="space-y-8">
+                                        {{-- Basic --}}
+                                        <x-showcase.preview title="Basic Dropdown" :code="$dropdownBasicCode" id="preview-dropdown-basic" :noClip="true">
+                                            <x-dropdown>
+                                                <x-dropdown.trigger>
+                                                    <button class="px-4 py-2 text-sm font-semibold bg-white border border-[color:var(--color-border)] rounded-lg shadow-sm hover:bg-[color:var(--color-surface-secondary)] transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-[color:var(--color-primary-500)]">
+                                                        Open Dropdown
+                                                    </button>
+                                                </x-dropdown.trigger>
+                                                <x-dropdown.content>
+                                                    <x-dropdown.header>Options</x-dropdown.header>
+                                                    <x-dropdown.item href="#profile" as="link">Profile</x-dropdown.item>
+                                                    <x-dropdown.item href="#settings" as="link">Settings</x-dropdown.item>
+                                                    <x-dropdown.divider />
+                                                    <x-dropdown.item variant="danger">Logout</x-dropdown.item>
+                                                </x-dropdown.content>
+                                            </x-dropdown>
+                                        </x-showcase.preview>
+
+                                        {{-- With Icons & Shortcuts --}}
+                                        <x-showcase.preview title="With Icons & Shortcuts" :code="$dropdownIconsCode" id="preview-dropdown-icons" :noClip="true">
+                                            <x-dropdown>
+                                                <x-dropdown.trigger>
+                                                    <button class="px-4 py-2 text-sm font-semibold bg-white border border-[color:var(--color-border)] rounded-lg shadow-sm hover:bg-[color:var(--color-surface-secondary)] transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-[color:var(--color-primary-500)]">
+                                                        Manage Document
+                                                    </button>
+                                                </x-dropdown.trigger>
+                                                <x-dropdown.content>
+                                                    <x-dropdown.item shortcut="Ctrl+E">
+                                                        <x-slot:icon>
+                                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                                        </x-slot:icon>
+                                                        Edit
+                                                    </x-dropdown.item>
+                                                    <x-dropdown.item shortcut="Ctrl+D">
+                                                        <x-slot:icon>
+                                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>
+                                                        </x-slot:icon>
+                                                        Duplicate
+                                                    </x-dropdown.item>
+                                                    <x-dropdown.divider />
+                                                    <x-dropdown.item variant="danger" shortcut="Del">
+                                                        <x-slot:icon>
+                                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                                        </x-slot:icon>
+                                                        Delete
+                                                    </x-dropdown.item>
+                                                </x-dropdown.content>
+                                            </x-dropdown>
+                                        </x-showcase.preview>
+
+                                        {{-- Form Actions & Confirmation Events --}}
+                                        <x-showcase.preview title="Form Submissions & Confirmation Events" :code="$dropdownConfirmCode" id="preview-dropdown-confirm" :noClip="true">
+                                            <x-dropdown @dropdown-confirm="if (!confirm($event.detail.message)) $event.preventDefault()">
+                                                <x-dropdown.trigger>
+                                                    <button class="px-4 py-2 text-sm font-semibold bg-white border border-[color:var(--color-border)] rounded-lg shadow-sm hover:bg-[color:var(--color-surface-secondary)] transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-[color:var(--color-primary-500)]">
+                                                        Database Actions
+                                                    </button>
+                                                </x-dropdown.trigger>
+                                                <x-dropdown.content>
+                                                    <x-dropdown.item as="submit" confirm="Are you sure you want to run database migrations?">
+                                                        Run Migrations
+                                                    </x-dropdown.item>
+                                                    <x-dropdown.item variant="danger" confirm="Are you sure you want to permanently drop the database?">
+                                                        Drop Database
+                                                    </x-dropdown.item>
+                                                </x-dropdown.content>
+                                            </x-dropdown>
+                                        </x-showcase.preview>
+
+                                        {{-- Filters / Keep Open --}}
+                                        <x-showcase.preview title="Keep Open on Option Selection" :code="$dropdownKeepOpenCode" id="preview-dropdown-keep-open" :noClip="true">
+                                            <x-dropdown :closeOnClick="false">
+                                                <x-dropdown.trigger>
+                                                    <button class="px-4 py-2 text-sm font-semibold bg-white border border-[color:var(--color-border)] rounded-lg shadow-sm hover:bg-[color:var(--color-surface-secondary)] transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-[color:var(--color-primary-500)]">
+                                                        Filter Options
+                                                    </button>
+                                                </x-dropdown.trigger>
+                                                <x-dropdown.content width="sm">
+                                                    <x-dropdown.header>Include Status</x-dropdown.header>
+                                                    <label class="flex items-center gap-2 px-4 py-2 text-sm font-medium hover:bg-[color:var(--color-surface-secondary)] cursor-pointer select-none">
+                                                        <input type="checkbox" checked class="rounded border-[color:var(--color-border)] text-[color:var(--color-primary)] focus:ring-[color:var(--color-primary-500)]">
+                                                        <span>Pending</span>
+                                                    </label>
+                                                    <label class="flex items-center gap-2 px-4 py-2 text-sm font-medium hover:bg-[color:var(--color-surface-secondary)] cursor-pointer select-none">
+                                                        <input type="checkbox" checked class="rounded border-[color:var(--color-border)] text-[color:var(--color-primary)] focus:ring-[color:var(--color-primary-500)]">
+                                                        <span>Completed</span>
+                                                    </label>
+                                                    <label class="flex items-center gap-2 px-4 py-2 text-sm font-medium hover:bg-[color:var(--color-surface-secondary)] cursor-pointer select-none">
+                                                        <input type="checkbox" class="rounded border-[color:var(--color-border)] text-[color:var(--color-primary)] focus:ring-[color:var(--color-primary-500)]">
+                                                        <span>Archived</span>
+                                                    </label>
+                                                </x-dropdown.content>
+                                            </x-dropdown>
+                                        </x-showcase.preview>
+
+                                        {{-- Disabled & Busy Loading States --}}
+                                        <x-showcase.preview title="Disabled & Busy Loading States" :code="$dropdownStatesCode" id="preview-dropdown-states" :noClip="true">
+                                            <x-dropdown>
+                                                <x-dropdown.trigger>
+                                                    <button class="px-4 py-2 text-sm font-semibold bg-white border border-[color:var(--color-border)] rounded-lg shadow-sm hover:bg-[color:var(--color-surface-secondary)] transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-[color:var(--color-primary-500)]">
+                                                        Export Actions
+                                                    </button>
+                                                </x-dropdown.trigger>
+                                                <x-dropdown.content>
+                                                    <x-dropdown.item disabled>
+                                                        <x-slot:icon>
+                                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                                        </x-slot:icon>
+                                                        Download (Disabled)
+                                                    </x-dropdown.item>
+                                                    <x-dropdown.item busy>
+                                                        Exporting CSV...
+                                                    </x-dropdown.item>
+                                                    <x-dropdown.item busy>
+                                                        <x-slot:busyIcon>
+                                                            <svg class="animate-bounce h-4 w-4 text-[color:var(--color-primary-500)]" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                                                        </x-slot:busyIcon>
+                                                        Custom Loader...
+                                                    </x-dropdown.item>
+                                                </x-dropdown.content>
+                                            </x-dropdown>
+                                        </x-showcase.preview>
+
+                                        {{-- Alignment, Offset, Width, MaxHeight & Collision Flipping --}}
+                                        <x-showcase.preview title="Custom Positioning, Width Fit & Collision Boundary Checks" code="&lt;x-dropdown side=&quot;right&quot; align=&quot;center&quot; offset=&quot;16&quot;&gt;" id="preview-dropdown-positioning" :noClip="true">
+                                            <div class="flex flex-wrap items-center gap-4">
+                                                <x-dropdown side="top" align="start">
+                                                    <x-dropdown.trigger>
+                                                        <button class="px-3 py-1.5 text-xs font-semibold bg-white border border-[color:var(--color-border)] rounded-md hover:bg-[color:var(--color-surface-secondary)] cursor-pointer">
+                                                            Top Start
+                                                        </button>
+                                                    </x-dropdown.trigger>
+                                                    <x-dropdown.content width="sm">
+                                                        <x-dropdown.item>Action 1</x-dropdown.item>
+                                                        <x-dropdown.item>Action 2</x-dropdown.item>
+                                                    </x-dropdown.content>
+                                                </x-dropdown>
+
+                                                <x-dropdown side="bottom" align="end" offset="16">
+                                                    <x-dropdown.trigger>
+                                                        <button class="px-3 py-1.5 text-xs font-semibold bg-white border border-[color:var(--color-border)] rounded-md hover:bg-[color:var(--color-surface-secondary)] cursor-pointer">
+                                                            Bottom End (Offset 16)
+                                                        </button>
+                                                    </x-dropdown.trigger>
+                                                    <x-dropdown.content width="sm">
+                                                        <x-dropdown.item>Action 1</x-dropdown.item>
+                                                        <x-dropdown.item>Action 2</x-dropdown.item>
+                                                    </x-dropdown.content>
+                                                </x-dropdown>
+
+                                                <x-dropdown side="right" align="center">
+                                                    <x-dropdown.trigger>
+                                                        <button class="px-3 py-1.5 text-xs font-semibold bg-white border border-[color:var(--color-border)] rounded-md hover:bg-[color:var(--color-surface-secondary)] cursor-pointer">
+                                                            Right Center
+                                                        </button>
+                                                    </x-dropdown.trigger>
+                                                    <x-dropdown.content width="sm">
+                                                        <x-dropdown.item>Action 1</x-dropdown.item>
+                                                        <x-dropdown.item>Action 2</x-dropdown.item>
+                                                    </x-dropdown.content>
+                                                </x-dropdown>
+
+                                                <x-dropdown side="bottom" align="start">
+                                                    <x-dropdown.trigger>
+                                                        <button class="px-3 py-1.5 text-xs font-semibold bg-white border border-[color:var(--color-border)] rounded-md hover:bg-[color:var(--color-surface-secondary)] cursor-pointer">
+                                                            Width fit trigger width
+                                                        </button>
+                                                    </x-dropdown.trigger>
+                                                    <x-dropdown.content width="fit">
+                                                        <x-dropdown.item>Exactly trigger size</x-dropdown.item>
+                                                    </x-dropdown.content>
+                                                </x-dropdown>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        {{-- Label Wrapping vs Truncation --}}
+                                        <x-showcase.preview title="Label Wrapping vs Truncation" code="&lt;x-dropdown.item :truncate=&quot;false&quot;&gt;" id="preview-dropdown-wrapping" :noClip="true">
+                                            <div class="flex items-center gap-4">
+                                                <x-dropdown>
+                                                    <x-dropdown.trigger>
+                                                        <button class="px-4 py-2 text-sm font-semibold bg-white border border-[color:var(--color-border)] rounded-lg shadow-sm hover:bg-[color:var(--color-surface-secondary)] cursor-pointer">
+                                                            Show Wrap vs Truncate
+                                                        </button>
+                                                    </x-dropdown.trigger>
+                                                    <x-dropdown.content width="sm">
+                                                        <x-dropdown.item :truncate="true">
+                                                            Very long label option that will definitely truncate in default sizing
+                                                        </x-dropdown.item>
+                                                        <x-dropdown.divider />
+                                                        <x-dropdown.item :truncate="false">
+                                                            Very long label option that will wrap to multiple lines correctly
+                                                        </x-dropdown.item>
+                                                    </x-dropdown.content>
+                                                </x-dropdown>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        {{-- Table Row Actions --}}
+                                        <x-showcase.preview title="Table Row Actions Integrations" code="&lt;x-table.row&gt; &lt;x-dropdown&gt;..." id="preview-dropdown-table-actions" :noClip="true">
+                                            <div class="w-full overflow-x-auto border border-[color:var(--color-border,#e5e7eb)] rounded-xl">
+                                                <table class="w-full text-left text-sm whitespace-nowrap">
+                                                    <thead class="bg-[color:var(--color-surface-secondary,#f9fafb)] text-[color:var(--color-text-muted,#6b7280)] border-b border-[color:var(--color-border,#e5e7eb)]">
+                                                        <tr>
+                                                            <th class="px-6 py-3 font-semibold">User</th>
+                                                            <th class="px-6 py-3 font-semibold">Role</th>
+                                                            <th class="px-6 py-3 font-semibold text-right">Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody class="divide-y divide-[color:var(--color-border,#e5e7eb)]">
+                                                        <tr>
+                                                            <td class="px-6 py-4 font-medium text-[color:var(--color-text-primary,#111827)]">Saurav Kumar</td>
+                                                            <td class="px-6 py-4 text-[color:var(--color-text-secondary,#4b5563)]">Administrator</td>
+                                                            <td class="px-6 py-4 text-right">
+                                                                <x-dropdown side="left" align="start">
+                                                                    <x-dropdown.trigger>
+                                                                        <button class="p-1.5 rounded-lg border border-[color:var(--color-border,#e5e7eb)] bg-white text-[color:var(--color-text-muted)] hover:text-[color:var(--color-text-primary)] cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-[color:var(--color-primary-500)]">
+                                                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" /></svg>
+                                                                        </button>
+                                                                    </x-dropdown.trigger>
+                                                                    <x-dropdown.content width="sm">
+                                                                        <x-dropdown.item>Edit Profile</x-dropdown.item>
+                                                                        <x-dropdown.item>Change Role</x-dropdown.item>
+                                                                        <x-dropdown.divider />
+                                                                        <x-dropdown.item variant="danger">Remove User</x-dropdown.item>
+                                                                    </x-dropdown.content>
+                                                                </x-dropdown>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </x-showcase.preview>
+                                    </div>
+                                </section>
+                            @endif
+
                         </div>
                     @endif
 

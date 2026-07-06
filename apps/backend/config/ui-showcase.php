@@ -48,6 +48,7 @@ return [
             'Tabs' => 'tabs',
             'Pagination' => 'pagination',
             'Breadcrumb' => 'breadcrumb',
+            'Dropdown' => 'dropdown',
         ],
         'Feedback' => [
             'Alert' => 'alert',
