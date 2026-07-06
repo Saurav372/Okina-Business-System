@@ -156,6 +156,134 @@ Alpine.data('drawer', (config = {}) => ({
     closeDrawer() { this.closeOverlay(); }
 }));
 
+Alpine.data('toastContainer', () => ({
+    toasts: [],
+    lastMessage: '',
+    lastType: '',
+    lastMessageTime: 0,
+    maxVisible: 5,
+    animationFrameId: null,
+    lastTime: 0,
+
+    init() {
+        // Event listeners are bound on window inside index.blade.php
+    },
+
+    add(payload) {
+        // Scoped duplicate suppression check
+        const type = payload.type || 'info';
+        if (payload.message === this.lastMessage && type === this.lastType && (Date.now() - this.lastMessageTime) < 500) {
+            return;
+        }
+        this.lastMessage = payload.message;
+        this.lastType = type;
+        this.lastMessageTime = Date.now();
+
+        // Unique ID generation with timestamp fallback
+        const id = payload.id || (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function' 
+            ? crypto.randomUUID() 
+            : 'toast_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9));
+
+        const duration = payload.duration !== undefined ? payload.duration : 5000;
+        const item = {
+            id,
+            message: payload.message,
+            type,
+            duration,
+            remaining: duration,
+            progress: 100,
+            paused: false,
+            dismissing: false
+        };
+
+        // Maintain visibility limit checking non-dismissing toasts
+        const activeToasts = this.toasts.filter(t => !t.dismissing);
+        if (activeToasts.length >= this.maxVisible) {
+            const oldest = activeToasts[activeToasts.length - 1];
+            if (oldest) this.dismiss(oldest.id);
+        }
+
+        this.toasts.unshift(item);
+
+        // Start animation frame progress loop if active
+        if (duration > 0 && !this.animationFrameId) {
+            this.lastTime = performance.now();
+            this.startAnimationLoop();
+        }
+    },
+
+    dismiss(id) {
+        const toast = this.toasts.find(t => t.id === id);
+        if (toast && !toast.dismissing) {
+            toast.dismissing = true;
+            setTimeout(() => {
+                this.destroy(id);
+            }, 150); // duration-150 matching leave transition timing
+        }
+    },
+
+    destroy(id) {
+        this.toasts = this.toasts.filter(t => t.id !== id);
+
+        // Cancel frame loop if no timed, active toasts remain
+        const activeTimed = this.toasts.filter(t => t.duration > 0 && !t.dismissing);
+        if (activeTimed.length === 0 && this.animationFrameId) {
+            cancelAnimationFrame(this.animationFrameId);
+            this.animationFrameId = null;
+        }
+    },
+
+    clear() {
+        this.toasts.forEach(t => this.dismiss(t.id));
+    },
+
+    pause(id) {
+        const toast = this.toasts.find(t => t.id === id);
+        if (toast) toast.paused = true;
+    },
+
+    resume(id) {
+        const toast = this.toasts.find(t => t.id === id);
+        if (toast) toast.paused = false;
+    },
+
+    startAnimationLoop() {
+        const loop = (now) => {
+            const activeTimed = this.toasts.filter(t => t.duration > 0 && !t.dismissing);
+            if (activeTimed.length === 0) {
+                this.animationFrameId = null;
+                return;
+            }
+
+            const delta = now - this.lastTime;
+            this.lastTime = now;
+
+            for (const toast of this.toasts) {
+                if (toast.paused || toast.duration <= 0 || toast.dismissing) {
+                    continue;
+                }
+                toast.remaining = Math.max(0, toast.remaining - delta);
+                toast.progress = Math.max(0, Math.min(100, (toast.remaining / toast.duration) * 100));
+
+                if (toast.remaining <= 0) {
+                    this.dismiss(toast.id);
+                }
+            }
+
+            this.animationFrameId = requestAnimationFrame(loop);
+        };
+
+        this.animationFrameId = requestAnimationFrame(loop);
+    },
+
+    destroy() {
+        if (this.animationFrameId) {
+            cancelAnimationFrame(this.animationFrameId);
+            this.animationFrameId = null;
+        }
+    }
+}));
+
 Alpine.start();
 
 /**
@@ -166,4 +294,19 @@ window.openModal = id => window.dispatchEvent(new CustomEvent('open-overlay', { 
 window.closeModal = id => window.dispatchEvent(new CustomEvent('close-overlay', { detail: { id, type: 'modal' } }));
 window.openDrawer = id => window.dispatchEvent(new CustomEvent('open-overlay', { detail: { id, type: 'drawer' } }));
 window.closeDrawer = id => window.dispatchEvent(new CustomEvent('close-overlay', { detail: { id, type: 'drawer' } }));
+
+/**
+ * Programmatic toast helper functions.
+ * Accepts string messages or payload configuration objects.
+ */
+window.toast = payload => {
+    const raw = typeof payload === 'string' ? { message: payload } : payload;
+    const id = raw.id || (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function' 
+        ? crypto.randomUUID() 
+        : 'toast_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9));
+    window.dispatchEvent(new CustomEvent('add-toast', { detail: { ...raw, id } }));
+    return id;
+};
+window.toast.dismiss = id => window.dispatchEvent(new CustomEvent('dismiss-toast', { detail: id }));
+window.toast.clear = () => window.dispatchEvent(new CustomEvent('clear-toasts'));
 

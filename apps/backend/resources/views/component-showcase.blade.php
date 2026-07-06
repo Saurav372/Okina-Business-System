@@ -1928,6 +1928,128 @@ HTML;
                                     </div>
                                 </section>
                             @endif
+
+                            {{-- Toast --}}
+                            @if(isset($categories['Feedback']['Toast']))
+                                @php
+                                    $toastBasicCode = <<<'HTML'
+<div class="flex flex-wrap gap-3">
+    <button 
+        onclick="window.toast({ message: 'Success! Your settings have been saved.', type: 'success' })" 
+        class="px-4 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition"
+    >
+        Trigger Success Toast
+    </button>
+    <button 
+        onclick="window.toast({ message: 'An error occurred while saving user data.', type: 'danger' })" 
+        class="px-4 py-2 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition"
+    >
+        Trigger Error Toast
+    </button>
+    <button 
+        onclick="window.toast({ message: 'Warning: Storage quota is reaching 90% capacity.', type: 'warning' })" 
+        class="px-4 py-2 text-sm font-semibold text-white bg-amber-500 hover:bg-amber-600 rounded-lg transition"
+    >
+        Trigger Warning Toast
+    </button>
+    <button 
+        onclick="window.toast({ message: 'Info: System will undergo scheduled maintenance at 02:00 AM.', type: 'info' })" 
+        class="px-4 py-2 text-sm font-semibold text-white bg-sky-600 hover:bg-sky-700 rounded-lg transition"
+    >
+        Trigger Info Toast
+    </button>
+</div>
+HTML;
+
+                                    $toastDurationsCode = <<<'HTML'
+<div class="flex flex-wrap gap-3">
+    <button 
+        onclick="window.toast({ message: 'This notification will dismiss in 2 seconds.', duration: 2000 })" 
+        class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition"
+    >
+        2-Second Fast Toast
+    </button>
+    <button 
+        onclick="window.toast({ message: 'This is a persistent alert. You must manually dismiss it.', duration: 0, type: 'warning' })" 
+        class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition"
+    >
+        Persistent Toast (duration: 0)
+    </button>
+    <button 
+        onclick="window.toast.clear()" 
+        class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-rose-50 text-rose-700 hover:bg-rose-100 transition"
+    >
+        Clear All Toasts
+    </button>
+</div>
+HTML;
+                                @endphp
+
+                                <section id="toast" class="js-section mb-12">
+                                    <div class="border-b border-[color:var(--color-border)] pb-4 mb-6">
+                                        <h2 class="text-2xl font-bold text-[color:var(--color-text-primary)]">Toast Notification</h2>
+                                        <p class="text-sm text-[color:var(--color-text-muted)] mt-1">
+                                            Premium stacked toast alerts managed by Alpine.js. Supports custom self-dismiss timings, click to dismiss, pause-on-hover countdown indicators, and type variants.
+                                        </p>
+                                    </div>
+
+                                    <div class="space-y-8">
+                                        <!-- Basic Status Triggers -->
+                                        <x-showcase.preview title="Status Type Triggers" :code="$toastBasicCode" id="preview-toast-basic">
+                                            <div class="flex flex-wrap gap-3">
+                                                <button 
+                                                    onclick="window.toast({ message: 'Success! Your settings have been saved.', type: 'success' })" 
+                                                    class="px-4 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition"
+                                                >
+                                                    Trigger Success Toast
+                                                </button>
+                                                <button 
+                                                    onclick="window.toast({ message: 'An error occurred while saving user data.', type: 'danger' })" 
+                                                    class="px-4 py-2 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition"
+                                                >
+                                                    Trigger Error Toast
+                                                </button>
+                                                <button 
+                                                    onclick="window.toast({ message: 'Warning: Storage quota is reaching 90% capacity.', type: 'warning' })" 
+                                                    class="px-4 py-2 text-sm font-semibold text-white bg-amber-500 hover:bg-amber-600 rounded-lg transition"
+                                                >
+                                                    Trigger Warning Toast
+                                                </button>
+                                                <button 
+                                                    onclick="window.toast({ message: 'Info: System will undergo scheduled maintenance at 02:00 AM.', type: 'info' })" 
+                                                    class="px-4 py-2 text-sm font-semibold text-white bg-sky-600 hover:bg-sky-700 rounded-lg transition"
+                                                >
+                                                    Trigger Info Toast
+                                                </button>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Custom Durations -->
+                                        <x-showcase.preview title="Custom Durations & Controls" :code="$toastDurationsCode" id="preview-toast-durations">
+                                            <div class="flex flex-wrap gap-3">
+                                                <button 
+                                                    onclick="window.toast({ message: 'This notification will dismiss in 2 seconds.', duration: 2000 })" 
+                                                    class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition"
+                                                >
+                                                    2-Second Fast Toast
+                                                </button>
+                                                <button 
+                                                    onclick="window.toast({ message: 'This is a persistent alert. You must manually dismiss it.', duration: 0, type: 'warning' })" 
+                                                    class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition"
+                                                >
+                                                    Persistent Toast (duration: 0)
+                                                </button>
+                                                <button 
+                                                    onclick="window.toast.clear()" 
+                                                    class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-rose-50 text-rose-700 hover:bg-rose-100 transition"
+                                                >
+                                                    Clear All Toasts
+                                                </button>
+                                            </div>
+                                        </x-showcase.preview>
+                                    </div>
+                                </section>
+                            @endif
                         </div>
                     @endif
 

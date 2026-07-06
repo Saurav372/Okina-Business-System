@@ -11,5 +11,6 @@
 </head>
 <body class="bg-surface-50 text-surface-900 font-sans">
     {{ $slot }}
+    <x-toast />
 </body>
 </html>
