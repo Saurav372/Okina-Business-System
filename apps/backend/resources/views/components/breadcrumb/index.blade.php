@@ -10,6 +10,7 @@
     .ui-bc-nav {
         display: block;
         width: 100%;
+        min-width: 0;
         overflow-x: auto;
         scrollbar-width: none;
         -ms-overflow-style: none;
