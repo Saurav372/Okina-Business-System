@@ -52,6 +52,7 @@ return [
             'Stepper' => 'stepper',
         ],
         'Feedback' => [
+            'Modal' => 'modal',
             'Alert' => 'alert',
             'Toast' => 'toast',
             'Spinner' => 'spinner',
