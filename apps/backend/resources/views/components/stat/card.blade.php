@@ -35,7 +35,7 @@
     ]) }}
 >
     <div class="flex items-start justify-between gap-4">
-        <div class="flex flex-col flex-1">
+        <div class="flex flex-col flex-1 min-w-0">
             <span class="text-[15px] font-semibold text-[color:var(--color-neutral-700)] line-clamp-2 min-h-[2.75rem] leading-snug pr-2" title="{{ $label }}">
                 {{ $label }}
             </span>
