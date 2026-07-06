@@ -43,12 +43,52 @@
     @media (max-width: 640px) {
         .bc-item-inactive { max-width: 80px; }
     }
+
+    .ui-bc-dropdown {
+        min-width: 180px;
+        background: var(--color-surface, #fff);
+        border: 1px solid var(--color-border, #e5e7eb);
+        border-radius: 10px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, .1);
+        padding: 4px 0;
+    }
+    .ui-bc-dropdown-link {
+        display: block;
+        padding: 8px 16px;
+        font-size: 0.875rem;
+        white-space: nowrap;
+        text-decoration: none;
+        color: var(--color-text-secondary, #4b5563);
+        transition: background 80ms;
+    }
+    .ui-bc-dropdown-link:hover {
+        background: var(--color-surface-secondary, #f9fafb);
+    }
+    .ui-bc-ell-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2rem;
+        height: 1.5rem;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        cursor: pointer;
+        border: 1px solid var(--color-border, #e5e7eb);
+        background: var(--color-surface-secondary, #f3f4f6);
+        color: var(--color-text-muted, #6b7280);
+        transition: all 120ms;
+    }
+    .ui-bc-ell-btn:hover {
+        background: var(--color-neutral-200, #e5e7eb);
+    }
 </style>
 
 <nav
     x-data="{
         open: false,
         collapsed: [],
+        dropdownStyle: {},
 
         init() {
             /* Wait for full layout before measuring */
@@ -56,6 +96,12 @@
                 this.setup();
                 new ResizeObserver(() => this.recalc()).observe(this.$el);
             }, 50);
+
+            this.$watch('open', value => {
+                if (value) {
+                    this.positionDropdown();
+                }
+            });
         },
 
         setup() {
@@ -114,11 +160,29 @@
                 ell.style.display = 'none';
             }
 
-            /* ── 6. Scroll to reveal active item ── */
-            nav.scrollLeft = nav.scrollWidth;
+            /* ── 6. Do NOT auto scroll to end on load so Products and ... remain visible ── */
+            nav.scrollLeft = 0;
+
+            if (this.open) {
+                this.positionDropdown();
+            }
+        },
+
+        positionDropdown() {
+            const btn = this.$refs.btn;
+            if (!btn) return;
+            const rect = btn.getBoundingClientRect();
+            this.dropdownStyle = {
+                position: 'fixed',
+                top: `${rect.bottom + 6}px`,
+                left: `${rect.left}px`,
+                zIndex: '9999'
+            };
         }
     }"
     @click.outside="open = false"
+    @scroll.window="open = false"
+    @resize.window="open = false"
     aria-label="Breadcrumb"
     class="ui-bc-nav"
     {{ $attributes }}
@@ -130,33 +194,32 @@
             <div style="position:relative">
                 {{-- Button --}}
                 <button
+                    x-ref="btn"
                     type="button"
                     @click.stop="open = !open"
                     :aria-expanded="String(open)"
                     aria-label="Show hidden pages"
-                    style="display:inline-flex;align-items:center;justify-content:center;width:2rem;height:1.5rem;border-radius:4px;font-size:0.7rem;font-weight:700;cursor:pointer;border:1px solid var(--color-border,#e5e7eb);background:var(--color-surface-secondary,#f3f4f6);color:var(--color-text-muted,#6b7280);transition:all 120ms"
-                    onmouseenter="this.style.background='var(--color-neutral-200,#e5e7eb)'"
-                    onmouseleave="this.style.background='var(--color-surface-secondary,#f3f4f6)'"
+                    class="ui-bc-ell-btn"
                 >···</button>
 
                 {{-- Dropdown --}}
                 <div
                     x-show="open"
+                    :style="dropdownStyle"
                     x-transition:enter="transition ease-out duration-100"
                     x-transition:enter-start="opacity-0 scale-95"
                     x-transition:enter-end="opacity-100 scale-100"
                     x-transition:leave="transition ease-in duration-75"
                     x-transition:leave-start="opacity-100 scale-100"
                     x-transition:leave-end="opacity-0 scale-95"
-                    style="display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:200;min-width:180px;background:var(--color-surface,#fff);border:1px solid var(--color-border,#e5e7eb);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.1);padding:4px 0"
+                    class="ui-bc-dropdown"
+                    style="display:none;"
                 >
                     <template x-for="(item, i) in collapsed" :key="i">
                         <a
                             :href="item.href"
                             x-text="item.label"
-                            style="display:block;padding:8px 16px;font-size:0.875rem;white-space:nowrap;text-decoration:none;color:var(--color-text-secondary,#4b5563);transition:background 80ms"
-                            onmouseenter="this.style.background='var(--color-surface-secondary,#f9fafb)'"
-                            onmouseleave="this.style.background=''"
+                            class="ui-bc-dropdown-link"
                         ></a>
                     </template>
                 </div>
