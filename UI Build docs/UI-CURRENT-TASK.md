@@ -4,23 +4,21 @@
 Feedback & Overlay (U1.4)
 
 ## Current Subtask
-U1.4.3 Toast / Alert
+U1.4.4 SkeletonLoader
 
 ## Goal
-Build a premium, accessible, and responsive Toast/Alert notification system managed by Alpine.js, supporting stacked flash alerts, dynamic type variants (success, warning, danger, info), custom timer self-dismissals, manual close buttons, and programmatic trigger helpers.
+Build a customizable, fluid placeholder SkeletonLoader system (`<x-skeleton>` or similar) with pulse/shimmer animators, shape configurations (lines, circles, buttons, grids), size modifiers, and pre-built composite placeholders (card layouts, list feeds, text summaries) representing loading UI shapes for async data elements.
 
 ## Dependencies
 **Depends On:**
 - U0.5 (Layout Templates)
 
 ## Required Deliverables
-- Reusable Toast alert components.
-- Feeds layout stack (e.g. top-right or bottom-right positioning viewport container).
-- Dynamic visual styles matching status tokens (Success, Warning, Danger, Info).
-- Automatic self-dismiss countdown timer logic with configurable intervals.
-- Keyboard support: dismissible close button focus traps and polite ARIA status announcements.
-- Global trigger utility: `window.toast({ message, type, duration })` for simple layout notifications.
-- Showcase integration in the components playground at `/admin/components#toast`.
+- Reusable Skeleton component supporting custom shapes (text line, circle avatar, rectangle card, custom grid block).
+- Smooth CSS shimmer and pulsing animation tokens.
+- Layout configurations supporting composite loaders (e.g. Card loaders with circular profile pic and two textual lines, table loaders with rows).
+- Accessibility attributes masking placeholder layouts (`aria-hidden="true"`, `role="presentation"`).
+- Showcase integration in the components playground at `/admin/components#skeleton`.
 
 ## Completed prerequisites
 - U0.1 Design System & Tokens
@@ -28,3 +26,4 @@ Build a premium, accessible, and responsive Toast/Alert notification system mana
 - U1.3 Navigation Milestones (Tabs, Breadcrumb, Dropdown, Stepper)
 - U1.4.1 Modal
 - U1.4.2 Drawer
+- U1.4.3 Toast / Alert
