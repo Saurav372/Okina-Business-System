@@ -65,7 +65,7 @@ Detailed validation for each subtask is maintained in `UI-SUBTASK-VALIDATION.md`
 | U1.3.4 | Stepper | Foundation | 1 | Multi-step wizard indicator. | U0.5 | Completed |
 | **U1.4** | **Feedback & Overlay** | Foundation | 1 | **Milestone** | U0.5 | Milestone |
 | U1.4.1 | Modal | Foundation | 1 | Dialog overlay. | U0.5 | Completed |
-| U1.4.2 | Drawer | Foundation | 1 | Side panel overlay. | U0.5 | Pending |
+| U1.4.2 | Drawer | Foundation | 1 | Side panel overlay. | U0.5 | Completed |
 | U1.4.3 | Toast / Alert | Foundation | 1 | Flash notifications. | U0.5 | Pending |
 | U1.4.4 | SkeletonLoader | Foundation | 1 | Placeholder loading state. | U0.5 | Pending |
 | **U1.5** | **Utility & Media** | Foundation | 1 | **Milestone** | U0.5 | Milestone |
