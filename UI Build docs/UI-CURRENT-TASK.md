@@ -1,32 +1,31 @@
 # Current Task
 
 ## Current Parent Task
-Navigation (U1.3)
+Feedback & Overlay (U1.4)
 
 ## Current Subtask
-U1.3.4 Stepper
+U1.4.1 Modal
 
 ## Goal
-Build a reusable stepper indicator component (`<x-stepper>`) to visually guide users through multi-step forms, wizards, or sequential processes, supporting both horizontal/vertical layouts, step status states (pending, current, completed, error), and fully accessible descriptions.
+Build a premium, responsive, and accessible modal dialog overlay component (`<x-modal>`) managed by Alpine.js to overlay contextual alerts, forms, or actions, supporting keyboard focus trap, click-outside-to-dismiss options, backdrop overlays, custom header/footer layout slots, size options (sm, md, lg, xl, full), and fluid exit/entry transition animations.
 
 ## Dependencies
 **Depends On:**
 - U0.5 (Layout Templates)
 
 ## Required Deliverables
-- `<x-stepper>` blade component (root container)
-- `<x-stepper.step>` blade component (individual step item)
-- Layout configurations (horizontal/vertical)
-- Status states handling:
-  - `completed` (renders a checkmark icon or custom content, styling with primary border/background)
-  - `current` (styled as active focused step)
-  - `pending` (styled as inactive muted step)
-  - `error` (styled with danger border/text indicating issues)
-- Fully accessible markup (ARIA step milestones, visual indicator screen-reader descriptions, and focusable elements where navigation is supported).
+- `<x-modal>` blade component (root overlay wrapping)
+- Backdrop overlay (`role="presentation"`) with standard backdrop blur/tint options.
+- Dynamic size presets (`size="sm"`, `'md'`, `'lg'`, `'xl'`, `'full'`).
+- Integrated Alpine.js directive variables for simple show/hide binding.
+- Advanced keyboard interaction:
+  - Dismiss modal using `Escape` key.
+  - Keyboard Focus Trap (tab navigation locked inside the modal boundaries when open).
+  - Return focus to the trigger element upon closing.
+- Semantic ARIA designations (`role="dialog"`, `aria-modal="true"`, `aria-labelledby`, `aria-describedby`).
+- Motion transitions matching design system tokens for backdrop opacity fade and dialog zoom scale.
 
 ## Completed prerequisites
 - U0.1 Design System & Tokens
 - U0.5 Layout Templates
-- U1.3.1 Tabs
-- U1.3.2 Breadcrumb
-- U1.3.3 Dropdown
+- U1.3 Navigation Milestones (Tabs, Breadcrumb, Dropdown, Stepper)
