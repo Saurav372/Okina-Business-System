@@ -61,7 +61,7 @@
 @endphp
 
 <li 
-    class="ui-step-item relative {{ $isVertical ? 'flex flex-row items-start gap-4 w-full' : 'flex-1 flex flex-row items-center gap-4 min-w-0' }}"
+    class="ui-step-item relative {{ $isVertical ? 'flex flex-row items-start gap-4 w-full' : 'flex-1 shrink-0 flex flex-row items-center gap-4' }}"
     @if($status === 'current') aria-current="step" @endif
 >
     <!-- Vertical Connector Line (positioned absolutely behind circle) -->
@@ -92,7 +92,7 @@
             aria-busy="true"
         @endif
         aria-label="{{ $ariaLabel }}"
-        {{ $attributes->merge(['class' => "flex items-start gap-3 rounded-lg outline-none transition-all duration-200 min-w-0" . 
+        {{ $attributes->merge(['class' => "flex items-start gap-3 rounded-lg outline-none transition-all duration-200 shrink-0 min-w-0" . 
             ($isInteractive ? " cursor-pointer focus-visible:ring-2 focus-visible:ring-[color:var(--color-primary-500)] focus-visible:ring-offset-2 hover:opacity-85" : " pointer-events-none") . 
             ($isDisabled ? " opacity-50" : "")
         ]) }}
@@ -138,7 +138,7 @@
         </div>
 
         <!-- Step Titles & Descriptions -->
-        <div class="flex flex-col text-left min-w-0 pt-0.5">
+        <div class="{{ $isVertical ? 'flex flex-col text-left pt-0.5' : 'flex flex-col text-left shrink-0 pt-0.5 max-w-[12rem] sm:max-w-[16rem]' }}">
             <span class="text-sm font-semibold text-[color:var(--color-text-primary)] leading-tight whitespace-normal break-words flex items-center gap-1.5">
                 {{ $title }}
                 @if(isset($badge))
@@ -157,7 +157,7 @@
     @if(!$isVertical)
         @if(!$total || $step < $total)
             <div 
-                class="ui-step-connector flex-1 h-[var(--step-line-size)] {{ $lineStyles }} rounded-full"
+                class="ui-step-connector flex-1 min-w-[2rem] h-[var(--step-line-size)] {{ $lineStyles }} rounded-full"
                 style="margin-inline-start: 0.5rem;"
             ></div>
         @endif
