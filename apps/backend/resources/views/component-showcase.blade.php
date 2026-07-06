@@ -431,6 +431,100 @@ HTML;
                                 </section>
                             @endif
 
+                            {{-- Breadcrumb --}}
+                            @if(isset($categories['Navigation']['Breadcrumb']))
+                                @php
+                                    $breadcrumbStandardCode = <<<'HTML'
+<x-breadcrumb>
+    <x-breadcrumb.item href="/">Home</x-breadcrumb.item>
+    <x-breadcrumb.item href="/products">Products</x-breadcrumb.item>
+    <x-breadcrumb.item href="/products/laptops">Laptops</x-breadcrumb.item>
+    <x-breadcrumb.item active>MacBook Pro</x-breadcrumb.item>
+</x-breadcrumb>
+HTML;
+
+                                    $breadcrumbIconsCode = <<<'HTML'
+<x-breadcrumb>
+    <x-breadcrumb.item href="/">
+        <x-slot:icon>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+        </x-slot:icon>
+        Home
+    </x-breadcrumb.item>
+    <x-breadcrumb.item href="/products">Products</x-breadcrumb.item>
+    <x-breadcrumb.item active>Accessories</x-breadcrumb.item>
+</x-breadcrumb>
+HTML;
+
+                                    $breadcrumbCustomSeparatorCode = <<<'HTML'
+<x-breadcrumb>
+    <x-slot:separator>
+        <span class="px-1 text-lg leading-none">&bull;</span>
+    </x-slot:separator>
+    <x-breadcrumb.item href="/">Home</x-breadcrumb.item>
+    <x-breadcrumb.item href="/orders">Orders</x-breadcrumb.item>
+    <x-breadcrumb.item active>Invoice #INV-2026-89</x-breadcrumb.item>
+</x-breadcrumb>
+HTML;
+
+                                    $breadcrumbLongCode = <<<'HTML'
+<x-breadcrumb>
+    <x-breadcrumb.item href="/">Products</x-breadcrumb.item>
+    <x-breadcrumb.item href="/products/gaming">Gaming</x-breadcrumb.item>
+    <x-breadcrumb.item href="/products/gaming/keyboards">Mechanical Keyboards</x-breadcrumb.item>
+    <x-breadcrumb.item active>HyperX Alloy Origins 65 RGB Aqua Switch Version with Custom Keycaps</x-breadcrumb.item>
+</x-breadcrumb>
+HTML;
+                                @endphp
+                                <section id="{{ $categories['Navigation']['Breadcrumb'] }}" class="js-section scroll-mt-8 mt-16">
+                                    <h2 class="text-2xl font-bold border-b border-[color:var(--color-border)] pb-4 mb-8">Breadcrumb</h2>
+                                    
+                                    <div class="space-y-8">
+                                        <x-showcase.preview title="Standard" :code="$breadcrumbStandardCode" id="preview-breadcrumb-standard" :noClip="true">
+                                            <x-breadcrumb>
+                                                <x-breadcrumb.item href="/">Home</x-breadcrumb.item>
+                                                <x-breadcrumb.item href="/products">Products</x-breadcrumb.item>
+                                                <x-breadcrumb.item href="/products/laptops">Laptops</x-breadcrumb.item>
+                                                <x-breadcrumb.item active>MacBook Pro</x-breadcrumb.item>
+                                            </x-breadcrumb>
+                                        </x-showcase.preview>
+
+                                        <x-showcase.preview title="With Icons" :code="$breadcrumbIconsCode" id="preview-breadcrumb-icons" :noClip="true">
+                                            <x-breadcrumb>
+                                                <x-breadcrumb.item href="/">
+                                                    <x-slot:icon>
+                                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+                                                    </x-slot:icon>
+                                                    Home
+                                                </x-breadcrumb.item>
+                                                <x-breadcrumb.item href="/products">Products</x-breadcrumb.item>
+                                                <x-breadcrumb.item active>Accessories</x-breadcrumb.item>
+                                            </x-breadcrumb>
+                                        </x-showcase.preview>
+
+                                        <x-showcase.preview title="Custom Separator" :code="$breadcrumbCustomSeparatorCode" id="preview-breadcrumb-custom-separator" :noClip="true">
+                                            <x-breadcrumb>
+                                                <x-slot:separator>
+                                                    <span class="px-1 text-lg leading-none">&bull;</span>
+                                                </x-slot:separator>
+                                                <x-breadcrumb.item href="/">Home</x-breadcrumb.item>
+                                                <x-breadcrumb.item href="/orders">Orders</x-breadcrumb.item>
+                                                <x-breadcrumb.item active>Invoice #INV-2026-89</x-breadcrumb.item>
+                                            </x-breadcrumb>
+                                        </x-showcase.preview>
+
+                                        <x-showcase.preview title="Long Breadcrumb (Truncation & Scrolling)" :code="$breadcrumbLongCode" id="preview-breadcrumb-long" defaultViewport="mobile" :noClip="true">
+                                            <x-breadcrumb>
+                                                <x-breadcrumb.item href="/">Products</x-breadcrumb.item>
+                                                <x-breadcrumb.item href="/products/gaming">Gaming</x-breadcrumb.item>
+                                                <x-breadcrumb.item href="/products/gaming/keyboards">Mechanical Keyboards</x-breadcrumb.item>
+                                                <x-breadcrumb.item active>HyperX Alloy Origins 65 RGB Aqua Switch Version with Custom Keycaps</x-breadcrumb.item>
+                                            </x-breadcrumb>
+                                        </x-showcase.preview>
+                                    </div>
+                                </section>
+                            @endif
+
                         </div>
                     @endif
 

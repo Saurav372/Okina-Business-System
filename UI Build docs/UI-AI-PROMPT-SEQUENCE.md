@@ -24,7 +24,7 @@ Examples:
 ✓ "Proceed with implementation"
 ✓ "Implement the approved plan"
 
-Without this approval, do not modify code.
+Without this approval, do not modify code or file
 
 If `UI Build docs/UI-CURRENT-TASK.md` says the current subtask is blocked or pending, do not implement it. Report the status and ask for approval.
 

@@ -4,6 +4,7 @@
     'code' => null,
     'defaultViewport' => 'desktop',
     'defaultTheme' => 'light',
+    'noClip' => false,
 ])
 
 @php
@@ -89,7 +90,7 @@
         </div>
 
         <!-- Preview Isolation Area -->
-        <div class="bg-[image:repeating-linear-gradient(45deg,#f4f6f8_25%,transparent_25%,transparent_75%,#f4f6f8_75%,#f4f6f8),repeating-linear-gradient(45deg,#f4f6f8_25%,#ffffff_25%,#ffffff_75%,#f4f6f8_75%,#f4f6f8)] bg-[length:20px_20px] bg-[position:0_0,10px_10px] p-6 sm:p-10 flex justify-center items-start overflow-hidden min-h-[300px]">
+        <div class="bg-[image:repeating-linear-gradient(45deg,#f4f6f8_25%,transparent_25%,transparent_75%,#f4f6f8_75%,#f4f6f8),repeating-linear-gradient(45deg,#f4f6f8_25%,#ffffff_25%,#ffffff_75%,#f4f6f8_75%,#f4f6f8)] bg-[length:20px_20px] bg-[position:0_0,10px_10px] p-6 sm:p-10 flex justify-center items-start min-h-[300px] {{ $noClip ? 'overflow-auto' : 'overflow-hidden' }}">
             <div class="js-preview-wrapper w-full transition-all duration-300 ease-out flex justify-center {{ $initialViewportClass }} {{ $defaultTheme === 'dark' ? 'dark' : '' }}">
                 <div class="w-full text-left dark:bg-[color:var(--color-neutral-900)] dark:text-white rounded-xl transition-colors">
                     {{ $slot }}
