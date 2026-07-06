@@ -99,3 +99,14 @@ Alpine.data('modal', (config = {}) => ({
 }));
 
 Alpine.start();
+
+/**
+ * Global helpers so templates can call window.openModal('id') directly
+ * as a fallback alongside Alpine's $dispatch event system.
+ */
+window.openModal = function (id) {
+    window.dispatchEvent(new CustomEvent('open-modal', { detail: id }));
+};
+window.closeModal = function (id) {
+    window.dispatchEvent(new CustomEvent('close-modal', { detail: id }));
+};

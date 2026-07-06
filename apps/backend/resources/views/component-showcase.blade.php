@@ -1094,7 +1094,7 @@ HTML;
                                 @php
                                     $modalBasicCode = <<<'HTML'
 <button 
-    @click="$dispatch('open-modal', 'modal-alert')"
+    onclick="window.openModal('modal-alert')"
     class="px-4 py-2 text-sm font-semibold text-white bg-[color:var(--color-primary-600)] rounded-lg hover:bg-[color:var(--color-primary-700)] transition-colors"
 >
     Open Alert Modal
@@ -1106,13 +1106,13 @@ HTML;
     </div>
     <x-slot:footer>
         <button 
-            @click="$dispatch('close-modal', 'modal-alert')"
+            onclick="window.closeModal('modal-alert')"
             class="px-4 py-2 text-sm font-semibold text-[color:var(--color-text-secondary)] hover:bg-[color:var(--color-surface-secondary)] rounded-lg transition-colors border border-[color:var(--color-border)]"
         >
             Cancel
         </button>
         <button 
-            @click="$dispatch('close-modal', 'modal-alert')"
+            onclick="window.closeModal('modal-alert')"
             class="px-4 py-2 text-sm font-semibold text-white bg-[color:var(--color-danger-600)] hover:bg-[color:var(--color-danger-700)] rounded-lg transition-colors"
         >
             Deactivate
@@ -1123,7 +1123,7 @@ HTML;
 
                                     $modalFormCode = <<<'HTML'
 <button 
-    @click="$dispatch('open-modal', 'modal-form')"
+    onclick="window.openModal('modal-form')"
     class="px-4 py-2 text-sm font-semibold text-[color:var(--color-text-secondary)] border border-[color:var(--color-border)] rounded-lg hover:bg-[color:var(--color-surface-secondary)] transition-colors bg-white"
 >
     Open Form Modal
@@ -1137,13 +1137,13 @@ HTML;
     </div>
     <x-slot:footer>
         <button 
-            @click="$dispatch('close-modal', 'modal-form')"
+            onclick="window.closeModal('modal-form')"
             class="px-4 py-2 text-sm font-semibold text-[color:var(--color-text-secondary)] hover:bg-[color:var(--color-surface-secondary)] rounded-lg transition-colors border"
         >
             Cancel
         </button>
         <button 
-            @click="$dispatch('close-modal', 'modal-form')"
+            onclick="window.closeModal('modal-form')"
             class="px-4 py-2 text-sm font-semibold text-white bg-[color:var(--color-primary-600)] hover:bg-[color:var(--color-primary-700)] rounded-lg transition-colors"
         >
             Save User
@@ -1154,7 +1154,7 @@ HTML;
 
                                     $modalScrollCode = <<<'HTML'
 <button 
-    @click="$dispatch('open-modal', 'modal-scroll')"
+    onclick="window.openModal('modal-scroll')"
     class="px-4 py-2 text-sm font-semibold text-[color:var(--color-text-secondary)] border border-[color:var(--color-border)] rounded-lg hover:bg-[color:var(--color-surface-secondary)] transition-colors bg-white"
 >
     Open Long Content Modal
@@ -1172,7 +1172,7 @@ HTML;
     </div>
     <x-slot:footer>
         <button 
-            @click="$dispatch('close-modal', 'modal-scroll')"
+            onclick="window.closeModal('modal-scroll')"
             class="px-4 py-2 text-sm font-semibold text-white bg-[color:var(--color-primary-600)] hover:bg-[color:var(--color-primary-700)] rounded-lg transition-colors w-full sm:w-auto"
         >
             I Accept
@@ -1183,12 +1183,12 @@ HTML;
 
                                     $modalSizesCode = <<<'HTML'
 <div class="flex flex-wrap gap-3">
-    <button @click="$dispatch('open-modal', 'modal-size-sm')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">Small (sm)</button>
-    <button @click="$dispatch('open-modal', 'modal-size-md')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">Medium (md)</button>
-    <button @click="$dispatch('open-modal', 'modal-size-lg')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">Large (lg)</button>
-    <button @click="$dispatch('open-modal', 'modal-size-xl')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">Extra Large (xl)</button>
-    <button @click="$dispatch('open-modal', 'modal-size-2xl')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">2xl</button>
-    <button @click="$dispatch('open-modal', 'modal-size-full')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">Full Screen</button>
+    <button onclick="window.openModal('modal-size-sm')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">Small (sm)</button>
+    <button onclick="window.openModal('modal-size-md')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">Medium (md)</button>
+    <button onclick="window.openModal('modal-size-lg')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">Large (lg)</button>
+    <button onclick="window.openModal('modal-size-xl')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">Extra Large (xl)</button>
+    <button onclick="window.openModal('modal-size-2xl')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">2xl</button>
+    <button onclick="window.openModal('modal-size-full')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">Full Screen</button>
 </div>
 
 <x-modal id="modal-size-sm" title="Small Preset" size="sm">
@@ -1209,14 +1209,14 @@ HTML;
 <x-modal id="modal-size-full" title="Full Screen Preset" size="full">
     <div class="h-full flex flex-col justify-between">
         <p>This is a full screen layout overlay dialog.</p>
-        <button @click="$dispatch('close-modal', 'modal-size-full')" class="px-4 py-2 text-white bg-[color:var(--color-primary-600)] rounded-lg">Close Full Screen</button>
+        <button onclick="window.closeModal('modal-size-full')" class="px-4 py-2 text-white bg-[color:var(--color-primary-600)] rounded-lg">Close Full Screen</button>
     </div>
 </x-modal>
 HTML;
 
                                     $modalPersistentCode = <<<'HTML'
 <button 
-    @click="$dispatch('open-modal', 'modal-persistent')"
+    onclick="window.openModal('modal-persistent')"
     class="px-4 py-2 text-sm font-semibold text-[color:var(--color-text-secondary)] border border-[color:var(--color-border)] rounded-lg hover:bg-[color:var(--color-surface-secondary)] transition-colors bg-white"
 >
     Open Persistent Modal
@@ -1228,7 +1228,7 @@ HTML;
     </div>
     <x-slot:footer>
         <button 
-            @click="$dispatch('close-modal', 'modal-persistent')"
+            onclick="window.closeModal('modal-persistent')"
             class="px-4 py-2 text-sm font-semibold text-white bg-[color:var(--color-primary-600)] hover:bg-[color:var(--color-primary-700)] rounded-lg transition-colors"
         >
             Confirm & Close
@@ -1239,7 +1239,7 @@ HTML;
 
                                     $modalBusyCode = <<<'HTML'
 <button 
-    @click="$dispatch('open-modal', 'modal-busy')"
+    onclick="window.openModal('modal-busy')"
     class="px-4 py-2 text-sm font-semibold text-[color:var(--color-text-secondary)] border border-[color:var(--color-border)] rounded-lg hover:bg-[color:var(--color-surface-secondary)] transition-colors bg-white"
 >
     Open Busy Modal
@@ -1266,7 +1266,7 @@ HTML;
 
                                     $modalStackedCode = <<<'HTML'
 <button 
-    @click="$dispatch('open-modal', 'modal-stack-a')"
+    onclick="window.openModal('modal-stack-a')"
     class="px-4 py-2 text-sm font-semibold text-[color:var(--color-text-secondary)] border border-[color:var(--color-border)] rounded-lg hover:bg-[color:var(--color-surface-secondary)] transition-colors bg-white"
 >
     Open Stacked Modals
@@ -1277,14 +1277,14 @@ HTML;
     <div class="space-y-4">
         <p>This is the first modal layer. Click the button below to launch a nested modal.</p>
         <button 
-            @click="$dispatch('open-modal', 'modal-stack-b')"
+            onclick="window.openModal('modal-stack-b')"
             class="px-4 py-2 text-sm font-semibold text-white bg-[color:var(--color-primary-600)] rounded-lg"
         >
             Launch Modal B
         </button>
     </div>
     <x-slot:footer>
-        <button @click="$dispatch('close-modal', 'modal-stack-a')" class="px-4 py-2 text-sm border rounded-lg">Close A</button>
+        <button onclick="window.closeModal('modal-stack-a')" class="px-4 py-2 text-sm border rounded-lg">Close A</button>
     </x-slot>
 </x-modal>
 
@@ -1295,7 +1295,7 @@ HTML;
     </div>
     <x-slot:footer>
         <button 
-            @click="$dispatch('close-modal', 'modal-stack-b')"
+            onclick="window.closeModal('modal-stack-b')"
             class="px-4 py-2 text-sm text-white bg-[color:var(--color-danger-600)] rounded-lg"
         >
             Close B
@@ -1318,7 +1318,7 @@ HTML;
                                         <x-showcase.preview title="Basic Alert Prompt" :code="$modalBasicCode" id="preview-modal-basic">
                                             <div class="flex items-center gap-3">
                                                 <button 
-                                                    @click="$dispatch('open-modal', 'modal-alert')"
+                                                    onclick="window.openModal('modal-alert')"
                                                     class="px-4 py-2 text-sm font-semibold text-white bg-[color:var(--color-primary-600)] rounded-lg hover:bg-[color:var(--color-primary-700)] transition-colors"
                                                 >
                                                     Open Alert Modal
@@ -1330,13 +1330,13 @@ HTML;
                                                     </div>
                                                     <x-slot:footer>
                                                         <button 
-                                                            @click="$dispatch('close-modal', 'modal-alert')"
+                                                            onclick="window.closeModal('modal-alert')"
                                                             class="px-4 py-2 text-sm font-semibold text-[color:var(--color-text-secondary)] hover:bg-[color:var(--color-surface-secondary)] rounded-lg transition-colors border border-[color:var(--color-border)]"
                                                         >
                                                             Cancel
                                                         </button>
                                                         <button 
-                                                            @click="$dispatch('close-modal', 'modal-alert')"
+                                                            onclick="window.closeModal('modal-alert')"
                                                             class="px-4 py-2 text-sm font-semibold text-white bg-[color:var(--color-danger-600)] hover:bg-[color:var(--color-danger-700)] rounded-lg transition-colors"
                                                         >
                                                             Deactivate
@@ -1350,7 +1350,7 @@ HTML;
                                         <x-showcase.preview title="Form Input Dialog (initialFocus)" :code="$modalFormCode" id="preview-modal-form">
                                             <div>
                                                 <button 
-                                                    @click="$dispatch('open-modal', 'modal-form')"
+                                                    onclick="window.openModal('modal-form')"
                                                     class="px-4 py-2 text-sm font-semibold text-[color:var(--color-text-secondary)] border border-[color:var(--color-border)] rounded-lg hover:bg-[color:var(--color-surface-secondary)] transition-colors bg-white"
                                                 >
                                                     Open Form Modal
@@ -1364,13 +1364,13 @@ HTML;
                                                     </div>
                                                     <x-slot:footer>
                                                         <button 
-                                                            @click="$dispatch('close-modal', 'modal-form')"
+                                                            onclick="window.closeModal('modal-form')"
                                                             class="px-4 py-2 text-sm font-semibold text-[color:var(--color-text-secondary)] hover:bg-[color:var(--color-surface-secondary)] rounded-lg transition-colors border"
                                                         >
                                                             Cancel
                                                         </button>
                                                         <button 
-                                                            @click="$dispatch('close-modal', 'modal-form')"
+                                                            onclick="window.closeModal('modal-form')"
                                                             class="px-4 py-2 text-sm font-semibold text-white bg-[color:var(--color-primary-600)] hover:bg-[color:var(--color-primary-700)] rounded-lg transition-colors"
                                                         >
                                                             Save User
@@ -1384,7 +1384,7 @@ HTML;
                                         <x-showcase.preview title="Scrollable Content" :code="$modalScrollCode" id="preview-modal-scroll">
                                             <div>
                                                 <button 
-                                                    @click="$dispatch('open-modal', 'modal-scroll')"
+                                                    onclick="window.openModal('modal-scroll')"
                                                     class="px-4 py-2 text-sm font-semibold text-[color:var(--color-text-secondary)] border border-[color:var(--color-border)] rounded-lg hover:bg-[color:var(--color-surface-secondary)] transition-colors bg-white"
                                                 >
                                                     Open Long Content Modal
@@ -1402,7 +1402,7 @@ HTML;
                                                     </div>
                                                     <x-slot:footer>
                                                         <button 
-                                                            @click="$dispatch('close-modal', 'modal-scroll')"
+                                                            onclick="window.closeModal('modal-scroll')"
                                                             class="px-4 py-2 text-sm font-semibold text-white bg-[color:var(--color-primary-600)] hover:bg-[color:var(--color-primary-700)] rounded-lg transition-colors w-full sm:w-auto"
                                                         >
                                                             I Accept
@@ -1416,12 +1416,12 @@ HTML;
                                         <x-showcase.preview title="Dimension Presets (sm, md, lg, xl, 2xl, full)" :code="$modalSizesCode" id="preview-modal-sizes">
                                             <div>
                                                 <div class="flex flex-wrap gap-3">
-                                                    <button @click="$dispatch('open-modal', 'modal-size-sm')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">Small (sm)</button>
-                                                    <button @click="$dispatch('open-modal', 'modal-size-md')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">Medium (md)</button>
-                                                    <button @click="$dispatch('open-modal', 'modal-size-lg')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">Large (lg)</button>
-                                                    <button @click="$dispatch('open-modal', 'modal-size-xl')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">Extra Large (xl)</button>
-                                                    <button @click="$dispatch('open-modal', 'modal-size-2xl')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">2xl</button>
-                                                    <button @click="$dispatch('open-modal', 'modal-size-full')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">Full Screen</button>
+                                                    <button onclick="window.openModal('modal-size-sm')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">Small (sm)</button>
+                                                    <button onclick="window.openModal('modal-size-md')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">Medium (md)</button>
+                                                    <button onclick="window.openModal('modal-size-lg')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">Large (lg)</button>
+                                                    <button onclick="window.openModal('modal-size-xl')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">Extra Large (xl)</button>
+                                                    <button onclick="window.openModal('modal-size-2xl')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">2xl</button>
+                                                    <button onclick="window.openModal('modal-size-full')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">Full Screen</button>
                                                 </div>
 
                                                 <x-modal id="modal-size-sm" title="Small Preset" size="sm">
@@ -1442,7 +1442,7 @@ HTML;
                                                 <x-modal id="modal-size-full" title="Full Screen Preset" size="full">
                                                     <div class="h-full flex flex-col justify-between p-6">
                                                         <p class="text-base font-semibold">This is a full screen layout overlay dialog.</p>
-                                                        <button @click="$dispatch('close-modal', 'modal-size-full')" class="mt-8 px-4 py-2 text-white bg-[color:var(--color-primary-600)] rounded-lg self-start">Close Full Screen</button>
+                                                        <button onclick="window.closeModal('modal-size-full')" class="mt-8 px-4 py-2 text-white bg-[color:var(--color-primary-600)] rounded-lg self-start">Close Full Screen</button>
                                                     </div>
                                                 </x-modal>
                                             </div>
@@ -1452,7 +1452,7 @@ HTML;
                                         <x-showcase.preview title="Persistent Mode" :code="$modalPersistentCode" id="preview-modal-persistent">
                                             <div>
                                                 <button 
-                                                    @click="$dispatch('open-modal', 'modal-persistent')"
+                                                    onclick="window.openModal('modal-persistent')"
                                                     class="px-4 py-2 text-sm font-semibold text-[color:var(--color-text-secondary)] border border-[color:var(--color-border)] rounded-lg hover:bg-[color:var(--color-surface-secondary)] transition-colors bg-white"
                                                 >
                                                     Open Persistent Modal
@@ -1464,7 +1464,7 @@ HTML;
                                                     </div>
                                                     <x-slot:footer>
                                                         <button 
-                                                            @click="$dispatch('close-modal', 'modal-persistent')"
+                                                            onclick="window.closeModal('modal-persistent')"
                                                             class="px-4 py-2 text-sm font-semibold text-white bg-[color:var(--color-primary-600)] hover:bg-[color:var(--color-primary-700)] rounded-lg transition-colors"
                                                         >
                                                             Confirm & Close
@@ -1478,7 +1478,7 @@ HTML;
                                         <x-showcase.preview title="Busy Loading State" :code="$modalBusyCode" id="preview-modal-busy">
                                             <div>
                                                 <button 
-                                                    @click="$dispatch('open-modal', 'modal-busy')"
+                                                    onclick="window.openModal('modal-busy')"
                                                     class="px-4 py-2 text-sm font-semibold text-[color:var(--color-text-secondary)] border border-[color:var(--color-border)] rounded-lg hover:bg-[color:var(--color-surface-secondary)] transition-colors bg-white"
                                                 >
                                                     Open Busy Modal
@@ -1508,7 +1508,7 @@ HTML;
                                         <x-showcase.preview title="Stacked/Nested Modals" :code="$modalStackedCode" id="preview-modal-stacked">
                                             <div>
                                                 <button 
-                                                    @click="$dispatch('open-modal', 'modal-stack-a')"
+                                                    onclick="window.openModal('modal-stack-a')"
                                                     class="px-4 py-2 text-sm font-semibold text-[color:var(--color-text-secondary)] border border-[color:var(--color-border)] rounded-lg hover:bg-[color:var(--color-surface-secondary)] transition-colors bg-white"
                                                 >
                                                     Open Stacked Modals
@@ -1519,14 +1519,14 @@ HTML;
                                                     <div class="space-y-4">
                                                         <p>This is the first modal layer. Click the button below to launch a nested modal.</p>
                                                         <button 
-                                                            @click="$dispatch('open-modal', 'modal-stack-b')"
+                                                            onclick="window.openModal('modal-stack-b')"
                                                             class="px-4 py-2 text-sm font-semibold text-white bg-[color:var(--color-primary-600)] rounded-lg"
                                                         >
                                                             Launch Modal B
                                                         </button>
                                                     </div>
                                                     <x-slot:footer>
-                                                        <button @click="$dispatch('close-modal', 'modal-stack-a')" class="px-4 py-2 text-sm border rounded-lg bg-white text-[color:var(--color-text-secondary)]">Close A</button>
+                                                        <button onclick="window.closeModal('modal-stack-a')" class="px-4 py-2 text-sm border rounded-lg bg-white text-[color:var(--color-text-secondary)]">Close A</button>
                                                     </x-slot>
                                                 </x-modal>
 
@@ -1537,7 +1537,7 @@ HTML;
                                                     </div>
                                                     <x-slot:footer>
                                                         <button 
-                                                            @click="$dispatch('close-modal', 'modal-stack-b')"
+                                                            onclick="window.closeModal('modal-stack-b')"
                                                             class="px-4 py-2 text-sm text-white bg-[color:var(--color-danger-600)] rounded-lg"
                                                         >
                                                             Close B
