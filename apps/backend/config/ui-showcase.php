@@ -53,6 +53,7 @@ return [
         ],
         'Feedback' => [
             'Modal' => 'modal',
+            'Drawer' => 'drawer',
             'Alert' => 'alert',
             'Toast' => 'toast',
             'Spinner' => 'spinner',

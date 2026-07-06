@@ -1549,6 +1549,385 @@ HTML;
                                     </div>
                                 </section>
                             @endif
+
+                            {{-- Drawer --}}
+                            @if(isset($categories['Feedback']['Drawer']))
+                                @php
+                                    $drawerBasicCode = <<<'HTML'
+<button 
+    onclick="window.openDrawer('drawer-filters')"
+    class="px-4 py-2 text-sm font-semibold text-white bg-[color:var(--color-primary-600)] rounded-lg hover:bg-[color:var(--color-primary-700)] transition-colors"
+>
+    Open Filter Drawer
+</button>
+
+<x-drawer id="drawer-filters" title="Filter Products" size="md">
+    <div class="space-y-4">
+        <div>
+            <label class="block text-xs font-semibold text-[color:var(--color-text-secondary)] mb-2">Category</label>
+            <x-form.select id="filter-category" name="category">
+                <option value="">All Categories</option>
+                <option value="electronics">Electronics</option>
+                <option value="apparel">Apparel</option>
+                <option value="home">Home & Kitchen</option>
+            </x-form.select>
+        </div>
+        <div>
+            <label class="block text-xs font-semibold text-[color:var(--color-text-secondary)] mb-2">Price Range</label>
+            <div class="grid grid-cols-2 gap-2">
+                <x-form.input id="filter-price-min" name="price_min" type="number" placeholder="Min" />
+                <x-form.input id="filter-price-max" name="price_max" type="number" placeholder="Max" />
+            </div>
+        </div>
+        <div>
+            <label class="block text-xs font-semibold text-[color:var(--color-text-secondary)] mb-2">Sort By</label>
+            <x-form.select id="filter-sort" name="sort">
+                <option value="newest">Newest Arrivals</option>
+                <option value="price_asc">Price: Low to High</option>
+                <option value="price_desc">Price: High to Low</option>
+            </x-form.select>
+        </div>
+    </div>
+    <x-slot:footer>
+        <button 
+            onclick="window.closeDrawer('drawer-filters')"
+            class="px-4 py-2 text-sm font-semibold text-[color:var(--color-text-secondary)] hover:bg-[color:var(--color-surface-secondary)] rounded-lg transition-colors border border-[color:var(--color-border)]"
+        >
+            Reset Filters
+        </button>
+        <button 
+            onclick="window.closeDrawer('drawer-filters')"
+            class="px-4 py-2 text-sm font-semibold text-white bg-[color:var(--color-primary-600)] hover:bg-[color:var(--color-primary-700)] rounded-lg transition-colors"
+        >
+            Apply Filters
+        </button>
+    </x-slot>
+</x-drawer>
+HTML;
+
+                                    $drawerLeftCode = <<<'HTML'
+<button 
+    onclick="window.openDrawer('drawer-nav')"
+    class="px-4 py-2 text-sm font-semibold text-[color:var(--color-text-secondary)] border border-[color:var(--color-border)] rounded-lg hover:bg-[color:var(--color-surface-secondary)] transition-colors bg-white"
+>
+    Open Left Side Navigation Drawer
+</button>
+
+<x-drawer id="drawer-nav" title="Navigation Menu" placement="left" size="sm">
+    <div class="space-y-4">
+        <p class="text-xs text-[color:var(--color-text-muted)]">This side drawer panel slides out from the left edge.</p>
+        <nav class="flex flex-col gap-2">
+            <a href="#" class="px-4 py-2.5 rounded-lg text-sm font-medium text-[color:var(--color-primary-700)] bg-[color:var(--color-primary-50)]">Dashboard</a>
+            <a href="#" class="px-4 py-2.5 rounded-lg text-sm font-medium text-[color:var(--color-text-secondary)] hover:bg-[color:var(--color-surface-secondary)]">Orders</a>
+            <a href="#" class="px-4 py-2.5 rounded-lg text-sm font-medium text-[color:var(--color-text-secondary)] hover:bg-[color:var(--color-surface-secondary)]">Products</a>
+            <a href="#" class="px-4 py-2.5 rounded-lg text-sm font-medium text-[color:var(--color-text-secondary)] hover:bg-[color:var(--color-surface-secondary)]">Analytics</a>
+            <a href="#" class="px-4 py-2.5 rounded-lg text-sm font-medium text-[color:var(--color-text-secondary)] hover:bg-[color:var(--color-surface-secondary)]">Settings</a>
+        </nav>
+    </div>
+</x-drawer>
+HTML;
+
+                                    $drawerSizesCode = <<<'HTML'
+<div class="flex flex-wrap gap-3">
+    <button onclick="window.openDrawer('drawer-size-sm')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">Small (sm)</button>
+    <button onclick="window.openDrawer('drawer-size-md')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">Medium (md)</button>
+    <button onclick="window.openDrawer('drawer-size-lg')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">Large (lg)</button>
+    <button onclick="window.openDrawer('drawer-size-xl')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">Extra Large (xl)</button>
+    <button onclick="window.openDrawer('drawer-size-2xl')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">2xl</button>
+    <button onclick="window.openDrawer('drawer-size-full')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">Full Screen</button>
+</div>
+
+<x-drawer id="drawer-size-sm" title="Small Side Drawer" size="sm">
+    <p>This is a small 384px width drawer.</p>
+</x-drawer>
+<x-drawer id="drawer-size-md" title="Medium Side Drawer" size="md">
+    <p>This is a medium 448px width drawer.</p>
+</x-drawer>
+<x-drawer id="drawer-size-lg" title="Large Side Drawer" size="lg">
+    <p>This is a large 512px width drawer.</p>
+</x-drawer>
+<x-drawer id="drawer-size-xl" title="Extra Large Side Drawer" size="xl">
+    <p>This is an extra large 576px width drawer.</p>
+</x-drawer>
+<x-drawer id="drawer-size-2xl" title="2XL Side Drawer" size="2xl">
+    <p>This is a 2xl 672px width drawer.</p>
+</x-drawer>
+<x-drawer id="drawer-size-full" title="Full Width Drawer" size="full">
+    <div class="flex flex-col justify-between h-full">
+        <p>This is a full width overlay drawer.</p>
+        <button onclick="window.closeDrawer('drawer-size-full')" class="px-4 py-2 bg-[color:var(--color-primary-600)] text-white rounded-lg self-start">Close Full Drawer</button>
+    </div>
+</x-drawer>
+HTML;
+
+                                    $drawerScrollCode = <<<'HTML'
+<button 
+    onclick="window.openDrawer('drawer-scroll')"
+    class="px-4 py-2 text-sm font-semibold text-[color:var(--color-text-secondary)] border border-[color:var(--color-border)] rounded-lg hover:bg-[color:var(--color-surface-secondary)] transition-colors bg-white"
+>
+    Open Scrollable Drawer
+</button>
+
+<x-drawer id="drawer-scroll" title="System Event Logs" size="lg">
+    <div class="space-y-4">
+        <p class="text-xs text-[color:var(--color-text-muted)]">This demonstrates the sticky header/footer layout. Scroll the logs to test.</p>
+        @for($i = 1; $i <= 30; $i++)
+            <div class="flex items-start gap-3 p-3 rounded-lg border bg-[color:var(--color-neutral-50)] text-xs">
+                <span class="px-1.5 py-0.5 rounded bg-[color:var(--color-neutral-200)] font-mono text-[10px] text-[color:var(--color-text-muted)]">14:02:{{ sprintf('%02d', $i) }}</span>
+                <div>
+                    <p class="font-semibold text-[color:var(--color-text-primary)]">User auth event log #{{ $i }}</p>
+                    <p class="text-[color:var(--color-text-muted)] mt-0.5">Calculated layout scroll position, active overlay index initialized.</p>
+                </div>
+            </div>
+        @endfor
+    </div>
+    <x-slot:footer>
+        <button onclick="window.closeDrawer('drawer-scroll')" class="px-4 py-2 text-sm font-semibold text-white bg-[color:var(--color-primary-600)] rounded-lg w-full">Dismiss Logs</button>
+    </x-slot>
+</x-drawer>
+HTML;
+
+                                    $drawerPersistentCode = <<<'HTML'
+<button 
+    onclick="window.openDrawer('drawer-persistent-a')"
+    class="px-4 py-2 text-sm font-semibold text-[color:var(--color-text-secondary)] border border-[color:var(--color-border)] rounded-lg hover:bg-[color:var(--color-surface-secondary)] transition-colors bg-white"
+>
+    Open Stacked Persistent Drawer
+</button>
+
+<!-- Drawer A: Persistent -->
+<x-drawer id="drawer-persistent-a" title="Drawer A (Persistent)" :persistent="true" size="lg">
+    <div class="space-y-4">
+        <p>This drawer is persistent and cannot be closed by Escape or clicking the backdrop overlay.</p>
+        <p class="text-xs text-[color:var(--color-text-muted)]">You can click below to launch a stacked modal on top of it. Escape will close ONLY that modal first.</p>
+        <button 
+            onclick="window.openModal('modal-confirm-drawer')"
+            class="px-4 py-2 text-sm font-semibold text-white bg-[color:var(--color-primary-600)] rounded-lg"
+        >
+            Launch Confirmation Modal
+        </button>
+    </div>
+    <x-slot:footer>
+        <button onclick="window.closeDrawer('drawer-persistent-a')" class="px-4 py-2 text-sm border rounded-lg bg-white">Cancel & Close</button>
+    </x-slot>
+</x-drawer>
+
+<!-- Stacked Modal -->
+<x-modal id="modal-confirm-drawer" title="Confirm Closure" size="sm">
+    <p>Are you sure you want to dismiss the stacked drawer overlay?</p>
+    <x-slot:footer>
+        <button onclick="window.closeModal('modal-confirm-drawer')" class="px-4 py-2 text-sm border rounded-lg bg-white">Go Back</button>
+        <button 
+            onclick="window.closeModal('modal-confirm-drawer'); window.closeDrawer('drawer-persistent-a')" 
+            class="px-4 py-2 text-sm text-white bg-[color:var(--color-danger-600)] rounded-lg"
+        >
+            Yes, Close All
+        </button>
+    </x-slot>
+</x-modal>
+HTML;
+                                @endphp
+
+                                <section id="drawer" class="js-section mb-12">
+                                    <div class="border-b border-[color:var(--color-border)] pb-4 mb-6">
+                                        <h2 class="text-2xl font-bold text-[color:var(--color-text-primary)]">Drawer</h2>
+                                        <p class="text-sm text-[color:var(--color-text-muted)] mt-1">
+                                            Premium slide-out side panel overlay screens managed by Alpine.js. Supports left/right edge transitions, scrollable body segments, stacked overlay depth resolution, and keyboard focus trap.
+                                        </p>
+                                    </div>
+
+                                    <div class="space-y-8">
+                                        <!-- Basic Right Drawer -->
+                                        <x-showcase.preview title="Standard Drawer (Right Placement)" :code="$drawerBasicCode" id="preview-drawer-basic">
+                                            <div class="flex items-center gap-3">
+                                                <button 
+                                                    onclick="window.openDrawer('drawer-filters')"
+                                                    class="px-4 py-2 text-sm font-semibold text-white bg-[color:var(--color-primary-600)] rounded-lg hover:bg-[color:var(--color-primary-700)] transition-colors"
+                                                >
+                                                    Open Filter Drawer
+                                                </button>
+                                                
+                                                <x-drawer id="drawer-filters" title="Filter Products" size="md">
+                                                    <div class="space-y-4">
+                                                        <div>
+                                                            <label class="block text-xs font-semibold text-[color:var(--color-text-secondary)] mb-2">Category</label>
+                                                            <x-form.select id="filter-category" name="category">
+                                                                <option value="">All Categories</option>
+                                                                <option value="electronics">Electronics</option>
+                                                                <option value="apparel">Apparel</option>
+                                                                <option value="home">Home & Kitchen</option>
+                                                            </x-form.select>
+                                                        </div>
+                                                        <div>
+                                                            <label class="block text-xs font-semibold text-[color:var(--color-text-secondary)] mb-2">Price Range</label>
+                                                            <div class="grid grid-cols-2 gap-2">
+                                                                <x-form.input id="filter-price-min" name="price_min" type="number" placeholder="Min" />
+                                                                <x-form.input id="filter-price-max" name="price_max" type="number" placeholder="Max" />
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <label class="block text-xs font-semibold text-[color:var(--color-text-secondary)] mb-2">Sort By</label>
+                                                            <x-form.select id="filter-sort" name="sort">
+                                                                <option value="newest">Newest Arrivals</option>
+                                                                <option value="price_asc">Price: Low to High</option>
+                                                                <option value="price_desc">Price: High to Low</option>
+                                                            </x-form.select>
+                                                        </div>
+                                                    </div>
+                                                    <x-slot:footer>
+                                                        <button 
+                                                            onclick="window.closeDrawer('drawer-filters')"
+                                                            class="px-4 py-2 text-sm font-semibold text-[color:var(--color-text-secondary)] hover:bg-[color:var(--color-surface-secondary)] rounded-lg transition-colors border border-[color:var(--color-border)]"
+                                                        >
+                                                            Reset Filters
+                                                        </button>
+                                                        <button 
+                                                            onclick="window.closeDrawer('drawer-filters')"
+                                                            class="px-4 py-2 text-sm font-semibold text-white bg-[color:var(--color-primary-600)] hover:bg-[color:var(--color-primary-700)] rounded-lg transition-colors"
+                                                        >
+                                                            Apply Filters
+                                                        </button>
+                                                    </x-slot>
+                                                </x-drawer>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Left Side Drawer -->
+                                        <x-showcase.preview title="Left Placement Navigation Drawer" :code="$drawerLeftCode" id="preview-drawer-left">
+                                            <div>
+                                                <button 
+                                                    onclick="window.openDrawer('drawer-nav')"
+                                                    class="px-4 py-2 text-sm font-semibold text-[color:var(--color-text-secondary)] border border-[color:var(--color-border)] rounded-lg hover:bg-[color:var(--color-surface-secondary)] transition-colors bg-white"
+                                                >
+                                                    Open Left Side Navigation Drawer
+                                                </button>
+
+                                                <x-drawer id="drawer-nav" title="Navigation Menu" placement="left" size="sm">
+                                                    <div class="space-y-4">
+                                                        <p class="text-xs text-[color:var(--color-text-muted)]">This side drawer panel slides out from the left edge.</p>
+                                                        <nav class="flex flex-col gap-2">
+                                                            <a href="#" class="px-4 py-2.5 rounded-lg text-sm font-medium text-[color:var(--color-primary-700)] bg-[color:var(--color-primary-50)]">Dashboard</a>
+                                                            <a href="#" class="px-4 py-2.5 rounded-lg text-sm font-medium text-[color:var(--color-text-secondary)] hover:bg-[color:var(--color-surface-secondary)]">Orders</a>
+                                                            <a href="#" class="px-4 py-2.5 rounded-lg text-sm font-medium text-[color:var(--color-text-secondary)] hover:bg-[color:var(--color-surface-secondary)]">Products</a>
+                                                            <a href="#" class="px-4 py-2.5 rounded-lg text-sm font-medium text-[color:var(--color-text-secondary)] hover:bg-[color:var(--color-surface-secondary)]">Analytics</a>
+                                                            <a href="#" class="px-4 py-2.5 rounded-lg text-sm font-medium text-[color:var(--color-text-secondary)] hover:bg-[color:var(--color-surface-secondary)]">Settings</a>
+                                                        </nav>
+                                                    </div>
+                                                </x-drawer>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Dimensions Presets -->
+                                        <x-showcase.preview title="Dimension Presets (sm, md, lg, xl, 2xl, full)" :code="$drawerSizesCode" id="preview-drawer-sizes">
+                                            <div>
+                                                <div class="flex flex-wrap gap-3">
+                                                    <button onclick="window.openDrawer('drawer-size-sm')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">Small (sm)</button>
+                                                    <button onclick="window.openDrawer('drawer-size-md')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">Medium (md)</button>
+                                                    <button onclick="window.openDrawer('drawer-size-lg')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">Large (lg)</button>
+                                                    <button onclick="window.openDrawer('drawer-size-xl')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">Extra Large (xl)</button>
+                                                    <button onclick="window.openDrawer('drawer-size-2xl')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">2xl</button>
+                                                    <button onclick="window.openDrawer('drawer-size-full')" class="px-3 py-1.5 text-xs font-semibold border rounded-lg bg-white hover:bg-neutral-50 transition">Full Screen</button>
+                                                </div>
+
+                                                <x-drawer id="drawer-size-sm" title="Small Side Drawer" size="sm">
+                                                    <p>This is a small 384px width drawer.</p>
+                                                </x-drawer>
+                                                <x-drawer id="drawer-size-md" title="Medium Side Drawer" size="md">
+                                                    <p>This is a medium 448px width drawer.</p>
+                                                </x-drawer>
+                                                <x-drawer id="drawer-size-lg" title="Large Side Drawer" size="lg">
+                                                    <p>This is a large 512px width drawer.</p>
+                                                </x-drawer>
+                                                <x-drawer id="drawer-size-xl" title="Extra Large Side Drawer" size="xl">
+                                                    <p>This is an extra large 576px width drawer.</p>
+                                                </x-drawer>
+                                                <x-drawer id="drawer-size-2xl" title="2XL Side Drawer" size="2xl">
+                                                    <p>This is a 2xl 672px width drawer.</p>
+                                                </x-drawer>
+                                                <x-drawer id="drawer-size-full" title="Full Width Drawer" size="full">
+                                                    <div class="flex flex-col justify-between h-full p-6">
+                                                        <p class="text-base font-semibold">This is a full width overlay drawer.</p>
+                                                        <button onclick="window.closeDrawer('drawer-size-full')" class="mt-8 px-4 py-2 bg-[color:var(--color-primary-600)] text-white rounded-lg self-start">Close Full Drawer</button>
+                                                    </div>
+                                                </x-drawer>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Sticky Layout & Scrollable content -->
+                                        <x-showcase.preview title="Sticky Layout with Scrollable Content" :code="$drawerScrollCode" id="preview-drawer-scroll">
+                                            <div>
+                                                <button 
+                                                    onclick="window.openDrawer('drawer-scroll')"
+                                                    class="px-4 py-2 text-sm font-semibold text-[color:var(--color-text-secondary)] border border-[color:var(--color-border)] rounded-lg hover:bg-[color:var(--color-surface-secondary)] transition-colors bg-white"
+                                                >
+                                                    Open Scrollable Drawer
+                                                </button>
+
+                                                <x-drawer id="drawer-scroll" title="System Event Logs" size="lg">
+                                                    <div class="space-y-4">
+                                                        <p class="text-xs text-[color:var(--color-text-muted)]">This demonstrates the sticky header/footer layout. Scroll the logs to test.</p>
+                                                        @for($i = 1; $i <= 30; $i++)
+                                                            <div class="flex items-start gap-3 p-3 rounded-lg border bg-[color:var(--color-neutral-50)] text-xs">
+                                                                <span class="px-1.5 py-0.5 rounded bg-[color:var(--color-neutral-200)] font-mono text-[10px] text-[color:var(--color-text-muted)]">14:02:{{ sprintf('%02d', $i) }}</span>
+                                                                <div>
+                                                                    <p class="font-semibold text-[color:var(--color-text-primary)]">User auth event log #{{ $i }}</p>
+                                                                    <p class="text-[color:var(--color-text-muted)] mt-0.5">Calculated layout scroll position, active overlay index initialized.</p>
+                                                                </div>
+                                                            </div>
+                                                        @endfor
+                                                    </div>
+                                                    <x-slot:footer>
+                                                        <button onclick="window.closeDrawer('drawer-scroll')" class="px-4 py-2 text-sm font-semibold text-white bg-[color:var(--color-primary-600)] rounded-lg w-full">Dismiss Logs</button>
+                                                    </x-slot>
+                                                </x-drawer>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Stacked / Persistent Drawer -->
+                                        <x-showcase.preview title="Persistent Mode & Stacked Overlays" :code="$drawerPersistentCode" id="preview-drawer-persistent">
+                                            <div>
+                                                <button 
+                                                    onclick="window.openDrawer('drawer-persistent-a')"
+                                                    class="px-4 py-2 text-sm font-semibold text-[color:var(--color-text-secondary)] border border-[color:var(--color-border)] rounded-lg hover:bg-[color:var(--color-surface-secondary)] transition-colors bg-white"
+                                                >
+                                                    Open Stacked Persistent Drawer
+                                                </button>
+
+                                                <!-- Drawer A: Persistent -->
+                                                <x-drawer id="drawer-persistent-a" title="Drawer A (Persistent)" :persistent="true" size="lg">
+                                                    <div class="space-y-4">
+                                                        <p>This drawer is persistent and cannot be closed by Escape or clicking the backdrop overlay.</p>
+                                                        <p class="text-xs text-[color:var(--color-text-muted)]">You can click below to launch a stacked modal on top of it. Escape will close ONLY that modal first.</p>
+                                                        <button 
+                                                            onclick="window.openModal('modal-confirm-drawer')"
+                                                            class="px-4 py-2 text-sm font-semibold text-white bg-[color:var(--color-primary-600)] rounded-lg"
+                                                        >
+                                                            Launch Confirmation Modal
+                                                        </button>
+                                                    </div>
+                                                    <x-slot:footer>
+                                                        <button onclick="window.closeDrawer('drawer-persistent-a')" class="px-4 py-2 text-sm border rounded-lg bg-white text-[color:var(--color-text-secondary)]">Cancel & Close</button>
+                                                    </x-slot>
+                                                </x-drawer>
+
+                                                <!-- Stacked Modal -->
+                                                <x-modal id="modal-confirm-drawer" title="Confirm Closure" size="sm">
+                                                    <p>Are you sure you want to dismiss the stacked drawer overlay?</p>
+                                                    <x-slot:footer>
+                                                        <button onclick="window.closeModal('modal-confirm-drawer')" class="px-4 py-2 text-sm border rounded-lg bg-white text-[color:var(--color-text-secondary)]">Go Back</button>
+                                                        <button 
+                                                            onclick="window.closeModal('modal-confirm-drawer'); window.closeDrawer('drawer-persistent-a')" 
+                                                            class="px-4 py-2 text-sm text-white bg-[color:var(--color-danger-600)] rounded-lg"
+                                                        >
+                                                            Yes, Close All
+                                                        </button>
+                                                    </x-slot>
+                                                </x-modal>
+                                            </div>
+                                        </x-showcase.preview>
+                                    </div>
+                                </section>
+                            @endif
                         </div>
                     @endif
 

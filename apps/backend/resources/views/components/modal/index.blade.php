@@ -31,8 +31,8 @@
         busy: {{ $busy ? 'true' : 'false' }},
         initialFocus: '{{ $initialFocus ?? '' }}'
     })"
-    @open-modal.window="if ($event.detail === id) openModal()"
-    @close-modal.window="if ($event.detail === id) closeModal()"
+    @open-overlay.window="if (getOverlayId($event.detail) === id) openModal()"
+    @close-overlay.window="if (getOverlayId($event.detail) === id) closeModal()"
     @keydown.escape.window="if (!persistent && !busy && isTopmost()) closeModal()"
 >
     <template x-teleport="body">
@@ -40,7 +40,7 @@
         <div
             x-show="open"
             x-cloak
-            class="fixed inset-0 z-[200] flex {{ $isFull ? '' : 'items-center justify-center p-4 sm:p-6' }} overflow-y-auto"
+            class="fixed inset-0 z-modal flex {{ $isFull ? '' : 'items-center justify-center p-4 sm:p-6' }} overflow-y-auto"
             @keydown.tab.prevent="focusTrap($event)"
             aria-live="assertive"
         >
@@ -48,10 +48,10 @@
             <div
                 class="fixed inset-0 bg-neutral-900/50 backdrop-blur-sm"
                 x-show="open"
-                x-transition:enter="ease-out duration-200"
+                x-transition:enter="ease-[var(--motion-ease)] duration-[var(--motion-normal)]"
                 x-transition:enter-start="opacity-0"
                 x-transition:enter-end="opacity-100"
-                x-transition:leave="ease-in duration-150"
+                x-transition:leave="ease-[var(--ease-in)] duration-[var(--duration-200)]"
                 x-transition:leave-start="opacity-100"
                 x-transition:leave-end="opacity-0"
                 @click="if (!persistent && !busy) closeModal()"
@@ -60,17 +60,17 @@
 
             {{-- Dialog Panel --}}
             <div
-                data-modal-id="{{ $id }}"
+                data-overlay-id="{{ $id }}"
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="{{ $titleId }}"
                 @if(filled($description)) aria-describedby="{{ $descId }}" @endif
                 class="relative {{ $sizeClass }} {{ $isFull ? 'min-h-full flex flex-col' : 'rounded-2xl' }} bg-white shadow-2xl ring-1 ring-black/5 overflow-hidden"
                 x-show="open"
-                x-transition:enter="ease-out duration-200"
+                x-transition:enter="ease-[var(--motion-ease)] duration-[var(--motion-normal)]"
                 x-transition:enter-start="opacity-0 scale-95 translate-y-2"
                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                x-transition:leave="ease-in duration-150"
+                x-transition:leave="ease-[var(--ease-in)] duration-[var(--duration-200)]"
                 x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                 x-transition:leave-end="opacity-0 scale-95 translate-y-2"
             >

@@ -3,10 +3,10 @@ import Alpine from 'alpinejs';
 window.Alpine = Alpine;
 
 /**
- * Modal component - registered as a named Alpine component
- * to avoid inline x-data attribute escaping issues.
+ * Shared overlay state factory function to avoid code duplication
+ * between modals, drawers, sheets, and popovers.
  */
-Alpine.data('modal', (config = {}) => ({
+const overlayBase = (config = {}) => ({
     open: false,
     lastActiveElement: null,
     id: config.id || '',
@@ -15,72 +15,117 @@ Alpine.data('modal', (config = {}) => ({
     initialFocus: config.initialFocus || '',
 
     init() {
-        // Ensure global stacks exist
-        window.activeModals = window.activeModals || 0;
-        window.modalStack = window.modalStack || [];
+        window.activeOverlays = window.activeOverlays || 0;
+        window.overlayStack = window.overlayStack || [];
     },
 
-    openModal() {
+    openOverlay() {
         this.open = true;
         this.lastActiveElement = document.activeElement;
 
-        // Increment lock counter + lock body scroll
-        window.activeModals = (window.activeModals || 0) + 1;
-        document.documentElement.style.overflow = 'hidden';
-
-        // Push to stack
-        if (!window.modalStack.includes(this.id)) {
-            window.modalStack.push(this.id);
+        // Prevent overlayStack duplicates
+        if (!window.overlayStack.includes(this.id)) {
+            window.overlayStack.push(this.id);
         }
 
-        // Focus the target element on next tick
+        // Lock body scroll with scrollbar padding compensation ONLY when opening the first overlay
+        if ((window.activeOverlays || 0) === 0) {
+            const originalPadding = window.getComputedStyle(document.body).paddingRight;
+            const parsedPadding = parseFloat(originalPadding) || 0;
+            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+
+            document.body.dataset.originalPadding = originalPadding;
+            document.body.dataset.originalOverflow = document.documentElement.style.overflow;
+            document.body.style.paddingRight = (parsedPadding + scrollbarWidth) + 'px';
+            document.documentElement.style.overflow = 'hidden';
+        }
+
+        window.activeOverlays = (window.activeOverlays || 0) + 1;
+
+        // Run focus loop fallback sequence on next tick
         this.$nextTick(() => {
             let target = null;
             if (this.initialFocus) {
                 target = document.getElementById(this.initialFocus);
             }
             if (!target) {
-                // Find first focusable in the teleported modal panel
-                const panel = document.querySelector('[data-modal-id="' + this.id + '"]');
+                const panel = document.querySelector('[data-overlay-id="' + this.id + '"]');
                 if (panel) {
                     const focusables = [...panel.querySelectorAll(
                         'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex="0"]'
                     )];
-                    target = focusables[0] || null;
+                    // 1. Autofocus elements
+                    target = focusables.find(el => el.hasAttribute('autofocus'));
+                    
+                    // 2. First input/select/textarea
+                    if (!target) {
+                        target = focusables.find(el => ['INPUT', 'SELECT', 'TEXTAREA'].includes(el.tagName));
+                    }
+                    
+                    // 3. First generic focusable
+                    if (!target) {
+                        target = focusables[0];
+                    }
+                    
+                    // 4. Panel container fallback
+                    if (!target) {
+                        target = panel;
+                    }
                 }
             }
-            if (target) target.focus();
+            if (target) {
+                if (target.hasAttribute('role') && !target.hasAttribute('tabindex')) {
+                    target.setAttribute('tabindex', '-1');
+                }
+                target.focus();
+            }
         });
     },
 
-    closeModal() {
+    closeOverlay() {
         if (this.busy) return;
         this.open = false;
 
-        // Decrement counter + unlock body scroll when no modals remain
-        window.activeModals = Math.max(0, (window.activeModals || 1) - 1);
-        if (window.activeModals === 0) {
-            document.documentElement.style.overflow = '';
+        // Remove from stack
+        window.overlayStack = (window.overlayStack || []).filter(x => x !== this.id);
+
+        // Decrement counter defensively
+        window.activeOverlays = Math.max(0, (window.activeOverlays || 1) - 1);
+
+        // Restore original body styles ONLY when no active overlays remain
+        if (window.activeOverlays === 0) {
+            document.body.style.paddingRight = document.body.dataset.originalPadding || '';
+            document.documentElement.style.overflow = document.body.dataset.originalOverflow || '';
+            delete document.body.dataset.originalPadding;
+            delete document.body.dataset.originalOverflow;
         }
 
-        // Remove this modal from stack by ID (defensive)
-        window.modalStack = (window.modalStack || []).filter(x => x !== this.id);
-
-        // Return focus to the element that triggered this modal
+        // Return focus safely
         this.$nextTick(() => {
-            if (this.lastActiveElement && typeof this.lastActiveElement.focus === 'function') {
+            if (this.lastActiveElement && document.body.contains(this.lastActiveElement) && typeof this.lastActiveElement.focus === 'function') {
                 this.lastActiveElement.focus();
+            } else {
+                document.body.focus();
             }
         });
     },
 
+    destroy() {
+        if (this.open) {
+            this.closeOverlay();
+        }
+    },
+
     isTopmost() {
-        const stack = window.modalStack || [];
-        return stack.length === 0 || stack[stack.length - 1] === this.id;
+        return window.overlayStack.length > 0 && window.overlayStack.at(-1) === this.id;
+    },
+
+    getOverlayId(detail) {
+        return typeof detail === 'string' ? detail : detail?.id || '';
     },
 
     focusTrap(event) {
-        const panel = document.querySelector('[data-modal-id="' + this.id + '"]');
+        const panel = document.querySelector('[data-overlay-id="' + this.id + '"]');
         if (!panel) return;
         const focusables = [...panel.querySelectorAll(
             'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex="0"]'
@@ -96,17 +141,29 @@ Alpine.data('modal', (config = {}) => ({
             event.preventDefault();
         }
     },
+});
+
+// Register Alpine named data components
+Alpine.data('modal', (config = {}) => ({
+    ...overlayBase(config),
+    openModal() { this.openOverlay(); },
+    closeModal() { this.closeOverlay(); }
+}));
+
+Alpine.data('drawer', (config = {}) => ({
+    ...overlayBase(config),
+    openDrawer() { this.openOverlay(); },
+    closeDrawer() { this.closeOverlay(); }
 }));
 
 Alpine.start();
 
 /**
- * Global helpers so templates can call window.openModal('id') directly
- * as a fallback alongside Alpine's $dispatch event system.
+ * Centralized global helpers mapping to generic open/close overlay events.
+ * Accepts both string IDs or objects containing { id, type }.
  */
-window.openModal = function (id) {
-    window.dispatchEvent(new CustomEvent('open-modal', { detail: id }));
-};
-window.closeModal = function (id) {
-    window.dispatchEvent(new CustomEvent('close-modal', { detail: id }));
-};
+window.openModal = id => window.dispatchEvent(new CustomEvent('open-overlay', { detail: { id, type: 'modal' } }));
+window.closeModal = id => window.dispatchEvent(new CustomEvent('close-overlay', { detail: { id, type: 'modal' } }));
+window.openDrawer = id => window.dispatchEvent(new CustomEvent('open-overlay', { detail: { id, type: 'drawer' } }));
+window.closeDrawer = id => window.dispatchEvent(new CustomEvent('close-overlay', { detail: { id, type: 'drawer' } }));
+
