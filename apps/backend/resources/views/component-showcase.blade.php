@@ -887,6 +887,201 @@ HTML;
                                 </section>
                             @endif
 
+                            {{-- Stepper --}}
+                            @if(isset($categories['Navigation']['Stepper']))
+                                @php
+                                    $stepperBasicCode = <<<'HTML'
+<x-stepper :active="2" :total="3">
+    <x-stepper.step :step="1" title="Billing Info" />
+    <x-stepper.step :step="2" title="Shipping Address" />
+    <x-stepper.step :step="3" title="Payment" />
+</x-stepper>
+HTML;
+
+                                    $stepperDescCode = <<<'HTML'
+<x-stepper :active="2" :total="4">
+    <x-stepper.step :step="1" title="Create Account" description="Choose credentials and verify email" />
+    <x-stepper.step :step="2" title="Company Profile" description="Provide corporate details and registry" />
+    <x-stepper.step :step="3" title="Billing Details" description="Configure invoicing accounts" />
+    <x-stepper.step :step="4" title="Review & Launch" description="Final verification checks" />
+</x-stepper>
+HTML;
+
+                                    $stepperVerticalCode = <<<'HTML'
+<x-stepper :active="2" :total="4" orientation="vertical">
+    <x-stepper.step :step="1" title="Security Settings" description="Configure two-factor authentication" />
+    <x-stepper.step :step="2" title="Notification Preferences" description="Manage push alerts and system updates" />
+    <x-stepper.step :step="3" title="Invoicing Settings" description="Set default currencies" />
+    <x-stepper.step :step="4" title="Integrations" description="Authorize external webhooks" />
+</x-stepper>
+HTML;
+
+                                    $stepperStatusBadgeCode = <<<'HTML'
+<x-stepper :active="3" :total="4">
+    <x-stepper.step :step="1" title="Account Setup" />
+    <x-stepper.step :step="2" status="error" title="Payment Verification">
+        <x-slot:badge>3</x-slot:badge>
+    </x-stepper.step>
+    <x-stepper.step :step="3" title="Deploy Settings" />
+    <x-stepper.step :step="4" disabled title="Launch Instance" />
+</x-stepper>
+HTML;
+
+                                    $stepperInteractiveCode = <<<'HTML'
+<x-stepper :active="2" :total="3">
+    <x-stepper.step :step="1" href="#preview-stepper-interactive" title="Step One (Clickable)" />
+    <x-stepper.step :step="2" href="#preview-stepper-interactive" title="Step Two (Clickable)" />
+    <x-stepper.step :step="3" href="#preview-stepper-interactive" title="Step Three (Clickable)" />
+</x-stepper>
+HTML;
+
+                                    $stepperSizesCode = <<<'HTML'
+<div class="space-y-8 w-full">
+    <div class="space-y-2">
+        <span class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Small (sm)</span>
+        <x-stepper :active="2" :total="3" size="sm">
+            <x-stepper.step :step="1" title="Cart" />
+            <x-stepper.step :step="2" title="Checkout" />
+            <x-stepper.step :step="3" title="Confirmation" />
+        </x-stepper>
+    </div>
+
+    <div class="space-y-2">
+        <span class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Medium (md - default)</span>
+        <x-stepper :active="2" :total="3" size="md">
+            <x-stepper.step :step="1" title="Cart" />
+            <x-stepper.step :step="2" title="Checkout" />
+            <x-stepper.step :step="3" title="Confirmation" />
+        </x-stepper>
+    </div>
+
+    <div class="space-y-2">
+        <span class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Large (lg)</span>
+        <x-stepper :active="2" :total="3" size="lg">
+            <x-stepper.step :step="1" title="Cart" />
+            <x-stepper.step :step="2" title="Checkout" />
+            <x-stepper.step :step="3" title="Confirmation" />
+        </x-stepper>
+    </div>
+</div>
+HTML;
+
+                                    $stepperDotsCode = <<<'HTML'
+<x-stepper :active="2" :total="4" :showNumbers="false">
+    <x-stepper.step :step="1" title="General Info" />
+    <x-stepper.step :step="2" title="Password Reset" />
+    <x-stepper.step :step="3" title="Two-Factor Setup" />
+    <x-stepper.step :step="4" title="Finish" />
+</x-stepper>
+HTML;
+                                 @endphp
+
+                                 <section id="stepper" class="js-section mb-12">
+                                     <div class="border-b border-[color:var(--color-border)] pb-4 mb-6">
+                                         <h2 class="text-2xl font-bold text-[color:var(--color-text-primary)]">Stepper</h2>
+                                         <p class="text-sm text-[color:var(--color-text-muted)] mt-1">
+                                             A flexible progress wizard bar supporting multiple sizes, layouts, links, and validation states.
+                                         </p>
+                                     </div>
+
+                                     <div class="space-y-8">
+                                         <!-- Basic Stepper -->
+                                         <x-showcase.preview title="Standard Horizontal" :code="$stepperBasicCode" id="preview-stepper-basic">
+                                             <x-stepper :active="2" :total="3">
+                                                 <x-stepper.step :step="1" title="Billing Info" />
+                                                 <x-stepper.step :step="2" title="Shipping Address" />
+                                                 <x-stepper.step :step="3" title="Payment" />
+                                             </x-stepper>
+                                         </x-showcase.preview>
+
+                                         <!-- Stepper with Descriptions -->
+                                         <x-showcase.preview title="With Descriptions & Wrapping" :code="$stepperDescCode" id="preview-stepper-desc">
+                                             <x-stepper :active="2" :total="4">
+                                                 <x-stepper.step :step="1" title="Create Account" description="Choose credentials and verify email" />
+                                                 <x-stepper.step :step="2" title="Company Profile" description="Provide corporate details and registry" />
+                                                 <x-stepper.step :step="3" title="Billing Details" description="Configure invoicing accounts" />
+                                                 <x-stepper.step :step="4" title="Review & Launch" description="Final verification checks" />
+                                             </x-stepper>
+                                         </x-showcase.preview>
+
+                                         <!-- Vertical Layout -->
+                                         <x-showcase.preview title="Vertical Orientation" :code="$stepperVerticalCode" id="preview-stepper-vertical">
+                                             <div class="w-full max-w-lg">
+                                                 <x-stepper :active="2" :total="4" orientation="vertical">
+                                                     <x-stepper.step :step="1" title="Security Settings" description="Configure two-factor authentication" />
+                                                     <x-stepper.step :step="2" title="Notification Preferences" description="Manage push alerts and system updates" />
+                                                     <x-stepper.step :step="3" title="Invoicing Settings" description="Set default currencies" />
+                                                     <x-stepper.step :step="4" title="Integrations" description="Authorize external webhooks" />
+                                                 </x-stepper>
+                                             </div>
+                                         </x-showcase.preview>
+
+                                         <!-- Status States and Badges -->
+                                         <x-showcase.preview title="Status States & Badges" :code="$stepperStatusBadgeCode" id="preview-stepper-status">
+                                             <x-stepper :active="3" :total="4">
+                                                 <x-stepper.step :step="1" title="Account Setup" />
+                                                 <x-stepper.step :step="2" status="error" title="Payment Verification">
+                                                     <x-slot:badge>3</x-slot:badge>
+                                                 </x-stepper.step>
+                                                 <x-stepper.step :step="3" title="Deploy Settings" />
+                                                 <x-stepper.step :step="4" disabled title="Launch Instance" />
+                                             </x-stepper>
+                                         </x-showcase.preview>
+
+                                         <!-- Interactive Clickable Navigation -->
+                                         <x-showcase.preview title="Interactive Navigation (Clickable Links)" :code="$stepperInteractiveCode" id="preview-stepper-interactive">
+                                             <x-stepper :active="2" :total="3">
+                                                 <x-stepper.step :step="1" href="#preview-stepper-interactive" title="Step One (Clickable)" />
+                                                 <x-stepper.step :step="2" href="#preview-stepper-interactive" title="Step Two (Clickable)" />
+                                                 <x-stepper.step :step="3" href="#preview-stepper-interactive" title="Step Three (Clickable)" />
+                                             </x-stepper>
+                                         </x-showcase.preview>
+
+                                         <!-- Sizes Options -->
+                                         <x-showcase.preview title="Sizes Options (sm, md, lg)" :code="$stepperSizesCode" id="preview-stepper-sizes">
+                                             <div class="space-y-8 w-full">
+                                                 <div class="space-y-2">
+                                                     <span class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Small (sm)</span>
+                                                     <x-stepper :active="2" :total="3" size="sm">
+                                                         <x-stepper.step :step="1" title="Cart" />
+                                                         <x-stepper.step :step="2" title="Checkout" />
+                                                         <x-stepper.step :step="3" title="Confirmation" />
+                                                     </x-stepper>
+                                                 </div>
+
+                                                 <div class="space-y-2">
+                                                     <span class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Medium (md - default)</span>
+                                                     <x-stepper :active="2" :total="3" size="md">
+                                                         <x-stepper.step :step="1" title="Cart" />
+                                                         <x-stepper.step :step="2" title="Checkout" />
+                                                         <x-stepper.step :step="3" title="Confirmation" />
+                                                     </x-stepper>
+                                                 </div>
+
+                                                 <div class="space-y-2">
+                                                     <span class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Large (lg)</span>
+                                                     <x-stepper :active="2" :total="3" size="lg">
+                                                         <x-stepper.step :step="1" title="Cart" />
+                                                         <x-stepper.step :step="2" title="Checkout" />
+                                                         <x-stepper.step :step="3" title="Confirmation" />
+                                                     </x-stepper>
+                                                 </div>
+                                             </div>
+                                         </x-showcase.preview>
+
+                                         <!-- Without Numbers (Dots Only) -->
+                                         <x-showcase.preview title="Without Numbers (Dot Variants)" :code="$stepperDotsCode" id="preview-stepper-dots">
+                                             <x-stepper :active="2" :total="4" :showNumbers="false">
+                                                 <x-stepper.step :step="1" title="General Info" />
+                                                 <x-stepper.step :step="2" title="Password Reset" />
+                                                 <x-stepper.step :step="3" title="Two-Factor Setup" />
+                                                 <x-stepper.step :step="4" title="Finish" />
+                                             </x-stepper>
+                                         </x-showcase.preview>
+                                     </div>
+                                 </section>
+                             @endif
+
                         </div>
                     @endif
 

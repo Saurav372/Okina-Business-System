@@ -49,6 +49,7 @@ return [
             'Pagination' => 'pagination',
             'Breadcrumb' => 'breadcrumb',
             'Dropdown' => 'dropdown',
+            'Stepper' => 'stepper',
         ],
         'Feedback' => [
             'Alert' => 'alert',
