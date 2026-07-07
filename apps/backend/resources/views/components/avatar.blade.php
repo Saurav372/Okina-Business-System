@@ -160,7 +160,7 @@
             <template x-if="!imageError">
                 <img 
                     src="{{ $src }}" 
-                    @error="imageError = true" 
+                    x-on:error="imageError = true" 
                     x-show="!imageError"
                     class="w-full h-full object-cover pointer-events-none"
                     alt="{{ $normalizedName !== null ? $normalizedName : '' }}"
