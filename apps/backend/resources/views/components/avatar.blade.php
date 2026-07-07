@@ -154,7 +154,7 @@
 >
     {{-- Inner disc: overflow-hidden here, NOT on the outer wrapper --}}
     <div
-        class="overflow-hidden inline-flex items-center justify-center font-bold tracking-tight shadow-sm {{ $colorClass }} {{ $radiusClass }} {{ $ringClass }} {{ $sizeClass }}"
+        class="relative overflow-hidden inline-flex items-center justify-center font-bold tracking-tight shadow-sm {{ $colorClass }} {{ $radiusClass }} {{ $ringClass }} {{ $sizeClass }}"
         @if ($inlineStyles) style="{{ $inlineStyles }}" @endif
     >
         @if ($src)
