@@ -92,6 +92,180 @@ HTML;
                                 </section>
                             @endif
 
+                            {{-- Button --}}
+                            @if(isset($categories['Forms']['Button']))
+                                @php
+                                    $buttonBasicCode = <<<'HTML'
+<!-- Hierarchical Intents -->
+<x-button intent="primary">Primary Action</x-button>
+<x-button intent="secondary">Secondary Action</x-button>
+<x-button intent="success">Success Action</x-button>
+<x-button intent="danger">Danger Action</x-button>
+<x-button intent="warning">Warning Action</x-button>
+<x-button intent="info">Info Action</x-button>
+HTML;
+
+                                    $buttonAppearancesCode = <<<'HTML'
+<!-- Solid Appearance (Default) -->
+<x-button intent="primary" appearance="solid">Solid</x-button>
+
+<!-- Outline Appearance -->
+<x-button intent="primary" appearance="outline">Outline</x-button>
+
+<!-- Ghost Appearance -->
+<x-button intent="primary" appearance="ghost">Ghost</x-button>
+HTML;
+
+                                    $buttonSizesCode = <<<'HTML'
+<!-- Sizing: sm (32px), md (40px), lg (48px) -->
+<x-button intent="primary" size="sm">Small (32px)</x-button>
+<x-button intent="primary" size="md">Medium (40px)</x-button>
+<x-button intent="primary" size="lg">Large (48px)</x-button>
+HTML;
+
+                                    $buttonShapesCode = <<<'HTML'
+<!-- Shape: square, circle, default -->
+<x-button intent="primary" shape="square" aria-label="Square Action">
+    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
+</x-button>
+
+<x-button intent="secondary" shape="circle" aria-label="Circle Action">
+    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+</x-button>
+HTML;
+
+                                    $buttonStatesCode = <<<'HTML'
+<!-- Disabled State -->
+<x-button intent="primary" disabled>Disabled Button</x-button>
+
+<!-- Disabled Link (Safely stripped href, pointer-events-none) -->
+<x-button intent="secondary" href="/dashboard" disabled>Disabled Link</x-button>
+
+<!-- Loading State (keeps text to prevent layout shifts, adds spinner) -->
+<x-button intent="primary" :loading="true">Saving Changes</x-button>
+HTML;
+
+                                    $buttonCustomCode = <<<'HTML'
+<!-- Icon prefix/suffix slots -->
+<x-button intent="primary">
+    <x-slot:prefix>
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+    </x-slot:prefix>
+    Download PDF
+</x-button>
+
+<!-- Full width (block) -->
+<x-button intent="primary" :fullWidth="true">Stretch Block</x-button>
+
+<!-- Customizable rounded (Skeleton-matching api) -->
+<x-button intent="primary" rounded="none">No Rounded</x-button>
+<x-button intent="primary" rounded="full">Pill Shape</x-button>
+HTML;
+                                @endphp
+
+                                <section id="{{ $categories['Forms']['Button'] }}" class="js-section scroll-mt-8">
+                                    <h2 class="text-2xl font-bold border-b border-[color:var(--color-border)] pb-4 mb-8">Button</h2>
+                                    
+                                    <div class="space-y-12">
+                                        <!-- Intents -->
+                                        <x-showcase.preview title="Intents" :code="$buttonBasicCode" id="preview-button-intents">
+                                            <div class="flex flex-wrap gap-4 items-center">
+                                                <x-button intent="primary">Primary</x-button>
+                                                <x-button intent="secondary">Secondary</x-button>
+                                                <x-button intent="success">Success</x-button>
+                                                <x-button intent="danger">Danger</x-button>
+                                                <x-button intent="warning">Warning</x-button>
+                                                <x-button intent="info">Info</x-button>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Appearances -->
+                                        <x-showcase.preview title="Appearances (Solid / Outline / Ghost)" :code="$buttonAppearancesCode" id="preview-button-appearances">
+                                            <div class="space-y-6">
+                                                <div class="flex flex-wrap gap-4 items-center">
+                                                    <span class="text-xs font-semibold text-[color:var(--color-text-muted)] w-24 block">Primary:</span>
+                                                    <x-button intent="primary" appearance="solid">Solid</x-button>
+                                                    <x-button intent="primary" appearance="outline">Outline</x-button>
+                                                    <x-button intent="primary" appearance="ghost">Ghost</x-button>
+                                                </div>
+                                                <div class="flex flex-wrap gap-4 items-center">
+                                                    <span class="text-xs font-semibold text-[color:var(--color-text-muted)] w-24 block">Secondary:</span>
+                                                    <x-button intent="secondary" appearance="solid">Solid</x-button>
+                                                    <x-button intent="secondary" appearance="outline">Outline</x-button>
+                                                    <x-button intent="secondary" appearance="ghost">Ghost</x-button>
+                                                </div>
+                                                <div class="flex flex-wrap gap-4 items-center">
+                                                    <span class="text-xs font-semibold text-[color:var(--color-text-muted)] w-24 block">Danger:</span>
+                                                    <x-button intent="danger" appearance="solid">Solid</x-button>
+                                                    <x-button intent="danger" appearance="outline">Outline</x-button>
+                                                    <x-button intent="danger" appearance="ghost">Ghost</x-button>
+                                                </div>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Sizes -->
+                                        <x-showcase.preview title="Sizes (Heights sm: 32px, md: 40px, lg: 48px)" :code="$buttonSizesCode" id="preview-button-sizes">
+                                            <div class="flex flex-wrap gap-4 items-center">
+                                                <x-button intent="primary" size="sm">Small</x-button>
+                                                <x-button intent="primary" size="md">Medium</x-button>
+                                                <x-button intent="primary" size="lg">Large</x-button>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Shapes -->
+                                        <x-showcase.preview title="Icon Shapes (Square & Circle)" :code="$buttonShapesCode" id="preview-button-shapes">
+                                            <div class="flex flex-wrap gap-4 items-center">
+                                                <x-button intent="primary" shape="square" aria-label="Add item">
+                                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
+                                                </x-button>
+                                                <x-button intent="secondary" shape="square" aria-label="Edit item">
+                                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                                </x-button>
+                                                <x-button intent="danger" shape="circle" aria-label="Delete item">
+                                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                                </x-button>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- States -->
+                                        <x-showcase.preview title="States & Disabled Anchors" :code="$buttonStatesCode" id="preview-button-states">
+                                            <div class="flex flex-wrap gap-4 items-center">
+                                                <x-button intent="primary" disabled>Disabled Button</x-button>
+                                                <x-button intent="secondary" href="/dashboard" disabled>Disabled Link</x-button>
+                                                <x-button intent="primary" :loading="true">Saving Changes</x-button>
+                                                <x-button intent="danger" appearance="outline" :loading="true">Processing</x-button>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Custom Layouts -->
+                                        <x-showcase.preview title="Prefix/Suffix Icons, Full Width & Custom Rounded" :code="$buttonCustomCode" id="preview-button-custom">
+                                            <div class="space-y-6 w-full max-w-md">
+                                                <div class="flex flex-wrap gap-4">
+                                                    <x-button intent="primary">
+                                                        <x-slot:prefix>
+                                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                                        </x-slot:prefix>
+                                                        Download PDF
+                                                    </x-button>
+                                                    <x-button intent="secondary">
+                                                        Next Step
+                                                        <x-slot:suffix>
+                                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
+                                                        </x-slot:suffix>
+                                                    </x-button>
+                                                </div>
+                                                <x-button intent="primary" :fullWidth="true">Full Width Action</x-button>
+                                                <div class="flex flex-wrap gap-4 items-center">
+                                                    <x-button intent="primary" rounded="none">rounded="none"</x-button>
+                                                    <x-button intent="primary" rounded="md">rounded="md"</x-button>
+                                                    <x-button intent="primary" rounded="full">rounded="full"</x-button>
+                                                </div>
+                                            </div>
+                                        </x-showcase.preview>
+                                    </div>
+                                </section>
+                            @endif
+
                         </div>
                     @endif
 
@@ -1081,6 +1255,143 @@ HTML;
                                      </div>
                                  </section>
                              @endif
+
+                            {{-- Badge --}}
+                            @if(isset($categories['Data Display']['Badge']))
+                                @php
+                                    $badgeBasicCode = <<<'HTML'
+<!-- Intents paired with Solid/Light/Outline appearances -->
+<x-badge intent="neutral" appearance="light">Neutral</x-badge>
+<x-badge intent="primary" appearance="solid">Primary</x-badge>
+<x-badge intent="success" appearance="outline">Success</x-badge>
+HTML;
+
+                                    $badgeAppearancesCode = <<<'HTML'
+<!-- Solid Appearance -->
+<x-badge intent="success" appearance="solid">Success</x-badge>
+
+<!-- Light Appearance (Default) -->
+<x-badge intent="success" appearance="light">Success</x-badge>
+
+<!-- Outline Appearance -->
+<x-badge intent="success" appearance="outline">Success</x-badge>
+HTML;
+
+                                    $badgeSizesCode = <<<'HTML'
+<!-- Badge height: sm (20px) vs md (24px) -->
+<x-badge intent="info" size="sm">Small (20px)</x-badge>
+<x-badge intent="info" size="md">Medium (24px)</x-badge>
+HTML;
+
+                                    $badgeDotsCode = <<<'HTML'
+<!-- Dot marker option -->
+<x-badge intent="success" :dot="true">Active</x-badge>
+<x-badge intent="danger" :dot="true">Offline</x-badge>
+<x-badge intent="warning" :dot="true" appearance="solid">Pending</x-badge>
+HTML;
+
+                                    $badgeIconsCode = <<<'HTML'
+<!-- Badge with slots prefix icons -->
+<x-badge intent="primary" appearance="light">
+    <x-slot:icon>
+        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
+    </x-slot:icon>
+    Create New
+</x-badge>
+HTML;
+
+                                    $badgeRoundedCode = <<<'HTML'
+<!-- Custom rounded bounds (defaults to full) -->
+<x-badge intent="primary" rounded="none">Square</x-badge>
+<x-badge intent="primary" rounded="md">rounded="md"</x-badge>
+<x-badge intent="primary" rounded="full">rounded="full" (Pill)</x-badge>
+HTML;
+                                @endphp
+
+                                <section id="{{ $categories['Data Display']['Badge'] }}" class="js-section scroll-mt-8 mt-16">
+                                    <h2 class="text-2xl font-bold border-b border-[color:var(--color-border)] pb-4 mb-8">Badge</h2>
+                                    
+                                    <div class="space-y-12">
+                                        <!-- Intents and appearances -->
+                                        <x-showcase.preview title="Intents & Appearances" :code="$badgeBasicCode" id="preview-badge-intents">
+                                            <div class="space-y-6">
+                                                <div class="flex flex-wrap gap-4 items-center">
+                                                    <span class="text-xs font-semibold text-[color:var(--color-text-muted)] w-24 block">Solid:</span>
+                                                    <x-badge intent="neutral" appearance="solid">Neutral</x-badge>
+                                                    <x-badge intent="primary" appearance="solid">Primary</x-badge>
+                                                    <x-badge intent="success" appearance="solid">Success</x-badge>
+                                                    <x-badge intent="danger" appearance="solid">Danger</x-badge>
+                                                    <x-badge intent="warning" appearance="solid">Warning</x-badge>
+                                                    <x-badge intent="info" appearance="solid">Info</x-badge>
+                                                </div>
+                                                <div class="flex flex-wrap gap-4 items-center">
+                                                    <span class="text-xs font-semibold text-[color:var(--color-text-muted)] w-24 block">Light (Default):</span>
+                                                    <x-badge intent="neutral" appearance="light">Neutral</x-badge>
+                                                    <x-badge intent="primary" appearance="light">Primary</x-badge>
+                                                    <x-badge intent="success" appearance="light">Success</x-badge>
+                                                    <x-badge intent="danger" appearance="light">Danger</x-badge>
+                                                    <x-badge intent="warning" appearance="light">Warning</x-badge>
+                                                    <x-badge intent="info" appearance="light">Info</x-badge>
+                                                </div>
+                                                <div class="flex flex-wrap gap-4 items-center">
+                                                    <span class="text-xs font-semibold text-[color:var(--color-text-muted)] w-24 block">Outline:</span>
+                                                    <x-badge intent="neutral" appearance="outline">Neutral</x-badge>
+                                                    <x-badge intent="primary" appearance="outline">Primary</x-badge>
+                                                    <x-badge intent="success" appearance="outline">Success</x-badge>
+                                                    <x-badge intent="danger" appearance="outline">Danger</x-badge>
+                                                    <x-badge intent="warning" appearance="outline">Warning</x-badge>
+                                                    <x-badge intent="info" appearance="outline">Info</x-badge>
+                                                </div>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Sizes -->
+                                        <x-showcase.preview title="Sizes (Heights sm: 20px, md: 24px)" :code="$badgeSizesCode" id="preview-badge-sizes">
+                                            <div class="flex flex-wrap gap-4 items-center">
+                                                <x-badge intent="info" size="sm">Small (20px)</x-badge>
+                                                <x-badge intent="info" size="md">Medium (24px)</x-badge>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Dots -->
+                                        <x-showcase.preview title="Status Dots" :code="$badgeDotsCode" id="preview-badge-dots">
+                                            <div class="flex flex-wrap gap-4 items-center">
+                                                <x-badge intent="success" :dot="true">Active</x-badge>
+                                                <x-badge intent="danger" :dot="true">Offline</x-badge>
+                                                <x-badge intent="warning" :dot="true" appearance="solid">Pending</x-badge>
+                                                <x-badge intent="info" :dot="true" appearance="outline">Deploying</x-badge>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Icons -->
+                                        <x-showcase.preview title="Badge with Icon Prefix" :code="$badgeIconsCode" id="preview-badge-icons">
+                                            <div class="flex flex-wrap gap-4 items-center">
+                                                <x-badge intent="primary">
+                                                    <x-slot:icon>
+                                                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
+                                                    </x-slot:icon>
+                                                    New User
+                                                </x-badge>
+                                                <x-badge intent="success" appearance="solid">
+                                                    <x-slot:icon>
+                                                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                                                    </x-slot:icon>
+                                                    Verified
+                                                </x-badge>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Custom Rounded -->
+                                        <x-showcase.preview title="Custom Rounded Bounds" :code="$badgeRoundedCode" id="preview-badge-rounded">
+                                            <div class="flex flex-wrap gap-4 items-center">
+                                                <x-badge intent="primary" rounded="none">Square</x-badge>
+                                                <x-badge intent="primary" rounded="md">rounded="md"</x-badge>
+                                                <x-badge intent="primary" rounded="full">rounded="full" (Pill)</x-badge>
+                                            </div>
+                                        </x-showcase.preview>
+                                    </div>
+                                </section>
+                            @endif
 
                     @endif
 

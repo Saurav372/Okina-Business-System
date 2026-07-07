@@ -35,6 +35,7 @@ return [
             'Input' => 'form-input',
             'Select' => 'form-select',
             'Checkbox' => 'form-checkbox',
+            'Button' => 'button',
         ],
         'Data Display' => [
             'DataTable' => 'data-table',
