@@ -952,6 +952,38 @@ Notes: Built a reusable, responsive, and highly customizable Avatar component wi
 
 ---
 
+### U1.5.3 FileCard & Preview
+**Status:** Completed ✅
+
+**Implementation Validation**
+- [x] Base component `<x-file-card>` implemented supporting grids/lists variants, action slot stops click/keydown propagation, and loading/disabled states.
+- [x] Base component `<x-file-preview>` implemented supporting image, video, audio, PDF preview types, and direct download buttons.
+- [x] Centralized MIME resolution helper `UiFileType` maps all file types deterministically without duplicate class strings.
+- [x] Extension-preserving truncation splits filename stems and appends suffix extension.
+- [x] Direct download anchor uses native HTML `<a>` instead of JS `window.open` for proper middle/ctrl click behaviors.
+- [x] Accessible non-interactive state has no interactive roles/tabindex.
+- [x] Visual validation shows cached thumbnails fade in using `.complete` onload checks.
+- [x] Showcased integration registered at `/admin/components#file-card`
+
+**UI / Accessibility Validation**
+- [x] Responsive grids and row heights verified.
+- [x] Accessibility elements verified (aria-label, aria-labelledby, aria-describedby, focus traps).
+- [x] motion-safe:animate-pulse loading transitions.
+- [x] Keyboard focus restoration correctly targets originating card.
+
+**Process Validation**
+- [x] Playground showcase sections added for Grid, List, States, Standalone modal, and Mixed Gallery.
+- [x] All 792 phpunit backend tests pass successfully.
+- [x] Git restore point created.
+
+**Review Sign-off**
+Reviewer: AI Assistant
+Date: 2026-07-07
+Result: [x] Pass [ ] Fail
+Notes: Created highly accessible, responsive, and robust FileCard and FilePreview components with zero build warnings and clean visual verification.
+
+---
+
 ## Component Validation Template (U1.x)
 *(Apply this checklist to every form, table, navigation, overlay, and utility component)*
 

@@ -71,7 +71,7 @@ Detailed validation for each subtask is maintained in `UI-SUBTASK-VALIDATION.md`
 | **U1.5** | **Utility & Media** | Foundation | 1 | **Milestone** | U0.5 | Milestone |
 | U1.5.1 | Button & Badge | Foundation | 1 | Buttons and status badges. | U0.5 | Completed |
 | U1.5.2 | Avatar | Foundation | 1 | User profile image. | U0.5 | Completed |
-| U1.5.3 | FileCard & Preview | Foundation | 1 | Media display. | U0.5 | Pending |
+| U1.5.3 | FileCard & Preview | Foundation | 1 | Media display. | U0.5 | Completed |
 | **U1.6** | **Motion & Feedback** | Foundation | 1 | **Milestone** | U0.1.5, U0.5 | Milestone |
 | U1.6.1 | Transition Utilities | Foundation | 1 | Reusable transition wrappers. | U0.1.5, U0.5 | Pending |
 | U1.6.2 | Loading Indicators | Foundation | 1 | Spinners and loading states. | U0.1.5, U0.5 | Pending |
