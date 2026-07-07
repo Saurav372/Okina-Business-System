@@ -131,19 +131,23 @@
         $styleRules[] = 'height: ' . (is_numeric($height) ? $height . 'px' : $height);
     }
     $inlineStyles = count($styleRules) > 0 ? implode('; ', $styleRules) . ';' : null;
+
+    // Merge conditional attributes cleanly
+    if ($status) {
+        $attributes = $attributes->merge(['data-status' => $status]);
+    }
 @endphp
 
 <div 
     x-data="{ imageError: false, hasImage: {{ $src ? 'true' : 'false' }} }" 
     class="relative inline-block shrink-0 select-none"
-    @if ($inlineStyles) style="{{ $inlineStyles }}" @endif
+    {!! $inlineStyles ? 'style="' . e($inlineStyles) . '"' : '' !!}
 >
     <!-- Avatar Base Element (z-0) -->
     <div 
         data-avatar
         data-size="{{ $size }}"
         data-rounded="{{ $rounded }}"
-        @if ($status) data-status="{{ $status }}" @endif
         {{ $attributes->except(['src', 'name', 'size', 'width', 'height', 'rounded', 'status', 'statusPosition', 'ring'])->class([
             'relative overflow-hidden w-full h-full flex items-center justify-center font-bold tracking-tight z-0 border border-transparent shadow-sm',
             $sizeClass => !$inlineStyles,
