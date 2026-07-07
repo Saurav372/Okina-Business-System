@@ -2,7 +2,6 @@
 
 namespace App\Support\Breadcrumbs;
 
-use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use RuntimeException;
 
@@ -18,9 +17,8 @@ class BreadcrumbBuilder
     /**
      * Build a breadcrumb trail for a given route name and its parameters.
      *
-     * @param string $routeName
-     * @param array $parameters
      * @return BreadcrumbItem[]
+     *
      * @throws RuntimeException
      */
     public function build(string $routeName, array $parameters = []): array
@@ -48,7 +46,7 @@ class BreadcrumbBuilder
             }
 
             $def = $items[$currentRoute];
-            
+
             // Unshift to place ancestors first
             array_unshift($trail, [
                 'route' => $currentRoute,
@@ -64,9 +62,9 @@ class BreadcrumbBuilder
 
         foreach ($trail as $index => $step) {
             $isLast = ($index === $totalItems - 1);
-            
+
             $url = $isLast ? null : route($step['route'], $parameters);
-            
+
             $resolvedLabel = $this->resolveLabel($step['def'], $parameters);
 
             $resolvedTrail[] = new BreadcrumbItem(
@@ -99,7 +97,7 @@ class BreadcrumbBuilder
 
             $resolvedValue = $this->resolveFallbackChain($model, $property, $def['fallback'] ?? null);
 
-            $label = str_replace('{' . $placeholder . '}', $resolvedValue, $label);
+            $label = str_replace('{'.$placeholder.'}', $resolvedValue, $label);
         }
 
         return $label;

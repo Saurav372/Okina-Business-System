@@ -6,8 +6,6 @@ class Navigation
 {
     /**
      * Get the defined admin navigation structure.
-     *
-     * @return array
      */
     public function items(): array
     {

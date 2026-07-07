@@ -11,8 +11,6 @@
 ])
 
 @php
-    // --- 1. Sequential pass resolution ---
-    
     // Normalize whitespace & treat empty string as null
     $nameClean = null;
     if ($name !== null) {
@@ -136,7 +134,7 @@
 @endphp
 
 <div 
-    x-data="{ imageError: false }" 
+    x-data="{ imageError: false, hasImage: {{ $src ? 'true' : 'false' }} }" 
     class="relative inline-block shrink-0 select-none"
     @if ($inlineStyles) style="{{ $inlineStyles }}" @endif
 >
@@ -168,7 +166,7 @@
 
         <!-- Fallback (Initials / Icon) -->
         <div 
-            @if ($src) x-show="imageError" @endif
+            x-show="imageError || !hasImage"
             class="w-full h-full flex items-center justify-center {{ $colorClass }}"
         >
             @if ($initials !== '')

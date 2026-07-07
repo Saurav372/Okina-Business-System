@@ -217,12 +217,13 @@ Alpine.data('toastContainer', () => ({
         if (toast && !toast.dismissing) {
             toast.dismissing = true;
             setTimeout(() => {
-                this.destroy(id);
+                this.remove(id);
             }, 150); // duration-150 matching leave transition timing
         }
     },
 
-    destroy(id) {
+    // Renamed from destroy(id) to avoid conflict with Alpine's reserved destroy() lifecycle hook
+    remove(id) {
         this.toasts = this.toasts.filter(t => t.id !== id);
 
         // Cancel frame loop if no timed, active toasts remain
