@@ -1393,6 +1393,271 @@ HTML;
                                 </section>
                             @endif
 
+                            {{-- Avatar --}}
+                            @if(isset($categories['Data Display']['Avatar']))
+                                @php
+                                    $avatarBasicCode = <<<'HTML'
+<!-- Avatar Size Presets -->
+<x-avatar src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=128&h=128&fit=crop&crop=face" name="John Smith" size="sm" />
+<x-avatar src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=128&h=128&fit=crop&crop=face" name="John Smith" size="md" />
+<x-avatar src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=128&h=128&fit=crop&crop=face" name="John Smith" size="lg" />
+<x-avatar src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=128&h=128&fit=crop&crop=face" name="John Smith" size="xl" />
+HTML;
+
+                                    $avatarShapesCode = <<<'HTML'
+<!-- Custom rounded borders (instead of distinct variant props) -->
+<x-avatar name="John Smith" rounded="full" />
+<x-avatar name="John Smith" rounded="lg" />
+<x-avatar name="John Smith" rounded="none" />
+HTML;
+
+                                    $avatarInitialsCode = <<<'HTML'
+<!-- Initials Generation & Hashing (Müller -> M, 李 小龍 -> 李小) -->
+<x-avatar name="Müller" />
+<x-avatar name="Élodie Martin" />
+<x-avatar name="李 小龍" />
+<x-avatar name="John Ronald Reuel Tolkien" />
+HTML;
+
+                                    $avatarFallbackCode = <<<'HTML'
+<!-- Empty fallbacks: vector illustration when no name or source is present -->
+<x-avatar />
+
+<!-- Runtime broken URL fallback: unmounts img & displays initials -->
+<x-avatar src="https://invalid-domain.xyz/broken-avatar.jpg" name="Sarah Connor" />
+HTML;
+
+                                    $avatarStatusCode = <<<'HTML'
+<!-- Status dots mapped to existing design system semantic tokens -->
+<x-avatar name="John Smith" status="online" statusPosition="bottom-right" />
+<x-avatar name="Sarah Wilson" status="away" statusPosition="bottom-left" />
+<x-avatar name="Mike Chen" status="busy" statusPosition="top-right" />
+<x-avatar name="Emma Davis" status="offline" statusPosition="top-left" />
+HTML;
+
+                                    $avatarRingCode = <<<'HTML'
+<!-- Rings mapped to design tokens (inner margins offset) -->
+<x-avatar name="John Smith" ring="sm" />
+<x-avatar name="John Smith" ring="md" />
+<x-avatar name="John Smith" ring="lg" />
+HTML;
+
+                                    $avatarStackedCode = <<<'HTML'
+<!-- Stacked avatars using negative margins -->
+<div class="flex -space-x-3 overflow-hidden">
+    <x-avatar src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=128&h=128&fit=crop&crop=face" name="User One" ring="sm" />
+    <x-avatar src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=128&h=128&fit=crop&crop=face" name="User Two" ring="sm" />
+    <x-avatar src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=128&h=128&fit=crop&crop=face" name="User Three" ring="sm" />
+    <x-avatar name="Sarah Connor" ring="sm" />
+</div>
+HTML;
+
+                                    $avatarDirectoryCode = <<<'HTML'
+<!-- Real-World User Directory Block -->
+<div class="bg-[color:var(--color-surface-primary)] border border-[color:var(--color-border)] rounded-lg divide-y divide-[color:var(--color-border)] max-w-sm">
+    <div class="flex items-center justify-between p-3">
+        <div class="flex items-center gap-3">
+            <x-avatar src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=128&h=128&fit=crop&crop=face" name="John Smith" status="online" />
+            <div>
+                <h4 class="text-sm font-semibold text-[color:var(--color-text-primary)]">John Smith</h4>
+                <p class="text-xs text-[color:var(--color-text-muted)]">j.smith@okina.io</p>
+            </div>
+        </div>
+        <span class="text-xs text-[color:var(--color-success-600)] font-medium">Online</span>
+    </div>
+    <div class="flex items-center justify-between p-3">
+        <div class="flex items-center gap-3">
+            <x-avatar name="Sarah Wilson" status="away" />
+            <div>
+                <h4 class="text-sm font-semibold text-[color:var(--color-text-primary)]">Sarah Wilson</h4>
+                <p class="text-xs text-[color:var(--color-text-muted)]">s.wilson@okina.io</p>
+            </div>
+        </div>
+        <span class="text-xs text-[color:var(--color-warning-600)] font-medium">Away</span>
+    </div>
+    <div class="flex items-center justify-between p-3">
+        <div class="flex items-center gap-3">
+            <x-avatar src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=128&h=128&fit=crop&crop=face" name="Mike Chen" status="busy" />
+            <div>
+                <h4 class="text-sm font-semibold text-[color:var(--color-text-primary)]">Mike Chen</h4>
+                <p class="text-xs text-[color:var(--color-text-muted)]">m.chen@okina.io</p>
+            </div>
+        </div>
+        <span class="text-xs text-[color:var(--color-danger-600)] font-medium">Busy</span>
+    </div>
+    <div class="flex items-center justify-between p-3">
+        <div class="flex items-center gap-3">
+            <x-avatar name="Emma Davis" status="offline" />
+            <div>
+                <h4 class="text-sm font-semibold text-[color:var(--color-text-primary)]">Emma Davis</h4>
+                <p class="text-xs text-[color:var(--color-text-muted)]">e.davis@okina.io</p>
+            </div>
+        </div>
+        <span class="text-xs text-[color:var(--color-text-muted)] font-medium">Offline</span>
+    </div>
+</div>
+HTML;
+                                @endphp
+
+                                <section id="{{ $categories['Data Display']['Avatar'] }}" class="js-section scroll-mt-8 mt-16">
+                                    <h2 class="text-2xl font-bold border-b border-[color:var(--color-border)] pb-4 mb-8">Avatar</h2>
+                                    
+                                    <div class="space-y-12">
+                                        <!-- Sizes -->
+                                        <x-showcase.preview title="Sizes (sm: 32px, md: 40px, lg: 48px, xl: 64px)" :code="$avatarBasicCode" id="preview-avatar-sizes">
+                                            <div class="flex flex-wrap gap-4 items-end">
+                                                <x-avatar src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=128&h=128&fit=crop&crop=face" name="John Smith" size="sm" />
+                                                <x-avatar src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=128&h=128&fit=crop&crop=face" name="John Smith" size="md" />
+                                                <x-avatar src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=128&h=128&fit=crop&crop=face" name="John Smith" size="lg" />
+                                                <x-avatar src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=128&h=128&fit=crop&crop=face" name="John Smith" size="xl" />
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Shapes via Rounded -->
+                                        <x-showcase.preview title="Shapes (Custom border radius)" :code="$avatarShapesCode" id="preview-avatar-shapes">
+                                            <div class="flex flex-wrap gap-4 items-center">
+                                                <x-avatar name="John Smith" rounded="full" />
+                                                <x-avatar name="John Smith" rounded="lg" />
+                                                <x-avatar name="John Smith" rounded="none" />
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Initials Generation -->
+                                        <x-showcase.preview title="Initials & Name-Hashing Palette (Deterministic colors)" :code="$avatarInitialsCode" id="preview-avatar-initials">
+                                            <div class="flex flex-wrap gap-4 items-center">
+                                                <x-avatar name="Müller" />
+                                                <x-avatar name="Élodie Martin" />
+                                                <x-avatar name="李 小龍" />
+                                                <x-avatar name="John Ronald Reuel Tolkien" />
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Fallbacks & Errors -->
+                                        <x-showcase.preview title="Fallback Defaults & Runtime Broken URL Handling" :code="$avatarFallbackCode" id="preview-avatar-fallbacks">
+                                            <div class="flex flex-wrap gap-6 items-center">
+                                                <div class="flex flex-col items-center gap-1.5">
+                                                    <x-avatar />
+                                                    <span class="text-[10px] text-[color:var(--color-text-muted)]">No Name/Src</span>
+                                                </div>
+                                                <div class="flex flex-col items-center gap-1.5">
+                                                    <x-avatar src="https://invalid-domain.xyz/broken-avatar.jpg" name="Sarah Connor" />
+                                                    <span class="text-[10px] text-[color:var(--color-text-muted)]">Broken Link</span>
+                                                </div>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Status Indicator Overlays -->
+                                        <x-showcase.preview title="Status Overlays (Z-Index Layering)" :code="$avatarStatusCode" id="preview-avatar-status">
+                                            <div class="flex flex-wrap gap-6 items-center">
+                                                <x-avatar name="John Smith" status="online" statusPosition="bottom-right" />
+                                                <x-avatar name="Sarah Wilson" status="away" statusPosition="bottom-left" />
+                                                <x-avatar name="Mike Chen" status="busy" statusPosition="top-right" />
+                                                <x-avatar name="Emma Davis" status="offline" statusPosition="top-left" />
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Rings -->
+                                        <x-showcase.preview title="Borders & Ring Token Offsets" :code="$avatarRingCode" id="preview-avatar-rings">
+                                            <div class="flex flex-wrap gap-6 items-center">
+                                                <x-avatar name="John Smith" ring="sm" />
+                                                <x-avatar name="John Smith" ring="md" />
+                                                <x-avatar name="John Smith" ring="lg" />
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Stacked Avatars compatibility -->
+                                        <x-showcase.preview title="Stacked Avatar Compatibility" :code="$avatarStackedCode" id="preview-avatar-stacked">
+                                            <div class="flex -space-x-3 overflow-hidden">
+                                                <x-avatar src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=128&h=128&fit=crop&crop=face" name="User One" ring="sm" />
+                                                <x-avatar src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=128&h=128&fit=crop&crop=face" name="User Two" ring="sm" />
+                                                <x-avatar src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=128&h=128&fit=crop&crop=face" name="User Three" ring="sm" />
+                                                <x-avatar name="Sarah Connor" ring="sm" />
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Real-world User Directory Block -->
+                                        <x-showcase.preview title="Real-World Showcase: User Directory Block" :code="$avatarDirectoryCode" id="preview-avatar-directory">
+                                            <div class="bg-[color:var(--color-surface-primary)] border border-[color:var(--color-border)] rounded-lg divide-y divide-[color:var(--color-border)] w-full max-w-sm">
+                                                <div class="flex items-center justify-between p-3">
+                                                    <div class="flex items-center gap-3">
+                                                        <x-avatar src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=128&h=128&fit=crop&crop=face" name="John Smith" status="online" />
+                                                        <div>
+                                                            <h4 class="text-sm font-semibold text-[color:var(--color-text-primary)]">John Smith</h4>
+                                                            <p class="text-xs text-[color:var(--color-text-muted)]">j.smith@okina.io</p>
+                                                        </div>
+                                                    </div>
+                                                    <span class="text-xs text-[color:var(--color-success-600)] font-medium">Online</span>
+                                                </div>
+                                                <div class="flex items-center justify-between p-3">
+                                                    <div class="flex items-center gap-3">
+                                                        <x-avatar name="Sarah Wilson" status="away" />
+                                                        <div>
+                                                            <h4 class="text-sm font-semibold text-[color:var(--color-text-primary)]">Sarah Wilson</h4>
+                                                            <p class="text-xs text-[color:var(--color-text-muted)]">s.wilson@okina.io</p>
+                                                        </div>
+                                                    </div>
+                                                    <span class="text-xs text-[color:var(--color-warning-600)] font-medium">Away</span>
+                                                </div>
+                                                <div class="flex items-center justify-between p-3">
+                                                    <div class="flex items-center gap-3">
+                                                        <x-avatar src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=128&h=128&fit=crop&crop=face" name="Mike Chen" status="busy" />
+                                                        <div>
+                                                            <h4 class="text-sm font-semibold text-[color:var(--color-text-primary)]">Mike Chen</h4>
+                                                            <p class="text-xs text-[color:var(--color-text-muted)]">m.chen@okina.io</p>
+                                                        </div>
+                                                    </div>
+                                                    <span class="text-xs text-[color:var(--color-danger-600)] font-medium">Busy</span>
+                                                </div>
+                                                <div class="flex items-center justify-between p-3">
+                                                    <div class="flex items-center gap-3">
+                                                        <x-avatar name="Emma Davis" status="offline" />
+                                                        <div>
+                                                            <h4 class="text-sm font-semibold text-[color:var(--color-text-primary)]">Emma Davis</h4>
+                                                            <p class="text-xs text-[color:var(--color-text-muted)]">e.davis@okina.io</p>
+                                                        </div>
+                                                    </div>
+                                                    <span class="text-xs text-[color:var(--color-text-muted)] font-medium">Offline</span>
+                                                </div>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Unicode internationalization manual test panel -->
+                                        <x-showcase.preview title="Unicode Internationalization Test Panel" :code="'<!-- Manual checks -->'" id="preview-avatar-unicode">
+                                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-6">
+                                                <div class="flex flex-col items-center gap-1.5 p-3 border border-[color:var(--color-border)] rounded-lg bg-[color:var(--color-surface-secondary)]">
+                                                    <x-avatar name="Élodie" />
+                                                    <span class="text-[11px] font-medium text-[color:var(--color-text-primary)]">Élodie (EM)</span>
+                                                </div>
+                                                <div class="flex flex-col items-center gap-1.5 p-3 border border-[color:var(--color-border)] rounded-lg bg-[color:var(--color-surface-secondary)]">
+                                                    <x-avatar name="José" />
+                                                    <span class="text-[11px] font-medium text-[color:var(--color-text-primary)]">José (JO)</span>
+                                                </div>
+                                                <div class="flex flex-col items-center gap-1.5 p-3 border border-[color:var(--color-border)] rounded-lg bg-[color:var(--color-surface-secondary)]">
+                                                    <x-avatar name="Müller" />
+                                                    <span class="text-[11px] font-medium text-[color:var(--color-text-primary)]">Müller (MÜ)</span>
+                                                </div>
+                                                <div class="flex flex-col items-center gap-1.5 p-3 border border-[color:var(--color-border)] rounded-lg bg-[color:var(--color-surface-secondary)]">
+                                                    <x-avatar name="李 小龍" />
+                                                    <span class="text-[11px] font-medium text-[color:var(--color-text-primary)]">李 小龍 (李小)</span>
+                                                </div>
+                                                <div class="flex flex-col items-center gap-1.5 p-3 border border-[color:var(--color-border)] rounded-lg bg-[color:var(--color-surface-secondary)]">
+                                                    <x-avatar name="山田 太郎" />
+                                                    <span class="text-[11px] font-medium text-[color:var(--color-text-primary)]">山田 太郎 (山太)</span>
+                                                </div>
+                                                <div class="flex flex-col items-center gap-1.5 p-3 border border-[color:var(--color-border)] rounded-lg bg-[color:var(--color-surface-secondary)]">
+                                                    <x-avatar name="محمد أحمد" />
+                                                    <span class="text-[11px] font-medium text-[color:var(--color-text-primary)]">محمد أحمد (مأ)</span>
+                                                </div>
+                                                <div class="flex flex-col items-center gap-1.5 p-3 border border-[color:var(--color-border)] rounded-lg bg-[color:var(--color-surface-secondary)]">
+                                                    <x-avatar name="अजय कुमार" />
+                                                    <span class="text-[11px] font-medium text-[color:var(--color-text-primary)]">अजय कुमार (अक)</span>
+                                                </div>
+                                            </div>
+                                        </x-showcase.preview>
+                                    </div>
+                                </section>
+                            @endif
+
                     @endif
 
                     {{-- Feedback --}}

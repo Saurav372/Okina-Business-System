@@ -44,6 +44,7 @@ return [
             'Empty State' => 'empty-state',
             'Badge' => 'badge',
             'Card' => 'card',
+            'Avatar' => 'avatar',
         ],
         'Navigation' => [
             'Tabs' => 'tabs',
