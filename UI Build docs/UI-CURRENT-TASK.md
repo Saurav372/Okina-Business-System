@@ -1,22 +1,21 @@
 # Current Task
 
 ## Current Parent Task
-Utility & Media (U1.5)
+Motion & Feedback (U1.6)
 
 ## Current Subtask
-U1.5.3 FileCard & Preview
+U1.6.1 Transition Utilities
 
 ## Goal
-Build reusable, responsive, and accessible file display cards (`<x-file-card>`) and preview overlay elements (`<x-file-preview>`) to represent documents and assets in the media explorer. The components must display file details (title, size, format icon), action triggers, and hover states, and support overlay full-screen/modal image and document views.
+Create reusable transition wrappers and utility configurations conforming to the design system's motion parameters. These utilities should define standard transitions (fade, slide, scale, collapse, etc.) backed by CSS vars and Alpine.js, enabling developers to declare smooth, accessible, and motion-compliant layouts.
 
 ## Dependencies
 **Depends On:**
-- U0.5 (Layout Templates)
+- U0.1.5 (Motion & Animation Tokens)
 
 ## Required Deliverables
-- Reusable FileCard Blade component (`<x-file-card>`) displaying asset metadata, type icons, thumbnail previews, and optional dropdown action menus.
-- Reusable FilePreview Blade component (`<x-file-preview>`) showing expanded popups or drawers for viewing documents, media files, or image details.
-- Integration in the components playground at `/admin/components#file-card` and `/admin/components#file-preview`.
+- Reusable Blade transition component configurations and utility classes representing the defined project motion tokens.
+- Integration in the components playground at `/admin/components#transition-utilities`.
 
 ## Completed prerequisites
 - U0.1 Design System & Tokens
@@ -25,5 +24,4 @@ Build reusable, responsive, and accessible file display cards (`<x-file-card>`) 
 - U1.2 Data & Table
 - U1.3 Navigation
 - U1.4 Feedback & Overlay
-- U1.5.1 Button & Badge
-- U1.5.2 Avatar
+- U1.5 Utility & Media
