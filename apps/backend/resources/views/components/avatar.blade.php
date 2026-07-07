@@ -65,7 +65,7 @@
         $colorClass = $bgColors[$colorIndex];
     }
 
-    // Size presets — applied directly to the root element
+    // Size presets — applied to the disc, NOT the outer wrapper
     $sizes = [
         'sm' => 'w-8 h-8 text-[11px]',
         'md' => 'w-10 h-10 text-xs',
@@ -86,7 +86,7 @@
     ];
     $radiusClass = $radii[$rounded] ?? $radii['full'];
 
-    // Ring token resolving
+    // Ring token resolving — on the disc so it follows its shape
     $rings = [
         'none' => '',
         'sm'   => 'ring-2 ring-[color:var(--color-surface-primary)]',
@@ -95,7 +95,7 @@
     ];
     $ringClass = $rings[$ring] ?? '';
 
-    // Status position mapping
+    // Status position — absolute relative to the OUTER wrapper (no overflow-hidden there)
     $statusPositions = [
         'top-right'    => 'top-0 right-0 translate-x-1/4 -translate-y-1/4',
         'bottom-right' => 'bottom-0 right-0 translate-x-1/4 translate-y-1/4',
@@ -134,46 +134,56 @@
 @endphp
 
 {{--
-    Root wrapper: carries ALL sizing, shape, overflow, and ring.
-    The inner content (image / initials / icon) fills 100% of this fixed box.
-    Status dot is absolutely positioned relative to this wrapper.
+    Two-element structure (critical for status dot visibility):
+
+    OUTER wrapper — relative, inline-flex, shrink-0, NO overflow-hidden.
+    The status dot is absolute-positioned relative to this element,
+    so it can bleed outside the avatar disc without being clipped.
+
+    INNER disc — overflow-hidden, size, shape, ring, background color.
+    All visual chrome lives here. The image is absolutely inset;
+    initials/icon sit underneath it in normal flow.
 --}}
 <div
     x-data="{ imageError: false }"
     data-avatar
     data-size="{{ $size }}"
     data-rounded="{{ $rounded }}"
-    {{ $attributes->except(['src', 'name', 'size', 'width', 'height', 'rounded', 'status', 'statusPosition', 'ring'])->class([
-        'relative inline-flex items-center justify-center shrink-0 select-none overflow-hidden font-bold tracking-tight shadow-sm',
-        $sizeClass    => !$inlineStyles,
-        $radiusClass,
-        $ringClass,
-        $colorClass,   // background/text always present so initials never float in transparent space
-    ]) }}
-    @if ($inlineStyles) style="{{ $inlineStyles }}" @endif
+    class="relative inline-flex shrink-0 select-none"
+    {{ $attributes->except(['src', 'name', 'size', 'width', 'height', 'rounded', 'status', 'statusPosition', 'ring']) }}
 >
-    @if ($src)
-        {{-- Image is unmounted completely on error — no retry loops --}}
-        <template x-if="!imageError">
-            <img
-                src="{{ $src }}"
-                x-on:error="imageError = true"
-                class="absolute inset-0 w-full h-full object-cover"
-                alt="{{ $normalizedName !== null ? $normalizedName : '' }}"
-            />
-        </template>
-    @endif
+    {{-- Inner disc: overflow-hidden here, NOT on the outer wrapper --}}
+    <div
+        class="overflow-hidden inline-flex items-center justify-center font-bold tracking-tight shadow-sm {{ $colorClass }} {{ $radiusClass }} {{ $ringClass }} {{ $sizeClass }}"
+        @if ($inlineStyles) style="{{ $inlineStyles }}" @endif
+    >
+        @if ($src)
+            {{-- Image is unmounted completely on error — prevents network retry loops --}}
+            <template x-if="!imageError">
+                <img
+                    src="{{ $src }}"
+                    x-on:error="imageError = true"
+                    class="absolute inset-0 w-full h-full object-cover"
+                    alt="{{ $normalizedName !== null ? $normalizedName : '' }}"
+                />
+            </template>
+        @endif
 
-    {{-- Initials or placeholder icon — always in DOM, hidden by image --}}
-    @if ($initials !== '')
-        <span aria-hidden="true">{{ $initials }}</span>
-    @else
-        <svg class="w-2/3 h-2/3 text-current" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-            <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
-        </svg>
-    @endif
+        {{-- Initials or placeholder icon — always in DOM, image overlays them --}}
+        @if ($initials !== '')
+            <span aria-hidden="true">{{ $initials }}</span>
+        @else
+            <svg class="w-2/3 h-2/3 text-current" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+        @endif
+    </div>
 
-    {{-- Status dot — absolutely positioned, z-index above ring --}}
+    {{--
+        Status dot — absolutely positioned on the OUTER wrapper.
+        overflow-hidden is absent from the outer wrapper so this is never clipped.
+        z-index: 20 keeps it above ring offsets.
+    --}}
     @if ($status)
         <span
             class="absolute block rounded-full ring-2 ring-[color:var(--color-surface-primary)] z-20 pointer-events-none {{ $statusPosClass }} {{ $statusSizeClass }} {{ $statusColorClass }}"
