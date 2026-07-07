@@ -4,20 +4,19 @@
 Utility & Media (U1.5)
 
 ## Current Subtask
-U1.5.1 Button & Badge
+U1.5.2 Avatar
 
 ## Goal
-Build reusable, responsive, and highly accessible button and status badge components mapped strictly to the Design System tokens, supporting various hierarchy variants (primary, secondary, danger, outline, ghost), size modifiers (sm, md, lg), state styles (hover, active, focus, loading, disabled), icon integrations, and smooth transitions.
+Build a reusable, responsive, and highly accessible Avatar component (`<x-avatar>`) supporting image fallbacks, initials calculations for missing profile pictures, shape presets (circle, square, rounded), custom dimensions (sm, md, lg, xl and raw width/height overrides), status badge dot overlays (online, offline, busy, away), and smooth loading placeholders.
 
 ## Dependencies
 **Depends On:**
 - U0.5 (Layout Templates)
 
 ## Required Deliverables
-- Reusable Button Blade component (`<x-button>`) supporting variants, sizes, icons (slots), and dynamic loading spinners.
-- Reusable Badge Blade component (`<x-badge>`) supporting status types (success, warning, danger, info, neutral) and visual styles (filled, light, outline).
-- Design system compliance (all margins, padding, colors, font-sizes, and focus rings mapped to variables).
-- Integration in the components playground at `/admin/components#buttons` and `/admin/components#badges`.
+- Reusable Avatar Blade component (`<x-avatar>`) supporting initials rendering, custom sizing, status overlays, and image load error handling.
+- Theme styling consistency using variables for colors and borders.
+- Integration in the components playground at `/admin/components#avatar`.
 
 ## Completed prerequisites
 - U0.1 Design System & Tokens
@@ -25,4 +24,5 @@ Build reusable, responsive, and highly accessible button and status badge compon
 - U1.1 Form Components
 - U1.2 Data & Table
 - U1.3 Navigation
-- U1.4 Feedback & Overlay (including U1.4.4 SkeletonLoader)
+- U1.4 Feedback & Overlay
+- U1.5.1 Button & Badge

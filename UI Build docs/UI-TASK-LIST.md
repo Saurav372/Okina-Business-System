@@ -69,7 +69,7 @@ Detailed validation for each subtask is maintained in `UI-SUBTASK-VALIDATION.md`
 | U1.4.3 | Toast / Alert | Foundation | 1 | Flash notifications. | U0.5 | Completed |
 | U1.4.4 | SkeletonLoader | Foundation | 1 | Placeholder loading state. | U0.5 | Completed |
 | **U1.5** | **Utility & Media** | Foundation | 1 | **Milestone** | U0.5 | Milestone |
-| U1.5.1 | Button & Badge | Foundation | 1 | Buttons and status badges. | U0.5 | Pending |
+| U1.5.1 | Button & Badge | Foundation | 1 | Buttons and status badges. | U0.5 | Completed |
 | U1.5.2 | Avatar | Foundation | 1 | User profile image. | U0.5 | Pending |
 | U1.5.3 | FileCard & Preview | Foundation | 1 | Media display. | U0.5 | Pending |
 | **U1.6** | **Motion & Feedback** | Foundation | 1 | **Milestone** | U0.1.5, U0.5 | Milestone |

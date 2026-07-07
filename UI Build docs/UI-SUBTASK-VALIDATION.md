@@ -889,6 +889,36 @@ Notes: Implemented customizable skeleton loader system with GPU-accelerated shim
 
 ---
 
+### U1.5.1 Button & Badge
+**Status:** Completed ✅
+
+**Implementation Validation**
+- [x] Base component `<x-button>` implemented supporting intent/appearance structure, shape (default, square, circle), type defaults (button), fullWidth blocks, custom rounded radius and disabled href anchor fallback structures
+- [x] Loading state on buttons is accessible, uses aria-busy/disabled, includes sr-only screen reader label, and prevents layout shift by keeping text visible alongside the prepended spinner
+- [x] Base component `<x-badge>` implemented supporting neutral, primary, success, danger, warning, and info intents, solid/light/outline appearances, sm/md sizes, dot badges, custom rounded, and icon prefix slots
+- [x] Resolved component styles via clean lookup maps in PHP blocks (no nested templates)
+- [x] Automation hooks (`data-button`, `data-badge`, and variants parameters) present on both elements
+- [x] Showcase integration configured in `/admin/components#button` and `/admin/components#badge`
+
+**UI / Accessibility Validation**
+- [x] Responsive sizes and layout verified
+- [x] Standard focus rings mapped to `--focus-ring-color` and `--focus-ring-offset` with active focus-visible styling (2px width/offset)
+- [x] Target heights verified (badges: sm 20px, md 24px; buttons: sm 32px, md 40px, lg 48px)
+- [x] Contrast ratio check passed for solid, outline, and ghost variants
+
+**Process Validation**
+- [x] Playground sections added for buttons and badges demonstrating variants, sizes, shapes, disabled states, icons, and block widths
+- [x] Compile success with no asset warnings or browser console exceptions
+- [x] Git restore point created
+
+**Review Sign-off**
+Reviewer: AI Assistant
+Date: 2026-07-07
+Result: [x] Pass [ ] Fail
+Notes: Created reusable, responsive, and highly accessible Button and Badge elements compliant with Design System specifications.
+
+---
+
 ## Component Validation Template (U1.x)
 *(Apply this checklist to every form, table, navigation, overlay, and utility component)*
 
