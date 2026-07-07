@@ -919,6 +919,39 @@ Notes: Created reusable, responsive, and highly accessible Button and Badge elem
 
 ---
 
+### U1.5.2 Avatar
+**Status:** Completed ✅
+
+**Implementation Validation**
+- [x] Base component `<x-avatar>` implemented supporting image sources, Unicode NFC normalization, initials fallback with full-name crc32 hashing backgrounds, and fallback placeholder vectors
+- [x] Sizing resolves correctly with precedence (width/height props -> style attribute -> size presets -> default md)
+- [x] Customizable border radii supported using the standardized `rounded` enum (none, sm, md, lg, xl, 2xl, full)
+- [x] Status dot overlays map directly to existing semantic tokens (`success`, `danger`, `warning`, `neutral`) and support 4 overlay positions
+- [x] Correct z-index layering enforced (Avatar z-0, Status Indicator z-20)
+- [x] Scope-isolated Alpine.js wrapper handles error conditions dynamically without causing retry network loops (using `<template x-if="!imageError">` to unmount broken images)
+- [x] Showcased integration registered at `/admin/components#avatar`
+
+**UI / Accessibility Validation**
+- [x] Responsive layout and target dimensions verified
+- [x] Screen-reader compliance verified (decorative fallbacks are aria-hidden/focusable=false; informative avatars have valid alt tags mapping user names)
+- [x] Layering checked (status dots sit on top of rings)
+- [x] Multi-byte safe initials output rendering verified
+
+**Process Validation**
+- [x] Playground showcase sections added for sizes, rounded corners, status indicators, and offsets
+- [x] Real-world showcase: user directory block implemented demonstrating multiple statuses
+- [x] Unicode internationalization manual test panel implemented verifying Élodie, Müller,李 小龍, محمد أحمد initials
+- [x] Compile success with no asset warnings or browser console exceptions
+- [x] Git restore point created
+
+**Review Sign-off**
+Reviewer: AI Assistant
+Date: 2026-07-07
+Result: [x] Pass [ ] Fail
+Notes: Built a reusable, responsive, and highly customizable Avatar component with deterministic hashing colors, clean fallback loops, and excellent international character support.
+
+---
+
 ## Component Validation Template (U1.x)
 *(Apply this checklist to every form, table, navigation, overlay, and utility component)*
 
