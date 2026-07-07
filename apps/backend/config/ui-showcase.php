@@ -45,6 +45,8 @@ return [
             'Badge' => 'badge',
             'Card' => 'card',
             'Avatar' => 'avatar',
+            'File Card' => 'file-card',
+            'File Preview' => 'file-preview',
         ],
         'Navigation' => [
             'Tabs' => 'tabs',

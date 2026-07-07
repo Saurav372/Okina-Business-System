@@ -1658,6 +1658,516 @@ HTML;
                                 </section>
                             @endif
 
+                            {{-- File Card --}}
+                            @if(isset($categories['Data Display']['File Card']))
+                                @php
+                                    $fileCardBasicCode = <<<'HTML'
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-6 w-full">
+    <!-- Image Card (Opens Preview) -->
+    <x-file-card
+        name="landscape.jpg"
+        size="4.2 MB"
+        mime="image/jpeg"
+        thumbnail="https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=300&h=300&fit=crop"
+        preview="preview-image-tile"
+    />
+
+    <!-- PDF Card (Opens Preview) -->
+    <x-file-card
+        name="annual_report_2026.pdf"
+        size="2.4 MB"
+        mime="application/pdf"
+        preview="preview-pdf-tile"
+    />
+
+    <!-- Video Card (Opens Preview) -->
+    <x-file-card
+        name="presentation.mp4"
+        size="18.5 MB"
+        mime="video/mp4"
+        preview="preview-video-tile"
+    />
+
+    <!-- Audio Card (Opens Preview) -->
+    <x-file-card
+        name="podcast_episode.mp3"
+        size="12.1 MB"
+        mime="audio/mpeg"
+        preview="preview-audio-tile"
+    />
+
+    <!-- Archive Card (Download CTA) -->
+    <x-file-card
+        name="backup_assets.zip"
+        size="145.8 MB"
+        mime="application/zip"
+        downloadUrl="#"
+        downloadName="backup_assets.zip"
+    />
+
+    <!-- Excel Card (Download CTA) -->
+    <x-file-card
+        name="quarterly_metrics.xlsx"
+        size="840 KB"
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        downloadUrl="#"
+        downloadName="quarterly_metrics.xlsx"
+    />
+</div>
+
+<!-- Preview Lightboxes -->
+<x-file-preview id="preview-image-tile" name="landscape.jpg" url="https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200&h=800&fit=crop" mime="image/jpeg" size="4.2 MB" downloadUrl="#" />
+<x-file-preview id="preview-pdf-tile" name="annual_report_2026.pdf" url="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" mime="application/pdf" size="2.4 MB" downloadUrl="#" />
+<x-file-preview id="preview-video-tile" name="presentation.mp4" url="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" mime="video/mp4" size="18.5 MB" downloadUrl="#" />
+<x-file-preview id="preview-audio-tile" name="podcast_episode.mp3" url="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" mime="audio/mpeg" size="12.1 MB" downloadUrl="#" />
+HTML;
+
+                                    $fileCardListCode = <<<'HTML'
+<div class="space-y-3 w-full">
+    <x-file-card
+        name="invoice_1092.pdf"
+        size="124 KB"
+        mime="application/pdf"
+        variant="list"
+        preview="preview-list-pdf"
+    />
+    <x-file-card
+        name="avatar_face.png"
+        size="84 KB"
+        mime="image/png"
+        variant="list"
+        thumbnail="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=128&h=128&fit=crop&crop=face"
+        preview="preview-list-image"
+    />
+    <x-file-card
+        name="database_dump.zip"
+        size="48.2 MB"
+        mime="application/zip"
+        variant="list"
+        downloadUrl="#"
+    />
+</div>
+
+<x-file-preview id="preview-list-pdf" name="invoice_1092.pdf" url="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" mime="application/pdf" size="124 KB" downloadUrl="#" />
+<x-file-preview id="preview-list-image" name="avatar_face.png" url="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=800&h=800&fit=crop&crop=face" mime="image/png" size="84 KB" downloadUrl="#" />
+HTML;
+
+                                    $fileCardStatesCode = <<<'HTML'
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
+    <!-- Disabled Card -->
+    <div>
+        <h4 class="text-xs font-semibold text-[color:var(--color-text-muted)] uppercase tracking-wider mb-2">Disabled State</h4>
+        <x-file-card
+            name="archive_old.zip"
+            size="250 MB"
+            mime="application/zip"
+            disabled
+        />
+    </div>
+
+    <!-- Loading State -->
+    <div>
+        <h4 class="text-xs font-semibold text-[color:var(--color-text-muted)] uppercase tracking-wider mb-2">Loading State</h4>
+        <x-file-card
+            name="loading_file.mp4"
+            loading
+        />
+    </div>
+
+    <!-- Selectable + Selected -->
+    <div>
+        <h4 class="text-xs font-semibold text-[color:var(--color-text-muted)] uppercase tracking-wider mb-2">Selectable (Hover to see checkbox)</h4>
+        <x-file-card
+            name="selected_document.docx"
+            size="1.2 MB"
+            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            selectable
+            selected
+        />
+    </div>
+
+    <!-- Static (Non-interactive) Card -->
+    <div>
+        <h4 class="text-xs font-semibold text-[color:var(--color-text-muted)] uppercase tracking-wider mb-2">Non-Interactive (No actions/URLs)</h4>
+        <x-file-card
+            name="read-only-information.txt"
+            size="15 KB"
+            mime="text/plain"
+        />
+    </div>
+</div>
+HTML;
+
+                                    $fileCardActionsCode = <<<'HTML'
+<!-- Custom Action Menu Slots -->
+<x-file-card
+    name="shared_document.docx"
+    size="1.8 MB"
+    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+>
+    <x-slot:actions>
+        <x-dropdown.item onclick="alert('Shared!')">
+            Share Link
+        </x-dropdown.item>
+        <x-dropdown.item onclick="alert('Downloaded!')">
+            Direct Download
+        </x-dropdown.item>
+        <x-dropdown.divider />
+        <x-dropdown.item class="text-red-600 hover:text-red-700" onclick="alert('Deleted!')">
+            Delete File
+        </x-dropdown.item>
+    </x-slot:actions>
+</x-file-card>
+HTML;
+
+                                    $fileCardGalleryCode = <<<'HTML'
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-6 w-full">
+    <!-- Image Card -->
+    <x-file-card
+        name="mountain.jpg"
+        size="3.1 MB"
+        mime="image/jpeg"
+        thumbnail="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=300&h=300&fit=crop"
+        preview="gallery-img"
+    />
+    <!-- PDF Card -->
+    <x-file-card
+        name="financial_plan_2026.pdf"
+        size="1.4 MB"
+        mime="application/pdf"
+        preview="gallery-pdf"
+    />
+    <!-- Zip Card -->
+    <x-file-card
+        name="assets_v2.zip"
+        size="24.8 MB"
+        mime="application/zip"
+        downloadUrl="#"
+    />
+    <!-- Docx Card -->
+    <x-file-card
+        name="project_proposal.docx"
+        size="2.1 MB"
+        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        downloadUrl="#"
+    />
+    <!-- MP4 Video Card -->
+    <x-file-card
+        name="ad_campaign.mp4"
+        size="45.1 MB"
+        mime="video/mp4"
+        preview="gallery-video"
+    />
+    <!-- Disabled Card -->
+    <x-file-card
+        name="restricted_file.key"
+        size="0 bytes"
+        disabled
+    />
+    <!-- Loading Card -->
+    <x-file-card
+        name="fetching..."
+        loading
+    />
+    <!-- Long Filename -->
+    <x-file-card
+        name="quarterly_report_executive_summary_final_v3_draft_reviewed.xlsx"
+        size="1.8 MB"
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        downloadUrl="#"
+    />
+</div>
+
+<!-- Preview lightboxes -->
+<x-file-preview id="gallery-img" name="mountain.jpg" url="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200&h=800&fit=crop" mime="image/jpeg" size="3.1 MB" downloadUrl="#" />
+<x-file-preview id="gallery-pdf" name="financial_plan_2026.pdf" url="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" mime="application/pdf" size="1.4 MB" downloadUrl="#" />
+<x-file-preview id="gallery-video" name="ad_campaign.mp4" url="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" mime="video/mp4" size="45.1 MB" downloadUrl="#" />
+HTML;
+                                @endphp
+
+                                <section id="{{ $categories['Data Display']['File Card'] }}" class="js-section scroll-mt-8 mt-16">
+                                    <h2 class="text-2xl font-bold border-b border-[color:var(--color-border)] pb-4 mb-8">File Card</h2>
+                                    
+                                    <div class="space-y-12">
+                                        <!-- Tile Grid -->
+                                        <x-showcase.preview title="Tile Grid Variant" :code="$fileCardBasicCode" id="preview-file-card-tile">
+                                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-6 w-full">
+                                                <x-file-card
+                                                    name="landscape.jpg"
+                                                    size="4.2 MB"
+                                                    mime="image/jpeg"
+                                                    thumbnail="https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=300&h=300&fit=crop"
+                                                    preview="preview-image-tile"
+                                                />
+                                                <x-file-card
+                                                    name="annual_report_2026.pdf"
+                                                    size="2.4 MB"
+                                                    mime="application/pdf"
+                                                    preview="preview-pdf-tile"
+                                                />
+                                                <x-file-card
+                                                    name="presentation.mp4"
+                                                    size="18.5 MB"
+                                                    mime="video/mp4"
+                                                    preview="preview-video-tile"
+                                                />
+                                                <x-file-card
+                                                    name="podcast_episode.mp3"
+                                                    size="12.1 MB"
+                                                    mime="audio/mpeg"
+                                                    preview="preview-audio-tile"
+                                                />
+                                                <x-file-card
+                                                    name="backup_assets.zip"
+                                                    size="145.8 MB"
+                                                    mime="application/zip"
+                                                    downloadUrl="#"
+                                                    downloadName="backup_assets.zip"
+                                                />
+                                                <x-file-card
+                                                    name="quarterly_metrics.xlsx"
+                                                    size="840 KB"
+                                                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                                                    downloadUrl="#"
+                                                    downloadName="quarterly_metrics.xlsx"
+                                                />
+                                            </div>
+
+                                            <x-file-preview id="preview-image-tile" name="landscape.jpg" url="https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200&h=800&fit=crop" mime="image/jpeg" size="4.2 MB" downloadUrl="#" />
+                                            <x-file-preview id="preview-pdf-tile" name="annual_report_2026.pdf" url="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" mime="application/pdf" size="2.4 MB" downloadUrl="#" />
+                                            <x-file-preview id="preview-video-tile" name="presentation.mp4" url="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" mime="video/mp4" size="18.5 MB" downloadUrl="#" />
+                                            <x-file-preview id="preview-audio-tile" name="podcast_episode.mp3" url="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" mime="audio/mpeg" size="12.1 MB" downloadUrl="#" />
+                                        </x-showcase.preview>
+
+                                        <!-- List Variant -->
+                                        <x-showcase.preview title="List Variant" :code="$fileCardListCode" id="preview-file-card-list">
+                                            <div class="space-y-3 w-full">
+                                                <x-file-card
+                                                    name="invoice_1092.pdf"
+                                                    size="124 KB"
+                                                    mime="application/pdf"
+                                                    variant="list"
+                                                    preview="preview-list-pdf"
+                                                />
+                                                <x-file-card
+                                                    name="avatar_face.png"
+                                                    size="84 KB"
+                                                    mime="image/png"
+                                                    variant="list"
+                                                    thumbnail="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=128&h=128&fit=crop&crop=face"
+                                                    preview="preview-list-image"
+                                                />
+                                                <x-file-card
+                                                    name="database_dump.zip"
+                                                    size="48.2 MB"
+                                                    mime="application/zip"
+                                                    variant="list"
+                                                    downloadUrl="#"
+                                                />
+                                            </div>
+
+                                            <x-file-preview id="preview-list-pdf" name="invoice_1092.pdf" url="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" mime="application/pdf" size="124 KB" downloadUrl="#" />
+                                            <x-file-preview id="preview-list-image" name="avatar_face.png" url="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=800&h=800&fit=crop&crop=face" mime="image/png" size="84 KB" downloadUrl="#" />
+                                        </x-showcase.preview>
+
+                                        <!-- Card States -->
+                                        <x-showcase.preview title="File Card States" :code="$fileCardStatesCode" id="preview-file-card-states">
+                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
+                                                <div>
+                                                    <h4 class="text-xs font-semibold text-[color:var(--color-text-muted)] uppercase tracking-wider mb-2">Disabled State</h4>
+                                                    <x-file-card
+                                                        name="archive_old.zip"
+                                                        size="250 MB"
+                                                        mime="application/zip"
+                                                        disabled
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <h4 class="text-xs font-semibold text-[color:var(--color-text-muted)] uppercase tracking-wider mb-2">Loading State</h4>
+                                                    <x-file-card
+                                                        name="loading_file.mp4"
+                                                        loading
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <h4 class="text-xs font-semibold text-[color:var(--color-text-muted)] uppercase tracking-wider mb-2">Selectable + Selected</h4>
+                                                    <x-file-card
+                                                        name="selected_document.docx"
+                                                        size="1.2 MB"
+                                                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                                        selectable
+                                                        selected
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <h4 class="text-xs font-semibold text-[color:var(--color-text-muted)] uppercase tracking-wider mb-2">Non-Interactive (No Action)</h4>
+                                                    <x-file-card
+                                                        name="read-only-information.txt"
+                                                        size="15 KB"
+                                                        mime="text/plain"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Actions Dropdown -->
+                                        <x-showcase.preview title="Custom Actions Menu (Composed Dropdown)" :code="$fileCardActionsCode" id="preview-file-card-actions">
+                                            <div class="max-w-sm">
+                                                <x-file-card
+                                                    name="shared_document.docx"
+                                                    size="1.8 MB"
+                                                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                                >
+                                                    <x-slot:actions>
+                                                        <x-dropdown.item onclick="alert('Shared!')">
+                                                            Share Link
+                                                        </x-dropdown.item>
+                                                        <x-dropdown.item onclick="alert('Downloaded!')">
+                                                            Direct Download
+                                                        </x-dropdown.item>
+                                                        <x-dropdown.divider />
+                                                        <x-dropdown.item class="text-red-600 hover:text-red-700" onclick="alert('Deleted!')">
+                                                            Delete File
+                                                        </x-dropdown.item>
+                                                    </x-slot:actions>
+                                                </x-file-card>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Mixed Gallery -->
+                                        <x-showcase.preview title="Mixed Gallery (Comprehensive Layout & Code Paths)" :code="$fileCardGalleryCode" id="preview-file-card-gallery">
+                                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 w-full">
+                                                <x-file-card
+                                                    name="mountain.jpg"
+                                                    size="3.1 MB"
+                                                    mime="image/jpeg"
+                                                    thumbnail="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=300&h=300&fit=crop"
+                                                    preview="gallery-img"
+                                                />
+                                                <x-file-card
+                                                    name="financial_plan_2026.pdf"
+                                                    size="1.4 MB"
+                                                    mime="application/pdf"
+                                                    preview="gallery-pdf"
+                                                />
+                                                <x-file-card
+                                                    name="assets_v2.zip"
+                                                    size="24.8 MB"
+                                                    mime="application/zip"
+                                                    downloadUrl="#"
+                                                />
+                                                <x-file-card
+                                                    name="project_proposal.docx"
+                                                    size="2.1 MB"
+                                                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                                    downloadUrl="#"
+                                                />
+                                                <x-file-card
+                                                    name="ad_campaign.mp4"
+                                                    size="45.1 MB"
+                                                    mime="video/mp4"
+                                                    preview="gallery-video"
+                                                />
+                                                <x-file-card
+                                                    name="restricted_file.key"
+                                                    size="0 bytes"
+                                                    disabled
+                                                />
+                                                <x-file-card
+                                                    name="fetching..."
+                                                    loading
+                                                />
+                                                <x-file-card
+                                                    name="quarterly_report_executive_summary_final_v3_draft_reviewed.xlsx"
+                                                    size="1.8 MB"
+                                                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                                                    downloadUrl="#"
+                                                />
+                                                {{-- forcePreviewType and showBadge --}}
+                                                <x-file-card
+                                                    name="custom_image_stream.bin"
+                                                    size="920 KB"
+                                                    mime="application/octet-stream"
+                                                    forcePreviewType="image"
+                                                    thumbnail="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=300&h=300&fit=crop"
+                                                    preview="gallery-forced-img"
+                                                    :showBadge="false"
+                                                />
+                                            </div>
+
+                                            <x-file-preview id="gallery-img" name="mountain.jpg" url="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200&h=800&fit=crop" mime="image/jpeg" size="3.1 MB" downloadUrl="#" />
+                                            <x-file-preview id="gallery-pdf" name="financial_plan_2026.pdf" url="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" mime="application/pdf" size="1.4 MB" downloadUrl="#" />
+                                            <x-file-preview id="gallery-video" name="ad_campaign.mp4" url="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" mime="video/mp4" size="45.1 MB" downloadUrl="#" />
+                                            <x-file-preview id="gallery-forced-img" name="custom_image_stream.bin" url="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1200&h=800&fit=crop" mime="application/octet-stream" forcePreviewType="image" size="920 KB" downloadUrl="#" />
+                                        </x-showcase.preview>
+                                    </div>
+                                </section>
+                            @endif
+
+                            {{-- File Preview --}}
+                            @if(isset($categories['Data Display']['File Preview']))
+                                @php
+                                    $filePreviewDemoCode = <<<'HTML'
+<!-- Button to trigger standard file preview lightbox -->
+<button
+    type="button"
+    onclick="window.openModal('preview-standalone-image')"
+    class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold bg-[color:var(--color-primary)] text-white rounded-lg hover:bg-[color:var(--color-primary-hover)] active:bg-[color:var(--color-primary-active)] transition-colors focus:outline-none focus:ring-2 focus:ring-[color:var(--color-primary)] focus:ring-offset-2"
+>
+    <span>Open Standalone Preview</span>
+</button>
+
+<x-file-preview
+    id="preview-standalone-image"
+    name="aurora_borealis.png"
+    url="https://images.unsplash.com/photo-1579033461380-adb47c3eb938?w=1200&h=800&fit=crop"
+    mime="image/png"
+    size="5.8 MB"
+    downloadUrl="#"
+    downloadName="aurora_borealis.png"
+>
+    <x-slot:actions>
+        <x-button intent="ghost" size="sm" onclick="alert('Shared standalone!')">Share</x-button>
+        <x-button intent="secondary" size="sm" onclick="alert('Rotated standalone!')">Rotate</x-button>
+    </x-slot:actions>
+</x-file-preview>
+HTML;
+                                @endphp
+
+                                <section id="{{ $categories['Data Display']['File Preview'] }}" class="js-section scroll-mt-8 mt-16">
+                                    <h2 class="text-2xl font-bold border-b border-[color:var(--color-border)] pb-4 mb-8">File Preview</h2>
+                                    
+                                    <div class="space-y-12">
+                                        <!-- Standalone Demo -->
+                                        <x-showcase.preview title="Standalone Preview Lightbox" :code="$filePreviewDemoCode" id="preview-file-preview-standalone">
+                                            <div class="flex items-center gap-4">
+                                                <button
+                                                    type="button"
+                                                    onclick="window.openModal('preview-standalone-image')"
+                                                    class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold bg-[color:var(--color-primary)] text-white rounded-lg hover:bg-[color:var(--color-primary-hover)] active:bg-[color:var(--color-primary-active)] transition-colors focus:outline-none focus:ring-2 focus:ring-[color:var(--color-primary)] focus:ring-offset-2"
+                                                >
+                                                    <span>Open Standalone Preview</span>
+                                                </button>
+
+                                                <x-file-preview
+                                                    id="preview-standalone-image"
+                                                    name="aurora_borealis.png"
+                                                    url="https://images.unsplash.com/photo-1579033461380-adb47c3eb938?w=1200&h=800&fit=crop"
+                                                    mime="image/png"
+                                                    size="5.8 MB"
+                                                    downloadUrl="#"
+                                                    downloadName="aurora_borealis.png"
+                                                >
+                                                    <x-slot:actions>
+                                                        <x-button intent="ghost" size="sm" onclick="alert('Shared standalone!')">Share</x-button>
+                                                        <x-button intent="secondary" size="sm" onclick="alert('Rotated standalone!')">Rotate</x-button>
+                                                    </x-slot:actions>
+                                                </x-file-preview>
+                                            </div>
+                                        </x-showcase.preview>
+                                    </div>
+                                </section>
+                            @endif
                     @endif
 
                     {{-- Feedback --}}
