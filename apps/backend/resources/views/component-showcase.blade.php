@@ -2050,6 +2050,289 @@ HTML;
                                     </div>
                                 </section>
                             @endif
+
+                            {{-- Skeleton --}}
+                            @if(isset($categories['Feedback']['Skeleton']))
+                                @php
+                                    $skeletonBasicCode = <<<'HTML'
+<!-- Line variant (default) -->
+<x-skeleton variant="line" class="mb-4" />
+
+<!-- Circle variant (avatar size override) -->
+<x-skeleton variant="circle" size="md" class="mb-4" />
+
+<!-- Block variant (standard rectangle) -->
+<x-skeleton variant="block" class="h-16 rounded-lg mb-4" />
+
+<!-- Custom raw CSS dimensions (inline-style overrides Tailwind) -->
+<x-skeleton width="12rem" height="32px" rounded="lg" class="mb-4" />
+
+<!-- Accept numeric input (automatically converts to px) -->
+<x-skeleton width="240" height="24" rounded="md" />
+HTML;
+
+                                    $skeletonAnimationsCode = <<<'HTML'
+<!-- Shimmer (Default) -->
+<x-skeleton variant="line" animate="shimmer" class="mb-4" />
+
+<!-- Pulse (Opacity transitions) -->
+<x-skeleton variant="line" animate="pulse" class="mb-4" />
+
+<!-- Static (Solid color) -->
+<x-skeleton variant="line" animate="static" />
+HTML;
+
+                                    $skeletonCompositeCode = <<<'HTML'
+<!-- Avatar preset (standard circle profile icon) -->
+<x-skeleton.avatar class="mb-4" />
+<x-skeleton.avatar size="3.5rem" class="mb-4" />
+
+<!-- Image preset (aspect ratio mapping: video, square, portrait, auto) -->
+<x-skeleton.image aspect="video" class="rounded-lg mb-4" />
+<x-skeleton.image aspect="portrait" class="w-32 rounded-lg mb-4" />
+<x-skeleton.image aspect="square" class="w-16 rounded-lg" />
+HTML;
+
+                                    $skeletonComplexCode = <<<'HTML'
+<!-- Stats placeholder card (toggleable icon) -->
+<x-skeleton.stats :icon="true" class="mb-6" />
+
+<!-- Single Card (Vertical orientation) -->
+<x-skeleton.card layout="vertical" class="max-w-xs mb-6" />
+
+<!-- Grid Card Repetitions (layout classes forwarded directly) -->
+<x-skeleton.card count="3" layout="vertical" class="grid-cols-1 md:grid-cols-3 mb-6" />
+
+<!-- List items feed (repetition + dividers) -->
+<x-skeleton.list items="3" :divided="true" />
+HTML;
+
+                                    $skeletonTableCode = <<<'HTML'
+<!-- Programmatic Table Builder (dynamic rows, columns, and header toggles) -->
+<x-skeleton.table rows="4" columns="5" :header="true" />
+HTML;
+
+                                    $skeletonConditionalCode = <<<'HTML'
+<!-- 1. Real Blade conditional state loading -->
+<x-skeleton :loading="true" class="w-full h-12 rounded-lg">
+    <div class="p-3 bg-emerald-50 text-emerald-800 rounded-lg">
+        This actual content is hidden because loading is true.
+    </div>
+</x-skeleton>
+
+<x-skeleton :loading="false" class="w-full h-12 rounded-lg mt-4">
+    <div class="p-4 bg-emerald-50 text-emerald-800 rounded-lg border border-emerald-200 font-semibold">
+        This actual content is visible because loading is false!
+    </div>
+</x-skeleton>
+HTML;
+                                @endphp
+
+                                <section id="skeleton" class="js-section mb-12">
+                                    <div class="border-b border-[color:var(--color-border)] pb-4 mb-6">
+                                        <h2 class="text-2xl font-bold text-[color:var(--color-text-primary)]">Skeleton Loader</h2>
+                                        <p class="text-sm text-[color:var(--color-text-muted)] mt-1">
+                                            A fluid loading placeholder system supporting pulsing or shimmer animations, shapes, customization hooks, and prebuilt composite elements.
+                                        </p>
+                                    </div>
+
+                                    <div class="space-y-12">
+                                        <!-- Base Shapes -->
+                                        <x-showcase.preview title="Base Shapes & Sizes" :code="$skeletonBasicCode" id="preview-skeleton-basic">
+                                            <div class="w-full max-w-sm space-y-4">
+                                                <div>
+                                                    <span class="text-xs font-semibold text-[color:var(--color-text-muted)] mb-1 block">Line (Default)</span>
+                                                    <x-skeleton variant="line" />
+                                                </div>
+                                                <div>
+                                                    <span class="text-xs font-semibold text-[color:var(--color-text-muted)] mb-1 block">Circle</span>
+                                                    <x-skeleton variant="circle" />
+                                                </div>
+                                                <div>
+                                                    <span class="text-xs font-semibold text-[color:var(--color-text-muted)] mb-1 block">Block (Default size)</span>
+                                                    <x-skeleton variant="block" class="h-16 rounded-lg" />
+                                                </div>
+                                                <div>
+                                                    <span class="text-xs font-semibold text-[color:var(--color-text-muted)] mb-1 block">Custom Dimension (width="12rem" height="32px")</span>
+                                                    <x-skeleton width="12rem" height="32px" rounded="lg" />
+                                                </div>
+                                                <div>
+                                                    <span class="text-xs font-semibold text-[color:var(--color-text-muted)] mb-1 block">Accept Numeric (width="240" height="24")</span>
+                                                    <x-skeleton width="240" height="24" rounded="md" />
+                                                </div>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Animations -->
+                                        <x-showcase.preview title="Animation Modes" :code="$skeletonAnimationsCode" id="preview-skeleton-animations">
+                                            <div class="w-full max-w-sm space-y-4">
+                                                <div>
+                                                    <span class="text-xs font-semibold text-[color:var(--color-text-muted)] mb-1 block">Shimmer (GPU-Accelerated)</span>
+                                                    <x-skeleton variant="line" animate="shimmer" />
+                                                </div>
+                                                <div>
+                                                    <span class="text-xs font-semibold text-[color:var(--color-text-muted)] mb-1 block">Pulse (Tailwind Opacity)</span>
+                                                    <x-skeleton variant="line" animate="pulse" />
+                                                </div>
+                                                <div>
+                                                    <span class="text-xs font-semibold text-[color:var(--color-text-muted)] mb-1 block">Static (Solid Background)</span>
+                                                    <x-skeleton variant="line" animate="static" />
+                                                </div>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Presets -->
+                                        <x-showcase.preview title="Media & Avatar Presets" :code="$skeletonCompositeCode" id="preview-skeleton-presets">
+                                            <div class="w-full max-w-md space-y-6">
+                                                <div>
+                                                    <span class="text-xs font-semibold text-[color:var(--color-text-muted)] mb-2 block">Avatar Presets</span>
+                                                    <div class="flex items-center gap-3">
+                                                        <x-skeleton.avatar />
+                                                        <x-skeleton.avatar size="3rem" />
+                                                        <x-skeleton.avatar size="3.5rem" />
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <span class="text-xs font-semibold text-[color:var(--color-text-muted)] mb-2 block">Image Presets (Aspect Ratios)</span>
+                                                    <div class="grid grid-cols-2 gap-4">
+                                                        <div>
+                                                            <span class="text-xs text-[color:var(--color-text-muted)] mb-1 block">Video aspect (16/9)</span>
+                                                            <x-skeleton.image aspect="video" class="rounded-lg" />
+                                                        </div>
+                                                        <div>
+                                                            <span class="text-xs text-[color:var(--color-text-muted)] mb-1 block">Square aspect (1/1)</span>
+                                                            <x-skeleton.image aspect="square" class="rounded-lg w-28 mx-auto" />
+                                                        </div>
+                                                        <div>
+                                                            <span class="text-xs text-[color:var(--color-text-muted)] mb-1 block">Portrait aspect (3/4)</span>
+                                                            <x-skeleton.image aspect="portrait" class="rounded-lg w-24" />
+                                                        </div>
+                                                        <div>
+                                                            <span class="text-xs text-[color:var(--color-text-muted)] mb-1 block">Auto aspect</span>
+                                                            <x-skeleton.image aspect="auto" class="rounded-lg h-24 w-full" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Card & List Composites -->
+                                        <x-showcase.preview title="Card & List Layouts" :code="$skeletonComplexCode" id="preview-skeleton-composites">
+                                            <div class="w-full space-y-8">
+                                                <div>
+                                                    <span class="text-xs font-semibold text-[color:var(--color-text-muted)] mb-2 block">Stats KPI Card Preset</span>
+                                                    <x-skeleton.stats :icon="true" class="max-w-sm" />
+                                                </div>
+                                                <div>
+                                                    <span class="text-xs font-semibold text-[color:var(--color-text-muted)] mb-2 block">Card Layouts</span>
+                                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                        <div>
+                                                            <span class="text-xs text-[color:var(--color-text-muted)] mb-2 block">Vertical Card</span>
+                                                            <x-skeleton.card layout="vertical" />
+                                                        </div>
+                                                        <div>
+                                                            <span class="text-xs text-[color:var(--color-text-muted)] mb-2 block">Horizontal Card</span>
+                                                            <x-skeleton.card layout="horizontal" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <span class="text-xs font-semibold text-[color:var(--color-text-muted)] mb-2 block">Grid Cards Repeater (count="3" with custom classes)</span>
+                                                    <x-skeleton.card count="3" layout="vertical" class="grid-cols-1 sm:grid-cols-3" />
+                                                </div>
+                                                <div>
+                                                    <span class="text-xs font-semibold text-[color:var(--color-text-muted)] mb-2 block">List Feed Layout</span>
+                                                    <x-skeleton.list items="3" :divided="true" />
+                                                </div>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Table Builder -->
+                                        <x-showcase.preview title="Table Grid Builder" :code="$skeletonTableCode" id="preview-skeleton-table">
+                                            <div class="w-full space-y-6">
+                                                <div>
+                                                    <span class="text-xs font-semibold text-[color:var(--color-text-muted)] mb-2 block">Table rows=3, columns=4</span>
+                                                    <x-skeleton.table rows="3" columns="4" :header="true" />
+                                                </div>
+                                                <div>
+                                                    <span class="text-xs font-semibold text-[color:var(--color-text-muted)] mb-2 block">Table body-only (header=false)</span>
+                                                    <x-skeleton.table rows="3" columns="3" :header="false" />
+                                                </div>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Conditional Loading wrapper -->
+                                        <x-showcase.preview title="Conditional Loading & Slot API" :code="$skeletonConditionalCode" id="preview-skeleton-conditional">
+                                            <div class="w-full space-y-8">
+                                                <div>
+                                                    <span class="text-xs font-semibold text-[color:var(--color-text-muted)] mb-2 block">Static Blade Compilation States</span>
+                                                    <div class="space-y-4 max-w-xl">
+                                                        <div>
+                                                            <span class="text-[11px] text-[color:var(--color-text-muted)] block mb-1">State: :loading="true"</span>
+                                                            <x-skeleton :loading="true" class="w-full h-12 rounded-lg">
+                                                                <div class="p-3 bg-emerald-50 text-emerald-800 rounded-lg">
+                                                                    Hidden content.
+                                                                </div>
+                                                            </x-skeleton>
+                                                        </div>
+                                                        <div>
+                                                            <span class="text-[11px] text-[color:var(--color-text-muted)] block mb-1">State: :loading="false"</span>
+                                                            <x-skeleton :loading="false" class="w-full h-12 rounded-lg">
+                                                                <div class="p-4 bg-emerald-50 text-emerald-800 rounded-lg border border-emerald-200 flex items-center gap-2">
+                                                                    <svg class="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                                    <span>Loaded data rendered successfully!</span>
+                                                                </div>
+                                                            </x-skeleton>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Live Interactive Sandbox -->
+                                                <div x-data="{ loading: true }" class="p-6 bg-[color:var(--color-neutral-100)] rounded-xl border border-[color:var(--color-border)]">
+                                                    <span class="text-xs font-bold uppercase tracking-wider text-[color:var(--color-text-muted)] block mb-4">Interactive Sandbox</span>
+                                                    <div class="flex items-center gap-3 mb-6">
+                                                        <button 
+                                                            @click="loading = !loading" 
+                                                            class="px-4 py-2 text-sm font-semibold text-white bg-[color:var(--color-primary-600)] hover:bg-[color:var(--color-primary-700)] active:scale-95 rounded-lg transition"
+                                                            x-text="loading ? 'Simulate Loaded State' : 'Simulate Loading State'"
+                                                        ></button>
+                                                        <span class="text-xs text-[color:var(--color-text-muted)] font-mono" x-text="loading ? 'Status: LOADING (aria-busy=true)' : 'Status: READY (aria-busy=false)'"></span>
+                                                    </div>
+
+                                                    <!-- Transition Container -->
+                                                    <div class="p-6 bg-white dark:bg-[color:var(--color-neutral-900)] border border-[color:var(--color-border)] rounded-xl transition duration-300">
+                                                        <!-- Placeholder Loader visible when loading -->
+                                                        <div x-show="loading" class="space-y-4">
+                                                            <div class="flex items-center gap-3">
+                                                                <x-skeleton.avatar />
+                                                                <div class="space-y-2 flex-1">
+                                                                    <x-skeleton variant="line" class="w-1/3" />
+                                                                    <x-skeleton variant="line" class="w-1/4" />
+                                                                </div>
+                                                            </div>
+                                                            <x-skeleton.text :rows="3" />
+                                                        </div>
+
+                                                        <!-- Actual Content visible when finished -->
+                                                        <div x-show="!loading" x-cloak class="flex items-start gap-4">
+                                                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=96&h=96&q=80" class="w-10 h-10 rounded-full shrink-0 object-cover border border-[color:var(--color-border)]" alt="User avatar">
+                                                            <div class="flex-1 space-y-2">
+                                                                <div class="flex items-center justify-between">
+                                                                    <h4 class="font-bold text-base text-[color:var(--color-text-primary)]">Saurav Sharma</h4>
+                                                                    <span class="text-xs px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full font-semibold">Active User</span>
+                                                                </div>
+                                                                <p class="text-sm text-[color:var(--color-text-muted)] leading-relaxed">
+                                                                    Pair programming with the AI assistant on building the customizable SkeletonLoader system. This is a real loaded component with native layout elements.
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </x-showcase.preview>
+                                    </div>
+                                </section>
+                            @endif
                         </div>
                     @endif
 

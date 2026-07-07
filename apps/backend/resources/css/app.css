@@ -332,3 +332,65 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: var(--color-neutral-400);
 }
+
+/* ======================================================
+   SKELETON LOADER SYSTEM (U1.4.4)
+====================================================== */
+:root {
+    --skeleton-base: var(--color-neutral-200);
+    --skeleton-highlight: rgba(255, 255, 255, 0.45);
+    --skeleton-animation-duration: 1.5s;
+    --skeleton-radius: var(--radius-md);
+    --skeleton-opacity: 1;
+}
+
+.dark {
+    --skeleton-base: var(--color-neutral-800);
+    --skeleton-highlight: rgba(255, 255, 255, 0.06);
+}
+
+.skeleton-base {
+    background-color: var(--skeleton-base);
+    opacity: var(--skeleton-opacity);
+}
+
+/* GPU-Accelerated Shimmer */
+.skeleton-shimmer {
+    position: relative;
+    overflow: hidden;
+}
+
+.skeleton-shimmer::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        var(--skeleton-highlight) 50%,
+        transparent 100%
+    );
+    animation: shimmer-slide var(--skeleton-animation-duration) infinite ease-in-out;
+}
+
+@keyframes shimmer-slide {
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* Print Overrides */
+@media print {
+    .skeleton-shimmer::after {
+        animation: none !important;
+        display: none !important;
+    }
+    .animate-pulse {
+        animation: none !important;
+    }
+}
+

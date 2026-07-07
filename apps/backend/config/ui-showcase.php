@@ -14,8 +14,8 @@ return [
     */
 
     'viewports' => [
-        'mobile'  => 'max-w-[390px]',
-        'tablet'  => 'max-w-[768px]',
+        'mobile' => 'max-w-[390px]',
+        'tablet' => 'max-w-[768px]',
         'desktop' => 'w-full',
     ],
 
@@ -56,6 +56,7 @@ return [
             'Drawer' => 'drawer',
             'Alert' => 'alert',
             'Toast' => 'toast',
+            'Skeleton' => 'skeleton',
             'Spinner' => 'spinner',
         ],
     ],
