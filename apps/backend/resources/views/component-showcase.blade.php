@@ -4212,6 +4212,235 @@ HTML;
                                     </div>
                                 </section>
                             @endif
+
+                            {{-- Scroll Animations --}}
+
+                            @if(isset($categories['Feedback']['Scroll Animations']))
+                                @php
+                                    $scrollBasicCode = <<<'HTML'
+<!-- Scroll Reveal Animation Types -->
+<x-scroll-reveal type="fade">
+    <div class="p-4 bg-white rounded-xl border shadow-sm">Fade In</div>
+</x-scroll-reveal>
+
+<x-scroll-reveal type="slide-up">
+    <div class="p-4 bg-white rounded-xl border shadow-sm">Slide Up</div>
+</x-scroll-reveal>
+
+<x-scroll-reveal type="slide-left">
+    <div class="p-4 bg-white rounded-xl border shadow-sm">Slide Left</div>
+</x-scroll-reveal>
+
+<x-scroll-reveal type="scale-up">
+    <div class="p-4 bg-white rounded-xl border shadow-sm">Scale Up</div>
+</x-scroll-reveal>
+HTML;
+
+                                    $scrollDelayCode = <<<'HTML'
+<!-- Speed and Delay Scale -->
+<x-scroll-reveal type="slide-up" speed="slow" delay="none">Slow, No Delay</x-scroll-reveal>
+<x-scroll-reveal type="slide-up" speed="normal" delay="sm">Normal, 150ms Delay</x-scroll-reveal>
+<x-scroll-reveal type="slide-up" speed="fast" delay="md">Fast, 300ms Delay</x-scroll-reveal>
+HTML;
+
+                                    $scrollOnceCode = <<<'HTML'
+<!-- Repeatable Reveal (once="false") -->
+<x-scroll-reveal type="fade" :once="false">
+    <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-200">
+        This element hides when scrolled out and re-reveals when scrolled back in.
+    </div>
+</x-scroll-reveal>
+HTML;
+
+                                    $scrollNestedCode = <<<'HTML'
+<!-- Staggered Nested Card Reveal -->
+<x-scroll-reveal as="article" type="slide-up" delay="none" class="bg-white rounded-2xl border shadow-sm overflow-hidden">
+    <x-scroll-reveal type="fade" delay="sm">
+        <header class="p-5 border-b">
+            <h3 class="font-bold text-lg">Order Received</h3>
+            <p class="text-xs text-neutral-400 mt-1">July 08, 2026</p>
+        </header>
+    </x-scroll-reveal>
+    <x-scroll-reveal type="slide-up" delay="md" class="p-5 space-y-2">
+        <p class="text-sm text-neutral-600">Your order has been confirmed and will be dispatched within 24 hours.</p>
+        <p class="text-sm font-semibold text-emerald-600">Estimated delivery: July 11, 2026</p>
+    </x-scroll-reveal>
+    <x-scroll-reveal type="fade" delay="lg" class="px-5 pb-5">
+        <button class="w-full py-2.5 bg-neutral-900 text-white text-sm font-semibold rounded-xl hover:bg-neutral-800 transition active:scale-95">
+            Track Order
+        </button>
+    </x-scroll-reveal>
+</x-scroll-reveal>
+HTML;
+                                @endphp
+
+                                <section id="{{ $categories['Feedback']['Scroll Animations'] }}" class="js-section scroll-mt-8 mt-16">
+                                    <div class="border-b border-[color:var(--color-border)] pb-4 mb-6">
+                                        <h2 class="text-2xl font-bold text-[color:var(--color-text-primary)]">Scroll Animations</h2>
+                                        <p class="text-sm text-[color:var(--color-text-muted)] mt-1">
+                                            Lightweight, Intersection Observer-powered entrance animations. Elements start visible (no-JS safe), then animate in when they enter the viewport. Respects <code>prefers-reduced-motion</code>.
+                                        </p>
+                                    </div>
+
+                                    <div class="space-y-12">
+                                        {{-- Animation Types --}}
+                                        <x-showcase.preview title="Animation Types" :code="$scrollBasicCode" id="preview-scroll-types">
+                                            <div class="w-full space-y-4 max-w-sm">
+                                                <div>
+                                                    <span class="text-xs font-semibold text-[color:var(--color-text-muted)] mb-2 block">type="fade"</span>
+                                                    <x-scroll-reveal type="fade" class="p-4 bg-white border border-[color:var(--color-border)] rounded-xl shadow-xs text-sm font-medium text-center">
+                                                        Fade In
+                                                    </x-scroll-reveal>
+                                                </div>
+                                                <div>
+                                                    <span class="text-xs font-semibold text-[color:var(--color-text-muted)] mb-2 block">type="slide-up"</span>
+                                                    <x-scroll-reveal type="slide-up" class="p-4 bg-white border border-[color:var(--color-border)] rounded-xl shadow-xs text-sm font-medium text-center">
+                                                        Slide Up
+                                                    </x-scroll-reveal>
+                                                </div>
+                                                <div>
+                                                    <span class="text-xs font-semibold text-[color:var(--color-text-muted)] mb-2 block">type="slide-down"</span>
+                                                    <x-scroll-reveal type="slide-down" class="p-4 bg-white border border-[color:var(--color-border)] rounded-xl shadow-xs text-sm font-medium text-center">
+                                                        Slide Down
+                                                    </x-scroll-reveal>
+                                                </div>
+                                                <div>
+                                                    <span class="text-xs font-semibold text-[color:var(--color-text-muted)] mb-2 block">type="slide-left"</span>
+                                                    <x-scroll-reveal type="slide-left" class="p-4 bg-white border border-[color:var(--color-border)] rounded-xl shadow-xs text-sm font-medium text-center">
+                                                        Slide Left
+                                                    </x-scroll-reveal>
+                                                </div>
+                                                <div>
+                                                    <span class="text-xs font-semibold text-[color:var(--color-text-muted)] mb-2 block">type="slide-right"</span>
+                                                    <x-scroll-reveal type="slide-right" class="p-4 bg-white border border-[color:var(--color-border)] rounded-xl shadow-xs text-sm font-medium text-center">
+                                                        Slide Right
+                                                    </x-scroll-reveal>
+                                                </div>
+                                                <div>
+                                                    <span class="text-xs font-semibold text-[color:var(--color-text-muted)] mb-2 block">type="scale-up"</span>
+                                                    <x-scroll-reveal type="scale-up" class="p-4 bg-white border border-[color:var(--color-border)] rounded-xl shadow-xs text-sm font-medium text-center">
+                                                        Scale Up
+                                                    </x-scroll-reveal>
+                                                </div>
+                                                <div>
+                                                    <span class="text-xs font-semibold text-[color:var(--color-text-muted)] mb-2 block">type="scale-down"</span>
+                                                    <x-scroll-reveal type="scale-down" class="p-4 bg-white border border-[color:var(--color-border)] rounded-xl shadow-xs text-sm font-medium text-center">
+                                                        Scale Down
+                                                    </x-scroll-reveal>
+                                                </div>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        {{-- Speed and Delay Scale --}}
+                                        <x-showcase.preview title="Speed & Delay Scales" :code="$scrollDelayCode" id="preview-scroll-delays">
+                                            <div class="w-full space-y-3 max-w-sm">
+                                                <span class="text-xs font-semibold text-[color:var(--color-text-muted)] mb-3 block uppercase tracking-wider">Delay Stagger (type=slide-up)</span>
+                                                <x-scroll-reveal type="slide-up" delay="none" class="p-3 bg-white border border-[color:var(--color-border)] rounded-xl text-xs flex items-center justify-between">
+                                                    <span class="font-medium">No Delay</span>
+                                                    <code class="text-neutral-400 text-[10px]">delay="none" (0ms)</code>
+                                                </x-scroll-reveal>
+                                                <x-scroll-reveal type="slide-up" delay="xs" class="p-3 bg-white border border-[color:var(--color-border)] rounded-xl text-xs flex items-center justify-between">
+                                                    <span class="font-medium">XS Delay</span>
+                                                    <code class="text-neutral-400 text-[10px]">delay="xs" (75ms)</code>
+                                                </x-scroll-reveal>
+                                                <x-scroll-reveal type="slide-up" delay="sm" class="p-3 bg-white border border-[color:var(--color-border)] rounded-xl text-xs flex items-center justify-between">
+                                                    <span class="font-medium">SM Delay</span>
+                                                    <code class="text-neutral-400 text-[10px]">delay="sm" (150ms)</code>
+                                                </x-scroll-reveal>
+                                                <x-scroll-reveal type="slide-up" delay="md" class="p-3 bg-white border border-[color:var(--color-border)] rounded-xl text-xs flex items-center justify-between">
+                                                    <span class="font-medium">MD Delay</span>
+                                                    <code class="text-neutral-400 text-[10px]">delay="md" (300ms)</code>
+                                                </x-scroll-reveal>
+                                                <x-scroll-reveal type="slide-up" delay="lg" class="p-3 bg-white border border-[color:var(--color-border)] rounded-xl text-xs flex items-center justify-between">
+                                                    <span class="font-medium">LG Delay</span>
+                                                    <code class="text-neutral-400 text-[10px]">delay="lg" (500ms)</code>
+                                                </x-scroll-reveal>
+                                                <x-scroll-reveal type="slide-up" delay="xl" class="p-3 bg-white border border-[color:var(--color-border)] rounded-xl text-xs flex items-center justify-between">
+                                                    <span class="font-medium">XL Delay</span>
+                                                    <code class="text-neutral-400 text-[10px]">delay="xl" (1000ms)</code>
+                                                </x-scroll-reveal>
+
+                                                <span class="text-xs font-semibold text-[color:var(--color-text-muted)] mt-4 mb-3 block uppercase tracking-wider">Speed Scale (type=fade)</span>
+                                                <x-scroll-reveal type="fade" speed="fast" class="p-3 bg-white border border-[color:var(--color-border)] rounded-xl text-xs flex items-center justify-between">
+                                                    <span class="font-medium">Fast</span>
+                                                    <code class="text-neutral-400 text-[10px]">speed="fast" (150ms)</code>
+                                                </x-scroll-reveal>
+                                                <x-scroll-reveal type="fade" speed="normal" class="p-3 bg-white border border-[color:var(--color-border)] rounded-xl text-xs flex items-center justify-between">
+                                                    <span class="font-medium">Normal</span>
+                                                    <code class="text-neutral-400 text-[10px]">speed="normal" (300ms)</code>
+                                                </x-scroll-reveal>
+                                                <x-scroll-reveal type="fade" speed="slow" class="p-3 bg-white border border-[color:var(--color-border)] rounded-xl text-xs flex items-center justify-between">
+                                                    <span class="font-medium">Slow</span>
+                                                    <code class="text-neutral-400 text-[10px]">speed="slow" (500ms)</code>
+                                                </x-scroll-reveal>
+                                                <x-scroll-reveal type="fade" speed="800ms" class="p-3 bg-white border border-[color:var(--color-border)] rounded-xl text-xs flex items-center justify-between">
+                                                    <span class="font-medium">Custom</span>
+                                                    <code class="text-neutral-400 text-[10px]">speed="800ms" (pass-through)</code>
+                                                </x-scroll-reveal>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        {{-- Repeatable Reveals --}}
+                                        <x-showcase.preview title="Repeatable Reveals (once=false)" :code="$scrollOnceCode" id="preview-scroll-repeat">
+                                            <div class="w-full max-w-sm space-y-4">
+                                                <div class="p-4 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 font-medium">
+                                                    💡 Scroll down past this card and back up to see it re-animate. Requires scrolling within the page.
+                                                </div>
+                                                <x-scroll-reveal type="slide-up" :once="false" class="p-5 bg-white border border-[color:var(--color-border)] rounded-xl shadow-xs space-y-2">
+                                                    <div class="flex items-center gap-3">
+                                                        <div class="w-10 h-10 rounded-full bg-[color:var(--color-primary-100)] flex items-center justify-center text-[color:var(--color-primary-600)] font-bold text-sm shrink-0">↕</div>
+                                                        <div>
+                                                            <p class="font-semibold text-sm text-[color:var(--color-text-primary)]">Repeatable Entry</p>
+                                                            <p class="text-xs text-[color:var(--color-text-muted)]">once=false — hides on scroll-out, reveals on scroll-in</p>
+                                                        </div>
+                                                    </div>
+                                                </x-scroll-reveal>
+                                                <x-scroll-reveal type="fade" :once="true" class="p-5 bg-[color:var(--color-neutral-50)] border border-[color:var(--color-border)] rounded-xl shadow-xs space-y-2">
+                                                    <div class="flex items-center gap-3">
+                                                        <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-sm shrink-0">✓</div>
+                                                        <div>
+                                                            <p class="font-semibold text-sm text-[color:var(--color-text-primary)]">One-Time Entry</p>
+                                                            <p class="text-xs text-[color:var(--color-text-muted)]">once=true (default) — observer disconnects after first reveal</p>
+                                                        </div>
+                                                    </div>
+                                                </x-scroll-reveal>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        {{-- Staggered Nested Cards --}}
+                                        <x-showcase.preview title="Staggered Nested Reveal (Real-world Card)" :code="$scrollNestedCode" id="preview-scroll-nested">
+                                            <div class="w-full max-w-sm space-y-4">
+                                                <span class="text-xs text-[color:var(--color-text-muted)] block">Header, content, and button reveal in sequence using staggered delays.</span>
+
+                                                <x-scroll-reveal as="article" type="slide-up" delay="none" class="bg-white rounded-2xl border border-[color:var(--color-border)] shadow-sm overflow-hidden">
+                                                    <x-scroll-reveal type="fade" delay="sm">
+                                                        <header class="p-5 border-b border-[color:var(--color-border)] flex items-center gap-3">
+                                                            <div class="w-9 h-9 rounded-full bg-[color:var(--color-primary-100)] flex items-center justify-center shrink-0">
+                                                                <svg class="w-4 h-4 text-[color:var(--color-primary-600)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                                            </div>
+                                                            <div>
+                                                                <h3 class="font-bold text-sm text-[color:var(--color-text-primary)]">Order Confirmed</h3>
+                                                                <p class="text-[11px] text-[color:var(--color-text-muted)]">July 08, 2026</p>
+                                                            </div>
+                                                        </header>
+                                                    </x-scroll-reveal>
+
+                                                    <x-scroll-reveal type="slide-up" delay="md" class="p-5 space-y-2">
+                                                        <p class="text-sm text-[color:var(--color-text-secondary)] leading-relaxed">Your order has been confirmed and will be dispatched within 24 hours.</p>
+                                                        <p class="text-sm font-semibold text-[color:var(--color-success-600)]">Estimated delivery: July 11, 2026</p>
+                                                    </x-scroll-reveal>
+
+                                                    <x-scroll-reveal type="fade" delay="lg" class="px-5 pb-5">
+                                                        <button class="w-full py-2.5 bg-[color:var(--color-neutral-900)] hover:bg-[color:var(--color-neutral-800)] text-white text-sm font-semibold rounded-xl transition active:scale-95">
+                                                            Track Order
+                                                        </button>
+                                                    </x-scroll-reveal>
+                                                </x-scroll-reveal>
+                                            </div>
+                                        </x-showcase.preview>
+                                    </div>
+                                </section>
+                            @endif
                         </div>
                     @endif
 

@@ -64,6 +64,7 @@ return [
             'Spinner' => 'spinner',
             'Progress Indicators' => 'progress-indicators',
             'Transition Utilities' => 'transition-utilities',
+            'Scroll Animations' => 'scroll-animations',
         ],
     ],
 

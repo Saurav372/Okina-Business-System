@@ -4,20 +4,20 @@
 Motion & Feedback (U1.6)
 
 ## Current Subtask
-U1.6.4 Skeleton Animation
+U1.6.5 Scroll Animations
 
 ## Goal
-Add dynamic shimmer animation effects to the skeleton loader component (`<x-skeleton>`) conforming to brand design tokens, motion speeds, and prefers-reduced-motion media query overlays.
+Create a lightweight, reusable scroll-triggered reveal animation component/directive using Intersection Observer or Alpine.js viewport tracking, enabling premium entrance transitions (fade, slide, scale) as elements scroll into the viewport.
 
 ## Dependencies
 **Depends On:**
 - U0.1.5 (Motion & Animation Tokens)
-- U1.4.4 (SkeletonLoader Component)
+- U0.5 Layout Templates
 
 ## Required Deliverables
-- Add CSS utilities for skeleton shimmer keyframes (gradient movement) supporting customization options.
-- Refactor/extend `<x-skeleton>` to accept animation toggle props (e.g., `animate` or `shimmer` boolean) to control animation.
-- Update component playground showcase at `/admin/components#skeleton` to display animated shimmer loaders next to static variants.
+- A reusable component or directive (e.g. `<x-scroll-reveal>` or custom Alpine viewport script) providing entrance effects like `fade`, `slide-up`, `slide-down`, `scale-up`, with customizable duration, delay, and threshold options.
+- Support prefers-reduced-motion configuration (instantly revealing elements without transition animations).
+- Showcase demos compiled inside the components playground under `#scroll-animations` displaying viewport entrances.
 
 ## Completed prerequisites
 - U0.1 Design System & Tokens
@@ -30,3 +30,4 @@ Add dynamic shimmer animation effects to the skeleton loader component (`<x-skel
 - U1.6.1 Transition Utilities
 - U1.6.2 Loading Indicators
 - U1.6.3 Progress Indicators
+- U1.6.4 Skeleton Animation

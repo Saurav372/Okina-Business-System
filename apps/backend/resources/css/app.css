@@ -542,3 +542,64 @@
     }
 }
 
+/* ======================================================
+   SCROLL REVEAL INDICATOR SYSTEM (U1.6.5)
+ ====================================================== */
+
+.ui-reveal {
+    transition: opacity var(--reveal-duration, var(--motion-normal)) var(--motion-ease) var(--reveal-delay, 0ms), 
+                transform var(--reveal-duration, var(--motion-normal)) var(--motion-ease) var(--reveal-delay, 0ms);
+}
+
+.ui-reveal.is-hidden {
+    opacity: 0;
+    will-change: opacity, transform;
+}
+
+.ui-reveal-fade.is-hidden {
+    transform: none;
+}
+
+.ui-reveal-slide-up.is-hidden {
+    transform: translateY(2rem);
+}
+
+.ui-reveal-slide-down.is-hidden {
+    transform: translateY(-2rem);
+}
+
+.ui-reveal-slide-left.is-hidden {
+    transform: translateX(2rem);
+}
+
+.ui-reveal-slide-right.is-hidden {
+    transform: translateX(-2rem);
+}
+
+.ui-reveal-scale-up.is-hidden {
+    transform: scale(0.95);
+}
+
+.ui-reveal-scale-down.is-hidden {
+    transform: scale(1.05);
+}
+
+.ui-reveal.is-revealed {
+    opacity: 1;
+    transform: none !important;
+    will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ui-reveal {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+    }
+    .ui-reveal.is-hidden {
+        opacity: 1 !important;
+        transform: none !important;
+    }
+}
+
+
