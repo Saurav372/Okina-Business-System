@@ -89,5 +89,10 @@ class AppServiceProvider extends ServiceProvider
         Customer::observe(GoogleSheetsSyncObserver::class);
         LeadFollowUp::observe(GoogleSheetsSyncObserver::class);
         VendorOrder::observe(GoogleSheetsSyncObserver::class);
+
+        // Inject navigation items automatically to the admin layout
+        view()->composer('components.layouts.admin', function ($view) {
+            $view->with('navigation', (new \App\Support\Navigation\Navigation)->forUser(auth()->user()));
+        });
     }
 }

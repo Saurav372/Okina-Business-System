@@ -203,4 +203,19 @@ class User extends Authenticatable
             'disabled_at' => 'datetime',
         ];
     }
+
+    /**
+     * Get the user's name initials.
+     */
+    public function initials(): string
+    {
+        $words = preg_split('/\s+/', trim($this->name ?? ''));
+        $words = array_filter($words);
+        if (empty($words)) {
+            return 'US';
+        }
+        return count($words) >= 2 
+            ? strtoupper(substr($words[0], 0, 1) . substr(end($words), 0, 1))
+            : strtoupper(substr($words[0], 0, 2));
+    }
 }

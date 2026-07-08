@@ -2,12 +2,82 @@
 
 namespace App\Support\Navigation;
 
+use App\Models\User;
+
 class Navigation
 {
     /**
-     * Get the defined admin navigation structure.
+     * Get the defined admin navigation structure filtered for the user.
+     * 
+     * @return array<NavigationGroup>
      */
-    public function items(): array
+    public function forUser(?User $user): array
+    {
+        $rawStructure = $this->rawItems();
+        $filteredGroups = [];
+
+        foreach ($rawStructure as $groupConfig) {
+            $groupItems = [];
+            foreach ($groupConfig['items'] as $itemConfig) {
+                // If item has a permission constraint, verify the user has it
+                if ($user && $itemConfig['permission'] && !$user->hasPermissionTo($itemConfig['permission'])) {
+                    continue;
+                }
+
+                // Sub-items/children check
+                $children = [];
+                if (!empty($itemConfig['children'])) {
+                    foreach ($itemConfig['children'] as $childConfig) {
+                        if ($user && $childConfig['permission'] && !$user->hasPermissionTo($childConfig['permission'])) {
+                            continue;
+                        }
+                        $children[] = new NavigationItem(
+                            label: $childConfig['label'],
+                            route: $childConfig['route'],
+                            icon: $childConfig['icon'],
+                            order: $childConfig['order'] ?? 10,
+                            active: $childConfig['active'] ?? [],
+                            badge: $childConfig['badge'] ?? null,
+                            permission: $childConfig['permission'] ?? null
+                        );
+                    }
+                }
+
+                $groupItems[] = new NavigationItem(
+                    label: $itemConfig['label'],
+                    route: $itemConfig['route'],
+                    icon: $itemConfig['icon'],
+                    order: $itemConfig['order'] ?? 10,
+                    active: $itemConfig['active'] ?? [],
+                    badge: $itemConfig['badge'] ?? null,
+                    permission: $itemConfig['permission'] ?? null,
+                    children: $children
+                );
+            }
+
+            // Hide empty groups
+            if (!empty($groupItems)) {
+                // Sort items by order
+                usort($groupItems, fn($a, $b) => $a->order <=> $b->order);
+                $filteredGroups[] = new NavigationGroup(
+                    group: $groupConfig['group'],
+                    order: $groupConfig['order'],
+                    items: $groupItems
+                );
+            }
+        }
+
+        // Sort groups by order
+        usort($filteredGroups, fn($a, $b) => $a->order <=> $b->order);
+
+        return $filteredGroups;
+    }
+
+    /**
+     * Raw navigation definition.
+     * Sorted by usage frequency: Dashboard, Orders, Customers, Products, Inventory, CRM, Accounting, Administration, Settings.
+     */
+    protected function rawItems(): array
     {
         return [
             [
@@ -17,8 +87,10 @@ class Navigation
                     [
                         'label' => 'Dashboard',
                         'route' => 'admin.dashboard',
-                        'icon' => 'home',
+                        'icon' => 'lucide-home',
                         'order' => 10,
+                        'permission' => null,
+                        'active' => ['admin.dashboard'],
                         'children' => [],
                     ],
                 ],
@@ -30,8 +102,10 @@ class Navigation
                     [
                         'label' => 'Sales Orders',
                         'route' => 'admin.sales_orders.create',
-                        'icon' => 'shopping-cart',
+                        'icon' => 'lucide-shopping-cart',
                         'order' => 10,
+                        'permission' => 'orders.view',
+                        'active' => ['admin.sales_orders.*', 'admin.orders.*'],
                         'children' => [],
                     ],
                 ],
@@ -39,7 +113,9 @@ class Navigation
             [
                 'group' => 'Products',
                 'order' => 30,
-                'items' => [],
+                'items' => [
+                    // Future items will be registered here
+                ],
             ],
             [
                 'group' => 'Inventory',
@@ -53,15 +129,19 @@ class Navigation
                     [
                         'label' => 'Purchase Orders',
                         'route' => 'admin.purchase_orders.index',
-                        'icon' => 'truck',
+                        'icon' => 'lucide-truck',
                         'order' => 10,
+                        'permission' => 'purchase_orders.view',
+                        'active' => ['admin.purchase_orders.*'],
                         'children' => [],
                     ],
                     [
                         'label' => 'Vendors',
                         'route' => 'admin.vendors.index',
-                        'icon' => 'users',
+                        'icon' => 'lucide-users',
                         'order' => 20,
+                        'permission' => 'vendors.view',
+                        'active' => ['admin.vendors.*'],
                         'children' => [],
                     ],
                 ],
@@ -73,8 +153,10 @@ class Navigation
                     [
                         'label' => 'Leads',
                         'route' => 'admin.leads.index',
-                        'icon' => 'user-plus',
+                        'icon' => 'lucide-user-plus',
                         'order' => 10,
+                        'permission' => 'leads.view',
+                        'active' => ['admin.leads.*'],
                         'children' => [],
                     ],
                 ],
@@ -91,29 +173,37 @@ class Navigation
                     [
                         'label' => 'Payments',
                         'route' => 'admin.payments.index',
-                        'icon' => 'credit-card',
+                        'icon' => 'lucide-credit-card',
                         'order' => 10,
+                        'permission' => 'payments.view',
+                        'active' => ['admin.payments.*'],
                         'children' => [],
                     ],
                     [
                         'label' => 'Refunds',
                         'route' => 'admin.refunds.index',
-                        'icon' => 'corner-down-left',
+                        'icon' => 'lucide-corner-down-left',
                         'order' => 20,
+                        'permission' => 'refunds.view',
+                        'active' => ['admin.refunds.*'],
                         'children' => [],
                     ],
                     [
                         'label' => 'Expenses',
                         'route' => 'admin.expenses.index',
-                        'icon' => 'file-text',
+                        'icon' => 'lucide-file-text',
                         'order' => 30,
+                        'permission' => 'expenses.view',
+                        'active' => ['admin.expenses.*'],
                         'children' => [],
                     ],
                     [
                         'label' => 'Expense Categories',
                         'route' => 'admin.expense_categories.index',
-                        'icon' => 'tag',
+                        'icon' => 'lucide-tag',
                         'order' => 40,
+                        'permission' => 'expense_categories.view',
+                        'active' => ['admin.expense_categories.*'],
                         'children' => [],
                     ],
                 ],
@@ -135,15 +225,19 @@ class Navigation
                     [
                         'label' => 'Audit Logs',
                         'route' => 'admin.audit_logs.index',
-                        'icon' => 'clipboard',
+                        'icon' => 'lucide-clipboard',
                         'order' => 10,
+                        'permission' => 'audit.view',
+                        'active' => ['admin.audit_logs.*'],
                         'children' => [],
                     ],
                     [
                         'label' => 'Notification Logs',
                         'route' => 'admin.notification_logs.index',
-                        'icon' => 'bell',
+                        'icon' => 'lucide-bell',
                         'order' => 20,
+                        'permission' => 'notifications.view',
+                        'active' => ['admin.notification_logs.*'],
                         'children' => [],
                     ],
                 ],
@@ -155,8 +249,10 @@ class Navigation
                     [
                         'label' => 'Google Sheets',
                         'route' => 'admin.google_sheets.sync_logs.index',
-                        'icon' => 'database',
+                        'icon' => 'lucide-database',
                         'order' => 10,
+                        'permission' => 'sheets.view',
+                        'active' => ['admin.google_sheets.*'],
                         'children' => [],
                     ],
                 ],
