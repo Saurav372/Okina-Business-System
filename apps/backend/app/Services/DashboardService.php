@@ -109,7 +109,7 @@ class DashboardService
      */
     public function getRecentActivity(User $user, int $limit = 5): Collection
     {
-        return Cache::remember("dashboard_activity_user_{$user->id}", 30, function () use ($limit) {
+        $logs = Cache::remember("dashboard_activity_user_{$user->id}", 30, function () use ($limit) {
             $allowedActions = [
                 'orders.order_created',
                 'orders.order_cancelled',
@@ -121,17 +121,17 @@ class DashboardService
                 'vendors.created',
             ];
 
-            $logs = AuditLog::with('actorUser')
+            return AuditLog::with('actorUser')
                 ->whereIn('action', $allowedActions)
                 ->orderBy('occurred_at', 'desc')
                 ->orderBy('id', 'desc')
                 ->limit($limit)
                 ->get();
-
-            $mapper = new ActivityMapper();
-
-            return collect($logs)->map(fn(AuditLog $log) => $mapper->map($log));
         });
+
+        $mapper = new ActivityMapper();
+
+        return collect($logs)->map(fn(AuditLog $log) => $mapper->map($log));
     }
 
     /**
