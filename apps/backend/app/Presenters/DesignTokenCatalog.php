@@ -62,4 +62,19 @@ class DesignTokenCatalog
     {
         return self::section('motion');
     }
+
+    public static function semantic(): array
+    {
+        return self::section('semantic');
+    }
+
+    public static function charts(): array
+    {
+        return self::section('charts');
+    }
+
+    public static function guidelines(): array
+    {
+        return self::section('guidelines');
+    }
 }

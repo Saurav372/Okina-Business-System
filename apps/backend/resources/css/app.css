@@ -12,37 +12,150 @@
     --font-sans: 'Geist', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
     /* ======================================================
-       COLOR TOKENS
+       LAYER 1: BRAND PALETTE TOKENS
+       Raw color values — never reference these directly in components.
+       To rebrand: update values in this block only.
     ====================================================== */
 
-    /* Palette Tokens - Primary (Brand Blue) */
-    --color-primary-50: #EFF8FF;
-    --color-primary-100: #D8F0FF;
-    --color-primary-200: #B5E3FF;
-    --color-primary-300: #84D2FF;
-    --color-primary-400: #5BC2FF;
-    --color-primary-500: #44B6F9;
-    --color-primary-600: #219AE8;
-    --color-primary-700: #197CC1;
-    --color-primary-800: #165F94;
-    --color-primary-900: #123E61;
-    --color-primary-950: #0A2237;
+    /* Brand Red — Logo flame/leaf color (#e83535) */
+    --color-brand-50:  #fff2f2;
+    --color-brand-100: #ffdddd;
+    --color-brand-200: #ffbaba;
+    --color-brand-300: #ff8585;
+    --color-brand-400: #f55555;
+    --color-brand-500: #e83535;
+    --color-brand-600: #c42424;
+    --color-brand-700: #9e1b1b;
+    --color-brand-800: #7a1616;
+    --color-brand-900: #5c1212;
+    --color-brand-950: #360808;
 
-    /* Palette Tokens - Secondary (Logo Red) */
-    --color-secondary-50: #FFF3F3;
-    --color-secondary-100: #FFE3E5;
-    --color-secondary-200: #FFC8CC;
-    --color-secondary-300: #FFA3AA;
-    --color-secondary-400: #FF707A;
-    --color-secondary-500: #E53945;
-    --color-secondary-600: #CC2635;
-    --color-secondary-700: #AA1E2A;
-    --color-secondary-800: #891A24;
-    --color-secondary-900: #66161D;
-    --color-secondary-950: #3A090D;
+    /*
+     * Brand Ink — Artistically derived from the logo's brushstroke character.
+     * ink-900 is #1a1816, NOT #1A1A1A — the warm undertone is intentional.
+     * Do not adjust to pure black; the warmth complements the flame mark.
+     */
+    --color-ink-50:  #fafaf9;
+    --color-ink-100: #f5f4f3;
+    --color-ink-200: #e8e6e4;
+    --color-ink-300: #d3d0cd;
+    --color-ink-400: #a8a4a0;
+    --color-ink-500: #77726e;
+    --color-ink-600: #5a5550;
+    --color-ink-700: #403d39;
+    --color-ink-800: #2a2724;
+    --color-ink-900: #1a1816;
+    --color-ink-950: #0e0d0c;
 
-    /* Palette Tokens - Neutral */
-    --color-neutral-50: #FAFBFC;
+    /* ======================================================
+       LAYER 2: SEMANTIC TOKENS — COLOR
+       Maps UI roles to brand palette.
+       Components reference ONLY these — never brand-* or ink-* directly.
+    ====================================================== */
+
+    /* --- Primary Action (Save, Submit, Confirm) --- */
+    --color-primary-50:  var(--color-brand-50);
+    --color-primary-100: var(--color-brand-100);
+    --color-primary-200: var(--color-brand-200);
+    --color-primary-300: var(--color-brand-300);
+    --color-primary-400: var(--color-brand-400);
+    --color-primary-500: var(--color-brand-500);
+    --color-primary-600: var(--color-brand-600);
+    --color-primary-700: var(--color-brand-700);
+    --color-primary-800: var(--color-brand-800);
+    --color-primary-900: var(--color-brand-900);
+    --color-primary-950: var(--color-brand-950);
+    --color-primary:        var(--color-brand-500);
+    --color-primary-hover:  var(--color-brand-600);
+    --color-primary-active: var(--color-brand-700);
+
+    /* --- CTA — Conversion actions (Buy Now, Request Quote, Checkout) --- */
+    /* Intentionally maps to brand today; architecturally independent for future rebrand */
+    --color-cta:        var(--color-brand-500);
+    --color-cta-hover:  var(--color-brand-600);
+    --color-cta-active: var(--color-brand-700);
+    --color-cta-text:   #ffffff;
+
+    /* --- Secondary Action (Cancel, Back, Reset) --- */
+    --color-secondary-50:  var(--color-ink-50);
+    --color-secondary-100: var(--color-ink-100);
+    --color-secondary-200: var(--color-ink-200);
+    --color-secondary-300: var(--color-ink-300);
+    --color-secondary-400: var(--color-ink-400);
+    --color-secondary-500: var(--color-ink-500);
+    --color-secondary-600: var(--color-ink-600);
+    --color-secondary-700: var(--color-ink-700);
+    --color-secondary-800: var(--color-ink-800);
+    --color-secondary-900: var(--color-ink-900);
+    --color-secondary-950: var(--color-ink-950);
+    --color-secondary:        var(--color-ink-700);
+    --color-secondary-hover:  var(--color-ink-800);
+
+    /* --- Surface Hierarchy --- */
+    /* Never use #ffffff directly in components. Always use a surface token. */
+    --color-surface:          #ffffff;                      /* Single white declaration */
+    --color-surface-page:     var(--color-ink-50);          /* Outermost page background */
+    --color-surface-card:     var(--color-surface);         /* Standard card layer */
+    --color-surface-elevated: var(--color-surface);         /* Elevated above card */
+    --color-surface-overlay:  rgba(10, 10, 10, 0.50);       /* Backdrop behind modals */
+    --color-surface-modal:    var(--color-surface);         /* Modal dialog background */
+    --color-surface-sidebar:  var(--color-ink-900);         /* Dark brand sidebar */
+
+    /* --- Background (legacy alias) --- */
+    --color-background: var(--color-surface-page);
+
+    /* --- Text Hierarchy --- */
+    --color-text-heading:     var(--color-ink-900);   /* H1–H4 */
+    --color-text-body:        var(--color-ink-800);   /* Body copy, descriptions */
+    --color-text-caption:     var(--color-ink-600);   /* Captions, helper text, labels */
+    --color-text-placeholder: var(--color-ink-400);   /* Input placeholders */
+    --color-text-disabled:    var(--color-ink-300);   /* Disabled state text */
+    --color-text-inverse:     #ffffff;                /* Text on dark surfaces */
+    /* Legacy aliases */
+    --color-text-primary:   var(--color-text-heading);
+    --color-text-secondary: var(--color-text-caption);
+    --color-text-muted:     var(--color-text-placeholder);
+
+    /* --- Link --- */
+    --color-link:         var(--color-brand-600);
+    --color-link-hover:   var(--color-brand-700);
+    --color-link-visited: var(--color-brand-800);
+    --color-link-active:  var(--color-brand-500);
+
+    /* --- Border --- */
+    --color-border:       var(--color-ink-200);
+    --color-border-hover: var(--color-ink-300);
+
+    /* --- Status (permanently independent of brand) --- */
+    --color-success: var(--color-success-500);
+    --color-warning: var(--color-warning-500);
+    --color-danger:  var(--color-danger-500);
+    --color-info:    var(--color-primary-500);
+
+    /* --- Empty State --- */
+    --color-empty-icon:          var(--color-ink-300);
+    --color-empty-illustration:  var(--color-ink-200);
+    --color-empty-placeholder:   var(--color-ink-100);
+    --color-empty-text:          var(--color-text-placeholder);
+
+    /* --- Data Visualisation Chart Palette (categorical — max 8 series) --- */
+    /* WARNING: Never use success/danger/primary for chart series. */
+    /* Chart colors are categorical, not semantic. Beyond 8: group into "Other". */
+    --color-chart-1: #e83535;   /* Brand red — primary series */
+    --color-chart-2: #3b82f6;   /* Sapphire */
+    --color-chart-3: #22c55e;   /* Emerald */
+    --color-chart-4: #f59e0b;   /* Amber */
+    --color-chart-5: #8b5cf6;   /* Violet */
+    --color-chart-6: #14b8a6;   /* Teal */
+    --color-chart-7: #f97316;   /* Orange */
+    --color-chart-8: #94a3b8;   /* Slate — neutral contrast series */
+
+    /* ======================================================
+       BACKWARD-COMPATIBLE PALETTE TOKENS
+       Neutral scale kept for existing component references.
+       Future: migrate to ink-* or semantic text/border tokens.
+    ====================================================== */
+    --color-neutral-50:  #FAFBFC;
     --color-neutral-100: #F4F6F8;
     --color-neutral-200: #E6E9EE;
     --color-neutral-300: #D1D5DB;
@@ -54,72 +167,93 @@
     --color-neutral-900: #111827;
     --color-neutral-950: #030712;
 
-    /* Palette Tokens - Success */
-    --color-success-50: #ECFDF5;
-    --color-success-100: #D1FAE5;
-    --color-success-200: #A7F3D0;
-    --color-success-300: #6EE7B7;
-    --color-success-400: #34D399;
-    --color-success-500: #10B981;
-    --color-success-600: #059669;
-    --color-success-700: #047857;
-    --color-success-800: #065F46;
-    --color-success-900: #064E3B;
-    --color-success-950: #022C22;
+    /* Status palettes */
+    --color-success-50:  #ECFDF5; --color-success-100: #D1FAE5; --color-success-200: #A7F3D0;
+    --color-success-300: #6EE7B7; --color-success-400: #34D399; --color-success-500: #10B981;
+    --color-success-600: #059669; --color-success-700: #047857; --color-success-800: #065F46;
+    --color-success-900: #064E3B; --color-success-950: #022C22;
 
-    /* Palette Tokens - Warning */
-    --color-warning-50: #FFFBEB;
-    --color-warning-100: #FEF3C7;
-    --color-warning-200: #FDE68A;
-    --color-warning-300: #FCD34D;
-    --color-warning-400: #FBBF24;
-    --color-warning-500: #F59E0B;
-    --color-warning-600: #D97706;
-    --color-warning-700: #B45309;
-    --color-warning-800: #92400E;
-    --color-warning-900: #78350F;
-    --color-warning-950: #451A03;
+    --color-warning-50:  #FFFBEB; --color-warning-100: #FEF3C7; --color-warning-200: #FDE68A;
+    --color-warning-300: #FCD34D; --color-warning-400: #FBBF24; --color-warning-500: #F59E0B;
+    --color-warning-600: #D97706; --color-warning-700: #B45309; --color-warning-800: #92400E;
+    --color-warning-900: #78350F; --color-warning-950: #451A03;
 
-    /* Palette Tokens - Danger */
-    --color-danger-50: #FEF2F2;
-    --color-danger-100: #FEE2E2;
-    --color-danger-200: #FECACA;
-    --color-danger-300: #FCA5A5;
-    --color-danger-400: #F87171;
-    --color-danger-500: #EF4444;
-    --color-danger-600: #DC2626;
-    --color-danger-700: #B91C1C;
-    --color-danger-800: #991B1B;
-    --color-danger-900: #7F1D1D;
-    --color-danger-950: #450A0A;
+    --color-danger-50:  #FEF2F2; --color-danger-100: #FEE2E2; --color-danger-200: #FECACA;
+    --color-danger-300: #FCA5A5; --color-danger-400: #F87171; --color-danger-500: #EF4444;
+    --color-danger-600: #DC2626; --color-danger-700: #B91C1C; --color-danger-800: #991B1B;
+    --color-danger-900: #7F1D1D; --color-danger-950: #450A0A;
 
-    /* Semantic Tokens (Prefixed with --color- to generate Tailwind utilities) */
-    --color-primary: var(--color-primary-500);
-    --color-primary-hover: var(--color-primary-600);
-    --color-primary-active: var(--color-primary-700);
+    /* ======================================================
+       LAYER 2: SEMANTIC TOKENS — INTERACTION
+    ====================================================== */
 
-    --color-secondary: var(--color-secondary-500);
-    --color-secondary-hover: var(--color-secondary-600);
+    /* Opacity states */
+    --hover-opacity:    0.85;        /* Subtle hover feedback on image/icon elements */
+    --disabled-opacity: 0.45;        /* All disabled interactive elements */
+    --drag-opacity:     0.70;        /* Element being dragged */
+    --cursor-disabled:  not-allowed;
 
-    --color-background: var(--color-neutral-50);
-    --color-surface: #ffffff;
-    --color-surface-secondary: var(--color-neutral-100);
+    /* Scale states — aliases for existing motion tokens */
+    /* Press:  use --motion-scale-active (0.98) */
+    /* Hover:  use --motion-scale-hover  (1.02) */
 
-    --color-text-primary: var(--color-neutral-900);
-    --color-text-secondary: var(--color-neutral-600);
-    --color-text-muted: var(--color-neutral-400);
+    /* ======================================================
+       LAYER 2: SEMANTIC TOKENS — ELEVATION
+       Maps UI roles to shadow scale. Components use elevation, not shadow directly.
+    ====================================================== */
+    --elevation-flat:    none;
+    --elevation-low:     var(--shadow-sm);   /* Cards, inputs */
+    --elevation-medium:  var(--shadow-md);   /* Hovered cards, panels */
+    --elevation-high:    var(--shadow-lg);   /* Drawers, toasts */
+    --elevation-overlay: var(--shadow-xl);   /* Modals, dropdowns */
 
-    --color-border: var(--color-neutral-200);
-    --color-border-hover: var(--color-neutral-300);
+    /* ======================================================
+       LAYER 2: SEMANTIC TOKENS — LAYOUT
+    ====================================================== */
 
-    --color-success: var(--color-success-500);
-    --color-warning: var(--color-warning-500);
-    --color-danger: var(--color-danger-500);
-    --color-info: var(--color-primary-500);
+    /* Container widths */
+    --container-sm: 40rem;   /* 640px  */
+    --container-md: 48rem;   /* 768px  */
+    --container-lg: 64rem;   /* 1024px */
+    --container-xl: 80rem;   /* 1280px */
+
+    /* App shell dimensions */
+    --sidebar-width:     16rem;   /* 256px — expanded sidebar */
+    --sidebar-collapsed:  4rem;   /* 64px  — icon-only sidebar */
+    --header-height:      4rem;   /* 64px  */
+    --footer-height:      4rem;   /* 64px  */
+
+    /* Content constraints */
+    --content-max-width: 80rem;   /* 1280px — maximum content width */
+    --reading-width:     65ch;    /* Optimal line length for body copy */
+
+    /* Touch targets (WCAG 2.5.5) */
+    --touch-target-min:         2.75rem;   /* 44px — minimum accessible tap target */
+    --touch-target-comfortable: 3rem;      /* 48px — preferred tap target */
+    --touch-target-floating:    3.5rem;    /* 56px — FABs and primary mobile CTAs */
+
+    /* ======================================================
+       LAYER 2: SEMANTIC TOKENS — COMPONENT DENSITY
+       Base level only. Full density system (compact/comfortable/spacious) is future work.
+    ====================================================== */
+    --control-height-sm: 2rem;     /* 32px — compact controls */
+    --control-height:    2.5rem;   /* 40px — standard controls */
+    --control-height-lg: 3rem;     /* 48px — comfortable controls */
+    --table-row-height:  3rem;     /* 48px */
+    --list-gap:          var(--spacing-2);
 
     /* ======================================================
        TYPOGRAPHY TOKENS
     ====================================================== */
+
+    /* Semantic font-family aliases — change the font here, all roles update */
+    --font-display: var(--font-sans);   /* Hero text, marketing headings */
+    --font-heading: var(--font-sans);   /* Section, card, modal headings */
+    --font-body:    var(--font-sans);   /* Body copy, labels, form inputs */
+    --font-mono:    ui-monospace, 'Cascadia Code', 'Fira Code', monospace; /* Code, IDs */
+
+    /* ======================================================
+       TYPOGRAPHY TOKENS
 
     /* Typography Scale (Responsive with clamp) */
     --text-h1: clamp(2.25rem, 4vw + 1rem, 3.5rem);
@@ -276,11 +410,21 @@
     --z-tooltip: 80;
 
     /* ======================================================
+       LAYER 2: SEMANTIC TOKENS — SPACING
+    ====================================================== */
+    --space-page:    var(--spacing-8);    /* Outer page padding */
+    --space-section: var(--spacing-16);   /* Between major sections */
+    --space-card:    var(--spacing-6);    /* Card inner padding */
+    --space-stack:   var(--spacing-4);    /* Vertical element stacking */
+    --space-inline:  var(--spacing-2);    /* Inline element gap */
+
+    /* ======================================================
        FOCUS RING TOKENS
     ====================================================== */
-    --focus-ring-color: var(--color-primary);
-    --focus-ring-width: 2px;
-    --focus-ring-offset: 2px;
+    --focus-ring-color:   var(--color-primary);
+    --focus-ring-width:   2px;
+    --focus-ring-offset:  2px;
+    --focus-ring-opacity: 1;   /* Reduce for subtle rings while maintaining accessibility */
 }
 
 /* ======================================================
@@ -445,7 +589,10 @@
 @utility hover-glow {
     transition: border-color var(--motion-fast) var(--motion-ease), box-shadow var(--motion-fast) var(--motion-ease);
     &:hover {
-        box-shadow: 0 0 12px rgba(68, 182, 249, 0.2); /* uses --color-primary-500 rgba value */
+        /* Static fallback for browsers without color-mix() support */
+        box-shadow: 0 0 12px rgba(232, 53, 53, 0.2);
+        /* Modern: dynamically tracks --color-primary, survives future rebrands */
+        box-shadow: 0 0 12px color-mix(in srgb, var(--color-primary) 20%, transparent);
     }
 }
 

@@ -44,7 +44,7 @@
         --step-circle-size: {{ $sizeValues['circle'] }};
         --step-font-size: {{ $sizeValues['font'] }};
         --step-line-size: {{ $sizeValues['line'] }};
-        --step-color-active: var(--color-primary-600, #219ae8);
+        --step-color-active: var(--color-primary-600, var(--color-brand-600, #000));
         --step-color-error: var(--color-danger-600, #dc2626);
         --step-color-muted: var(--color-neutral-300, #d1d5db);
     "

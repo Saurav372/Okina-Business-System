@@ -179,5 +179,24 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     Route::post('/google-sheets/sync-record', [GoogleSheetsSyncLogController::class, 'syncRecord'])->name('admin.google_sheets.sync_record');
 });
 
+// Web App Manifest Dynamic Route
+Route::get('/manifest.webmanifest', function () {
+    $b = config('branding');
+    return response()->json([
+        'name'             => $b['name'],
+        'short_name'       => $b['short_name'],
+        'description'      => $b['seo']['description'],
+        'theme_color'      => $b['colors']['theme'],
+        'background_color' => '#ffffff',
+        'display'          => 'standalone',
+        'icons'            => [[
+            'src'     => $b['logo']['icon'],
+            'sizes'   => 'any',
+            'type'    => 'image/svg+xml',
+            'purpose' => 'any maskable',
+        ]],
+    ])->header('Content-Type', 'application/manifest+json');
+})->name('manifest');
+
 // Component Showcase Route
 Route::view('/admin/components', 'component-showcase');

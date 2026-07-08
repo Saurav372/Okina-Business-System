@@ -139,7 +139,7 @@
             <span class="text-sm font-semibold text-[color:var(--color-text-primary)] leading-tight whitespace-normal break-words flex items-center gap-1.5">
                 {{ $title }}
                 @if(isset($badge))
-                    <span class="inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white bg-[color:var(--color-secondary-500,#e53945)] rounded-full shrink-0">{{ $badge }}</span>
+                    <span class="inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white bg-[color:var(--color-secondary-500,var(--color-ink-500,#000))] rounded-full shrink-0">{{ $badge }}</span>
                 @endif
             </span>
             @if($description)

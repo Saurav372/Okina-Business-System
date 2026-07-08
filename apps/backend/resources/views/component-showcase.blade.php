@@ -131,6 +131,85 @@
                                 </section>
                             @endif
 
+                            {{-- Semantic Tokens --}}
+                            @if(isset($categories['Brand & Design Tokens']['Semantic Tokens']))
+                                <section id="{{ $categories['Brand & Design Tokens']['Semantic Tokens'] }}" class="js-section scroll-mt-8">
+                                    <div class="border-b border-[color:var(--color-border)] pb-4 mb-6">
+                                        <h2 class="text-2xl font-bold text-[color:var(--color-text-primary)]">Semantic Tokens</h2>
+                                        <p class="text-sm text-[color:var(--color-text-muted)] mt-1">
+                                            Semantic abstractions mapping design tokens to UI behaviors.
+                                        </p>
+                                    </div>
+
+                                    <div class="overflow-x-auto border border-[color:var(--color-border)] rounded-2xl bg-white">
+                                        <table class="min-w-full divide-y divide-neutral-200 text-xs">
+                                            <thead class="bg-neutral-50">
+                                                <tr>
+                                                    <th scope="col" class="px-6 py-3 text-left font-bold text-neutral-500 uppercase tracking-wider">Group</th>
+                                                    <th scope="col" class="px-6 py-3 text-left font-bold text-neutral-500 uppercase tracking-wider">Semantic Token</th>
+                                                    <th scope="col" class="px-6 py-3 text-left font-bold text-neutral-500 uppercase tracking-wider">Maps To</th>
+                                                    <th scope="col" class="px-6 py-3 text-left font-bold text-neutral-500 uppercase tracking-wider">Used By</th>
+                                                    <th scope="col" class="px-6 py-3 text-left font-bold text-neutral-500 uppercase tracking-wider">Copy</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="bg-white divide-y divide-neutral-200">
+                                                @foreach(\App\Presenters\DesignTokenCatalog::semantic() as $semantic)
+                                                    <tr class="hover:bg-neutral-50">
+                                                        <td class="px-6 py-4 whitespace-nowrap font-medium text-neutral-900">{{ $semantic['group'] }}</td>
+                                                        <td class="px-6 py-4 whitespace-nowrap font-mono text-neutral-600">{{ $semantic['token'] }}</td>
+                                                        <td class="px-6 py-4 whitespace-nowrap font-mono text-neutral-600">{{ $semantic['maps_to'] }}</td>
+                                                        <td class="px-6 py-4">
+                                                            <div class="flex flex-wrap gap-1">
+                                                                @foreach($semantic['used_by'] as $usage)
+                                                                    <span class="bg-neutral-100 text-neutral-600 px-2 py-0.5 rounded text-[10px]">{{ $usage }}</span>
+                                                                @endforeach
+                                                            </div>
+                                                        </td>
+                                                        <td class="px-6 py-4 whitespace-nowrap">
+                                                            <button @click="copyToClipboard('{{ $semantic['token'] }}', 'semantic token')" class="text-[10px] py-1 px-2.5 bg-neutral-50 hover:bg-neutral-100 border border-neutral-200 rounded-lg cursor-pointer">📋 Copy</button>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </section>
+                            @endif
+
+                            {{-- Chart Palette --}}
+                            @if(isset($categories['Brand & Design Tokens']['Chart Palette']))
+                                <section id="{{ $categories['Brand & Design Tokens']['Chart Palette'] }}" class="js-section scroll-mt-8">
+                                    <div class="border-b border-[color:var(--color-border)] pb-4 mb-6">
+                                        <h2 class="text-2xl font-bold text-[color:var(--color-text-primary)]">Chart Palette</h2>
+                                        <p class="text-sm text-[color:var(--color-text-muted)] mt-1">
+                                            Categorical chart colors for data visualizations.
+                                        </p>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                        @foreach(\App\Presenters\DesignTokenCatalog::charts() as $chart)
+                                            <div class="flex flex-col gap-2 p-4 border border-[color:var(--color-border)] rounded-xl bg-white shadow-xs">
+                                                <div class="w-full h-16 rounded-lg" style="background-color: {{ $chart['hex'] }}"></div>
+                                                <div class="flex justify-between items-center mt-2">
+                                                    <span class="font-bold text-sm text-neutral-800">{{ $chart['name'] }}</span>
+                                                    <span class="font-mono text-xs text-neutral-500">{{ $chart['hex'] }}</span>
+                                                </div>
+                                                <div class="font-mono text-[10px] text-neutral-400">var(--color-{{ $chart['token'] }})</div>
+                                                <div class="text-xs text-neutral-500 mt-1">{{ $chart['note'] }}</div>
+                                                <div class="flex gap-2 mt-2">
+                                                    <button @click="copyToClipboard('var(--color-{{ $chart['token'] }})', 'CSS variable')" class="flex-1 text-[10px] py-1 bg-neutral-50 hover:bg-neutral-100 rounded border border-neutral-200 cursor-pointer">📋 Variable</button>
+                                                    <button @click="copyToClipboard('{{ $chart['hex'] }}', 'hex value')" class="flex-1 text-[10px] py-1 bg-neutral-50 hover:bg-neutral-100 rounded border border-neutral-200 cursor-pointer">📋 Hex</button>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    
+                                    <div class="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 font-medium">
+                                        ⚠️ WARNING: Never use --color-success, --color-danger, or --color-primary directly in chart series. Semantic colors carry meaning (good/bad/action). Chart colors are purely categorical and must never imply status. Beyond 8 series: group remaining categories into "Other" or split into multiple charts.
+                                    </div>
+                                </section>
+                            @endif
+
                             {{-- Typography --}}
                             @if(isset($categories['Brand & Design Tokens']['Typography']))
                                 <section id="{{ $categories['Brand & Design Tokens']['Typography'] }}" class="js-section scroll-mt-8">
@@ -278,6 +357,38 @@
                                                 @endforeach
                                             </div>
                                         </div>
+                                    </div>
+                                </section>
+                            @endif
+
+                            {{-- Guidelines --}}
+                            @if(isset($categories['Brand & Design Tokens']['Guidelines']))
+                                <section id="{{ $categories['Brand & Design Tokens']['Guidelines'] }}" class="js-section scroll-mt-8">
+                                    <div class="border-b border-[color:var(--color-border)] pb-4 mb-6">
+                                        <h2 class="text-2xl font-bold text-[color:var(--color-text-primary)]">Design & CRO Guidelines</h2>
+                                        <p class="text-sm text-[color:var(--color-text-muted)] mt-1">
+                                            Interactive behavioral rules and copywriting principles that govern the Okina Craft design language.
+                                        </p>
+                                    </div>
+
+                                    <div class="space-y-8">
+                                        @foreach(\App\Presenters\DesignTokenCatalog::guidelines() as $guideline)
+                                            <div class="bg-white border border-[color:var(--color-border)] rounded-2xl p-6 shadow-xs space-y-4">
+                                                <div>
+                                                    <h3 class="text-lg font-bold text-[color:var(--color-text-primary)]">{{ $guideline['title'] }}</h3>
+                                                    <p class="text-xs text-[color:var(--color-text-muted)] mt-1">{{ $guideline['description'] }}</p>
+                                                </div>
+
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    @foreach($guideline['items'] as $item)
+                                                        <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-100 space-y-2">
+                                                            <h4 class="font-bold text-xs text-neutral-800">{{ $item['rule'] ?? $item['principle'] ?? $item['state'] ?? $item['requirement'] ?? $item['pattern'] ?? $item['process'] ?? 'Rule' }}</h4>
+                                                            <p class="text-[11px] text-neutral-600 leading-relaxed">{{ $item['details'] }}</p>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        @endforeach
                                     </div>
                                 </section>
                             @endif
@@ -1604,6 +1715,39 @@ HTML;
                                      </div>
                                  </section>
                              @endif
+
+                            {{-- Pagination --}}
+                            @if(isset($categories['Navigation']['Pagination']))
+                                @php
+                                    $paginationCode = <<<'HTML'
+<!-- Server-side Pagination Component -->
+<x-table.pagination :paginator="$dummyPaginator" />
+HTML;
+
+                                    $dummyPaginator = new \Illuminate\Pagination\LengthAwarePaginator(
+                                        collect(range(11, 20)), // items for current page
+                                        50,                    // total items
+                                        10,                    // items per page
+                                        2,                     // current page
+                                        ['path' => '/admin/components']
+                                    );
+                                @endphp
+
+                                <section id="{{ $categories['Navigation']['Pagination'] }}" class="js-section mb-12 scroll-mt-8">
+                                    <div class="border-b border-[color:var(--color-border)] pb-4 mb-6">
+                                        <h2 class="text-2xl font-bold text-[color:var(--color-text-primary)]">Pagination</h2>
+                                        <p class="text-sm text-[color:var(--color-text-muted)] mt-1">
+                                            Accessible and responsive pagination controls mapping active states, page links, and totals.
+                                        </p>
+                                    </div>
+
+                                    <x-showcase.preview title="Length-Aware Pagination" :code="$paginationCode" id="preview-pagination-standard">
+                                        <div class="border border-[color:var(--color-border)] rounded-xl overflow-hidden bg-white shadow-xs">
+                                            <x-table.pagination :paginator="$dummyPaginator" />
+                                        </div>
+                                    </x-showcase.preview>
+                                </section>
+                            @endif
 
                             {{-- Badge --}}
                             @if(isset($categories['Data Display']['Badge']))
@@ -3359,6 +3503,73 @@ HTML;
                                                     </x-slot>
                                                 </x-modal>
                                             </div>
+                                        </x-showcase.preview>
+                                    </div>
+                                </section>
+                            @endif
+
+                            {{-- Alert --}}
+                            @if(isset($categories['Feedback']['Alert']))
+                                @php
+                                    $alertBasicCode = <<<'HTML'
+<!-- Standard Alert Types -->
+<x-alert type="info" title="System Update">
+    A new system patch is scheduled for deployment tonight.
+</x-alert>
+
+<x-alert type="success" title="Changes Saved">
+    Your database settings have been updated successfully.
+</x-alert>
+
+<x-alert type="warning" title="Usage Quota">
+    Your file storage usage has reached 85% of your total plan limit.
+</x-alert>
+
+<x-alert type="danger" title="Connection Failure">
+    Unable to connect to the primary synchronization API endpoint.
+</x-alert>
+HTML;
+
+                                    $alertDismissCode = <<<'HTML'
+<!-- Dismissible Inline Alert -->
+<x-alert type="info" title="Dismissible Update" :dismissible="true">
+    You can close this message banner by clicking the cross icon.
+</x-alert>
+HTML;
+                                @endphp
+
+                                <section id="{{ $categories['Feedback']['Alert'] }}" class="js-section mb-12 scroll-mt-8">
+                                    <div class="border-b border-[color:var(--color-border)] pb-4 mb-6">
+                                        <h2 class="text-2xl font-bold text-[color:var(--color-text-primary)]">Alert Banner</h2>
+                                        <p class="text-sm text-[color:var(--color-text-muted)] mt-1">
+                                            Semantic inline feedback banners. Pairs type-specific status colors with clear iconography.
+                                        </p>
+                                    </div>
+
+                                    <div class="space-y-8">
+                                        <!-- Types Showcase -->
+                                        <x-showcase.preview title="Status Type Banners" :code="$alertBasicCode" id="preview-alert-types">
+                                            <div class="space-y-4">
+                                                <x-alert type="info" title="System Update">
+                                                    A new system patch is scheduled for deployment tonight.
+                                                </x-alert>
+                                                <x-alert type="success" title="Changes Saved">
+                                                    Your database settings have been updated successfully.
+                                                </x-alert>
+                                                <x-alert type="warning" title="Usage Quota">
+                                                    Your file storage usage has reached 85% of your total plan limit.
+                                                </x-alert>
+                                                <x-alert type="danger" title="Connection Failure">
+                                                    Unable to connect to the primary synchronization API endpoint.
+                                                </x-alert>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Dismissible Banners -->
+                                        <x-showcase.preview title="Dismissible Layouts" :code="$alertDismissCode" id="preview-alert-dismiss">
+                                            <x-alert type="info" title="Dismissible Update" :dismissible="true">
+                                                You can close this message banner by clicking the cross icon.
+                                            </x-alert>
                                         </x-showcase.preview>
                                     </div>
                                 </section>

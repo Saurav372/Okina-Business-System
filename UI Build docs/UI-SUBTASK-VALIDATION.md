@@ -146,6 +146,34 @@ Notes: Added standard duration scale, easing curves, hover/focus states, and a g
 
 ---
 
+### U0.1.6 Brand Token Architecture
+**Status:** Completed
+
+**Implementation Validation**
+- [x] Three-layer architecture implemented (Brand/Ink -> Semantic -> Components)
+- [x] Brand Red (#e83535) and Ink (#1a1816 artistically derived) palette variables added
+- [x] CTA, Secondary, Surface (6 layers), Text (6 layers), Link, Border, Focus, Empty state variables defined
+- [x] Interaction, Elevation, Layout, Density, Typography, and Spacing semantic mappings declared
+- [x] Dynamic color-mix() hover-glow shadow with static fallback added
+- [x] Central config/branding.php and brand folder specification README added
+- [x] Dynamic webmanifest JSON route registered and layouts/app.blade.php favicon tags added
+- [x] Fallback variables chained correctly inside stepper index and step templates
+- [x] Showcase page components playground updated with Brand, Semantic, Charts, and Guidelines sections
+
+**Process Validation**
+- [x] Design token color registry colors.php, semantic.php, and charts.php configured
+- [x] Splitted design guidelines (principles, cro, forms, accessibility, mobile, search, loading, content, deprecation) added
+- [x] Task list completed and documentation updated
+- [x] Git restore point created
+
+**Review Sign-off**
+Reviewer: AI Assistant
+Date: 2026-07-08
+Result: [x] Pass [ ] Fail
+Notes: Restructured design tokens into a flexible three-layer setup. Dynamic web manifest, split guidelines, and layout/interactive states show cleanly on `/admin/components`.
+
+---
+
 ### U0.5 Layout Templates (e.g., admin.blade.php)
 **Status:** Completed
 

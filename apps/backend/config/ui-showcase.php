@@ -33,9 +33,12 @@ return [
     'categories' => [
         'Brand & Design Tokens' => [
             'Colors' => 'token-colors',
+            'Semantic Tokens' => 'token-semantic',
+            'Chart Palette' => 'token-charts',
             'Typography' => 'token-typography',
             'Spacing' => 'token-spacing',
             'Elevation & Radius' => 'token-elevation',
+            'Guidelines' => 'token-guidelines',
         ],
         'Motion Patterns' => [
             'Durations' => 'token-durations',
