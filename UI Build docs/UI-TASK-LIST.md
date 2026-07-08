@@ -75,7 +75,7 @@ Detailed validation for each subtask is maintained in `UI-SUBTASK-VALIDATION.md`
 | **U1.6** | **Motion & Feedback** | Foundation | 1 | **Milestone** | U0.1.5, U0.5 | Milestone |
 | U1.6.1 | Transition Utilities | Foundation | 1 | Reusable transition wrappers. | U0.1.5, U0.5 | Completed |
 | U1.6.2 | Loading Indicators | Foundation | 1 | Spinners and loading states. | U0.1.5, U0.5 | Completed |
-| U1.6.3 | Progress Indicators | Foundation | 1 | Progress bars. | U0.1.5, U0.5 | Pending |
+| U1.6.3 | Progress Indicators | Foundation | 1 | Progress bars. | U0.1.5, U0.5 | Completed |
 | U1.6.4 | Skeleton Animation | Foundation | 1 | Shimmer effects for skeletons. | U0.1.5, U0.5 | Pending |
 | U1.6.5 | Scroll Animations | Foundation | 1 | Scroll-triggered reveals. | U0.1.5, U0.5 | Pending |
 | U1.6.6 | Page Transitions | Foundation | 1 | View transition API integration. | U0.1.5, U0.5 | Pending |
