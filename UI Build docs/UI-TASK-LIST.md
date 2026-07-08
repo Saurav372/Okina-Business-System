@@ -79,7 +79,7 @@ Detailed validation for each subtask is maintained in `UI-SUBTASK-VALIDATION.md`
 | U1.6.4 | Skeleton Animation | Foundation | 1 | Shimmer effects for skeletons. | U0.1.5, U0.5 | Completed |
 | U1.6.5 | Scroll Animations | Foundation | 1 | Scroll-triggered reveals. | U0.1.5, U0.5 | Completed |
 | U1.6.6 | Page Transitions | Foundation | 1 | View transition API integration. | U0.1.5, U0.5 | Completed |
-| U1.7 | UI Component Showcase | Foundation | 1.5 | `/admin/components` route to display and document all reusable components, design tokens, and motion patterns. | U1.1, U1.2, U1.3, U1.4, U1.5, U1.6 | Pending |
+| U1.7 | UI Component Showcase | Foundation | 1.5 | `/admin/components` route to display and document all reusable components, design tokens, and motion patterns. | U1.1, U1.2, U1.3, U1.4, U1.5, U1.6 | Completed |
 | U2.1 | Application Shell | Foundation | 2 | Wire up Sidebar and Topbar with dynamic user session and navigation data. | U0.3, U0.5, U1.3 | Pending |
 | **U2.2** | **Dashboard** | Foundation | 2 | **Milestone** | U2.1 | Milestone |
 | U2.2.1 | Widgets | Foundation | 2 | KPI stat cards. | U2.1, U1.2.4, U1.6 | Pending |
