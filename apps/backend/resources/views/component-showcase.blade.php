@@ -3420,7 +3420,182 @@ HTML;
                                 </section>
                             @endif
 
+                            {{-- Spinner & Loading Indicators --}}
+                            @if(isset($categories['Feedback']['Spinner']))
+                                @php
+                                    $spinnerBasicCode = <<<'HTML'
+<!-- Spinner Customization Grid -->
+<x-spinner size="xs" />
+<x-spinner size="sm" />
+<x-spinner size="md" />
+<x-spinner size="lg" />
+<x-spinner size="xl" />
+
+<!-- Spinner Intents -->
+<x-spinner intent="primary" size="md" />
+<x-spinner intent="secondary" size="md" />
+<x-spinner intent="success" size="md" />
+<x-spinner intent="danger" size="md" />
+<x-spinner intent="warning" size="md" />
+<x-spinner intent="neutral" size="md" />
+
+<!-- Custom stroke thickness (clamped 1-8) -->
+<x-spinner thickness="2" size="md" />
+<x-spinner thickness="6" size="md" />
+
+<!-- Accessible screen-reader support -->
+<x-spinner srOnlyLabel="Syncing files..." size="md" />
+HTML;
+
+                                    $loadingInlineCode = <<<'HTML'
+<!-- Inline Loader Component -->
+<x-loading.inline />
+<x-loading.inline text="Saving changes..." intent="secondary" />
+<x-loading.inline size="lg" intent="success">Downloading invoice...</x-loading.inline>
+HTML;
+
+                                    $loadingOverlayCode = <<<'HTML'
+<!-- Loading Overlay Wrapper Mode -->
+<x-loading.overlay show="cardLoading" label="Updating database..." tone="glass" blur="md">
+    <div class="p-6 bg-white border border-[color:var(--color-border)] rounded-xl">
+        <h4 class="font-bold text-[color:var(--color-text-primary)]">Orders Database</h4>
+        <p class="text-xs text-[color:var(--color-text-muted)] mt-2">Try clicking the action button or tabbing inside while loading is active.</p>
+        <button @click="alert('Action completed!')" class="mt-4 px-4 py-2 bg-neutral-900 text-white rounded-lg text-xs font-semibold">
+            Action Button
+        </button>
+    </div>
+</x-loading.overlay>
+HTML;
+
+                                    $loadingFullscreenCode = <<<'HTML'
+<!-- Fullscreen Loading Overlay -->
+<x-loading.overlay show="fullscreenLoading" label="Initializing workspace..." fullscreen tone="dark" />
+HTML;
+                                @endphp
+
+                                <section id="{{ $categories['Feedback']['Spinner'] }}" class="js-section scroll-mt-8 mt-16">
+                                    <div class="border-b border-[color:var(--color-border)] pb-4 mb-6">
+                                        <h2 class="text-2xl font-bold text-[color:var(--color-text-primary)]">Spinner & Loading Indicators</h2>
+                                        <p class="text-sm text-[color:var(--color-text-muted)] mt-1">
+                                            A unified vector loader component with standard sizing/color intents, inline indicators, and relative/fixed viewport overlays with dynamic interaction blocking.
+                                        </p>
+                                    </div>
+
+                                    <div class="space-y-12">
+                                        <!-- Basic Spinner Variations -->
+                                        <x-showcase.preview title="Spinner Sizing & Thickness Grid" :code="$spinnerBasicCode" id="preview-spinner-basic">
+                                            <div class="w-full space-y-6">
+                                                <!-- Sizes -->
+                                                <div>
+                                                    <span class="text-xs font-bold text-neutral-400 block mb-3 uppercase tracking-wider">Sizes</span>
+                                                    <div class="flex items-center gap-6">
+                                                        <div class="text-center"><x-spinner size="xs" /><span class="text-[10px] text-neutral-400 mt-1 block">xs</span></div>
+                                                        <div class="text-center"><x-spinner size="sm" /><span class="text-[10px] text-neutral-400 mt-1 block">sm</span></div>
+                                                        <div class="text-center"><x-spinner size="md" /><span class="text-[10px] text-neutral-400 mt-1 block">md</span></div>
+                                                        <div class="text-center"><x-spinner size="lg" /><span class="text-[10px] text-neutral-400 mt-1 block">lg</span></div>
+                                                        <div class="text-center"><x-spinner size="xl" /><span class="text-[10px] text-neutral-400 mt-1 block">xl</span></div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Intents -->
+                                                <div>
+                                                    <span class="text-xs font-bold text-neutral-400 block mb-3 uppercase tracking-wider">Intents</span>
+                                                    <div class="flex flex-wrap items-center gap-6">
+                                                        <div class="text-center"><x-spinner intent="primary" size="md" /><span class="text-[10px] text-neutral-400 mt-1 block">primary</span></div>
+                                                        <div class="text-center"><x-spinner intent="secondary" size="md" /><span class="text-[10px] text-neutral-400 mt-1 block">secondary</span></div>
+                                                        <div class="text-center"><x-spinner intent="success" size="md" /><span class="text-[10px] text-neutral-400 mt-1 block">success</span></div>
+                                                        <div class="text-center"><x-spinner intent="danger" size="md" /><span class="text-[10px] text-neutral-400 mt-1 block">danger</span></div>
+                                                        <div class="text-center"><x-spinner intent="warning" size="md" /><span class="text-[10px] text-neutral-400 mt-1 block">warning</span></div>
+                                                        <div class="text-center"><x-spinner intent="neutral" size="md" /><span class="text-[10px] text-neutral-400 mt-1 block">neutral</span></div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Thickness Clamping -->
+                                                <div>
+                                                    <span class="text-xs font-bold text-neutral-400 block mb-3 uppercase tracking-wider">Custom Thickness (Stroke Width)</span>
+                                                    <div class="flex items-center gap-8">
+                                                        <div class="text-center"><x-spinner thickness="2" size="md" /><span class="text-[10px] text-neutral-400 mt-1 block">thickness="2"</span></div>
+                                                        <div class="text-center"><x-spinner thickness="4" size="md" /><span class="text-[10px] text-neutral-400 mt-1 block">thickness="4" (default)</span></div>
+                                                        <div class="text-center"><x-spinner thickness="6" size="md" /><span class="text-[10px] text-neutral-400 mt-1 block">thickness="6"</span></div>
+                                                        <div class="text-center"><x-spinner thickness="8" size="md" /><span class="text-[10px] text-neutral-400 mt-1 block">thickness="8"</span></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Inline Loader Previews -->
+                                        <x-showcase.preview title="Inline Loaders" :code="$loadingInlineCode" id="preview-loading-inline">
+                                            <div class="w-full space-y-4">
+                                                <div>
+                                                    <span class="text-xs text-neutral-400 mb-1 block">Default state</span>
+                                                    <x-loading.inline />
+                                                </div>
+                                                <div>
+                                                    <span class="text-xs text-neutral-400 mb-1 block">Custom text & secondary intent</span>
+                                                    <x-loading.inline text="Saving changes..." intent="secondary" />
+                                                </div>
+                                                <div>
+                                                    <span class="text-xs text-neutral-400 mb-1 block">Custom slot, large success size</span>
+                                                    <x-loading.inline size="lg" intent="success">Downloading invoice...</x-loading.inline>
+                                                </div>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Container Overlays (Wrapper Mode) -->
+                                        <x-showcase.preview title="Container Overlays (Wrapper Mode)" :code="$loadingOverlayCode" id="preview-loading-overlay">
+                                            <div x-data="{ cardLoading: false }" class="w-full max-w-sm space-y-6">
+                                                <div class="flex items-center gap-2">
+                                                    <input type="checkbox" id="toggle-card-loading" x-model="cardLoading" class="rounded border-neutral-300 text-[color:var(--color-primary-600)] focus:ring-[color:var(--color-primary-500)]">
+                                                    <label for="toggle-card-loading" class="text-xs font-semibold text-[color:var(--color-text-secondary)] select-none">Toggle Loading State (Inert Wrapper)</label>
+                                                </div>
+
+                                                <x-loading.overlay show="cardLoading" label="Syncing database..." tone="glass" blur="md">
+                                                    <div class="p-6 bg-white border border-[color:var(--color-border)] rounded-xl">
+                                                        <h4 class="font-bold text-[color:var(--color-text-primary)]">Orders Database</h4>
+                                                        <p class="text-xs text-[color:var(--color-text-muted)] mt-2">
+                                                            When loading is active, this card automatically receives the <code>inert</code> attribute, preventing tabbing or mouse interactions with the button.
+                                                        </p>
+                                                        <button @click="alert('Button clicked! (Not blocked)')" class="mt-4 px-4 py-2 bg-neutral-900 hover:bg-neutral-800 text-white rounded-lg text-xs font-semibold transition active:scale-95">
+                                                            Interactive Target Button
+                                                        </button>
+                                                    </div>
+                                                </x-loading.overlay>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Fullscreen Blocker -->
+                                        <x-showcase.preview title="Fullscreen Overlay Blocker" :code="$loadingFullscreenCode" id="preview-loading-fullscreen">
+                                            <div x-data="{ fullscreenLoading: false }" class="w-full">
+                                                <button @click="fullscreenLoading = true; setTimeout(() => fullscreenLoading = false, 3000)" class="px-4 py-2 text-sm font-semibold text-white bg-[color:var(--color-primary-600)] hover:bg-[color:var(--color-primary-700)] rounded-lg transition active:scale-95 shadow-sm">
+                                                    Trigger Fullscreen Overlay (3s)
+                                                </button>
+
+                                                <x-loading.overlay show="fullscreenLoading" label="Rebuilding workspace index..." fullscreen tone="dark" />
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Refactored Components Integration -->
+                                        <div class="p-6 bg-white border border-[color:var(--color-border)] rounded-xl">
+                                            <h3 class="font-bold text-base text-[color:var(--color-text-primary)] mb-2">Refactored Shell Components</h3>
+                                            <p class="text-xs text-[color:var(--color-text-muted)] mb-4">
+                                                Verify that the newly refactored buttons, dropdowns, and stepper steps consume the modular <code>&lt;x-spinner&gt;</code> without visual regression.
+                                            </p>
+                                            <div class="flex flex-wrap items-center gap-4">
+                                                <x-button intent="primary" :loading="true">Loading Button</x-button>
+                                                <x-button intent="secondary" :loading="true">Secondary Spinner</x-button>
+                                                
+                                                <div class="p-2 border rounded-lg bg-neutral-50 flex items-center gap-2">
+                                                    <span class="text-xs text-neutral-400">Stepper Step:</span>
+                                                    <x-stepper.step step="1" title="Initial Step" description="Processing..." status="current" :busy="true" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                            @endif
+
                             {{-- Transition Utilities --}}
+
                             @if(isset($categories['Feedback']['Transition Utilities']))
                                 @php
                                     $motionBasicCode = <<<'HTML'

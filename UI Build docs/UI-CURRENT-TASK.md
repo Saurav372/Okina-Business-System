@@ -4,18 +4,20 @@
 Motion & Feedback (U1.6)
 
 ## Current Subtask
-U1.6.1 Transition Utilities
+U1.6.2 Loading Indicators
 
 ## Goal
-Create reusable transition wrappers and utility configurations conforming to the design system's motion parameters. These utilities should define standard transitions (fade, slide, scale, collapse, etc.) backed by CSS vars and Alpine.js, enabling developers to declare smooth, accessible, and motion-compliant layouts.
+Create reusable loading spinner and loader components complying with the design system's spacing, color, and motion parameters. These components should support inline loads, button embeds, relative containers, and full-viewport overlays.
 
 ## Dependencies
 **Depends On:**
 - U0.1.5 (Motion & Animation Tokens)
+- U0.5 Layout Templates
 
 ## Required Deliverables
-- Reusable Blade transition component configurations and utility classes representing the defined project motion tokens.
-- Integration in the components playground at `/admin/components#transition-utilities`.
+- Reusable Blade component for spinners (`<x-spinner>` or `<x-loading.spinner>`) supporting sizes (`xs`, `sm`, `md`, `lg`, `xl`), thickness, and intents (primary, secondary, success, danger, warning, white, neutral).
+- Relative layout loader overlay (`<x-loading.overlay>` or relative wrapper) with standard backdrop blur and accessibility descriptors (`aria-busy="true"`, `aria-live="polite"`).
+- Integration and interactive variations showcased inside the components playground at `/admin/components#loading-indicators`.
 
 ## Completed prerequisites
 - U0.1 Design System & Tokens
@@ -25,3 +27,4 @@ Create reusable transition wrappers and utility configurations conforming to the
 - U1.3 Navigation
 - U1.4 Feedback & Overlay
 - U1.5 Utility & Media
+- U1.6.1 Transition Utilities

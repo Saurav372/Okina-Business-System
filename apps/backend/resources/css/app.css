@@ -456,3 +456,21 @@
         transition-property: opacity !important;
     }
 }
+
+/* ======================================================
+   SPINNER & LOADING INDICATOR TOKENS (U1.6.2)
+====================================================== */
+
+:root {
+    --motion-duration-spinner: 1s;
+}
+
+@utility animate-spin-custom {
+    animation: spin var(--motion-duration-spinner) linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .animate-spin-custom {
+        animation: none !important;
+    }
+}
