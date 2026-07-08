@@ -1052,6 +1052,41 @@ Notes: Created `<x-motion>` Blade component and custom CSS utilities conforming 
 
 ---
 
+### U1.6.2 Loading Indicators
+**Status:** Completed ✅
+
+**Implementation Validation**
+- [x] Create reusable spinner component: `<x-spinner>`
+- [x] Create loading overlay component: `<x-loading.overlay>`
+- [x] Create inline loader component: `<x-loading.inline>`
+- [x] Refactor button, dropdown item, and stepper step components to use `<x-spinner>`
+- [x] Spinner thickness clamping handles both minimum (1) and maximum (8) bounds with casting
+- [x] Standardized fullscreen z-index overlays to use `z-[var(--z-overlay,100)]`
+- [x] Standalone mode does not emit wrapper markup
+- [x] Wrapper mode automatically renders `relative overflow-hidden` markup
+
+**UI / Accessibility Validation**
+- [x] Spinner accessibility uses `role="status"` + `aria-live="polite"` when label is present, and `aria-hidden="true"` when absent
+- [x] Wrapper mode applies dynamic `:inert="show"` and `:aria-busy="show"` boolean Alpine.js attributes to block interaction, keyboard, and screen readers
+- [x] Separated overlay tone backgrounds and backdrop blur classes cleanly
+- [x] Custom spinner speeds bound to `--motion-duration-spinner` CSS variable
+- [x] Spinner stops animation completely under reduced-motion media query
+
+**Process Validation**
+- [x] Created size, intent, thickness, and inline showcases inside playground
+- [x] Integrated wrapper overlay inert sandbox and fullscreen overlay blocker in playground
+- [x] Created dedicated feature test suite `tests/Feature/LoadingComponentTest.php` passing all 7 cases
+- [x] Run full backend phpunit tests (811 tests) with zero regressions
+- [x] Git restore point created
+
+**Review Sign-off**
+Reviewer: AI Assistant
+Date: 2026-07-08
+Result: [x] Pass [ ] Fail
+Notes: Created `<x-spinner>`, `<x-loading.overlay>`, and `<x-loading.inline>` components conforming to brand color and animation tokens. Refactored button/dropdown/stepper components. Verified layout, accessibility, and tests.
+
+---
+
 ## Motion Validation Template (U1.6)
 *(Apply this checklist to transitions, loaders, page changes, and similar features)*
 
