@@ -4441,6 +4441,139 @@ HTML;
                                     </div>
                                 </section>
                             @endif
+
+                            {{-- Page Transitions --}}
+
+                            @if(isset($categories['Feedback']['Page Transitions']))
+                                @php
+                                    $pageTransitionCode = <<<'HTML'
+<!-- Simulated Page Transitions (Morphing Sandbox) -->
+<div x-data="{ 
+    activeTab: 'dashboard',
+    changeTab(tab) {
+        if ('startViewTransition' in document) {
+            document.startViewTransition(() => {
+                this.activeTab = tab;
+            });
+        } else {
+            // CSS Transition fallback
+            const panel = document.querySelector('.simulated-main');
+            if (panel) {
+                panel.classList.add('ui-transition-fade-out');
+                setTimeout(() => {
+                    this.activeTab = tab;
+                    panel.classList.remove('ui-transition-fade-out');
+                    panel.classList.add('ui-transition-fade-in');
+                    setTimeout(() => {
+                        panel.classList.remove('ui-transition-fade-in');
+                    }, 300);
+                }, 150);
+            } else {
+                this.activeTab = tab;
+            }
+        }
+    }
+}" class="w-full border rounded-2xl bg-white shadow-sm overflow-hidden flex flex-col md:flex-row h-[320px]">
+    <!-- Mock Sidebar -->
+    <aside class="w-full md:w-48 bg-neutral-50 border-r p-4 flex flex-col gap-1 shrink-0">
+        <span class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Staff Navigation</span>
+        <button @click="changeTab('dashboard')" :class="activeTab === 'dashboard' ? 'bg-primary-50 text-primary-600 font-semibold' : 'text-neutral-600 hover:bg-neutral-100'" class="w-full text-left px-3 py-2 rounded-lg text-xs transition">Dashboard</button>
+        <button @click="changeTab('orders')" :class="activeTab === 'orders' ? 'bg-primary-50 text-primary-600 font-semibold' : 'text-neutral-600 hover:bg-neutral-100'" class="w-full text-left px-3 py-2 rounded-lg text-xs transition">Orders</button>
+        <button @click="changeTab('settings')" :class="activeTab === 'settings' ? 'bg-primary-50 text-primary-600 font-semibold' : 'text-neutral-600 hover:bg-neutral-100'" class="w-full text-left px-3 py-2 rounded-lg text-xs transition">Settings</button>
+    </aside>
+    <!-- Mock Main Area -->
+    <div class="flex-1 flex flex-col min-w-0">
+        <header class="h-12 border-b px-4 flex items-center bg-white shrink-0">
+            <span class="text-xs font-semibold text-neutral-500" x-text="activeTab.charAt(0).toUpperCase() + activeTab.slice(1)"></span>
+        </header>
+        <main class="flex-1 p-5 overflow-y-auto simulated-main">
+            <div x-show="activeTab === 'dashboard'" class="space-y-3">
+                <h4 class="font-bold text-base">Dashboard Home</h4>
+                <p class="text-xs text-neutral-500 leading-relaxed">Welcome back, staff member. View transitions keep your navigation fixed and morph body contents dynamically.</p>
+            </div>
+            <div x-show="activeTab === 'orders'" x-cloak class="space-y-3">
+                <h4 class="font-bold text-base">Recent Orders</h4>
+                <p class="text-xs text-neutral-500 leading-relaxed">No orders require action. Native view transitions will slide up or crossfade new elements seamlessly.</p>
+            </div>
+            <div x-show="activeTab === 'settings'" x-cloak class="space-y-3">
+                <h4 class="font-bold text-base">Admin Settings</h4>
+                <p class="text-xs text-neutral-500 leading-relaxed">Adjust layout behavior. Prefers-reduced-motion triggers will automatically switch view transitions off instantly.</p>
+            </div>
+        </main>
+    </div>
+</div>
+HTML;
+                                @endphp
+
+                                <section id="{{ $categories['Feedback']['Page Transitions'] }}" class="js-section scroll-mt-8 mt-16">
+                                    <div class="border-b border-[color:var(--color-border)] pb-4 mb-6">
+                                        <h2 class="text-2xl font-bold text-[color:var(--color-text-primary)]">Page Transitions</h2>
+                                        <p class="text-sm text-[color:var(--color-text-muted)] mt-1">
+                                            Smooth app-like navigation morphing. Keeps sidebar and topbar fixed while transitioning body content dynamically.
+                                        </p>
+                                    </div>
+
+                                    <div class="space-y-12">
+                                        {{-- Simulated Page Switcher --}}
+                                        <x-showcase.preview title="Simulated Page Navigator Navigation" :code="$pageTransitionCode" id="preview-page-transition">
+                                            <div x-data="{ 
+                                                activeTab: 'dashboard',
+                                                changeTab(tab) {
+                                                    if ('startViewTransition' in document) {
+                                                        document.startViewTransition(() => {
+                                                            this.activeTab = tab;
+                                                        });
+                                                    } else {
+                                                        // CSS Transition fallback
+                                                        const panel = document.querySelector('.simulated-main');
+                                                        if (panel) {
+                                                            panel.classList.add('ui-transition-fade-out');
+                                                            setTimeout(() => {
+                                                                this.activeTab = tab;
+                                                                panel.classList.remove('ui-transition-fade-out');
+                                                                panel.classList.add('ui-transition-fade-in');
+                                                                setTimeout(() => {
+                                                                    panel.classList.remove('ui-transition-fade-in');
+                                                                }, 300);
+                                                            }, 150);
+                                                        } else {
+                                                            this.activeTab = tab;
+                                                        }
+                                                    }
+                                                }
+                                            }" class="w-full border border-[color:var(--color-border)] rounded-2xl bg-white shadow-sm overflow-hidden flex flex-col md:flex-row h-[280px]">
+                                                <!-- Mock Sidebar -->
+                                                <aside class="w-full md:w-48 bg-neutral-50 border-r border-[color:var(--color-border)] p-4 flex flex-col gap-1 shrink-0">
+                                                    <span class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-2 block">Staff Navigation</span>
+                                                    <button @click="changeTab('dashboard')" :class="activeTab === 'dashboard' ? 'bg-[color:var(--color-primary-50)] text-[color:var(--color-primary-600)] font-semibold' : 'text-[color:var(--color-neutral-600)] hover:bg-neutral-100'" class="w-full text-left px-3 py-2 rounded-lg text-xs transition cursor-pointer">Dashboard</button>
+                                                    <button @click="changeTab('orders')" :class="activeTab === 'orders' ? 'bg-[color:var(--color-primary-50)] text-[color:var(--color-primary-600)] font-semibold' : 'text-[color:var(--color-neutral-600)] hover:bg-neutral-100'" class="w-full text-left px-3 py-2 rounded-lg text-xs transition cursor-pointer">Orders</button>
+                                                    <button @click="changeTab('settings')" :class="activeTab === 'settings' ? 'bg-[color:var(--color-primary-50)] text-[color:var(--color-primary-600)] font-semibold' : 'text-[color:var(--color-neutral-600)] hover:bg-neutral-100'" class="w-full text-left px-3 py-2 rounded-lg text-xs transition cursor-pointer">Settings</button>
+                                                </aside>
+                                                <!-- Mock Main Area -->
+                                                <div class="flex-1 flex flex-col min-w-0">
+                                                    <header class="h-12 border-b border-[color:var(--color-border)] px-4 flex items-center bg-white shrink-0">
+                                                        <span class="text-xs font-semibold text-neutral-500" x-text="activeTab.charAt(0).toUpperCase() + activeTab.slice(1)"></span>
+                                                    </header>
+                                                    <main class="flex-1 p-5 overflow-y-auto simulated-main bg-white">
+                                                        <div x-show="activeTab === 'dashboard'" class="space-y-3">
+                                                            <h4 class="font-bold text-sm text-[color:var(--color-text-primary)]">Dashboard Home</h4>
+                                                            <p class="text-xs text-[color:var(--color-text-muted)] leading-relaxed">Welcome back, staff member. View transitions keep your navigation fixed and morph body contents dynamically.</p>
+                                                        </div>
+                                                        <div x-show="activeTab === 'orders'" x-cloak class="space-y-3">
+                                                            <h4 class="font-bold text-sm text-[color:var(--color-text-primary)]">Recent Orders</h4>
+                                                            <p class="text-xs text-[color:var(--color-text-muted)] leading-relaxed">No orders require action. Native view transitions will slide up or crossfade new elements seamlessly.</p>
+                                                        </div>
+                                                        <div x-show="activeTab === 'settings'" x-cloak class="space-y-3">
+                                                            <h4 class="font-bold text-sm text-[color:var(--color-text-primary)]">Admin Settings</h4>
+                                                            <p class="text-xs text-[color:var(--color-text-muted)] leading-relaxed">Adjust layout behavior. Prefers-reduced-motion triggers will automatically switch view transitions off instantly.</p>
+                                                        </div>
+                                                    </main>
+                                                </div>
+                                            </div>
+                                        </x-showcase.preview>
+                                    </div>
+                                </section>
+                            @endif
                         </div>
                     @endif
 

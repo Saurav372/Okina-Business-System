@@ -65,6 +65,7 @@ return [
             'Progress Indicators' => 'progress-indicators',
             'Transition Utilities' => 'transition-utilities',
             'Scroll Animations' => 'scroll-animations',
+            'Page Transitions' => 'page-transitions',
         ],
     ],
 

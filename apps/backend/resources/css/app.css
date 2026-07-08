@@ -602,4 +602,86 @@
     }
 }
 
+/* ======================================================
+   PAGE TRANSITIONS SYSTEM (U1.6.6)
+ ====================================================== */
+
+@view-transition {
+    navigation: auto; /* Enable cross-document view transitions natively */
+}
+
+/* Define View Transition names to keep Sidebar & Header fixed during transition */
+/* IMPORTANT: Exactly one layout-sidebar, one layout-header, and one layout-main must exist inside the viewport */
+.layout-sidebar {
+    view-transition-name: admin-sidebar;
+}
+.layout-header {
+    view-transition-name: admin-header;
+}
+.layout-main {
+    view-transition-name: admin-main;
+}
+
+/* Main Content Entrance/Exit Animations */
+@keyframes transition-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes transition-fade-out {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+@keyframes transition-slide-up {
+    from { transform: translateY(8px); }
+    to { transform: translateY(0); }
+}
+
+/* Custom transitions for main content wrapper */
+::view-transition-old(admin-main) {
+    animation: transition-fade-out var(--motion-fast) var(--motion-ease) forwards;
+}
+::view-transition-new(admin-main) {
+    animation: transition-fade-in var(--motion-fast) var(--motion-ease) backwards,
+               transition-slide-up var(--motion-fast) var(--motion-ease) backwards;
+}
+
+/* Fallback transitions for non-supporting browsers (using ui- namespace consistently) */
+.ui-transition-fade-out {
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity var(--motion-fast) var(--motion-ease), transform var(--motion-fast) var(--motion-ease);
+}
+.ui-transition-fade-in {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity var(--motion-fast) var(--motion-ease), transform var(--motion-fast) var(--motion-ease);
+}
+
+/* Supports fallback on page load for browsers that do NOT support view transition names */
+@supports not (view-transition-name: test) {
+    .layout-main {
+        animation: transition-fade-in var(--motion-normal) var(--motion-ease) backwards,
+                   transition-slide-up var(--motion-normal) var(--motion-ease) backwards;
+    }
+}
+
+/* Prefers-reduced-motion checks: instantly disables transitions */
+@media (prefers-reduced-motion: reduce) {
+    ::view-transition-group(*),
+    ::view-transition-old(*),
+    ::view-transition-new(*) {
+        animation: none !important;
+    }
+    .layout-main {
+        animation: none !important;
+    }
+    .ui-transition-fade-out,
+    .ui-transition-fade-in {
+        transition: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+    }
+}
+
+
 

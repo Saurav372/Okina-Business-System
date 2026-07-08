@@ -4,10 +4,10 @@
 Motion & Feedback (U1.6)
 
 ## Current Subtask
-U1.6.5 Scroll Animations
+U1.6.6 Page Transitions
 
 ## Goal
-Create a lightweight, reusable scroll-triggered reveal animation component/directive using Intersection Observer or Alpine.js viewport tracking, enabling premium entrance transitions (fade, slide, scale) as elements scroll into the viewport.
+Implement client-side page transitions in the backend admin panel to provide a smooth, fluid app-like navigation experience using the browser's View Transition API (with clean fallbacks for non-supporting browsers) and Alpine.js.
 
 ## Dependencies
 **Depends On:**
@@ -15,9 +15,10 @@ Create a lightweight, reusable scroll-triggered reveal animation component/direc
 - U0.5 Layout Templates
 
 ## Required Deliverables
-- A reusable component or directive (e.g. `<x-scroll-reveal>` or custom Alpine viewport script) providing entrance effects like `fade`, `slide-up`, `slide-down`, `scale-up`, with customizable duration, delay, and threshold options.
-- Support prefers-reduced-motion configuration (instantly revealing elements without transition animations).
-- Showcase demos compiled inside the components playground under `#scroll-animations` displaying viewport entrances.
+- Integration of the View Transition API or transition utilities on page navigation links or page load in the base layout (`layout.blade.php` or `app.blade.php`).
+- CSS rules matching view transition names and animation durations using design motion tokens.
+- Support prefers-reduced-motion configuration (instantly disabling navigation transition effects).
+- Showcase of page transition simulation or demonstration in the playground.
 
 ## Completed prerequisites
 - U0.1 Design System & Tokens
@@ -31,3 +32,4 @@ Create a lightweight, reusable scroll-triggered reveal animation component/direc
 - U1.6.2 Loading Indicators
 - U1.6.3 Progress Indicators
 - U1.6.4 Skeleton Animation
+- U1.6.5 Scroll Animations

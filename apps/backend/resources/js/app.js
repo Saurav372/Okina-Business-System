@@ -285,6 +285,68 @@ Alpine.data('toastContainer', () => ({
     }
 }));
 
+Alpine.data('pageNavigator', () => ({
+    loading: false,
+    init() {
+        // Intercept same-origin GET navigation link clicks inside this container for exit fade-out transitions
+        this.$el.addEventListener('click', (e) => {
+            const link = e.target.closest('a');
+            if (!link) return;
+
+            // Boundary & Exclusion checks
+            if (e.defaultPrevented) return;
+            if (this.loading) return; // Prevent double click navigation race conditions
+            if (link.origin !== window.location.origin) return;
+            if (link.hasAttribute('download')) return;
+            if (link.getAttribute('target') === '_blank') return;
+            if (link.getAttribute('rel') === 'external') return;
+
+            // Skip same-page navigations and history-only absolute URL hash changes
+            if (link.href.split('#')[0] === window.location.href.split('#')[0]) return;
+
+            const href = link.getAttribute('href') || '';
+            if (href === '' || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('javascript:')) {
+                return;
+            }
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+
+            // If native View Transition API is supported, let browser handle cross-document transitions natively
+            if ('startViewTransition' in window || 'startViewTransition' in document) {
+                return;
+            }
+
+            // Otherwise, execute fade-out exit transition before redirecting
+            e.preventDefault();
+            this.loading = true;
+
+            const main = this.$el.querySelector('.layout-main');
+            if (main) {
+                // Guarantee browser has completed layout before transition class is applied
+                requestAnimationFrame(() => {
+                    main.classList.add('ui-transition-fade-out');
+
+                    let transitionTriggered = false;
+                    const navigateAction = () => {
+                        if (transitionTriggered) return;
+                        transitionTriggered = true;
+                        window.location.href = link.href;
+                    };
+
+                    // Synchronize transition end cleanly with JS redirects
+                    const timeout = setTimeout(navigateAction, 250);
+                    main.addEventListener('transitionend', () => {
+                        clearTimeout(timeout);
+                        navigateAction();
+                    }, { once: true });
+                });
+            } else {
+                // Fallback: If layout-main is absent, navigate immediately
+                window.location.href = link.href;
+            }
+        });
+    }
+}));
+
 Alpine.start();
 
 /**
