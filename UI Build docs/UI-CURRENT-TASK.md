@@ -4,20 +4,20 @@
 Motion & Feedback (U1.6)
 
 ## Current Subtask
-U1.6.3 Progress Indicators
+U1.6.4 Skeleton Animation
 
 ## Goal
-Create reusable progress bar and indicator components conforming to brand colors, spacing, and accessibility guidelines. The component must support value-based determinate modes and pulsing/loading indeterminate modes.
+Add dynamic shimmer animation effects to the skeleton loader component (`<x-skeleton>`) conforming to brand design tokens, motion speeds, and prefers-reduced-motion media query overlays.
 
 ## Dependencies
 **Depends On:**
 - U0.1.5 (Motion & Animation Tokens)
-- U0.5 Layout Templates
+- U1.4.4 (SkeletonLoader Component)
 
 ## Required Deliverables
-- Reusable Blade component for progress indicators (`<x-progress>` or `<x-progress.bar>`) supporting sizes (`sm`, `md`, `lg`), intents (primary, secondary, success, danger, warning, neutral), and styles (determinate vs indeterminate, striped, rounded, height).
-- Clean accessibility mappings: automatic attachment of `role="progressbar"`, `aria-valuenow`, `aria-valuemin="0"`, `aria-valuemax="100"`, and custom `aria-valuetext`.
-- Showcase grid and variations compiled inside the components playground at `/admin/components#progress-indicators` (or matching category route).
+- Add CSS utilities for skeleton shimmer keyframes (gradient movement) supporting customization options.
+- Refactor/extend `<x-skeleton>` to accept animation toggle props (e.g., `animate` or `shimmer` boolean) to control animation.
+- Update component playground showcase at `/admin/components#skeleton` to display animated shimmer loaders next to static variants.
 
 ## Completed prerequisites
 - U0.1 Design System & Tokens
@@ -29,3 +29,4 @@ Create reusable progress bar and indicator components conforming to brand colors
 - U1.5 Utility & Media
 - U1.6.1 Transition Utilities
 - U1.6.2 Loading Indicators
+- U1.6.3 Progress Indicators
