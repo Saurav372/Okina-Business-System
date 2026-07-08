@@ -62,6 +62,7 @@ return [
             'Toast' => 'toast',
             'Skeleton' => 'skeleton',
             'Spinner' => 'spinner',
+            'Transition Utilities' => 'transition-utilities',
         ],
     ],
 

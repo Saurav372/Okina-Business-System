@@ -394,3 +394,65 @@
     }
 }
 
+/* ======================================================
+   MOTION UTILITIES & ACCESSIBILITY (U1.6.1)
+====================================================== */
+
+@utility transition-motion {
+    transition-property: all;
+    transition-timing-function: var(--motion-ease);
+    transition-duration: var(--motion-normal);
+}
+
+@utility transition-fast {
+    transition-property: all;
+    transition-timing-function: var(--ease-out);
+    transition-duration: var(--motion-fast);
+}
+
+@utility transition-slow {
+    transition-property: all;
+    transition-timing-function: var(--ease-out);
+    transition-duration: var(--motion-slow);
+}
+
+@utility ease-bounce {
+    transition-timing-function: var(--ease-bounce);
+}
+
+@utility hover-scale {
+    transition: transform var(--motion-fast) var(--motion-ease);
+    &:hover {
+        transform: scale(var(--motion-scale-hover));
+    }
+}
+
+@utility active-scale {
+    transition: transform var(--motion-fast) var(--motion-ease);
+    &:active {
+        transform: scale(var(--motion-scale-active));
+    }
+}
+
+@utility hover-lift {
+    transition: transform var(--motion-fast) var(--motion-ease), box-shadow var(--motion-fast) var(--motion-ease);
+    &:hover {
+        transform: translateY(-0.125rem); /* -2px equivalent to translate-y-0.5 */
+        box-shadow: var(--shadow-md);
+    }
+}
+
+@utility hover-glow {
+    transition: border-color var(--motion-fast) var(--motion-ease), box-shadow var(--motion-fast) var(--motion-ease);
+    &:hover {
+        box-shadow: 0 0 12px rgba(68, 182, 249, 0.2); /* uses --color-primary-500 rgba value */
+    }
+}
+
+/* Reduced Motion Graceful Degradation for Abstraction Wrapper */
+@media (prefers-reduced-motion: reduce) {
+    .ui-motion {
+        transform: none !important;
+        transition-property: opacity !important;
+    }
+}

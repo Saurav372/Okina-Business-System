@@ -3419,6 +3419,445 @@ HTML;
                                     </div>
                                 </section>
                             @endif
+
+                            {{-- Transition Utilities --}}
+                            @if(isset($categories['Feedback']['Transition Utilities']))
+                                @php
+                                    $motionBasicCode = <<<'HTML'
+<!-- Basic Transitions -->
+<x-motion type="fade" show="openBasic" class="w-full">
+    <div class="p-4 bg-white border border-[color:var(--color-border)] rounded-xl shadow-sm text-[color:var(--color-text-primary)]">
+        Fade Transition
+    </div>
+</x-motion>
+
+<x-motion type="slide-up" show="openBasic" class="w-full">
+    <div class="p-4 bg-white border border-[color:var(--color-border)] rounded-xl shadow-sm text-[color:var(--color-text-primary)]">
+        Slide Up Transition
+    </div>
+</x-motion>
+
+<x-motion type="scale" show="openBasic" class="w-full">
+    <div class="p-4 bg-white border border-[color:var(--color-border)] rounded-xl shadow-sm text-[color:var(--color-text-primary)]">
+        Scale Transition
+    </div>
+</x-motion>
+HTML;
+
+                                    $motionComboCode = <<<'HTML'
+<!-- Effect Combination -->
+<x-motion type="fade" effect="scale slide-up" show="openCombo" class="w-full">
+    <div class="p-4 bg-white border border-[color:var(--color-border)] rounded-xl shadow-sm">
+        Combined Fade + Scale + Slide Up
+    </div>
+</x-motion>
+
+<x-motion type="fade" effect="slide-right" :transform="false" show="openCombo" class="w-full">
+    <div class="p-4 bg-white border border-[color:var(--color-border)] rounded-xl shadow-sm text-neutral-500">
+        Transform Disabled (:transform="false") - Fade only
+    </div>
+</x-motion>
+HTML;
+
+                                    $motionStaggerCode = <<<'HTML'
+<!-- Staggered List Animations (Using delay props) -->
+<div x-show="openStagger" class="space-y-3">
+    <x-motion type="fade" effect="slide-up" delay="75" show="openStagger">
+        <div class="p-3 bg-white border border-[color:var(--color-border)] rounded-xl shadow-xs">Stagger item 1 (75ms delay)</div>
+    </x-motion>
+    <x-motion type="fade" effect="slide-up" delay="150" show="openStagger">
+        <div class="p-3 bg-white border border-[color:var(--color-border)] rounded-xl shadow-xs">Stagger item 2 (150ms delay)</div>
+    </x-motion>
+    <x-motion type="fade" effect="slide-up" delay="300" show="openStagger">
+        <div class="p-3 bg-white border border-[color:var(--color-border)] rounded-xl shadow-xs">Stagger item 3 (300ms delay)</div>
+    </x-motion>
+</div>
+HTML;
+
+                                    $motionNestedCode = <<<'HTML'
+<!-- Nested Transition wrappers -->
+<div x-show="openNested" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <!-- Backdrop Fades In -->
+    <x-motion type="fade" show="openNested" class="fixed inset-0 bg-neutral-900/50 backdrop-blur-xs" @click="openNested = false"></x-motion>
+
+    <!-- Content Card Scales + Slides In -->
+    <x-motion type="scale" effect="slide-up" show="openNested" class="relative bg-white border rounded-xl shadow-2xl p-6 w-full max-w-sm">
+        <h3 class="font-bold text-lg">Nested Dialog Box</h3>
+        <p class="text-sm text-neutral-500 mt-2">The backdrop fades while this modal card scales independently.</p>
+        <button @click="openNested = false" class="mt-4 px-4 py-2 bg-neutral-900 text-white rounded-lg text-sm">Close</button>
+    </x-motion>
+</div>
+HTML;
+
+                                    $motionCollapseCode = <<<'HTML'
+<!-- Collapse height transition (Vertical grid transition) -->
+<x-motion type="collapse" show="openCollapse" class="w-full">
+    <div class="p-4 bg-[color:var(--color-neutral-100)] border border-[color:var(--color-border)] rounded-xl">
+        This is collapsible dynamic vertical height content.
+        CSS Grid rows automatically animate height without layout shifts!
+    </div>
+</x-motion>
+HTML;
+
+                                    $motionTimingCode = <<<'HTML'
+<!-- Durations compared side-by-side -->
+<x-motion type="fade" effect="slide-up" duration="fast" show="openTiming" class="w-full">
+    <div class="p-3 bg-white border text-center rounded-lg shadow-xs">Fast (150ms)</div>
+</x-motion>
+<x-motion type="fade" effect="slide-up" duration="normal" show="openTiming" class="w-full">
+    <div class="p-3 bg-white border text-center rounded-lg shadow-xs">Normal (300ms)</div>
+</x-motion>
+<x-motion type="fade" effect="slide-up" duration="slow" show="openTiming" class="w-full">
+    <div class="p-3 bg-white border text-center rounded-lg shadow-xs">Slow (500ms)</div>
+</x-motion>
+HTML;
+
+                                    $motionOriginCode = <<<'HTML'
+<!-- Origins compared side-by-side -->
+<x-motion type="scale" origin="center" show="openOrigins" class="w-full">
+    <div class="p-3 bg-white border text-center rounded-lg shadow-xs">origin-center</div>
+</x-motion>
+<x-motion type="scale" origin="top" show="openOrigins" class="w-full">
+    <div class="p-3 bg-white border text-center rounded-lg shadow-xs">origin-top</div>
+</x-motion>
+<x-motion type="scale" origin="bottom" show="openOrigins" class="w-full">
+    <div class="p-3 bg-white border text-center rounded-lg shadow-xs">origin-bottom</div>
+</x-motion>
+<x-motion type="scale" origin="left" show="openOrigins" class="w-full">
+    <div class="p-3 bg-white border text-center rounded-lg shadow-xs">origin-left</div>
+</x-motion>
+<x-motion type="scale" origin="right" show="openOrigins" class="w-full">
+    <div class="p-3 bg-white border text-center rounded-lg shadow-xs">origin-right</div>
+</x-motion>
+HTML;
+
+                                    $motionUtilitiesCode = <<<'HTML'
+<!-- Hover & Active Scale premium CSS utilities -->
+<div class="hover-scale active-scale p-6 bg-white border border-[color:var(--color-border)] rounded-xl shadow-xs text-center font-semibold cursor-pointer">
+    hover-scale + active-scale
+</div>
+
+<div class="hover-lift p-6 bg-white border border-[color:var(--color-border)] rounded-xl shadow-xs text-center font-semibold cursor-pointer">
+    hover-lift
+</div>
+
+<div class="hover-glow p-6 bg-white border border-[color:var(--color-border)] rounded-xl shadow-xs text-center font-semibold cursor-pointer">
+    hover-glow
+</div>
+HTML;
+                                @endphp
+
+                                <section id="{{ $categories['Feedback']['Transition Utilities'] }}" class="js-section scroll-mt-8 mt-16">
+                                    <div class="border-b border-[color:var(--color-border)] pb-4 mb-6">
+                                        <h2 class="text-2xl font-bold text-[color:var(--color-text-primary)]">Transition & Motion Utilities</h2>
+                                        <p class="text-sm text-[color:var(--color-text-muted)] mt-1">
+                                            A declarative motion framework backing Alpine.js entry/exit transitions and premium native CSS decorators conforming to project design system tokens.
+                                        </p>
+                                    </div>
+
+                                    <div class="space-y-12">
+                                        <!-- Basic Transitions Sandbox -->
+                                        <x-showcase.preview title="Basic Transition Presets" :code="$motionBasicCode" id="preview-motion-basic">
+                                            <div x-data="{ openBasic: true }" class="w-full space-y-6">
+                                                <button @click="openBasic = !openBasic" class="px-4 py-2 text-sm font-semibold text-white bg-[color:var(--color-primary-600)] hover:bg-[color:var(--color-primary-700)] rounded-lg transition active:scale-95">
+                                                    Toggle Transitions
+                                                </button>
+                                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 h-28 items-start">
+                                                    <div>
+                                                        <span class="text-xs font-semibold text-neutral-400 block mb-2">type="fade"</span>
+                                                        <x-motion type="fade" show="openBasic" class="w-full">
+                                                            <div class="p-4 bg-white border border-[color:var(--color-border)] rounded-xl shadow-sm text-center font-medium">Fade Transition</div>
+                                                        </x-motion>
+                                                    </div>
+                                                    <div>
+                                                        <span class="text-xs font-semibold text-neutral-400 block mb-2">type="slide-up"</span>
+                                                        <x-motion type="slide-up" show="openBasic" class="w-full">
+                                                            <div class="p-4 bg-white border border-[color:var(--color-border)] rounded-xl shadow-sm text-center font-medium">Slide Up Transition</div>
+                                                        </x-motion>
+                                                    </div>
+                                                    <div>
+                                                        <span class="text-xs font-semibold text-neutral-400 block mb-2">type="scale"</span>
+                                                        <x-motion type="scale" show="openBasic" class="w-full">
+                                                            <div class="p-4 bg-white border border-[color:var(--color-border)] rounded-xl shadow-sm text-center font-medium">Scale Transition</div>
+                                                        </x-motion>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Combined effects & transform flag -->
+                                        <x-showcase.preview title="Combined Effects & Transform Control" :code="$motionComboCode" id="preview-motion-combo">
+                                            <div x-data="{ openCombo: true }" class="w-full space-y-6">
+                                                <button @click="openCombo = !openCombo" class="px-4 py-2 text-sm font-semibold text-white bg-[color:var(--color-primary-600)] hover:bg-[color:var(--color-primary-700)] rounded-lg transition active:scale-95">
+                                                    Toggle Transitions
+                                                </button>
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 h-28 items-start">
+                                                    <div>
+                                                        <span class="text-xs font-semibold text-neutral-400 block mb-2">type="fade" effect="scale slide-up"</span>
+                                                        <x-motion type="fade" effect="scale slide-up" show="openCombo" class="w-full">
+                                                            <div class="p-4 bg-white border border-[color:var(--color-border)] rounded-xl shadow-sm text-center font-medium">Fade + Scale + Slide Up</div>
+                                                        </x-motion>
+                                                    </div>
+                                                    <div>
+                                                        <span class="text-xs font-semibold text-neutral-400 block mb-2">type="fade" effect="slide-right" :transform="false"</span>
+                                                        <x-motion type="fade" effect="slide-right" :transform="false" show="openCombo" class="w-full">
+                                                            <div class="p-4 bg-white border border-[color:var(--color-border)] rounded-xl shadow-sm text-center text-neutral-400">Transform Disabled (Fade only)</div>
+                                                        </x-motion>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Collapse -->
+                                        <x-showcase.preview title="Accordion Collapse (Dynamic CSS Grid Height)" :code="$motionCollapseCode" id="preview-motion-collapse">
+                                            <div x-data="{ openCollapse: false }" class="w-full max-w-lg space-y-4">
+                                                <button @click="openCollapse = !openCollapse" class="w-full flex items-center justify-between p-4 bg-white border border-[color:var(--color-border)] rounded-xl font-semibold shadow-xs">
+                                                    <span>Collapsible Panel Trigger</span>
+                                                    <svg class="w-5 h-5 transition duration-300" :class="openCollapse ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                                                    </svg>
+                                                </button>
+                                                <x-motion type="collapse" show="openCollapse" class="w-full">
+                                                    <div class="p-4 bg-neutral-50 border border-[color:var(--color-border)] rounded-xl text-sm leading-relaxed text-[color:var(--color-text-secondary)]">
+                                                        This is a vertical collapse panel. Because it transitions <code>grid-template-rows</code> from <code>0fr</code> to <code>1fr</code>, it accommodates dynamic inner content heights perfectly without layout shifts or heavy JavaScript calculations.
+                                                    </div>
+                                                </x-motion>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Staggered Lists -->
+                                        <x-showcase.preview title="Staggered List entry (Delay)" :code="$motionStaggerCode" id="preview-motion-stagger">
+                                            <div x-data="{ openStagger: false }" class="w-full max-w-md space-y-4">
+                                                <button @click="openStagger = !openStagger" class="px-4 py-2 text-sm font-semibold text-white bg-[color:var(--color-primary-600)] hover:bg-[color:var(--color-primary-700)] rounded-lg transition active:scale-95" x-text="openStagger ? 'Reset List' : 'Simulate Feed Entry'"></button>
+                                                <div class="h-44 space-y-3">
+                                                    <div x-show="openStagger" class="space-y-3">
+                                                        <x-motion type="fade" effect="slide-up" delay="75" show="openStagger">
+                                                            <div class="p-3 bg-white border border-[color:var(--color-border)] rounded-xl shadow-xs text-sm">Notification 1 (Delay: 75ms)</div>
+                                                        </x-motion>
+                                                        <x-motion type="fade" effect="slide-up" delay="150" show="openStagger">
+                                                            <div class="p-3 bg-white border border-[color:var(--color-border)] rounded-xl shadow-xs text-sm">Notification 2 (Delay: 150ms)</div>
+                                                        </x-motion>
+                                                        <x-motion type="fade" effect="slide-up" delay="300" show="openStagger">
+                                                            <div class="p-3 bg-white border border-[color:var(--color-border)] rounded-xl shadow-xs text-sm">Notification 3 (Delay: 300ms)</div>
+                                                        </x-motion>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Nested Transitions -->
+                                        <x-showcase.preview title="Nested Component Transitions" :code="$motionNestedCode" id="preview-motion-nested">
+                                            <div x-data="{ openNested: false }" class="w-full">
+                                                <button @click="openNested = true" class="px-4 py-2 text-sm font-semibold text-white bg-[color:var(--color-primary-600)] hover:bg-[color:var(--color-primary-700)] rounded-lg transition active:scale-95">
+                                                    Trigger Nested Dialog
+                                                </button>
+                                                <div x-show="openNested" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+                                                    <x-motion type="fade" show="openNested" class="fixed inset-0 bg-neutral-900/50 backdrop-blur-xs" @click="openNested = false"></x-motion>
+                                                    <x-motion type="scale" effect="slide-up" show="openNested" class="relative bg-white border border-[color:var(--color-border)] rounded-2xl shadow-2xl p-6 w-full max-w-sm">
+                                                        <h3 class="font-bold text-lg text-[color:var(--color-text-primary)]">Nested Overlay Card</h3>
+                                                        <p class="text-sm text-[color:var(--color-text-muted)] mt-2">
+                                                            The backdrop panel fades in softly, while this inner content box scales and slides upward independently. Toggling is isolated.
+                                                        </p>
+                                                        <div class="mt-6 flex justify-end">
+                                                            <button @click="openNested = false" class="px-4 py-2 bg-neutral-900 hover:bg-neutral-800 text-white font-semibold rounded-lg text-sm transition">
+                                                                Dismiss Modal
+                                                            </button>
+                                                        </div>
+                                                    </x-motion>
+                                                </div>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Durations Side by Side -->
+                                        <x-showcase.preview title="Timing Comparisons" :code="$motionTimingCode" id="preview-motion-timing">
+                                            <div x-data="{ openTiming: true }" class="w-full space-y-6">
+                                                <button @click="openTiming = !openTiming" class="px-4 py-2 text-sm font-semibold text-white bg-[color:var(--color-primary-600)] hover:bg-[color:var(--color-primary-700)] rounded-lg transition active:scale-95">
+                                                    Toggle Side-by-Side
+                                                </button>
+                                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 h-24 items-start">
+                                                    <div>
+                                                        <span class="text-xs font-semibold text-neutral-400 block mb-2">duration="fast" (150ms)</span>
+                                                        <x-motion type="fade" effect="slide-up" duration="fast" show="openTiming" class="w-full">
+                                                            <div class="p-3 bg-white border text-center rounded-lg shadow-xs font-medium">Fast (150ms)</div>
+                                                        </x-motion>
+                                                    </div>
+                                                    <div>
+                                                        <span class="text-xs font-semibold text-neutral-400 block mb-2">duration="normal" (300ms)</span>
+                                                        <x-motion type="fade" effect="slide-up" duration="normal" show="openTiming" class="w-full">
+                                                            <div class="p-3 bg-white border text-center rounded-lg shadow-xs font-medium">Normal (300ms)</div>
+                                                        </x-motion>
+                                                    </div>
+                                                    <div>
+                                                        <span class="text-xs font-semibold text-neutral-400 block mb-2">duration="slow" (500ms)</span>
+                                                        <x-motion type="fade" effect="slide-up" duration="slow" show="openTiming" class="w-full">
+                                                            <div class="p-3 bg-white border text-center rounded-lg shadow-xs font-medium">Slow (500ms)</div>
+                                                        </x-motion>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Origins Side by Side -->
+                                        <x-showcase.preview title="Origins Comparison" :code="$motionOriginCode" id="preview-motion-origins">
+                                            <div x-data="{ openOrigins: true }" class="w-full space-y-6">
+                                                <button @click="openOrigins = !openOrigins" class="px-4 py-2 text-sm font-semibold text-white bg-[color:var(--color-primary-600)] hover:bg-[color:var(--color-primary-700)] rounded-lg transition active:scale-95">
+                                                    Toggle Scales
+                                                </button>
+                                                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 h-24 items-start">
+                                                    <div>
+                                                        <span class="text-xs font-semibold text-neutral-400 block mb-2">origin="center"</span>
+                                                        <x-motion type="scale" origin="center" show="openOrigins" class="w-full">
+                                                            <div class="p-3 bg-white border text-center rounded-lg shadow-xs text-xs font-medium">Center</div>
+                                                        </x-motion>
+                                                    </div>
+                                                    <div>
+                                                        <span class="text-xs font-semibold text-neutral-400 block mb-2">origin="top"</span>
+                                                        <x-motion type="scale" origin="top" show="openOrigins" class="w-full">
+                                                            <div class="p-3 bg-white border text-center rounded-lg shadow-xs text-xs font-medium">Top</div>
+                                                        </x-motion>
+                                                    </div>
+                                                    <div>
+                                                        <span class="text-xs font-semibold text-neutral-400 block mb-2">origin="bottom"</span>
+                                                        <x-motion type="scale" origin="bottom" show="openOrigins" class="w-full">
+                                                            <div class="p-3 bg-white border text-center rounded-lg shadow-xs text-xs font-medium">Bottom</div>
+                                                        </x-motion>
+                                                    </div>
+                                                    <div>
+                                                        <span class="text-xs font-semibold text-neutral-400 block mb-2">origin="left"</span>
+                                                        <x-motion type="scale" origin="left" show="openOrigins" class="w-full">
+                                                            <div class="p-3 bg-white border text-center rounded-lg shadow-xs text-xs font-medium">Left</div>
+                                                        </x-motion>
+                                                    </div>
+                                                    <div>
+                                                        <span class="text-xs font-semibold text-neutral-400 block mb-2">origin="right"</span>
+                                                        <x-motion type="scale" origin="right" show="openOrigins" class="w-full">
+                                                            <div class="p-3 bg-white border text-center rounded-lg shadow-xs text-xs font-medium">Right</div>
+                                                        </x-motion>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Premium CSS Decors -->
+                                        <x-showcase.preview title="Premium CSS Micro-Animations" :code="$motionUtilitiesCode" id="preview-motion-utilities">
+                                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+                                                <div>
+                                                    <span class="text-xs font-semibold text-neutral-400 block mb-2">hover-scale active-scale</span>
+                                                    <div class="hover-scale active-scale p-6 bg-white border border-[color:var(--color-border)] rounded-xl shadow-xs text-center font-semibold cursor-pointer">
+                                                        Scale Utilities
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <span class="text-xs font-semibold text-neutral-400 block mb-2">hover-lift</span>
+                                                    <div class="hover-lift p-6 bg-white border border-[color:var(--color-border)] rounded-xl shadow-xs text-center font-semibold cursor-pointer">
+                                                        Elevation Lift
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <span class="text-xs font-semibold text-neutral-400 block mb-2">hover-glow</span>
+                                                    <div class="hover-glow p-6 bg-white border border-[color:var(--color-border)] rounded-xl shadow-xs text-center font-semibold cursor-pointer">
+                                                        Brand Glow
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Recommended Guidelines Map -->
+                                        <div class="p-6 bg-white border border-[color:var(--color-border)] rounded-xl">
+                                            <h3 class="font-bold text-base text-[color:var(--color-text-primary)] mb-4">Design System Recommendations</h3>
+                                            <div class="overflow-x-auto">
+                                                <table class="min-w-full text-sm divide-y divide-neutral-200">
+                                                    <thead>
+                                                        <tr class="text-left text-neutral-400 font-medium">
+                                                            <th class="pb-3 pr-4">Component Area</th>
+                                                            <th class="pb-3 px-4">Recommended Motion Combo</th>
+                                                            <th class="pb-3 pl-4">Target Timing Token</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody class="divide-y divide-neutral-100 text-[color:var(--color-text-secondary)]">
+                                                        <tr>
+                                                            <td class="py-3 pr-4 font-semibold text-[color:var(--color-text-primary)]">Modal dialogs</td>
+                                                            <td class="py-3 px-4"><code>type="fade" effect="scale"</code></td>
+                                                            <td class="py-3 pl-4"><code>normal</code> (300ms)</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="py-3 pr-4 font-semibold text-[color:var(--color-text-primary)]">Dropdowns / Selects</td>
+                                                            <td class="py-3 px-4"><code>type="fade" effect="slide-down" :transform="false"</code> (if scrolling issues)</td>
+                                                            <td class="py-3 pl-4"><code>fast</code> (150ms)</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="py-3 pr-4 font-semibold text-[color:var(--color-text-primary)]">Toasts / Alerts</td>
+                                                            <td class="py-3 px-4"><code>type="fade" effect="slide-right"</code></td>
+                                                            <td class="py-3 pl-4"><code>fast</code> (150ms)</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="py-3 pr-4 font-semibold text-[color:var(--color-text-primary)]">Drawers (Side panels)</td>
+                                                            <td class="py-3 px-4"><code>type="slide-left"</code> or <code>type="slide-right"</code></td>
+                                                            <td class="py-3 pl-4"><code>normal</code> (300ms)</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="py-3 pr-4 font-semibold text-[color:var(--color-text-primary)]">Accordions / Collapses</td>
+                                                            <td class="py-3 px-4"><code>type="collapse"</code></td>
+                                                            <td class="py-3 pl-4"><code>normal</code> (300ms)</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="py-3 pr-4 font-semibold text-[color:var(--color-text-primary)]">Tooltips</td>
+                                                            <td class="py-3 px-4"><code>type="fade"</code></td>
+                                                            <td class="py-3 pl-4"><code>fast</code> (150ms)</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                        <!-- Documentation Table -->
+                                        <div class="p-6 bg-[color:var(--color-neutral-50)] border border-[color:var(--color-border)] rounded-xl">
+                                            <h3 class="font-bold text-base text-[color:var(--color-text-primary)] mb-2">Browser & Integration Compatibility</h3>
+                                            <p class="text-xs text-[color:var(--color-text-muted)] mb-4">
+                                                Future enhancements may introduce semantic presets (e.g. <code>preset="modal"</code>), built on top of the existing registry without changing the public API.
+                                            </p>
+                                            <div class="overflow-x-auto">
+                                                <table class="min-w-full text-xs text-left divide-y divide-neutral-200">
+                                                    <thead>
+                                                        <tr class="text-neutral-400 font-semibold uppercase tracking-wider">
+                                                            <th class="pb-3 pr-4">Feature</th>
+                                                            <th class="pb-3 px-4">Alpine Required</th>
+                                                            <th class="pb-3 px-4">Browser Support</th>
+                                                            <th class="pb-3 pl-4">Reduced Motion Fallback</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody class="divide-y divide-neutral-100 text-[color:var(--color-text-secondary)]">
+                                                        <tr>
+                                                            <td class="py-3 pr-4 font-bold">Fade</td>
+                                                            <td class="py-3 px-4">Yes</td>
+                                                            <td class="py-3 px-4">All modern browsers</td>
+                                                            <td class="py-3 pl-4">Immediate visibility change with opacity only</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="py-3 pr-4 font-bold">Slide</td>
+                                                            <td class="py-3 px-4">Yes</td>
+                                                            <td class="py-3 px-4">All modern browsers</td>
+                                                            <td class="py-3 pl-4">Immediate visibility change with opacity only (transforms neutralized)</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="py-3 pr-4 font-bold">Scale</td>
+                                                            <td class="py-3 px-4">Yes</td>
+                                                            <td class="py-3 px-4">All modern browsers</td>
+                                                            <td class="py-3 pl-4">Immediate visibility change with opacity only (transforms neutralized)</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="py-3 pr-4 font-bold">Collapse (Grid)</td>
+                                                            <td class="py-3 px-4">No</td>
+                                                            <td class="py-3 px-4">Modern browsers supporting Grid transitions</td>
+                                                            <td class="py-3 pl-4">Immediate vertical expand/collapse (no dynamic height slide)</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                            @endif
                         </div>
                     @endif
 
