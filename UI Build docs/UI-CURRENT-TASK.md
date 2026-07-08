@@ -4,10 +4,10 @@
 Motion & Feedback (U1.6)
 
 ## Current Subtask
-U1.6.2 Loading Indicators
+U1.6.3 Progress Indicators
 
 ## Goal
-Create reusable loading spinner and loader components complying with the design system's spacing, color, and motion parameters. These components should support inline loads, button embeds, relative containers, and full-viewport overlays.
+Create reusable progress bar and indicator components conforming to brand colors, spacing, and accessibility guidelines. The component must support value-based determinate modes and pulsing/loading indeterminate modes.
 
 ## Dependencies
 **Depends On:**
@@ -15,9 +15,9 @@ Create reusable loading spinner and loader components complying with the design 
 - U0.5 Layout Templates
 
 ## Required Deliverables
-- Reusable Blade component for spinners (`<x-spinner>` or `<x-loading.spinner>`) supporting sizes (`xs`, `sm`, `md`, `lg`, `xl`), thickness, and intents (primary, secondary, success, danger, warning, white, neutral).
-- Relative layout loader overlay (`<x-loading.overlay>` or relative wrapper) with standard backdrop blur and accessibility descriptors (`aria-busy="true"`, `aria-live="polite"`).
-- Integration and interactive variations showcased inside the components playground at `/admin/components#loading-indicators`.
+- Reusable Blade component for progress indicators (`<x-progress>` or `<x-progress.bar>`) supporting sizes (`sm`, `md`, `lg`), intents (primary, secondary, success, danger, warning, neutral), and styles (determinate vs indeterminate, striped, rounded, height).
+- Clean accessibility mappings: automatic attachment of `role="progressbar"`, `aria-valuenow`, `aria-valuemin="0"`, `aria-valuemax="100"`, and custom `aria-valuetext`.
+- Showcase grid and variations compiled inside the components playground at `/admin/components#progress-indicators` (or matching category route).
 
 ## Completed prerequisites
 - U0.1 Design System & Tokens
@@ -28,3 +28,4 @@ Create reusable loading spinner and loader components complying with the design 
 - U1.4 Feedback & Overlay
 - U1.5 Utility & Media
 - U1.6.1 Transition Utilities
+- U1.6.2 Loading Indicators

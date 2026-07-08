@@ -3594,6 +3594,185 @@ HTML;
                                 </section>
                             @endif
 
+                            {{-- Progress Indicators --}}
+                            @if(isset($categories['Feedback']['Progress Indicators']))
+                                @php
+                                    $progressBasicCode = <<<'HTML'
+<!-- Determinate Progress Sizes -->
+<x-progress value="60" size="sm" showLabel />
+<x-progress value="60" size="md" showLabel />
+<x-progress value="60" size="lg" showLabel />
+
+<!-- Color Intents -->
+<x-progress value="75" intent="primary" />
+<x-progress value="75" intent="secondary" />
+<x-progress value="75" intent="success" />
+<x-progress value="75" intent="danger" />
+<x-progress value="75" intent="warning" />
+<x-progress value="75" intent="neutral" />
+
+<!-- Rounded Corner Variants -->
+<x-progress value="45" rounded="full" />
+<x-progress value="45" rounded="md" />
+<x-progress value="45" rounded="none" />
+HTML;
+
+                                    $progressSpecialCode = <<<'HTML'
+<!-- Indeterminate Progress -->
+<x-progress />
+
+<!-- Striped & Animated Determinate Tracks -->
+<x-progress value="65" striped />
+<x-progress value="65" striped animated />
+HTML;
+
+                                    $progressLabelCode = <<<'HTML'
+<!-- Label Alignments -->
+<x-progress value="80" showLabel labelPosition="top" />
+<x-progress value="80" showLabel labelPosition="bottom" />
+<x-progress value="80" showLabel labelPosition="inline" size="lg" />
+
+<!-- Custom Formatting & Text labels -->
+<x-progress value="60" label="6 of 10 completed" showLabel />
+<x-progress value="60" label="₹1,200 of ₹2,000 raised" showLabel />
+HTML;
+
+                                    $progressInteractiveCode = <<<'HTML'
+<!-- Interactive Playground with Alpine.js -->
+<div x-data="{ progressVal: 45 }" class="space-y-4">
+    <x-progress :xBind="'progressVal'" showLabel />
+    
+    <div class="flex items-center gap-2">
+        <button @click="progressVal = Math.max(0, progressVal - 10)" class="...">-10%</button>
+        <button @click="progressVal = Math.min(100, progressVal + 10)" class="...">+10%</button>
+        <button @click="progressVal = 0" class="...">Reset</button>
+        <button @click="progressVal = 100" class="...">Complete</button>
+    </div>
+</div>
+HTML;
+                                @endphp
+
+                                <section id="{{ $categories['Feedback']['Progress Indicators'] }}" class="js-section scroll-mt-8 mt-16">
+                                    <div class="border-b border-[color:var(--color-border)] pb-4 mb-6">
+                                        <h2 class="text-2xl font-bold text-[color:var(--color-text-primary)]">Progress Indicators</h2>
+                                        <p class="text-sm text-[color:var(--color-text-muted)] mt-1">
+                                            Visual feedback loaders showcasing indeterminate loading states and determinate value completion, supporting size layouts, intent palettes, and label positionings.
+                                        </p>
+                                    </div>
+
+                                    <div class="space-y-12">
+                                        <!-- Sizing and Intent Grid -->
+                                        <x-showcase.preview title="Sizing, Intents, and Rounded Radii" :code="$progressBasicCode" id="preview-progress-basic">
+                                            <div class="w-full max-w-xl space-y-8">
+                                                <!-- Sizes -->
+                                                <div>
+                                                    <span class="text-xs font-bold text-neutral-400 block mb-3 uppercase tracking-wider">Sizes</span>
+                                                    <div class="space-y-4">
+                                                        <div><span class="text-[10px] text-neutral-400 block mb-1">Small (h-1.5)</span><x-progress value="60" size="sm" showLabel /></div>
+                                                        <div><span class="text-[10px] text-neutral-400 block mb-1">Medium (h-2.5, default)</span><x-progress value="60" size="md" showLabel /></div>
+                                                        <div><span class="text-[10px] text-neutral-400 block mb-1">Large (h-4)</span><x-progress value="60" size="lg" showLabel /></div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Intents -->
+                                                <div>
+                                                    <span class="text-xs font-bold text-neutral-400 block mb-3 uppercase tracking-wider">Intents</span>
+                                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <div><span class="text-[10px] text-neutral-400 block mb-1">Primary</span><x-progress value="75" intent="primary" /></div>
+                                                        <div><span class="text-[10px] text-neutral-400 block mb-1">Secondary</span><x-progress value="75" intent="secondary" /></div>
+                                                        <div><span class="text-[10px] text-neutral-400 block mb-1">Success</span><x-progress value="75" intent="success" /></div>
+                                                        <div><span class="text-[10px] text-neutral-400 block mb-1">Danger</span><x-progress value="75" intent="danger" /></div>
+                                                        <div><span class="text-[10px] text-neutral-400 block mb-1">Warning</span><x-progress value="75" intent="warning" /></div>
+                                                        <div><span class="text-[10px] text-neutral-400 block mb-1">Neutral</span><x-progress value="75" intent="neutral" /></div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Rounded -->
+                                                <div>
+                                                    <span class="text-xs font-bold text-neutral-400 block mb-3 uppercase tracking-wider">Rounded Radii</span>
+                                                    <div class="space-y-4">
+                                                        <div><span class="text-[10px] text-neutral-400 block mb-1">Full Rounded (default)</span><x-progress value="45" rounded="full" /></div>
+                                                        <div><span class="text-[10px] text-neutral-400 block mb-1">Medium Rounded</span><x-progress value="45" rounded="md" /></div>
+                                                        <div><span class="text-[10px] text-neutral-400 block mb-1">Square / None</span><x-progress value="45" rounded="none" /></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Indeterminate and Striped States -->
+                                        <x-showcase.preview title="Indeterminate & Striped States" :code="$progressSpecialCode" id="preview-progress-special">
+                                            <div class="w-full max-w-xl space-y-6">
+                                                <div>
+                                                    <span class="text-xs text-neutral-400 mb-1 block">Indeterminate (35% Sliding Track)</span>
+                                                    <x-progress />
+                                                </div>
+                                                <div>
+                                                    <span class="text-xs text-neutral-400 mb-1 block">Static Translucent Stripes</span>
+                                                    <x-progress value="65" striped />
+                                                </div>
+                                                <div>
+                                                    <span class="text-xs text-neutral-400 mb-1 block">Animated Stripes (Determinate Only)</span>
+                                                    <x-progress value="65" striped animated />
+                                                </div>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Label Customizations -->
+                                        <x-showcase.preview title="Labels & Positionings" :code="$progressLabelCode" id="preview-progress-labels">
+                                            <div class="w-full max-w-xl space-y-6">
+                                                <div>
+                                                    <span class="text-xs text-neutral-400 mb-1 block">Top Position (default)</span>
+                                                    <x-progress value="80" showLabel labelPosition="top" />
+                                                </div>
+                                                <div>
+                                                    <span class="text-xs text-neutral-400 mb-1 block">Bottom Position</span>
+                                                    <x-progress value="80" showLabel labelPosition="bottom" />
+                                                </div>
+                                                <div>
+                                                    <span class="text-xs text-neutral-400 mb-1 block">Inline Position (intent contrast: Primary)</span>
+                                                    <x-progress value="80" showLabel labelPosition="inline" size="lg" intent="primary" />
+                                                </div>
+                                                <div>
+                                                    <span class="text-xs text-neutral-400 mb-1 block">Inline Position (intent contrast: Warning)</span>
+                                                    <x-progress value="80" showLabel labelPosition="inline" size="lg" intent="warning" />
+                                                </div>
+                                                <div>
+                                                    <span class="text-xs text-neutral-400 mb-1 block">Custom Text Label (Precedence)</span>
+                                                    <x-progress value="60" label="6 of 10 completed" showLabel />
+                                                </div>
+                                                <div>
+                                                    <span class="text-xs text-neutral-400 mb-1 block">Custom Currency Progress</span>
+                                                    <x-progress value="60" label="₹1,200 of ₹2,000 raised" showLabel />
+                                                </div>
+                                            </div>
+                                        </x-showcase.preview>
+
+                                        <!-- Interactive Progress Sandbox -->
+                                        <x-showcase.preview title="Interactive Progress Sandbox" :code="$progressInteractiveCode" id="preview-progress-interactive">
+                                            <div x-data="{ progressVal: 45 }" class="w-full max-w-sm space-y-4 p-4 border border-[color:var(--color-border)] rounded-xl bg-neutral-50/50">
+                                                <span class="text-xs font-bold text-neutral-400 block mb-1 uppercase tracking-wider">Dynamic Controller</span>
+                                                <x-progress :xBind="'progressVal'" showLabel size="lg" rounded="md" striped animated />
+                                                
+                                                <div class="flex flex-wrap items-center gap-2 mt-4">
+                                                    <button @click="progressVal = Math.max(0, progressVal - 10)" class="px-3 py-1.5 bg-white hover:bg-neutral-50 border rounded-lg text-xs font-semibold shadow-sm transition active:scale-95">
+                                                        -10%
+                                                    </button>
+                                                    <button @click="progressVal = Math.min(100, progressVal + 10)" class="px-3 py-1.5 bg-white hover:bg-neutral-50 border rounded-lg text-xs font-semibold shadow-sm transition active:scale-95">
+                                                        +10%
+                                                    </button>
+                                                    <button @click="progressVal = 0" class="px-3 py-1.5 bg-white hover:bg-neutral-50 border rounded-lg text-xs font-semibold shadow-sm transition active:scale-95">
+                                                        Reset
+                                                    </button>
+                                                    <button @click="progressVal = 100" class="px-3 py-1.5 bg-white hover:bg-neutral-50 border rounded-lg text-xs font-semibold shadow-sm transition active:scale-95 text-emerald-600">
+                                                        Complete
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </x-showcase.preview>
+                                    </div>
+                                </section>
+                            @endif
+
                             {{-- Transition Utilities --}}
 
                             @if(isset($categories['Feedback']['Transition Utilities']))

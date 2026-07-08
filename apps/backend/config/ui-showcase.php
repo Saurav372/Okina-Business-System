@@ -62,6 +62,7 @@ return [
             'Toast' => 'toast',
             'Skeleton' => 'skeleton',
             'Spinner' => 'spinner',
+            'Progress Indicators' => 'progress-indicators',
             'Transition Utilities' => 'transition-utilities',
         ],
     ],
