@@ -31,6 +31,17 @@ return [
     */
 
     'categories' => [
+        'Brand & Design Tokens' => [
+            'Colors' => 'token-colors',
+            'Typography' => 'token-typography',
+            'Spacing' => 'token-spacing',
+            'Elevation & Radius' => 'token-elevation',
+        ],
+        'Motion Patterns' => [
+            'Durations' => 'token-durations',
+            'Easings' => 'token-easings',
+            'Reduced Motion' => 'token-reduced-motion',
+        ],
         'Forms' => [
             'Input' => 'form-input',
             'Select' => 'form-select',

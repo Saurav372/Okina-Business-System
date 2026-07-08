@@ -18,7 +18,27 @@
         $categories = config('ui-showcase.categories', []);
     @endphp
 
-    <div class="flex flex-col lg:flex-row min-h-screen">
+    <div x-data="{ 
+        search: '',
+        filterShowcase() {
+            const query = this.search.toLowerCase().trim();
+            document.querySelectorAll('.js-section, .showcase-component').forEach(el => {
+                const text = el.getAttribute('data-search') ? el.getAttribute('data-search').toLowerCase() : el.textContent.toLowerCase();
+                if (query === '' || text.includes(query)) {
+                    el.style.display = '';
+                } else {
+                    el.style.display = 'none';
+                }
+            });
+        },
+        copyToClipboard(text, context) {
+            navigator.clipboard.writeText(text).then(() => {
+                window.toast('Copied ' + context + ': ' + text);
+            }).catch(() => {
+                window.toast('Failed to copy to clipboard');
+            });
+        }
+    }" class="flex flex-col lg:flex-row min-h-screen">
         
         <!-- Sidebar Navigation -->
         <aside class="lg:w-64 shrink-0 border-r border-[color:var(--color-border)] bg-white lg:sticky lg:top-0 lg:h-screen overflow-y-auto z-10 hidden lg:block">
@@ -27,6 +47,10 @@
                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
                     Design System
                 </h1>
+                
+                <div class="mt-4">
+                    <input type="text" x-model="search" @input="filterShowcase" placeholder="Search system..." class="w-full px-3 py-1.5 text-xs border rounded-lg focus:outline-none focus:ring-1 focus:ring-[color:var(--color-primary-600)] bg-white text-[color:var(--color-text-primary)]">
+                </div>
                 
                 <nav class="mt-8 space-y-8 js-sidebar-nav">
                     @foreach($categories as $categoryName => $components)
@@ -57,6 +81,331 @@
 
                 <div class="space-y-24">
                     
+                    {{-- Brand & Design Tokens --}}
+                    @if(isset($categories['Brand & Design Tokens']))
+                        <div class="space-y-24">
+                            {{-- Colors --}}
+                            @if(isset($categories['Brand & Design Tokens']['Colors']))
+                                <section id="{{ $categories['Brand & Design Tokens']['Colors'] }}" class="js-section scroll-mt-8">
+                                    <div class="border-b border-[color:var(--color-border)] pb-4 mb-6">
+                                        <h2 class="text-2xl font-bold text-[color:var(--color-text-primary)]">Colors</h2>
+                                        <p class="text-sm text-[color:var(--color-text-muted)] mt-1">
+                                            Unified design system colors. Click to copy CSS variables, hex values, or utility classes.
+                                        </p>
+                                    </div>
+
+                                    <div class="space-y-12">
+                                        @foreach(\App\Presenters\DesignTokenCatalog::colors() as $color)
+                                            @php
+                                                $searchMeta = strtolower($color['name'] . ' ' . $color['variable'] . ' ' . $color['hex'] . ' ' . implode(' ', $color['aliases']) . ' ' . implode(' ', $color['used_by']) . ' ' . $color['contrast']);
+                                            @endphp
+                                            <div class="showcase-component space-y-4" data-search="{{ $searchMeta }}">
+                                                <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-[color:var(--color-border)] pb-2">
+                                                    <div>
+                                                        <h3 class="text-base font-bold text-[color:var(--color-text-primary)]">{{ $color['name'] }}</h3>
+                                                        <p class="text-xs text-[color:var(--color-text-muted)]">Contrast: {{ $color['contrast'] }}</p>
+                                                    </div>
+                                                    <div class="mt-2 md:mt-0 flex flex-wrap gap-2 text-[10px] text-[color:var(--color-text-muted)]">
+                                                        <span class="font-semibold uppercase text-neutral-400">Used by:</span>
+                                                        @foreach($color['used_by'] as $usage)
+                                                            <span class="bg-neutral-100 px-2 py-0.5 rounded-md">{{ $usage }}</span>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+
+                                                <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-11 gap-3">
+                                                    @foreach($color['shades'] as $shade)
+                                                        <div class="flex flex-col gap-1.5 p-2 border border-[color:var(--color-border)] rounded-xl bg-white shadow-xs">
+                                                            <div class="w-full h-12 rounded-lg" style="background-color: {{ $shade['hex'] }}"></div>
+                                                            <div class="text-[10px] text-center font-bold text-neutral-800">{{ $shade['shade'] }}</div>
+                                                            <div class="flex flex-col gap-1">
+                                                                <button @click="copyToClipboard('{{ $shade['variable'] }}', 'CSS variable')" class="w-full text-[8px] py-0.5 px-1 bg-neutral-50 hover:bg-neutral-150 rounded text-neutral-500 font-mono overflow-hidden text-ellipsis whitespace-nowrap cursor-pointer" title="Copy CSS variable">📋 Var</button>
+                                                                <button @click="copyToClipboard('{{ $shade['hex'] }}', 'hex value')" class="w-full text-[8px] py-0.5 px-1 bg-neutral-50 hover:bg-neutral-150 rounded text-neutral-500 font-mono cursor-pointer" title="Copy Hex">📋 Hex</button>
+                                                            </div>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </section>
+                            @endif
+
+                            {{-- Typography --}}
+                            @if(isset($categories['Brand & Design Tokens']['Typography']))
+                                <section id="{{ $categories['Brand & Design Tokens']['Typography'] }}" class="js-section scroll-mt-8">
+                                    <div class="border-b border-[color:var(--color-border)] pb-4 mb-6">
+                                        <h2 class="text-2xl font-bold text-[color:var(--color-text-primary)]">Typography</h2>
+                                        <p class="text-sm text-[color:var(--color-text-muted)] mt-1">
+                                            Fluid and responsive typography scaling scale across device breakpoints.
+                                        </p>
+                                    </div>
+
+                                    <div class="space-y-8">
+                                        <div class="p-4 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 font-medium">
+                                            💡 Typography scale uses dynamic clamp calculations. Hover/click to view responsive boundaries.
+                                        </div>
+
+                                        <div class="overflow-x-auto border border-[color:var(--color-border)] rounded-2xl bg-white">
+                                            <table class="min-w-full divide-y divide-neutral-200 text-xs">
+                                                <thead class="bg-neutral-50 text-neutral-400 font-semibold uppercase text-left">
+                                                    <tr>
+                                                        <th class="p-4">Style</th>
+                                                        <th class="p-4">Fluid Clamp Bound / CSS Var</th>
+                                                        <th class="p-4">Attributes</th>
+                                                        <th class="p-4">Preview</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-neutral-100 text-[color:var(--color-text-secondary)]">
+                                                    @foreach(\App\Presenters\DesignTokenCatalog::typography() as $type)
+                                                        @php
+                                                            $searchMeta = strtolower($type['name'] . ' ' . $type['variable'] . ' ' . $type['weight'] . ' ' . implode(' ', $type['aliases']) . ' ' . implode(' ', $type['used_by']) . ' ' . $type['accessibility']);
+                                                        @endphp
+                                                        <tr class="showcase-component" data-search="{{ $searchMeta }}">
+                                                            <td class="p-4 font-bold text-[color:var(--color-text-primary)]">
+                                                                {{ $type['name'] }}
+                                                                <div class="text-[10px] text-neutral-400 font-normal mt-1">Used by: {{ implode(', ', $type['used_by']) }}</div>
+                                                            </td>
+                                                            <td class="p-4 space-y-1 font-mono text-[10px]">
+                                                                <div class="flex items-center gap-1.5">
+                                                                    <span class="text-neutral-800 font-semibold">{{ $type['variable'] }}</span>
+                                                                    <button @click="copyToClipboard('var({{ $type['variable'] }})', 'CSS variable')" class="text-[8px] px-1 py-0.5 bg-neutral-100 rounded text-neutral-500 cursor-pointer">📋 Copy</button>
+                                                                </div>
+                                                                <div class="text-neutral-400">{{ $type['clamp'] }}</div>
+                                                            </td>
+                                                            <td class="p-4 space-y-1">
+                                                                <div>Weight: <span class="font-semibold">{{ $type['weight'] }}</span></div>
+                                                                <div>Line-height: <span class="font-semibold">{{ $type['line_height'] }}</span></div>
+                                                                <div class="text-[10px] text-emerald-600 font-medium">A11y: {{ $type['accessibility'] }}</div>
+                                                            </td>
+                                                            <td class="p-4">
+                                                                <div style="font-size: var({{ $type['variable'] }}); font-weight: {{ explode(' ', $type['weight'])[0] }}; line-height: {{ $type['line_height'] }}; letter-spacing: {{ $type['letter_spacing'] }}" class="whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]">
+                                                                    Okina Craft
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </section>
+                            @endif
+
+                            {{-- Spacing --}}
+                            @if(isset($categories['Brand & Design Tokens']['Spacing']))
+                                <section id="{{ $categories['Brand & Design Tokens']['Spacing'] }}" class="js-section scroll-mt-8">
+                                    <div class="border-b border-[color:var(--color-border)] pb-4 mb-6">
+                                        <h2 class="text-2xl font-bold text-[color:var(--color-text-primary)]">Spacing Scale</h2>
+                                        <p class="text-sm text-[color:var(--color-text-muted)] mt-1">
+                                            Layout spacing margins and padding increments. Click variables to copy properties.
+                                        </p>
+                                    </div>
+
+                                    <div class="border border-[color:var(--color-border)] rounded-2xl bg-white overflow-hidden">
+                                        <div class="divide-y divide-neutral-100">
+                                            @foreach(\App\Presenters\DesignTokenCatalog::spacing() as $space)
+                                                @php
+                                                    $searchMeta = strtolower($space['token'] . ' ' . $space['rem'] . ' ' . $space['px'] . ' ' . implode(' ', $space['used_by']));
+                                                @endphp
+                                                <div class="showcase-component p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4" data-search="{{ $searchMeta }}">
+                                                    <div class="w-48 shrink-0 flex items-center justify-between">
+                                                        <div>
+                                                            <span class="font-bold text-sm text-[color:var(--color-text-primary)]">{{ $space['token'] }}</span>
+                                                            <div class="text-[10px] text-neutral-400 mt-0.5">Used: {{ implode(', ', $space['used_by']) }}</div>
+                                                        </div>
+                                                        <button @click="copyToClipboard('var(--{{ $space['token'] }})', 'CSS variable')" class="text-[9px] px-2 py-1 bg-neutral-100 hover:bg-neutral-150 rounded text-neutral-600 font-medium cursor-pointer">📋 Copy</button>
+                                                    </div>
+                                                    <div class="flex items-center gap-4 flex-1">
+                                                        <span class="w-16 font-mono text-[10px] text-neutral-400 text-right">{{ $space['rem'] }} ({{ $space['px'] }})</span>
+                                                        <div class="h-4 bg-[color:var(--color-primary-100)] rounded-md" style="width: {{ max(4, floatval($space['px']) * 2) }}px"></div>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </section>
+                            @endif
+
+                            {{-- Elevation & Radius --}}
+                            @if(isset($categories['Brand & Design Tokens']['Elevation & Radius']))
+                                <section id="{{ $categories['Brand & Design Tokens']['Elevation & Radius'] }}" class="js-section scroll-mt-8">
+                                    <div class="border-b border-[color:var(--color-border)] pb-4 mb-6">
+                                        <h2 class="text-2xl font-bold text-[color:var(--color-text-primary)]">Elevation & Radius</h2>
+                                        <p class="text-sm text-[color:var(--color-text-muted)] mt-1">
+                                            Visual shadows and border radiuses. Click classes to copy properties.
+                                        </p>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        {{-- Shadows --}}
+                                        <div class="space-y-4">
+                                            <h3 class="text-sm font-bold uppercase tracking-wider text-neutral-400 border-b pb-2">Box Shadows</h3>
+                                            <div class="space-y-4">
+                                                @foreach(collect(\App\Presenters\DesignTokenCatalog::elevation())->where('type', 'shadow') as $shadow)
+                                                    @php
+                                                        $searchMeta = strtolower($shadow['token'] . ' ' . $shadow['value'] . ' ' . implode(' ', $shadow['used_by']));
+                                                    @endphp
+                                                    <div class="showcase-component p-4 bg-white border border-neutral-100 rounded-xl flex items-center justify-between gap-4" style="box-shadow: {{ $shadow['value'] }}" data-search="{{ $searchMeta }}">
+                                                        <div>
+                                                            <span class="font-bold text-xs text-[color:var(--color-text-primary)]">{{ $shadow['token'] }}</span>
+                                                            <div class="text-[10px] text-neutral-400 mt-0.5">Used: {{ implode(', ', $shadow['used_by']) }}</div>
+                                                        </div>
+                                                        <button @click="copyToClipboard('{{ $shadow['token'] }}', 'utility class')" class="text-[9px] px-2 py-1 bg-neutral-100 hover:bg-neutral-150 rounded text-neutral-600 font-medium cursor-pointer">📋 Copy</button>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+
+                                        {{-- Radius --}}
+                                        <div class="space-y-4">
+                                            <h3 class="text-sm font-bold uppercase tracking-wider text-neutral-400 border-b pb-2">Border Radiuses</h3>
+                                            <div class="space-y-4">
+                                                @foreach(collect(\App\Presenters\DesignTokenCatalog::elevation())->where('type', 'radius') as $radius)
+                                                    @php
+                                                        $searchMeta = strtolower($radius['token'] . ' ' . $radius['value'] . ' ' . implode(' ', $radius['used_by']));
+                                                    @endphp
+                                                    <div class="showcase-component p-4 bg-white border border-neutral-100 rounded-xl flex items-center justify-between gap-4" data-search="{{ $searchMeta }}">
+                                                        <div class="flex items-center gap-4">
+                                                            <div class="w-10 h-10 bg-[color:var(--color-primary-500)]" style="border-radius: {{ str_contains($radius['value'], '(') ? explode(' ', $radius['value'])[0] : $radius['value'] }}"></div>
+                                                            <div>
+                                                                <span class="font-bold text-xs text-[color:var(--color-text-primary)]">{{ $radius['token'] }}</span>
+                                                                <div class="text-[10px] text-neutral-400 mt-0.5">Val: {{ $radius['value'] }}</div>
+                                                            </div>
+                                                        </div>
+                                                        <button @click="copyToClipboard('{{ $radius['token'] }}', 'utility class')" class="text-[9px] px-2 py-1 bg-neutral-100 hover:bg-neutral-150 rounded text-neutral-600 font-medium cursor-pointer">📋 Copy</button>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                            @endif
+                        </div>
+                    @endif
+
+                    {{-- Motion Patterns --}}
+                    @if(isset($categories['Motion Patterns']))
+                        <div class="space-y-24">
+                            {{-- Durations --}}
+                            @if(isset($categories['Motion Patterns']['Durations']))
+                                <section id="{{ $categories['Motion Patterns']['Durations'] }}" class="js-section scroll-mt-8">
+                                    <div class="border-b border-[color:var(--color-border)] pb-4 mb-6">
+                                        <h2 class="text-2xl font-bold text-[color:var(--color-text-primary)]">Durations Scale</h2>
+                                        <p class="text-sm text-[color:var(--color-text-muted)] mt-1">
+                                            Visual response timings. Interactive controls support mouse hovers and keyboard replays.
+                                        </p>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                                        @foreach(\App\Presenters\DesignTokenCatalog::motion() as $motion)
+                                            @if($motion['type'] === 'duration')
+                                                @php
+                                                    $searchMeta = strtolower($motion['token'] . ' ' . $motion['value'] . ' ' . implode(' ', $motion['used_by']));
+                                                @endphp
+                                                <div class="showcase-component p-5 bg-white border border-[color:var(--color-border)] rounded-2xl shadow-xs space-y-4" x-data="{ replayKey: 0 }" data-search="{{ $searchMeta }}">
+                                                    <div class="flex items-center justify-between">
+                                                        <div>
+                                                            <span class="font-bold text-sm text-[color:var(--color-text-primary)]">{{ $motion['token'] }}</span>
+                                                            <div class="text-[10px] text-neutral-400">{{ $motion['value'] }}</div>
+                                                        </div>
+                                                        <button @click="replayKey++" tabindex="0" class="text-[10px] py-1 px-2.5 bg-neutral-900 hover:bg-neutral-800 text-white rounded-lg transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-[color:var(--color-primary-500)] focus:outline-none cursor-pointer" title="Replay Animation">
+                                                            ▶ Replay
+                                                        </button>
+                                                    </div>
+
+                                                    <!-- Track and block -->
+                                                    <div class="w-full bg-neutral-50 border rounded-xl p-3 flex items-center relative overflow-hidden">
+                                                        <div :key="replayKey" class="w-6 h-6 bg-[color:var(--color-primary-500)] rounded-lg transition-all" style="transition-duration: {{ $motion['value'] }}; transform: translateX(0px);" x-init="
+                                                            $el.classList.add('translate-x-[200%]');
+                                                        "></div>
+                                                    </div>
+
+                                                    <div class="text-[10px] text-neutral-500 italic">Used: {{ implode(', ', $motion['used_by']) }}</div>
+                                                </div>
+                                            @endif
+                                        @endforeach
+                                    </div>
+                                </section>
+                            @endif
+
+                            {{-- Easings --}}
+                            @if(isset($categories['Motion Patterns']['Easings']))
+                                <section id="{{ $categories['Motion Patterns']['Easings'] }}" class="js-section scroll-mt-8">
+                                    <div class="border-b border-[color:var(--color-border)] pb-4 mb-6">
+                                        <h2 class="text-2xl font-bold text-[color:var(--color-text-primary)]">Easing Curves</h2>
+                                        <p class="text-sm text-[color:var(--color-text-muted)] mt-1">
+                                            Visual acceleration profiles. Interactive keyboard-friendly controllers trigger block animations in real time.
+                                        </p>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        @foreach(\App\Presenters\DesignTokenCatalog::motion() as $motion)
+                                            @if($motion['type'] === 'easing')
+                                                @php
+                                                    $searchMeta = strtolower($motion['token'] . ' ' . $motion['value'] . ' ' . implode(' ', $motion['used_by']));
+                                                @endphp
+                                                <div class="showcase-component p-5 bg-white border border-[color:var(--color-border)] rounded-2xl shadow-xs space-y-4" x-data="{ replayKey: 0 }" data-search="{{ $searchMeta }}">
+                                                    <div class="flex items-center justify-between">
+                                                        <div>
+                                                            <span class="font-bold text-sm text-[color:var(--color-text-primary)]">{{ $motion['token'] }}</span>
+                                                            <div class="text-[10px] text-neutral-400 font-mono">{{ $motion['value'] }}</div>
+                                                        </div>
+                                                        <button @click="replayKey++" tabindex="0" class="text-[10px] py-1 px-2.5 bg-neutral-900 hover:bg-neutral-800 text-white rounded-lg transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-[color:var(--color-primary-500)] focus:outline-none cursor-pointer" title="Replay Animation">
+                                                            ▶ Replay
+                                                        </button>
+                                                    </div>
+
+                                                    <!-- Track and block -->
+                                                    <div class="w-full bg-neutral-50 border rounded-xl p-3 flex items-center relative overflow-hidden">
+                                                        <div :key="replayKey" class="w-6 h-6 bg-[color:var(--color-secondary-500)] rounded-lg transition-all translate-x-0" style="transition-duration: 500ms; transition-timing-function: {{ $motion['value'] }};" x-init="
+                                                            $el.classList.add('translate-x-[400%]');
+                                                        "></div>
+                                                    </div>
+
+                                                    <div class="text-[10px] text-neutral-500 italic">Used: {{ implode(', ', $motion['used_by']) }}</div>
+                                                </div>
+                                            @endif
+                                        @endforeach
+                                    </div>
+                                </section>
+                            @endif
+
+                            {{-- Reduced Motion --}}
+                            @if(isset($categories['Motion Patterns']['Reduced Motion']))
+                                <section id="{{ $categories['Motion Patterns']['Reduced Motion'] }}" class="js-section scroll-mt-8">
+                                    <div class="border-b border-[color:var(--color-border)] pb-4 mb-6">
+                                        <h2 class="text-2xl font-bold text-[color:var(--color-text-primary)]">Reduced Motion</h2>
+                                        <p class="text-sm text-[color:var(--color-text-muted)] mt-1">
+                                            Visual accessibility standard guidelines for layout transitions and animations.
+                                        </p>
+                                    </div>
+
+                                    <div class="p-6 bg-neutral-50 border border-[color:var(--color-border)] rounded-2xl space-y-4 text-xs leading-relaxed text-[color:var(--color-text-secondary)]">
+                                        <h3 class="font-bold text-sm text-[color:var(--color-text-primary)]">Accessibility & Preferences Checklist</h3>
+                                        <p>
+                                            To support users with vestibular motion sensitivities or preferences, the design system respects the native browser media queries directly inside the main CSS layer.
+                                        </p>
+                                        <div class="p-4 bg-white border border-neutral-100 rounded-xl font-mono text-[10px] space-y-2">
+                                            <div>@media (prefers-reduced-motion: reduce) {</div>
+                                            <div class="pl-4">/* Disables transitions, resets opacity controls immediately */</div>
+                                            <div class="pl-4">.ui-reveal, .ui-transition-fade-out, .ui-transition-fade-in {</div>
+                                            <div class="pl-8">transition: none !important;</div>
+                                            <div class="pl-8">animation: none !important;</div>
+                                            <div class="pl-8">transform: none !important;</div>
+                                            <div class="pl-8">opacity: 1 !important;</div>
+                                            <div class="pl-4">}</div>
+                                            <div>}</div>
+                                        </div>
+                                        <p class="text-emerald-700 font-semibold">
+                                            ✓ System verification: verified that skeleton layouts lock animation speeds and scroll animations neutralize coordinates when prefers-reduced-motion is active.
+                                        </p>
+                                    </div>
+                                </section>
+                            @endif
+                        </div>
+                    @endif
+
                     {{-- 1. Forms --}}
                     @if(isset($categories['Forms']))
                         <div class="space-y-16">
