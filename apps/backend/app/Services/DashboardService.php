@@ -2,14 +2,18 @@
 
 namespace App\Services;
 
+use App\Models\User;
 use App\Models\Order;
 use App\Models\ProductSku;
 use App\Models\Quotation;
+use App\Models\AuditLog;
 use App\Enums\OrderStatus;
 use App\Support\Dashboard\DashboardWidgetDTO;
+use App\Support\Dashboard\ActivityMapper;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
-class DashboardMetricsService
+class DashboardService
 {
     /**
      * Get the widgets data collection for the admin dashboard.
@@ -99,10 +103,43 @@ class DashboardMetricsService
     }
 
     /**
-     * Helper to clear the dashboard metrics cache on updates.
+     * Get the recent activity timeline collection for the current user.
+     * 
+     * @return Collection<ActivityItemDTO>
      */
-    public function clearCache(): void
+    public function getRecentActivity(User $user, int $limit = 5): Collection
+    {
+        return Cache::remember("dashboard_activity_user_{$user->id}", 30, function () use ($limit) {
+            $allowedActions = [
+                'orders.order_created',
+                'orders.order_cancelled',
+                'payments.payment_recorded',
+                'refunds.refund_requested',
+                'refunds.refund_approved',
+                'purchase_orders.created',
+                'leads.created',
+                'vendors.created',
+            ];
+
+            $logs = AuditLog::with('actorUser')
+                ->whereIn('action', $allowedActions)
+                ->orderBy('occurred_at', 'desc')
+                ->orderBy('id', 'desc')
+                ->limit($limit)
+                ->get();
+
+            $mapper = new ActivityMapper();
+
+            return collect($logs)->map(fn(AuditLog $log) => $mapper->map($log));
+        });
+    }
+
+    /**
+     * Helper to clear the dashboard caches on updates.
+     */
+    public function clearCache(User $user): void
     {
         Cache::forget('admin_dashboard_metrics_data');
+        Cache::forget("dashboard_activity_user_{$user->id}");
     }
 }

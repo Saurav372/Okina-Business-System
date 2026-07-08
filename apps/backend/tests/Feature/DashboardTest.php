@@ -7,10 +7,14 @@ use App\Models\Role;
 use App\Models\Order;
 use App\Models\ProductSku;
 use App\Models\Quotation;
+use App\Models\AuditLog;
 use App\Enums\OrderStatus;
-use App\Services\DashboardMetricsService;
+use App\Enums\AuditActorType;
+use App\Services\DashboardService;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class DashboardTest extends TestCase
@@ -24,12 +28,12 @@ class DashboardTest extends TestCase
         Cache::flush();
     }
 
-    protected function createSuperAdminUser(): User
+    protected function createSuperAdminUser(array $attributes = []): User
     {
-        $user = User::factory()->create([
+        $user = User::factory()->create(array_merge([
             'user_type' => User::TYPE_STAFF,
             'status' => User::STATUS_ACTIVE,
-        ]);
+        ], $attributes));
         
         $role = Role::create([
             'name' => 'Super Admin',
@@ -42,6 +46,18 @@ class DashboardTest extends TestCase
         ]);
 
         return $user;
+    }
+
+    protected function createAuditLog(array $attributes = []): AuditLog
+    {
+        return AuditLog::create(array_merge([
+            'event_id' => (string) Str::uuid(),
+            'action' => 'orders.order_created',
+            'module' => 'orders',
+            'actor_type' => AuditActorType::USER,
+            'subject_type' => 'order',
+            'occurred_at' => now(),
+        ], $attributes));
     }
 
     public function test_unauthenticated_user_cannot_access_dashboard(): void
@@ -99,7 +115,7 @@ class DashboardTest extends TestCase
         ]);
 
         // Force cache invalidation to load fresh seed values
-        (new DashboardMetricsService)->clearCache();
+        (new DashboardService)->clearCache($user);
 
         $response = $this->actingAs($user)->get(route('admin.dashboard'));
 
@@ -109,5 +125,104 @@ class DashboardTest extends TestCase
         $response->assertSee('1'); // 1 active order
         $response->assertSee('50.0%'); // Quote Conversion check (1 out of 2 = 50%)
         $response->assertDontSee('Welcome to your new dashboard!'); // Onboarding banner should be hidden now
+    }
+
+    public function test_recent_activity_timeline_filtering_and_sorting(): void
+    {
+        $user = $this->createSuperAdminUser();
+
+        // Lock time for stable timestamp checks
+        Carbon::setTestNow(Carbon::create(2026, 7, 8, 12, 0, 0));
+
+        // 1. Dispatch an allowed transaction event (Order Created)
+        $this->createAuditLog([
+            'action' => 'orders.order_created',
+            'module' => 'orders',
+            'summary' => 'Order OD-123 created',
+            'occurred_at' => Carbon::now()->subHours(2), // relative format "2 hours ago"
+            'actor_label_snapshot' => 'Saurav Nanda',
+        ]);
+
+        // 2. Dispatch a sensitive/internal event that should be filtered out (role assignment)
+        $this->createAuditLog([
+            'action' => 'users.role_assigned',
+            'module' => 'users',
+            'summary' => 'Role assigned',
+            'occurred_at' => Carbon::now()->subMinutes(5),
+            'actor_label_snapshot' => 'Saurav Nanda',
+        ]);
+
+        // 3. Dispatch an allowed event from yesterday (Payment Recorded)
+        $this->createAuditLog([
+            'action' => 'payments.payment_recorded',
+            'module' => 'payments',
+            'summary' => 'Payment collected',
+            'occurred_at' => Carbon::now()->subDays(1)->subHours(1), // "Yesterday, ..."
+            'actor_label_snapshot' => 'Saurav Nanda',
+        ]);
+
+        // 4. Dispatch an allowed event older than 48 hours (CRM Lead Logged)
+        $this->createAuditLog([
+            'action' => 'leads.created',
+            'module' => 'crm',
+            'summary' => 'Lead capture completed',
+            'occurred_at' => Carbon::now()->subDays(3), // Absolute format: "05 Jul 2026"
+            'actor_label_snapshot' => 'Saurav Nanda',
+        ]);
+
+        // Clear dashboard cache
+        (new DashboardService)->clearCache($user);
+
+        $response = $this->actingAs($user)->get(route('admin.dashboard'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Order OD-123 created');
+        $response->assertSee('2 hours ago');
+        $response->assertSee('Yesterday,');
+        $response->assertSee('05 Jul 2026'); // Absolute time check
+        $response->assertDontSee('Role assigned'); // Internal action should be hidden
+
+        Carbon::setTestNow(); // Reset time mock
+    }
+
+    public function test_recent_activity_unicode_names_and_missing_actor_fallbacks(): void
+    {
+        $user = $this->createSuperAdminUser();
+
+        // 1. Event by Japanese actor
+        $this->createAuditLog([
+            'action' => 'orders.order_created',
+            'module' => 'orders',
+            'summary' => 'Order created',
+            'occurred_at' => now(),
+            'actor_label_snapshot' => '佐藤 健', // Sato Takeru
+        ]);
+
+        // 2. Event by Hindi actor
+        $this->createAuditLog([
+            'action' => 'orders.order_created',
+            'module' => 'orders',
+            'summary' => 'Order created',
+            'occurred_at' => now(),
+            'actor_label_snapshot' => 'सौरव नंदा', // Saurav Nanda
+        ]);
+
+        // 3. Event with no actor (Deleted/Null fallback)
+        $this->createAuditLog([
+            'action' => 'orders.order_created',
+            'module' => 'orders',
+            'summary' => 'Order created',
+            'occurred_at' => now(),
+            'actor_label_snapshot' => null,
+        ]);
+
+        (new DashboardService)->clearCache($user);
+
+        $response = $this->actingAs($user)->get(route('admin.dashboard'));
+
+        $response->assertStatus(200);
+        $response->assertSee('佐'); // Initials fallback for Unicode names should resolve safely
+        $response->assertSee('सौ');
+        $response->assertSee('SY'); // System/Deleted actor initials fallback
     }
 }

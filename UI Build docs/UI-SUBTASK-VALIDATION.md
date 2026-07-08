@@ -1348,6 +1348,36 @@ Notes: Decoupled dashboard metrics calculation logic using dedicated controller,
 
 ---
 
+### U2.2.2 Recent Activity
+**Status:** Completed ✅
+
+**Implementation Validation**
+- [x] Configured `DashboardService` as dynamic aggregator of KPIs and activities
+- [x] Implemented `ActivityMapper` decoupling event metadata and link resolution from DB queries
+- [x] Coded `ActivityItemDTO` with raw occuredAt Carbon timestamps and formatTimeForDashboard() presenter helpers
+- [x] Programmed 30-second user-specific cache bounds with clearCache() triggers
+- [x] Formatted URL actions (Order Detail, Payment Show, CRM Lead Details) returning empty links if deleted from database
+
+**UI / Accessibility Validation**
+- [x] Restructured dashboard to place activity timeline inside scrollable right sidebar panel (`max-h-[32rem] overflow-y-auto`)
+- [x] Timeline nodes map semantic category colors and icons
+- [x] Render small actor initials avatars bubble (e.g. `[JS]` for John Smith) next to names, with graceful deleted/system actor fallbacks
+- [x] Configured absolute focus-visible overlay wraps making entire timeline rows clickable and keyboard focusable
+- [x] Render timeline using ordered list structures (`<ol>` with `<li>`)
+
+**Process Validation**
+- [x] Updated `tests/Feature/DashboardTest.php` to verify event filtering, sorting, relative/absolute timings, unicode initials, and fallback states
+- [x] Run full backend phpunit tests (848 tests) with zero failures
+- [x] Git restore point created
+
+**Review Sign-off**
+Reviewer: AI Assistant
+Date: 2026-07-08
+Result: [x] Pass [ ] Fail
+Notes: Chronological timeline widget renders clean, clickable activity logs next to initials avatars. Custom date logic formats yesterday/absolute stamps. Sensitive log entries are properly filtered out.
+
+---
+
 ## Motion Validation Template (U1.6)
 *(Apply this checklist to transitions, loaders, page changes, and similar features)*
 

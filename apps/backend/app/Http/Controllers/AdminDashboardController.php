@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\DashboardMetricsService;
+use App\Services\DashboardService;
 use Illuminate\Http\Request;
 
 class AdminDashboardController extends Controller
 {
     public function __construct(
-        protected DashboardMetricsService $metricsService
+        protected DashboardService $dashboardService
     ) {}
 
     /**
@@ -16,7 +16,10 @@ class AdminDashboardController extends Controller
      */
     public function index(Request $request)
     {
-        $widgets = $this->metricsService->getWidgetsData();
+        $user = $request->user();
+        
+        $widgets = $this->dashboardService->getWidgetsData();
+        $activities = $this->dashboardService->getRecentActivity($user);
 
         // Calculate if we are in an empty state (0 revenue, 0 active orders, 0 low stock)
         $isEmptyState = true;
@@ -28,6 +31,6 @@ class AdminDashboardController extends Controller
             }
         }
 
-        return view('admin.dashboard', compact('widgets', 'isEmptyState'));
+        return view('admin.dashboard', compact('widgets', 'activities', 'isEmptyState'));
     }
 }

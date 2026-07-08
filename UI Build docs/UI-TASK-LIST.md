@@ -84,7 +84,7 @@ Detailed validation for each subtask is maintained in `UI-SUBTASK-VALIDATION.md`
 | U2.1 | Application Shell | Foundation | 2 | Wire up Sidebar and Topbar with dynamic user session and navigation data. | U0.3, U0.5, U1.3 | Completed |
 | **U2.2** | **Dashboard** | Foundation | 2 | **Milestone** | U2.1 | Milestone |
 | U2.2.1 | Widgets | Foundation | 2 | KPI stat cards. | U2.1, U1.2.4, U1.6 | Completed |
-| U2.2.2 | Recent Activity | Foundation | 2 | Timeline of recent system events. | U2.1, U1.2.3 | Pending |
+| U2.2.2 | Recent Activity | Foundation | 2 | Timeline of recent system events. | U2.1, U1.2.3 | Completed |
 | U2.2.3 | Charts | Foundation | 2 | Data visualizations. | U2.1, U1.6 | Pending |
 | U2.2.4 | Quick Actions | Foundation | 2 | Common action buttons. | U2.1, U1.5.1 | Pending |
 | U2.2.5 | Notification Center | Foundation | 2 | Alerts and messages panel. | U2.1, U1.4.3 | Pending |

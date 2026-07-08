@@ -215,7 +215,7 @@ class User extends Authenticatable
             return 'US';
         }
         return count($words) >= 2 
-            ? strtoupper(substr($words[0], 0, 1) . substr(end($words), 0, 1))
-            : strtoupper(substr($words[0], 0, 2));
+            ? mb_strtoupper(mb_substr($words[0], 0, 1, 'UTF-8') . mb_substr(end($words), 0, 1, 'UTF-8'), 'UTF-8')
+            : mb_strtoupper(mb_substr($words[0], 0, 2, 'UTF-8'), 'UTF-8');
     }
 }
