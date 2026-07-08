@@ -317,7 +317,7 @@
                                                     <!-- Track and block -->
                                                     <div class="w-full bg-neutral-50 border rounded-xl p-3 flex items-center relative overflow-hidden">
                                                         <div :key="replayKey" class="w-6 h-6 bg-[color:var(--color-primary-500)] rounded-lg transition-all" style="transition-duration: {{ $motion['value'] }}; transform: translateX(0px);" x-init="
-                                                            $el.classList.add('translate-x-[200%]');
+                                                            $nextTick(() => { $el.classList.add('translate-x-[200%]'); });
                                                         "></div>
                                                     </div>
 
@@ -359,7 +359,7 @@
                                                     <!-- Track and block -->
                                                     <div class="w-full bg-neutral-50 border rounded-xl p-3 flex items-center relative overflow-hidden">
                                                         <div :key="replayKey" class="w-6 h-6 bg-[color:var(--color-secondary-500)] rounded-lg transition-all translate-x-0" style="transition-duration: 500ms; transition-timing-function: {{ $motion['value'] }};" x-init="
-                                                            $el.classList.add('translate-x-[400%]');
+                                                            $nextTick(() => { $el.classList.add('translate-x-[400%]'); });
                                                         "></div>
                                                     </div>
 
