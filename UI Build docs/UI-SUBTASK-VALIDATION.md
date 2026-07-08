@@ -1159,6 +1159,43 @@ Notes: Created dedicated feature tests verifying skeleton components. All layout
 
 ---
 
+### U1.6.5 Scroll Animations
+**Status:** Completed ✅
+
+**Implementation Validation**
+- [x] Created `<x-scroll-reveal>` Blade component with Intersection Observer and Alpine.js
+- [x] Tag allowlist validates `as` prop, falls back to `div` for unknown tags
+- [x] Animation type normalization: unknown types fallback to `fade`
+- [x] Speed tokens map explicitly: `fast` (150ms), `normal` (300ms), `slow` (500ms); custom `Xms`/`Xs` values pass through; unknowns fallback to `normal`
+- [x] Delay tokens map explicitly: `none`–`xl`; custom values pass through; unknowns fallback to `none`
+- [x] Threshold clamped between `0.0` and `1.0` (single numeric, no array support)
+- [x] `rootMargin` passed directly to `IntersectionObserver` — invalid formats rejected natively by browser
+- [x] `once=true` calls `observer.unobserve()` after first intersection (saves memory)
+- [x] `once=false` toggles `.is-hidden`/`.is-revealed` on every intersection/departure cleanly
+- [x] Alpine teardown cleanup: `return () => observer.disconnect()` prevents dangling observers
+
+**UI / Accessibility Validation**
+- [x] Progressive enhancement: elements default to fully visible (no-JS safe), Alpine applies `.is-hidden` on init
+- [x] `prefers-reduced-motion` override forces `opacity: 1`, removes transforms, disables transitions instantly
+- [x] `will-change` scoped only to `.is-hidden` state; reset to `auto` on `.is-revealed` to save GPU memory
+- [x] Animations are purely presentational — no changes to tabindex, focus, or `aria-hidden`
+- [x] CSS custom properties (`--reveal-duration`, `--reveal-delay`) centralize timing control
+
+**Process Validation**
+- [x] Registered `Scroll Animations` category in `ui-showcase.php`
+- [x] Created 4 playground previews: Animation Types, Speed & Delay Scales, Repeatable Reveals, Staggered Nested Card
+- [x] Created dedicated feature test suite `tests/Feature/ScrollRevealComponentTest.php` passing all 7 cases, 30 assertions
+- [x] Run full backend phpunit tests (834 tests) with zero regressions
+- [x] Git restore point created (`0793b1a`)
+
+**Review Sign-off**
+Reviewer: AI Assistant
+Date: 2026-07-08
+Result: [x] Pass [ ] Fail
+Notes: Implemented lightweight scroll reveal system using Intersection Observer. Progressive enhancement keeps content visible without JS. Full token-mapped API with safe fallbacks and memory cleanup.
+
+---
+
 ## Motion Validation Template (U1.6)
 *(Apply this checklist to transitions, loaders, page changes, and similar features)*
 
