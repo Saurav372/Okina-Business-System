@@ -10,6 +10,9 @@ use App\Models\AuditLog;
 use App\Enums\OrderStatus;
 use App\Support\Dashboard\DashboardWidgetDTO;
 use App\Support\Dashboard\ActivityMapper;
+use App\Support\Dashboard\ChartPointDTO;
+use App\Support\Dashboard\ChartSeriesDTO;
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
@@ -135,11 +138,113 @@ class DashboardService
     }
 
     /**
+     * Get the sales revenue trend data points.
+     */
+    public function getRevenueTrendSeries(): ChartSeriesDTO
+    {
+        return Cache::remember('dashboard:charts:revenue', 300, function () {
+            $pointsMap = collect();
+            for ($i = 5; $i >= 0; $i--) {
+                $date = Carbon::now()->subMonths($i);
+                $key = $date->format('Y-m');
+                $pointsMap->put($key, [
+                    'label' => $date->format('M'),
+                    'value' => 0.0,
+                ]);
+            }
+
+            // Query revenue orders from the last 6 calendar months
+            $orders = Order::where('status', '!=', OrderStatus::Cancelled->value())
+                ->where('placed_at', '>=', Carbon::now()->subMonths(5)->startOfMonth())
+                ->get();
+
+            foreach ($orders as $order) {
+                $key = $order->placed_at->format('Y-m');
+                if ($pointsMap->has($key)) {
+                    $item = $pointsMap->get($key);
+                    $pointsMap->put($key, [
+                        'label' => $item['label'],
+                        'value' => $item['value'] + ($order->total_amount_minor / 100.0),
+                    ]);
+                }
+            }
+
+            $points = $pointsMap->map(fn($item) => new ChartPointDTO(
+                label: $item['label'],
+                value: $item['value'],
+                formattedValue: '₹' . number_format($item['value'], 0)
+            ))->values();
+
+            // Calculate MoM trend indicators
+            $n = $points->count();
+            $currentValue = $n >= 1 ? $points[$n - 1]->value : 0.0;
+            $previousValue = $n >= 2 ? $points[$n - 2]->value : 0.0;
+
+            $diff = $currentValue - $previousValue;
+            $changePercent = $previousValue > 0.0 ? ($diff / $previousValue) * 100.0 : 0.0;
+            $changeDirection = $diff > 0.0 ? 'up' : ($diff < 0.0 ? 'down' : 'neutral');
+
+            return new ChartSeriesDTO(
+                title: 'Revenue Trend',
+                points: $points,
+                color: 'chart-2',
+                unit: '₹',
+                currentValue: $currentValue,
+                previousValue: $previousValue,
+                changePercent: round($changePercent, 1),
+                changeDirection: $changeDirection
+            );
+        });
+    }
+
+    /**
+     * Get the quote pipeline overview distribution.
+     */
+    public function getQuotePipelineSeries(): ChartSeriesDTO
+    {
+        return Cache::remember('dashboard:charts:quotes', 300, function () {
+            // Count quotes grouped by status
+            $quotes = Quotation::selectRaw('status, count(*) as count')
+                ->groupBy('status')
+                ->get()
+                ->pluck('count', 'status');
+
+            $pipelineStatuses = [
+                Quotation::STATUS_DRAFT => 'Draft',
+                Quotation::STATUS_SENT => 'Sent',
+                Quotation::STATUS_APPROVED => 'Approved',
+                Quotation::STATUS_CONVERTED => 'Converted',
+                Quotation::STATUS_EXPIRED => 'Expired',
+            ];
+
+            $points = collect();
+            foreach ($pipelineStatuses as $statusKey => $label) {
+                $val = (float)($quotes[$statusKey] ?? 0.0);
+                $points->push(new ChartPointDTO(
+                    label: $label,
+                    value: $val,
+                    formattedValue: (string)$val
+                ));
+            }
+
+            return new ChartSeriesDTO(
+                title: 'Quote Pipeline',
+                points: $points,
+                color: 'chart-6',
+                unit: '',
+                currentValue: (float)Quotation::count()
+            );
+        });
+    }
+
+    /**
      * Helper to clear the dashboard caches on updates.
      */
     public function clearCache(User $user): void
     {
         Cache::forget('admin_dashboard_metrics_data');
         Cache::forget("dashboard_activity_user_{$user->id}");
+        Cache::forget('dashboard:charts:revenue');
+        Cache::forget('dashboard:charts:quotes');
     }
 }

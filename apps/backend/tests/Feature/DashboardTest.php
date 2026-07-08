@@ -225,4 +225,40 @@ class DashboardTest extends TestCase
         $response->assertSee('सौ');
         $response->assertSee('SY'); // System/Deleted actor initials fallback
     }
+
+    public function test_dashboard_charts_rendering_and_caching(): void
+    {
+        $user = $this->createSuperAdminUser();
+
+        // 1. Initially database has 0 orders and quotes. Verify empty state prompts display on charts
+        $response = $this->actingAs($user)->get(route('admin.dashboard'));
+        $response->assertStatus(200);
+        $response->assertSee('No sales revenue logged for the last 6 months.');
+        $response->assertSee('Quote activity will appear once quotations are created.');
+
+        // 2. Create order and quote
+        Order::factory()->create([
+            'total_amount_minor' => 2500000, // ₹25,000.00
+            'status' => OrderStatus::Confirmed->value(),
+            'placed_at' => now(),
+        ]);
+        
+        Quotation::factory()->create([
+            'status' => Quotation::STATUS_SENT,
+        ]);
+
+        // Evict dashboard cache keys
+        (new DashboardService)->clearCache($user);
+
+        $response = $this->actingAs($user)->get(route('admin.dashboard'));
+        $response->assertStatus(200);
+
+        // Verification of populated data
+        $response->assertSee('Revenue Trend Chart'); // title tag test
+        $response->assertSee('Quote Pipeline Chart'); // title tag test
+        
+        // Confirm the empty state guidelines cards are now hidden
+        $response->assertDontSee('No sales revenue logged for the last 6 months.');
+        $response->assertDontSee('Quote activity will appear once quotations are created.');
+    }
 }
