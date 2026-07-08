@@ -1319,6 +1319,35 @@ Notes: Wired up clean application sidebar and header layout. Refactored navigati
 
 ---
 
+### U2.2.1 Widgets
+**Status:** Completed ✅
+
+**Implementation Validation**
+- [x] Created `AdminDashboardController` to isolate dashboard index queries from Auth concerns
+- [x] Implemented `DashboardMetricsService` to abstract queries for total revenue, active orders, low stock count, and quotes
+- [x] Integrated a 5-minute cache (`admin_dashboard_metrics_data`) with invalidation triggers
+- [x] Created `DashboardWidgetDTO` encapsulating key fields like label, value, trend direction, href, variant, and accessibilityLabel
+- [x] Coded conditional check mapping and showing helpful empty state prompts if dashboard dataset yields zeros
+
+**UI / Accessibility Validation**
+- [x] Stat cards loop dynamically over the passed DTO collection
+- [x] Stat card component extended to parse widget properties directly
+- [x] Layout applies distinct border colors/rings for critical low stock warnings and danger variants
+- [x] Configured proper ARIA attributes and `accessibilityLabel` detailing trend values and alerts
+
+**Process Validation**
+- [x] Created `tests/Feature/DashboardTest.php` verifying middleware access gates, caching, calculations, and empty-state toggles
+- [x] Run full backend phpunit tests (846 tests) with zero failures
+- [x] Git restore point created
+
+**Review Sign-off**
+Reviewer: AI Assistant
+Date: 2026-07-08
+Result: [x] Pass [ ] Fail
+Notes: Decoupled dashboard metrics calculation logic using dedicated controller, metrics service, and cached widget DTO models. Clean onboarding empty states render when no transactions exist.
+
+---
+
 ## Motion Validation Template (U1.6)
 *(Apply this checklist to transitions, loaders, page changes, and similar features)*
 

@@ -57,11 +57,6 @@ class AdminAuthController extends Controller
         return redirect()->intended(route('admin.dashboard'));
     }
 
-    public function index()
-    {
-        return view('admin.dashboard');
-    }
-
     public function forgotPassword()
     {
         return view('admin.forgot-password');

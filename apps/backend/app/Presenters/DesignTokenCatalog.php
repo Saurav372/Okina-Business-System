@@ -75,6 +75,16 @@ class DesignTokenCatalog
 
     public static function guidelines(): array
     {
-        return self::section('guidelines');
+        $raw = config('design-tokens.guidelines', []);
+        $index = $raw['index'] ?? [];
+
+        $ordered = [];
+        foreach ($index as $key => $label) {
+            if (isset($raw[$key]) && is_array($raw[$key])) {
+                $ordered[] = $raw[$key];
+            }
+        }
+
+        return $ordered;
     }
 }

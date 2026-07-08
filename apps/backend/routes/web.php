@@ -57,7 +57,7 @@ Route::prefix('admin')->group(function () {
 });
 
 Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function () {
-    Route::get('/', [AdminAuthController::class, 'index'])->name('admin.dashboard');
+    Route::get('/', [\App\Http\Controllers\AdminDashboardController::class, 'index'])->name('admin.dashboard');
     Route::get('/profile', [AdminAuthController::class, 'profile'])->name('admin.profile');
     Route::get('/security', [AdminAuthController::class, 'security'])->name('admin.security');
     Route::post('/logout', [AdminAuthController::class, 'destroy'])->name('admin.logout');

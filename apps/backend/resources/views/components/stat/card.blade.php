@@ -1,13 +1,31 @@
 @props([
-    'label',
-    'value',
+    'widget' => null,
+    'label' => null,
+    'value' => null,
     'trend' => null,
     'trendDirection' => 'neutral',
     'description' => null,
     'href' => null,
+    'variant' => 'neutral',
+    'accessibilityLabel' => null,
 ])
 
 @php
+    // If a DTO widget object is provided, extract its attributes
+    if ($widget) {
+        $label = $widget->label;
+        $value = $widget->value;
+        $trend = $widget->trend;
+        $trendDirection = $widget->trendDirection;
+        $description = $widget->description;
+        $href = $widget->href;
+        $variant = $widget->variant;
+        $accessibilityLabel = $widget->accessibilityLabel;
+        $iconName = $widget->icon;
+    } else {
+        $iconName = null;
+    }
+
     $isInteractive = filled($href);
     $wrapperTag = $isInteractive ? 'a' : 'div';
     
@@ -22,6 +40,13 @@
 
     $currentTrendStyle = $trendStyles[$normalizedDirection];
 
+    // Priority variant states border styling
+    $variantBorderClasses = match ($variant) {
+        'danger' => 'border-rose-300 ring-2 ring-rose-100/50 bg-rose-50/5',
+        'warning' => 'border-amber-300 ring-2 ring-amber-100/50 bg-amber-50/5',
+        default => 'border-[color:var(--color-border)]',
+    };
+
     $interactiveClasses = $isInteractive 
         ? 'cursor-pointer hover:-translate-y-0.5 hover:border-[color:var(--color-neutral-300)] hover:shadow-[var(--shadow-md)] transition-all duration-[var(--duration-200)] ease-[var(--ease-out)] focus-visible:outline-none focus-visible:ring-[length:var(--focus-ring-width)] focus-visible:ring-[color:var(--focus-ring-color)] focus-visible:ring-offset-[length:var(--focus-ring-offset)] block' 
         : '';
@@ -29,8 +54,10 @@
 
 <{{ $wrapperTag }} 
     @if($isInteractive) href="{{ $href }}" @endif 
+    @if($accessibilityLabel) aria-label="{{ $accessibilityLabel }}" @endif
     {{ $attributes->class([
-        'relative bg-white border border-[color:var(--color-border)] rounded-[var(--radius-xl)] shadow-[var(--shadow-xs)] p-6 overflow-hidden flex flex-col h-full',
+        'relative bg-white rounded-[var(--radius-xl)] shadow-[var(--shadow-xs)] p-6 overflow-hidden flex flex-col h-full',
+        $variantBorderClasses,
         $interactiveClasses
     ]) }}
 >
@@ -47,6 +74,10 @@
         @if(isset($icon))
             <div class="flex items-center justify-center shrink-0 text-[color:var(--color-neutral-400)] pt-1" aria-hidden="true" focusable="false">
                 {{ $icon }}
+            </div>
+        @elseif($iconName)
+            <div class="flex items-center justify-center shrink-0 text-[color:var(--color-neutral-400)] pt-1" aria-hidden="true" focusable="false">
+                <x-icons.lucide name="{{ $iconName }}" class="w-5 h-5" />
             </div>
         @endif
     </div>
