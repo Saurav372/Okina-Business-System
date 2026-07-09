@@ -2,6 +2,30 @@
 
 Use this sequence to work efficiently with the UI planning files.
 
+## Version 1 Scope
+
+### Core Modules
+- ✓ Dashboard
+- ✓ Customers
+- ✓ Products
+- ✓ Sales Orders
+- ✓ Payments
+- ✓ Refunds
+- ✓ Expenses
+- ✓ Inventory
+- ✓ Vendors
+- ✓ Purchase Orders
+- ✓ Settings
+- ✓ Customer Storefront
+
+### Excluded
+- ✗ CRM
+- ✗ Leads
+- ✗ Quotations
+- ✗ Staff Management
+- ✗ Roles & Permissions
+- ✗ Invoice Generation
+
 For normal development, provide only:
 
 1. `UI Build docs/UI-CURRENT-TASK.md`
@@ -30,6 +54,7 @@ If `UI Build docs/UI-CURRENT-TASK.md` says the current subtask is blocked or pen
 
 ## Global UI & Scope Rules
 
+- **Business Workflow Rule:** Do not introduce ERP, CRM, HRM, Accounting, or Inventory features outside the approved Version 1 scope. If requested functionality belongs to a future version, report it rather than implementing it.
 - **Respect Existing Coding Style:** Follow the existing project naming conventions, folder structure, formatting, and coding style unless the current task explicitly introduces a new standard.
 - **Never create placeholder UI:** Every implemented screen must connect to real backend data unless the current task explicitly allows mock content. No fake metrics, orders, or hardcoded tables.
 - **Existing Component Check:** Search for an existing component before creating a new one. If an equivalent exists, reuse or extend it. Do not duplicate components.
@@ -62,7 +87,7 @@ If `UI Build docs/UI-CURRENT-TASK.md` says the current subtask is blocked or pen
 Before any screen is marked complete, it must satisfy:
 - **Responsive:** Layout functions perfectly from mobile to desktop.
 - **Accessible:** Semantic HTML, ARIA labels, contrast, keyboard navigation.
-- **Permission-aware:** Components hidden/locked for unauthorized roles.
+- **Authentication-aware:** Administrative pages require authentication. Public pages remain publicly accessible.
 - **State handling:** Loading state, Empty state, and Error state implemented.
 - **Validation:** Real-time client-side validation reflecting backend rules.
 - **Performance:** Server-side pagination, no N+1 queries, optimized images, lazy loading, CLS safe, LCP optimized.

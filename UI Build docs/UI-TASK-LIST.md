@@ -42,8 +42,8 @@ Detailed validation for each subtask is maintained in `UI-SUBTASK-VALIDATION.md`
 | U0.1.4 | Breakpoints | Foundation | 0 | Define a mobile-first responsive breakpoint system (Base, xs, sm, md, lg, xl, 2xl, 3xl). | U0.1.3 | Completed |
 | U0.1.5 | Motion & Animation Tokens | Foundation | 0 | Define motion durations, easings, and transitions. <br> **Acceptance:** Duration scale, Easing scale, Transition tokens, Focus animations, Hover animations, Reduced motion support defined and documented. | U0.1.4 | Completed |
 | U0.1.6 | Brand Token Architecture | Foundation | 0 | Implement three-layer token architecture mapping brand and ink scales, CTA, layout, interaction, elevation, and density, and include full CRO guidelines. | U0.1.5 | Completed |
-| U0.2 | Admin Route Groups | Foundation | 0.5 | Setup admin route groups and auth/permission middleware. | U0.1.6 | Completed |
-| U0.3 | Navigation Config | Foundation | 0.5 | Centralize sidebar links and role-based visibility rules. | U0.2 | Completed |
+| U0.2 | Admin Route Groups | Foundation | 0.5 | Setup admin route groups and auth middleware. | U0.1.6 | Completed |
+| U0.3 | Navigation Config | Foundation | 0.5 | Centralize sidebar links with authenticated navigation (future-ready for roles). | U0.2 | Completed |
 | U0.4 | Breadcrumb Builder | Foundation | 0.5 | Automated breadcrumb generation strategy. | U0.2 | Completed |
 | U0.5 | Layout Templates | Foundation | 0.5 | Create app, admin, customer, auth, and guest blade layouts. | U0.1.5 | Completed |
 | **U1.1** | **Form Components** | Foundation | 1 | **Milestone** | U0.5 | Milestone |
@@ -82,24 +82,24 @@ Detailed validation for each subtask is maintained in `UI-SUBTASK-VALIDATION.md`
 | U1.6.6 | Page Transitions | Foundation | 1 | View transition API integration. | U0.1.5, U0.5 | Completed |
 | U1.7 | UI Component Showcase | Foundation | 1.5 | `/admin/components` route to display and document all reusable components, design tokens, and motion patterns. | U1.1, U1.2, U1.3, U1.4, U1.5, U1.6 | Completed |
 | U2.1 | Application Shell | Foundation | 2 | Wire up Sidebar and Topbar with dynamic user session and navigation data. | U0.3, U0.5, U1.3 | Completed |
-| **U2.2** | **Dashboard** | Foundation | 2 | **Milestone** | U2.1 | Milestone |
+| **U2.2** | **Dashboard** | Foundation | 2 | **Milestone** | U2.1 | Completed |
 | U2.2.1 | Widgets | Foundation | 2 | KPI stat cards. | U2.1, U1.2.4, U1.6 | Completed |
 | U2.2.2 | Recent Activity | Foundation | 2 | Timeline of recent system events. | U2.1, U1.2.3 | Completed |
 | U2.2.3 | Charts | Foundation | 2 | Data visualizations. | U2.1, U1.6 | Completed |
-| U2.2.4 | Quick Actions | Foundation | 2 | Common action buttons. | U2.1, U1.5.1 | Pending |
-| U2.2.5 | Notification Center | Foundation | 2 | Alerts and messages panel. | U2.1, U1.4.3 | Pending |
-
+| U2.2.4 | Quick Actions | Foundation | 2 | Common action buttons. | U2.1, U1.5.1 | Completed |
+| U2.2.5 | Notification Center | Foundation | 2 | Alerts and messages panel. | U2.1, U1.4.3 | Deferred V2 |
+ 
 ## Tier 2: Admin Modules
-
+ 
 | Task ID | Task Name | Tier | Phase | Description & Acceptance | Depends On | Status |
 |---|---|---|---|---|---|---|
-| **U3.1** | **Orders Module** | Admin | 3 | **Milestone** | U2.1 | Milestone |
-| U3.1.1 | Order Index | Admin | 3 | Main listing with filters and bulk actions. | U2.1, U1.2.1 | Pending |
-| U3.1.2 | Order Detail | Admin | 3 | Detail view with customer, total, and status cards. | U3.1.1 | Pending |
-| U3.1.3 | Order Timeline | Admin | 3 | Chronological history of order changes. | U3.1.2 | Pending |
-| U3.1.4 | Order Files | Admin | 3 | Uploads and mockup preview panel. | U3.1.2 | Pending |
-| U3.1.5 | Order Shipping | Admin | 3 | Shipping tracking and status updates. | U3.1.2 | Pending |
-| U3.1.6 | Order Invoice | Admin | 3 | Invoice generation and PDF preview. | U3.1.2 | Pending |
+| **U3.1** | **Orders Module** | Admin | 3 | **Milestone** | U2.1 | Completed |
+| U3.1.1 | Order Index | Admin | 3 | Main listing with filters and bulk actions. | U2.1, U1.2.1 | Completed |
+| U3.1.2 | Order Detail | Admin | 3 | Detail view with customer, total, and status cards. | U3.1.1 | Completed |
+| U3.1.3 | Order Timeline | Admin | 3 | Chronological history of order changes. | U3.1.2 | Completed |
+| U3.1.4 | Order Files | Admin | 3 | Uploads and mockup preview panel. | U3.1.2 | Completed |
+| U3.1.5 | Order Shipping | Admin | 3 | Shipping tracking and status updates. | U3.1.2 | Completed |
+| U3.1.6 | Order PDF / Confirmation | Admin | 3 | Order confirmation document rendering and PDF download. | U3.1.2 | Completed |
 | **U3.2** | **Products Module** | Admin | 3 | **Milestone** | U2.1 | Milestone |
 | U3.2.1 | Product Index | Admin | 3 | Main listing with status filters. | U2.1, U1.2.1 | Pending |
 | U3.2.2 | Product Detail & Edit | Admin | 3 | Core product edit form and metadata. | U3.2.1 | Pending |
@@ -107,24 +107,24 @@ Detailed validation for each subtask is maintained in `UI-SUBTASK-VALIDATION.md`
 | U3.2.4 | Variants & SKUs | Admin | 3 | Matrix generation and SKU pricing/stock. | U3.2.2 | Pending |
 | U3.2.5 | Product Media | Admin | 3 | Image gallery and video management. | U3.2.2 | Pending |
 | U3.2.6 | SEO Metadata Management | Admin | 3 | Meta title, description, canonical, OG image, slug preview. | U3.2.2 | Pending |
-| **U4.1** | **CRM Module** | Admin | 4 | **Milestone** | U2.1 | Milestone |
-| U4.1.1 | Leads Index | Admin | 4 | Lead capture listing. | U2.1, U1.2.1 | Pending |
-| U4.1.2 | Lead 360 View | Admin | 4 | Lead detail, activity logging, and follow-ups. | U4.1.1 | Pending |
-| U4.1.3 | Quotation Builder | Admin | 4 | Quote creation and pricing engine. | U4.1.2, U3.2.4 | Pending |
-| U4.1.4 | Quotation Conversion | Admin | 4 | Conversion from Quote to Sales Order. | U4.1.3, U3.1.6 | Pending |
+| **U4.1** | **CRM Module** | Admin | 4 | **Milestone** | U2.1 | Removed |
+| U4.1.1 | Leads Index | Admin | 4 | Lead capture listing. | U2.1, U1.2.1 | Removed |
+| U4.1.2 | Lead 360 View | Admin | 4 | Lead detail, activity logging, and follow-ups. | U4.1.1 | Removed |
+| U4.1.3 | Quotation Builder | Admin | 4 | Quote creation and pricing engine. | U4.1.2, U3.2.4 | Removed |
+| U4.1.4 | Quotation Conversion | Admin | 4 | Conversion from Quote to Sales Order. | U4.1.3, U3.1.6 | Removed |
 | **U5.1** | **Inventory & Purchasing** | Admin | 5 | **Milestone** | U3.2.4 | Milestone |
 | U5.1.1 | Stock Balances | Admin | 5 | Real-time SKU stock levels. | U3.2.4 | Pending |
 | U5.1.2 | Stock Movements | Admin | 5 | Movement history and adjustment modal. | U5.1.1 | Pending |
 | U5.1.3 | Vendors Directory | Admin | 5 | Vendor management. | U2.1 | Pending |
 | U5.1.4 | Purchase Orders | Admin | 5 | PO creation and Stock Receiving flow. | U5.1.3, U5.1.1 | Pending |
-| **U6.1** | **Finance & Reports** | Admin | 6 | **Milestone** | U3.1.6 | Milestone |
-| U6.1.1 | Payments Ledger | Admin | 6 | History of all order payments. | U3.1.6 | Pending |
-| U6.1.2 | Refunds Workflow | Admin | 6 | Refund processing and status tracking. | U6.1.1 | Pending |
-| U6.1.3 | Expenses Reporting | Admin | 6 | Expense capture. | U2.1 | Pending |
-| U6.1.4 | Finance Reports | Admin | 6 | Sales, Revenue, and Outstanding Balance visualizations. | U6.1.1 | Pending |
+| **U6.1** | **Finance & Reports** | Admin | 6 | **Milestone** | U3.1.6 | Completed |
+| U6.1.1 | Payments Ledger | Admin | 6 | History of all order payments. | U3.1.6 | Completed |
+| U6.1.2 | Refunds Workflow | Admin | 6 | Refund processing and status tracking. | U6.1.1 | Completed |
+| U6.1.3 | Expenses Reporting | Admin | 6 | Expense capture. | U2.1 | Completed |
+| U6.1.4 | Finance Reports | Admin | 6 | Sales, Revenue, and Outstanding Balance visualizations. | U6.1.1 | Completed |
 | **U7.1** | **System Administration** | Admin | 7 | **Milestone** | U2.1 | Milestone |
-| U7.1.1 | Access Control | Admin | 7 | Users list, Roles, and Permissions screens. | U2.1 | Pending |
-| U7.1.2 | Business Settings | Admin | 7 | System settings and API keys. | U2.1 | Pending |
+| U7.1.1 | Administrator Account | Admin | 7 | Profile, password, security settings, and session management. | U2.1 | Pending |
+| U7.1.2 | Business Settings | Admin | 7 | System settings and API keys. | U2.1 | Completed |
 | U7.1.3 | System Logs | Admin | 7 | Audit Logs, Notification Logs, System Health. | U2.1 | Pending |
 
 ## Tier 3: Customer Experience

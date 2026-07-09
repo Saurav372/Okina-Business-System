@@ -1,29 +1,28 @@
 # Current Task
-
+ 
 ## Current Parent Task
-Dashboard (U2.2)
-
+Release & Validation (U9.1)
+ 
 ## Current Subtask
-U2.2.2 Recent Activity
-
+U9.1.1 V1 Pivot Review & Verification
+ 
 ## Goal
-Implement a recent activity timeline widget on the admin dashboard to display a chronological list of recent system events (such as order placements, payments, lead captures, and stock updates), using color-coded category icons and human-readable relative time offsets.
-
+Verify and validate that all core administrative modules (Dashboard, Sales Orders, Settings, and Accounting Ledgers) are fully operational, responsive, and correct under the new Version 1 business requirements, with no remaining CRM dependencies.
+ 
 ## Dependencies
 **Depends On:**
-- U2.1 (Application Shell)
-- U1.2.3 (Timeline component)
-
+- U2.2 (Dashboard Module)
+- U3.1 (Orders Module)
+- U6.1 (Finance & Reports Ledger)
+- U7.1 (System Administration & Settings)
+ 
 ## Required Deliverables
-- Dynamic recent activity panel rendering events sorted chronologically.
-- Clean semantic icons and color schemes matching event categories:
-  - Orders: blue shopping cart.
-  - Payments: green currency card.
-  - CRM Leads: purple user card.
-  - Inventory updates: amber tags.
-- Display of relative timestamps (e.g., "10 minutes ago", "2 hours ago").
-- Clean empty activity message layout when no events have occurred.
-
+- Fully passing automated backend test suite (entire backend test suite passes).
+- Functional PDF generation and print preview overlay on Sales Order details.
+- Working settings forms for Business details, Documents, Tax rules, and Payout coordinates.
+- Multi-ledger accounting surfaces (Customer, Vendor, Business Ledgers) displaying transactions and running balances.
+- Responsive validation of all layout elements.
+ 
 ## Completed prerequisites
-- U2.1 (Application Shell layout)
-- U2.2.1 (Dashboard KPI Widgets)
+- All Tier 1 Foundation subtasks.
+- All Tier 2 Admin Module subtasks scoped for V1.
