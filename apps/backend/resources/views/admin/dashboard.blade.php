@@ -164,14 +164,21 @@
 
                                 <!-- Zero Baseline -->
                                 <line x1="45" y1="{{ $ordersLayout->baselineY }}" x2="430" y2="{{ $ordersLayout->baselineY }}" stroke="#e5e7eb" stroke-width="1.5" />
-
+                                
                                 <!-- Columns/Bars -->
+                                @php
+                                    $n = count($ordersLayout->coordinates);
+                                    $bandWidth = (430 - 45) / max(1, $n);
+                                @endphp
                                 @foreach($ordersLayout->coordinates as $index => $pt)
                                     @php
+                                        $ptX = 45 + ($index * $bandWidth) + ($bandWidth / 2);
                                         $barWidth = 24;
                                         $barHeight = max(2, $ordersLayout->baselineY - $pt['y']);
-                                        $barX = $pt['x'] - ($barWidth / 2);
+                                        $barX = $ptX - ($barWidth / 2);
                                         $barY = $pt['y'];
+                                        
+                                        $ptData = array_merge($pt, ['x' => $ptX]);
                                     @endphp
                                     <rect 
                                         x="{{ $barX }}" 
@@ -183,16 +190,19 @@
                                         tabindex="0"
                                         aria-label="Month: {{ $pt['label'] }}, Orders: {{ $pt['formatted'] }}"
                                         class="cursor-pointer hover:opacity-85 focus:opacity-85 focus:outline-none transition-opacity duration-150 chart-bar-grow"
-                                        @mouseenter="activeBar = @js($pt)"
+                                        @mouseenter="activeBar = @js($ptData)"
                                         @mouseleave="activeBar = null"
-                                        @focus="activeBar = @js($pt)"
+                                        @focus="activeBar = @js($ptData)"
                                         @blur="activeBar = null"
                                     />
                                 @endforeach
-
+ 
                                 <!-- X Axis Labels -->
-                                @foreach($ordersLayout->coordinates as $pt)
-                                    <text x="{{ $pt['x'] }}" y="175" text-anchor="middle" class="text-[9px] font-bold fill-neutral-400 uppercase tracking-wider">{{ $pt['label'] }}</text>
+                                @foreach($ordersLayout->coordinates as $index => $pt)
+                                    @php
+                                        $ptX = 45 + ($index * $bandWidth) + ($bandWidth / 2);
+                                    @endphp
+                                    <text x="{{ $ptX }}" y="175" text-anchor="middle" class="text-[9px] font-bold fill-neutral-400 uppercase tracking-wider">{{ $pt['label'] }}</text>
                                 @endforeach
                             </svg>
 
