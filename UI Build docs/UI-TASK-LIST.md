@@ -1,10 +1,15 @@
 # UI Task List
 
+## Architecture Configuration
+- **Architecture Version:** V1 Business Pivot
+- **Last Major Change:** 2026-07-09
+
 ## Status Definitions
 - **Pending:** Not started
 - **In Progress:** Currently being implemented
 - **Review:** Implementation complete, awaiting validation
 - **Blocked:** Cannot proceed due to dependency
+- **Needs Revalidation:** Completed task affected by architectural change that must be verified again
 - **Completed:** Validated and committed
 
 ## Parent Task Rule
@@ -82,11 +87,11 @@ Detailed validation for each subtask is maintained in `UI-SUBTASK-VALIDATION.md`
 | U1.6.6 | Page Transitions | Foundation | 1 | View transition API integration. | U0.1.5, U0.5 | Completed |
 | U1.7 | UI Component Showcase | Foundation | 1.5 | `/admin/components` route to display and document all reusable components, design tokens, and motion patterns. | U1.1, U1.2, U1.3, U1.4, U1.5, U1.6 | Completed |
 | U2.1 | Application Shell | Foundation | 2 | Wire up Sidebar and Topbar with dynamic user session and navigation data. | U0.3, U0.5, U1.3 | Completed |
-| **U2.2** | **Dashboard** | Foundation | 2 | **Milestone** | U2.1 | Completed |
-| U2.2.1 | Widgets | Foundation | 2 | KPI stat cards. | U2.1, U1.2.4, U1.6 | Completed |
-| U2.2.2 | Recent Activity | Foundation | 2 | Timeline of recent system events. | U2.1, U1.2.3 | Completed |
-| U2.2.3 | Charts | Foundation | 2 | Data visualizations. | U2.1, U1.6 | Completed |
-| U2.2.4 | Quick Actions | Foundation | 2 | Common action buttons. | U2.1, U1.5.1 | Completed |
+| **U2.2** | **Dashboard** | Foundation | 2 | **Milestone** | U2.1 | Needs Revalidation |
+| U2.2.1 | Widgets | Foundation | 2 | KPI stat cards. | U2.1, U1.2.4, U1.6 | Needs Revalidation |
+| U2.2.2 | Recent Activity | Foundation | 2 | Timeline of recent system events. | U2.1, U1.2.3 | Needs Revalidation |
+| U2.2.3 | Charts | Foundation | 2 | Data visualizations. | U2.1, U1.6 | Needs Revalidation |
+| U2.2.4 | Quick Actions | Foundation | 2 | Common action buttons. | U2.1, U1.5.1 | Needs Revalidation |
 | U2.2.5 | Notification Center | Foundation | 2 | Alerts and messages panel. | U2.1, U1.4.3 | Deferred V2 |
  
 ## Tier 2: Admin Modules

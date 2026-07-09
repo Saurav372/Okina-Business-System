@@ -1,28 +1,24 @@
 # Current Task
  
 ## Current Parent Task
-Release & Validation (U9.1)
+V1 Pivot Verification (U2.2)
  
 ## Current Subtask
-U9.1.1 V1 Pivot Review & Verification
+U2.2.1 - U2.2.4 Revalidate Dashboard
  
 ## Goal
-Verify and validate that all core administrative modules (Dashboard, Sales Orders, Settings, and Accounting Ledgers) are fully operational, responsive, and correct under the new Version 1 business requirements, with no remaining CRM dependencies.
+Systematically review and revalidate the dashboard widgets, timeline, charts, and quick actions to ensure zero CRM references, complete operational alignment, and total compliance with the new Version 1 scope.
  
 ## Dependencies
 **Depends On:**
-- U2.2 (Dashboard Module)
-- U3.1 (Orders Module)
-- U6.1 (Finance & Reports Ledger)
-- U7.1 (System Administration & Settings)
+- U2.1 (Application Shell Layout)
  
 ## Required Deliverables
-- Fully passing automated backend test suite (entire backend test suite passes).
-- Functional PDF generation and print preview overlay on Sales Order details.
-- Working settings forms for Business details, Documents, Tax rules, and Payout coordinates.
-- Multi-ledger accounting surfaces (Customer, Vendor, Business Ledgers) displaying transactions and running balances.
-- Responsive validation of all layout elements.
+- [ ] Confirm no CRM metrics (Leads, Quote pipeline) exist in Dashboard Widgets.
+- [ ] Confirm Recent Activity timeline properly excludes crm logs and maps crm-free activity.
+- [ ] Confirm Charts display Monthly Orders (Bar) and Sales Revenue (Line) cleanly with zero crm logic.
+- [ ] Confirm Quick Actions exclude any legacy crm build links.
+- [ ] Ensure all automated dashboard tests pass successfully.
  
 ## Completed prerequisites
-- All Tier 1 Foundation subtasks.
-- All Tier 2 Admin Module subtasks scoped for V1.
+- U2.1 (Application Shell Layout)
