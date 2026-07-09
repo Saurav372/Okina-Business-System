@@ -1,15 +1,14 @@
 <?php
-
+ 
 namespace Database\Seeders;
-
+ 
 use App\Models\User;
 use App\Models\Order;
-use App\Models\Quotation;
 use App\Models\AuditLog;
 use App\Enums\OrderStatus;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
-
+ 
 class DashboardDummyDataSeeder extends Seeder
 {
     /**
@@ -20,7 +19,7 @@ class DashboardDummyDataSeeder extends Seeder
         $user = User::where('email', 'test@example.com')->first() 
             ?? User::first() 
             ?? User::factory()->create(['name' => 'Saurav Nanda', 'email' => 'saurav@example.com']);
-
+ 
         // 1. Seed Orders for the last 6 calendar months
         for ($i = 5; $i >= 0; $i--) {
             $monthDate = Carbon::now()->subMonths($i);
@@ -34,25 +33,8 @@ class DashboardDummyDataSeeder extends Seeder
                 ]);
             }
         }
-
-        // 2. Seed Quotations across pipeline statuses
-        $statuses = [
-            Quotation::STATUS_DRAFT,
-            Quotation::STATUS_SENT,
-            Quotation::STATUS_APPROVED,
-            Quotation::STATUS_CONVERTED,
-            Quotation::STATUS_EXPIRED,
-        ];
-        foreach ($statuses as $status) {
-            $count = rand(3, 8);
-            for ($j = 0; $j < $count; $j++) {
-                Quotation::factory()->create([
-                    'status' => $status,
-                ]);
-            }
-        }
-
-        // 3. Seed Audit logs for recent activity timeline
+ 
+        // 2. Seed Audit logs for recent activity timeline
         $logs = [
             [
                 'action' => 'orders.order_created',
@@ -67,12 +49,6 @@ class DashboardDummyDataSeeder extends Seeder
                 'actor_label_snapshot' => 'Amit Sharma',
             ],
             [
-                'action' => 'leads.created',
-                'summary' => 'New CRM Lead "Inder Singh" added from Website portal',
-                'occurred_at' => Carbon::now()->subHours(5),
-                'actor_label_snapshot' => 'Rajesh Kumar',
-            ],
-            [
                 'action' => 'orders.order_cancelled',
                 'summary' => 'Order OD-5412 cancelled by customer request',
                 'occurred_at' => Carbon::now()->subDays(1)->subHours(3),
@@ -85,7 +61,7 @@ class DashboardDummyDataSeeder extends Seeder
                 'actor_label_snapshot' => 'Amit Sharma',
             ],
         ];
-
+ 
         foreach ($logs as $log) {
             AuditLog::create([
                 'event_id' => (string) \Illuminate\Support\Str::uuid(),
