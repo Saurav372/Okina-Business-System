@@ -118,7 +118,7 @@
             aria-valuenow="{{ $xBind === null ? round($clampedValue, 1) : 0 }}"
             @if($xBind)
                 :aria-valuenow="Math.max({{ $min }}, Math.min({{ $max }}, {{ $xBind }}))"
-                :aria-valuetext="filled($label) ? '{{ $label }}' : (Math.round({{ $xBind }}) + '%')"
+                :aria-valuetext="{{ filled($label) ? 'true' : 'false' }} ? '{{ $label }}' : (Math.round({{ $xBind }}) + '%')"
             @endif
         @else
             aria-busy="true"
@@ -149,7 +149,7 @@
                 <span 
                     @if($xBind)
                         x-show="{{ $xBind }} >= {{ $inlineLabelThreshold }}"
-                        x-text="filled($label) ? '{{ $label }}' : (Math.round({{ $xBind }}) + '%')"
+                        x-text="{{ filled($label) ? 'true' : 'false' }} ? '{{ $label }}' : (Math.round({{ $xBind }}) + '%')"
                     @endif
                     class="font-bold px-1 select-none leading-none truncate {{ $textColorClass }} {{ $textSizeClass }}"
                 >
