@@ -122,69 +122,76 @@
                     @endif
                 </div>
 
-                <!-- 2. Quote Pipeline Bar Chart -->
+                <!-- 2. Monthly Orders Volume Bar Chart -->
                 <div class="bg-white border border-[color:var(--color-border)] rounded-2xl p-6 shadow-xs" x-data="{ activeBar: null }">
                     <div class="flex items-start justify-between border-b border-[color:var(--color-border)] pb-4 mb-4">
                         <div>
-                            <h3 class="text-sm font-bold text-neutral-800">Quote Pipeline</h3>
-                            <p class="text-[10px] text-neutral-400 font-medium uppercase mt-0.5">Status Snapshot Distribution</p>
+                            <h3 class="text-sm font-bold text-neutral-800">Monthly Orders</h3>
+                            <p class="text-[10px] text-neutral-400 font-medium uppercase mt-0.5">Last 6 Calendar Months</p>
                         </div>
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-full border border-neutral-200 bg-neutral-50 text-[10px] font-bold text-neutral-500">
-                            Total: {{ $quoteSeries->currentValue }}
-                        </span>
+                        @if($ordersSeries->changePercent !== null && $ordersSeries->changePercent != 0)
+                            @php
+                                $isUp = $ordersSeries->changeDirection === 'up';
+                                $trendColor = $isUp ? 'text-emerald-600 bg-emerald-50 border-emerald-200' : 'text-rose-600 bg-rose-50 border-rose-200';
+                                $trendIcon = $isUp ? '↑' : '↓';
+                            @endphp
+                            <span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full border text-[11px] font-bold {{ $trendColor }}">
+                                {{ $trendIcon }} {{ abs($ordersSeries->changePercent) }}%
+                            </span>
+                        @endif
                     </div>
 
                     @php
-                        $quoteLayout = \App\Presenters\ChartGeometryPresenter::present($quoteSeries, 450, 180, 45, 20);
-                        $hasQuoteData = $quoteSeries->points->contains(fn($p) => $p->value > 0);
+                        $ordersLayout = \App\Presenters\ChartGeometryPresenter::present($ordersSeries, 450, 180, 45, 20);
+                        $hasOrdersData = $ordersSeries->points->contains(fn($p) => $p->value > 0);
                     @endphp
 
-                    @if(!$hasQuoteData)
+                    @if(!$hasOrdersData)
                         <div class="h-44 flex items-center justify-center bg-neutral-50 border border-dashed border-neutral-200 rounded-xl">
-                            <p class="text-xs text-neutral-400">Quote activity will appear once quotations are created.</p>
+                            <p class="text-xs text-neutral-400">No order activity logged for the last 6 months.</p>
                         </div>
                     @else
                         <div class="relative w-full h-44">
-                            <svg viewBox="0 0 450 180" class="w-full h-full overflow-visible select-none" aria-label="Bar chart showing quote pipeline metrics.">
-                                <title>Quote Pipeline Chart</title>
-                                <desc>Displays count distributions across quotations workflow pipeline stages.</desc>
+                            <svg viewBox="0 0 450 180" class="w-full h-full overflow-visible select-none" aria-label="Bar chart showing monthly order counts.">
+                                <title>Monthly Orders Chart</title>
+                                <desc>Displays sales order counts placed over the last 6 calendar months.</desc>
 
                                 <!-- Y Axis Grid Lines & Ticks -->
-                                @foreach($quoteLayout->ticks as $tick)
+                                @foreach($ordersLayout->ticks as $tick)
                                     <line x1="45" y1="{{ $tick['y'] }}" x2="430" y2="{{ $tick['y'] }}" stroke="#f3f4f6" stroke-width="1" />
                                     <text x="35" y="{{ $tick['y'] + 4 }}" text-anchor="end" class="text-[9px] font-medium fill-neutral-400 font-mono">{{ $tick['label'] }}</text>
                                 @endforeach
 
                                 <!-- Zero Baseline -->
-                                <line x1="45" y1="{{ $quoteLayout->baselineY }}" x2="430" y2="{{ $quoteLayout->baselineY }}" stroke="#e5e7eb" stroke-width="1.5" />
+                                <line x1="45" y1="{{ $ordersLayout->baselineY }}" x2="430" y2="{{ $ordersLayout->baselineY }}" stroke="#e5e7eb" stroke-width="1.5" />
 
-                                <!-- Vertical Columns Bars -->
-                                @foreach($quoteLayout->coordinates as $index => $pt)
+                                <!-- Columns/Bars -->
+                                @foreach($ordersLayout->coordinates as $index => $pt)
                                     @php
-                                        $barWidth = 32;
+                                        $barWidth = 24;
+                                        $barHeight = max(2, $ordersLayout->baselineY - $pt['y']);
                                         $barX = $pt['x'] - ($barWidth / 2);
-                                        $barHeight = max(4, $quoteLayout->baselineY - $pt['y']);
+                                        $barY = $pt['y'];
                                     @endphp
                                     <rect 
                                         x="{{ $barX }}" 
-                                        y="{{ $pt['y'] }}" 
+                                        y="{{ $barY }}" 
                                         width="{{ $barWidth }}" 
                                         height="{{ $barHeight }}" 
-                                        rx="6"
-                                        fill="var(--color-{{ $quoteSeries->color }})" 
+                                        rx="4"
+                                        fill="var(--color-{{ $ordersSeries->color }})" 
                                         tabindex="0"
-                                        aria-label="Status: {{ $pt['label'] }}, Count: {{ $pt['value'] }}"
-                                        class="cursor-pointer hover:opacity-90 focus:opacity-95 focus:outline-none transition-all duration-150 chart-bar-grow"
+                                        aria-label="Month: {{ $pt['label'] }}, Orders: {{ $pt['formatted'] }}"
+                                        class="cursor-pointer hover:opacity-85 focus:opacity-85 focus:outline-none transition-opacity duration-150 chart-bar-grow"
                                         @mouseenter="activeBar = @js($pt)"
                                         @mouseleave="activeBar = null"
                                         @focus="activeBar = @js($pt)"
                                         @blur="activeBar = null"
-                                        @click="activeBar = (activeBar && activeBar.x === @js($pt['x'])) ? null : @js($pt)"
                                     />
                                 @endforeach
 
                                 <!-- X Axis Labels -->
-                                @foreach($quoteLayout->coordinates as $pt)
+                                @foreach($ordersLayout->coordinates as $pt)
                                     <text x="{{ $pt['x'] }}" y="175" text-anchor="middle" class="text-[9px] font-bold fill-neutral-400 uppercase tracking-wider">{{ $pt['label'] }}</text>
                                 @endforeach
                             </svg>
@@ -197,7 +204,7 @@
                                 :style="`left: ${activeBar ? (activeBar.x - 35) : 0}px; top: ${activeBar ? (activeBar.y - 50) : 0}px;`"
                             >
                                 <span class="block font-bold text-[9px] text-neutral-400 uppercase tracking-wide" x-text="activeBar.label"></span>
-                                <span class="block font-bold text-xs mt-0.5" x-text="`${activeBar.formatted} quotes`"></span>
+                                <span class="block font-bold text-xs mt-0.5" x-text="activeBar.formatted"></span>
                             </div>
                         </div>
                     @endif
@@ -208,14 +215,11 @@
             @if($isEmptyState)
                 <x-alert type="info" title="Welcome to your new dashboard!" dismissible="false">
                     <p class="text-sm leading-relaxed text-blue-900">
-                        Your backend sandbox database is currently empty. Let's get started by creating your first orders, logging CRM leads, or syncing catalogs via Google Sheets!
+                        Your backend sandbox database is currently empty. Let's get started by creating your first sales orders or syncing catalogs via Google Sheets!
                     </p>
                     <div class="mt-4 flex flex-wrap gap-3">
                         <a href="{{ route('admin.sales_orders.create') }}" class="inline-flex items-center justify-center px-4 py-2 text-xs font-bold bg-[color:var(--color-brand-600)] text-white rounded-lg hover:bg-[color:var(--color-brand-700)] transition-colors">
                             Create Sales Order
-                        </a>
-                        <a href="{{ route('admin.leads.index') }}" class="inline-flex items-center justify-center px-4 py-2 text-xs font-bold bg-white text-neutral-800 rounded-lg hover:bg-neutral-50 transition-colors border border-neutral-300">
-                            Add CRM Lead
                         </a>
                     </div>
                 </x-alert>
@@ -228,7 +232,7 @@
                         <h3 class="text-sm font-bold text-neutral-800">Operational Overview</h3>
                     </div>
                     <p class="text-xs text-neutral-600 leading-relaxed">
-                        The metrics widgets above represent live system metrics aggregated from your orders, customer quotes, and stock levels. Click on any widget to drill down directly to the corresponding module interface.
+                        The metrics widgets above represent live system metrics aggregated from your orders, payments, stock levels, and purchase orders. Click on any widget to drill down directly to the corresponding module interface.
                     </p>
                 </div>
             @endif

@@ -21,7 +21,7 @@ class AdminDashboardController extends Controller
         $widgets = $this->dashboardService->getWidgetsData();
         $activities = $this->dashboardService->getRecentActivity($user);
         $revenueSeries = $this->dashboardService->getRevenueTrendSeries();
-        $quoteSeries = $this->dashboardService->getQuotePipelineSeries();
+        $ordersSeries = $this->dashboardService->getMonthlyOrdersSeries();
 
         // Calculate if we are in an empty state (0 revenue, 0 active orders, 0 low stock)
         $isEmptyState = true;
@@ -37,7 +37,7 @@ class AdminDashboardController extends Controller
             'widgets',
             'activities',
             'revenueSeries',
-            'quoteSeries',
+            'ordersSeries',
             'isEmptyState'
         ));
     }
