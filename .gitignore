@@ -42,3 +42,8 @@ Thumbs.db
 # Internal build and planning documentation (AI-assisted development records)
 # Not part of the public repository — use docs/ for publishable documentation
 Build docs/
+
+# Large archive files
+*.7z
+*.zip
+*.rar
