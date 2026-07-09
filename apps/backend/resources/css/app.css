@@ -427,6 +427,17 @@
     --focus-ring-opacity: 1;   /* Reduce for subtle rings while maintaining accessibility */
 }
 
+:root {
+    --color-chart-1: #e83535;   /* Brand red — primary series */
+    --color-chart-2: #3b82f6;   /* Sapphire */
+    --color-chart-3: #22c55e;   /* Emerald */
+    --color-chart-4: #f59e0b;   /* Amber */
+    --color-chart-5: #8b5cf6;   /* Violet */
+    --color-chart-6: #14b8a6;   /* Teal */
+    --color-chart-7: #f97316;   /* Orange */
+    --color-chart-8: #94a3b8;   /* Slate — neutral contrast series */
+}
+
 /* ======================================================
    GLOBAL MOTION RULES
 ====================================================== */

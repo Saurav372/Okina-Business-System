@@ -63,8 +63,8 @@
                                 
                                 <defs>
                                     <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stop-color="var(--color-{{ $revenueSeries->color }})" stop-opacity="0.2" />
-                                        <stop offset="100%" stop-color="var(--color-{{ $revenueSeries->color }})" stop-opacity="0" />
+                                        <stop offset="0%" style="stop-color: var(--color-{{ $revenueSeries->color }});" stop-opacity="0.2" />
+                                        <stop offset="100%" style="stop-color: var(--color-{{ $revenueSeries->color }});" stop-opacity="0" />
                                     </linearGradient>
                                 </defs>
 
@@ -80,7 +80,7 @@
                                 <!-- Gradient Area path -->
                                 <path d="{{ $areaPath }}" fill="url(#areaGradient)" class="chart-area-fade" />
                                 <!-- Outline Line path -->
-                                <path d="{{ $linePath }}" fill="none" stroke="var(--color-{{ $revenueSeries->color }})" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="chart-line-draw" />
+                                <path d="{{ $linePath }}" fill="none" style="stroke: var(--color-{{ $revenueSeries->color }});" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="chart-line-draw" />
 
                                 <!-- Hover/Focus interactive markers -->
                                 @foreach($revenueLayout->coordinates as $index => $pt)
@@ -89,7 +89,7 @@
                                         cy="{{ $pt['y'] }}" 
                                         r="6" 
                                         fill="white" 
-                                        stroke="var(--color-{{ $revenueSeries->color }})" 
+                                        style="stroke: var(--color-{{ $revenueSeries->color }});" 
                                         stroke-width="2.5"
                                         tabindex="0"
                                         aria-label="Month: {{ $pt['label'] }}, Revenue: {{ $pt['formatted'] }}"
@@ -179,7 +179,7 @@
                                         width="{{ $barWidth }}" 
                                         height="{{ $barHeight }}" 
                                         rx="4"
-                                        fill="var(--color-{{ $ordersSeries->color }})" 
+                                        style="fill: var(--color-{{ $ordersSeries->color }});" 
                                         tabindex="0"
                                         aria-label="Month: {{ $pt['label'] }}, Orders: {{ $pt['formatted'] }}"
                                         class="cursor-pointer hover:opacity-85 focus:opacity-85 focus:outline-none transition-opacity duration-150 chart-bar-grow"
