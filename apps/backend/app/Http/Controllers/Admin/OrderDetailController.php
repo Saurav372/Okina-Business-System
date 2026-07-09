@@ -18,13 +18,24 @@ class OrderDetailController extends Controller
             'paymentAttempts',
             'payments.paymentAttempt',
             'refunds.payment.paymentAttempt',
+            'mockups.file',
         ]);
 
         $summary = app(OrderDetailCatalog::class)->summarize($order);
 
+        $timelineLogs = \App\Models\AuditLog::query()
+            ->where('subject_type', 'order')
+            ->where(function($query) use ($order) {
+                $query->where('subject_id', $order->public_id)
+                      ->orWhere('subject_public_id', $order->public_id);
+            })
+            ->latest()
+            ->get();
+
         return view('admin.orders.detail', [
             'order' => $order,
             'summary' => $summary,
+            'timelineLogs' => $timelineLogs,
         ]);
     }
 }

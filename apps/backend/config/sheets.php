@@ -2,8 +2,6 @@
 
 use App\Models\Customer;
 use App\Models\InventoryMovement;
-use App\Models\Lead;
-use App\Models\LeadFollowUp;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\VendorOrder;
@@ -22,19 +20,6 @@ return [
         'prune_days' => env('GOOGLE_SHEETS_LOG_PRUNE_DAYS', 30),
     ],
     'entities' => [
-        Lead::class => [
-            'sheet' => 'Leads',
-            'unique_key' => 'id',
-            'columns' => [
-                'id' => 'Lead ID',
-                'contact_name' => 'Name',
-                'email' => 'Email',
-                'phone' => 'Phone',
-                'source' => 'Source',
-                'status' => 'Status',
-                'created_at' => 'Created At',
-            ],
-        ],
         Order::class => [
             'sheet' => 'Orders',
             'unique_key' => 'public_id',
@@ -82,18 +67,6 @@ return [
                 'email' => 'Email',
                 'phone' => 'Phone',
                 'status' => 'Status',
-                'created_at' => 'Created At',
-            ],
-        ],
-        LeadFollowUp::class => [
-            'sheet' => 'Follow Ups',
-            'unique_key' => 'id',
-            'columns' => [
-                'id' => 'Follow Up ID',
-                'lead_id' => 'Lead ID',
-                'assigned_staff' => 'Assigned Staff',
-                'status' => 'Status',
-                'due_at' => 'Due At',
                 'created_at' => 'Created At',
             ],
         ],

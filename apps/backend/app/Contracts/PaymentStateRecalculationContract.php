@@ -16,7 +16,7 @@ interface PaymentStateRecalculationContract
 
     public function refundedStatus(): string;
 
-    public function calculate(int $orderTotalMinor, int $paidTotalMinor, int $refundTotalMinor): string;
+    public function calculate(int $orderTotalMinor, int $paidTotalMinor, int $refundTotalMinor, int $expectedAdvanceMinor = 0): string;
 
     public function netPaid(int $paidTotalMinor, int $refundTotalMinor): int;
 

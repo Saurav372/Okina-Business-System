@@ -20,7 +20,7 @@ class OrderTimelineService
     {
         $paidTotal = (int) $order->payments->where('status', 'succeeded')->sum('amount_minor');
         $refundTotal = (int) $order->refunds->where('status', 'succeeded')->sum('amount_minor');
-        $paymentStatus = $this->stateRules->calculate($order->total_amount_minor, $paidTotal, $refundTotal);
+        $paymentStatus = $this->stateRules->calculate($order->total_amount_minor, $paidTotal, $refundTotal, $order->getExpectedAdvanceAmount());
 
         if ($order->status === 'cancelled') {
             return [
@@ -121,7 +121,7 @@ class OrderTimelineService
         $firstSucceededPayment = $order->payments->where('status', 'succeeded')->sortBy('paid_at')->first();
         $lastSucceededPayment = $order->payments->where('status', 'succeeded')->sortByDesc('paid_at')->first();
 
-        $hasPaidSomething = $paymentStatus === 'paid' || $paymentStatus === 'partially_paid' || $firstSucceededPayment !== null;
+        $hasPaidSomething = in_array($paymentStatus, ['paid', 'partially_paid', 'advance_paid'], true) || $firstSucceededPayment !== null;
 
         $steps = [
             [

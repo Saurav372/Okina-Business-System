@@ -11,6 +11,7 @@ enum PaymentStatus: string implements PaymentStatusContract
     case Paid = 'paid';
     case PartiallyRefunded = 'partially_refunded';
     case Refunded = 'refunded';
+    case AdvancePaid = 'advance_paid';
 
     public function value(): string
     {
@@ -25,6 +26,7 @@ enum PaymentStatus: string implements PaymentStatusContract
             self::Paid => 'Paid',
             self::PartiallyRefunded => 'Partially Refunded',
             self::Refunded => 'Refunded',
+            self::AdvancePaid => 'Advance Paid',
         };
     }
 

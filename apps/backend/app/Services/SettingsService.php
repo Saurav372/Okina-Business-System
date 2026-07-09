@@ -368,6 +368,138 @@ class SettingsService
                     ],
                 ],
             ],
+            Setting::GROUP_DOCUMENTS => [
+                'label' => 'Documents',
+                'description' => 'Document rendering, layout, and visual identity settings.',
+                'settings' => [
+                    'logo_path' => [
+                        'label' => 'Logo path',
+                        'value_type' => Setting::TYPE_STRING,
+                        'default' => null,
+                        'description' => 'Relative path to company logo image.',
+                    ],
+                    'website_url' => [
+                        'label' => 'Website URL',
+                        'value_type' => Setting::TYPE_STRING,
+                        'default' => 'https://okinacraft.com',
+                        'description' => 'Website URL to show on documents.',
+                    ],
+                    'qr_code_url' => [
+                        'label' => 'QR Code URL',
+                        'value_type' => Setting::TYPE_STRING,
+                        'default' => null,
+                        'description' => 'URL used for document authenticity verification QR Code.',
+                    ],
+                    'stamp_path' => [
+                        'label' => 'Stamp path',
+                        'value_type' => Setting::TYPE_STRING,
+                        'default' => null,
+                        'description' => 'Path to official digital stamp image.',
+                    ],
+                    'watermark_text' => [
+                        'label' => 'Watermark text',
+                        'value_type' => Setting::TYPE_STRING,
+                        'default' => 'CONFIDENTIAL',
+                        'description' => 'Watermark text printed on PDF pages.',
+                    ],
+                    'footer_placeholder' => [
+                        'label' => 'Footer placeholder',
+                        'value_type' => Setting::TYPE_STRING,
+                        'default' => 'Page {current} of {total}',
+                        'description' => 'Footer layout structure with page number tokens.',
+                    ],
+                    'margin_top' => [
+                        'label' => 'Margin top',
+                        'value_type' => Setting::TYPE_INTEGER,
+                        'default' => 15,
+                        'description' => 'Page margin top in mm.',
+                    ],
+                    'margin_bottom' => [
+                        'label' => 'Margin bottom',
+                        'value_type' => Setting::TYPE_INTEGER,
+                        'default' => 15,
+                        'description' => 'Page margin bottom in mm.',
+                    ],
+                    'margin_left' => [
+                        'label' => 'Margin left',
+                        'value_type' => Setting::TYPE_INTEGER,
+                        'default' => 15,
+                        'description' => 'Page margin left in mm.',
+                    ],
+                    'margin_right' => [
+                        'label' => 'Margin right',
+                        'value_type' => Setting::TYPE_INTEGER,
+                        'default' => 15,
+                        'description' => 'Page margin right in mm.',
+                    ],
+                    'orientation' => [
+                        'label' => 'Orientation',
+                        'value_type' => Setting::TYPE_STRING,
+                        'default' => 'portrait',
+                        'description' => 'Page layout orientation.',
+                    ],
+                    'size' => [
+                        'label' => 'Size',
+                        'value_type' => Setting::TYPE_STRING,
+                        'default' => 'a4',
+                        'description' => 'Page layout dimension format.',
+                    ],
+                ],
+            ],
+            Setting::GROUP_TAX => [
+                'label' => 'Tax',
+                'description' => 'GST and other government tax configuration.',
+                'settings' => [
+                    'enable_gst' => [
+                        'label' => 'Enable GST',
+                        'value_type' => Setting::TYPE_BOOLEAN,
+                        'default' => false,
+                        'description' => 'Enable Goods and Services Tax logic and displays.',
+                    ],
+                    'gstin' => [
+                        'label' => 'GSTIN',
+                        'value_type' => Setting::TYPE_STRING,
+                        'default' => '',
+                        'description' => 'Taxpayer Identification Number (GSTIN).',
+                    ],
+                    'registered_state' => [
+                        'label' => 'Registered state',
+                        'value_type' => Setting::TYPE_STRING,
+                        'default' => '',
+                        'description' => 'Business state where registered for GST.',
+                    ],
+                    'default_tax_rate' => [
+                        'label' => 'Default tax rate',
+                        'value_type' => Setting::TYPE_INTEGER,
+                        'default' => 18,
+                        'description' => 'Default GST percentage rule.',
+                    ],
+                ],
+            ],
+            Setting::GROUP_PAYMENTS => [
+                'label' => 'Payments',
+                'description' => 'Official bank accounts and payment collection coordinates.',
+                'settings' => [
+                    'bank_name' => [
+                        'label' => 'Bank name',
+                        'value_type' => Setting::TYPE_STRING,
+                        'default' => 'State Bank of India',
+                        'description' => 'Official receiving bank name.',
+                    ],
+                    'account_number' => [
+                        'label' => 'Account number',
+                        'value_type' => Setting::TYPE_STRING,
+                        'default' => '12345678901',
+                        'description' => 'Official corporate bank account number.',
+                    ],
+                    'ifsc_code' => [
+                        'label' => 'IFSC code',
+                        'value_type' => Setting::TYPE_STRING,
+                        'default' => 'SBIN0001234',
+                        'description' => 'Receiving branch IFSC route code.',
+                    ],
+                ],
+            ],
         ];
     }
 }

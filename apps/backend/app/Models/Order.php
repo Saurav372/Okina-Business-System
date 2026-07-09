@@ -57,6 +57,7 @@ use Illuminate\Support\Str;
     'tracking_url',
     'estimated_delivery_at',
     'cancellation_reason',
+    'order_metadata',
 ])]
 #[Hidden(['deleted_at'])]
 class Order extends Model
@@ -88,6 +89,7 @@ class Order extends Model
             'customer_snapshot' => 'array',
             'shipping_address_snapshot' => 'array',
             'billing_address_snapshot' => 'array',
+            'order_metadata' => 'array',
             'subtotal_amount_minor' => 'integer',
             'discount_amount_minor' => 'integer',
             'shipping_amount_minor' => 'integer',
@@ -176,6 +178,42 @@ class Order extends Model
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+ 
+    public function mockups(): HasMany
+    {
+        return $this->hasMany(OrderMockup::class)->orderBy('sort_order');
+    }
+ 
+    public function getExpectedAdvanceAmount(): int
+    {
+        $extract = function($data) {
+            if (is_array($data) && isset($data['payment_schedule'])) {
+                $sched = $data['payment_schedule'];
+                if (is_array($sched) && isset($sched['amount_minor'])) {
+                    return (int) $sched['amount_minor'];
+                }
+                return (int) $sched;
+            }
+            return 0;
+        };
+ 
+        if (is_array($this->order_metadata)) {
+            $val = $extract($this->order_metadata);
+            if ($val > 0) {
+                return $val;
+            }
+        }
+ 
+        if ($this->internal_notes) {
+            $data = json_decode($this->internal_notes, true);
+            $val = $extract($data);
+            if ($val > 0) {
+                return $val;
+            }
+        }
+ 
+        return 0;
     }
 
     public function paymentAttempts(): HasMany

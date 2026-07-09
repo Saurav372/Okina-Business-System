@@ -37,29 +37,34 @@ readonly class PaymentStateRecalculationRules implements PaymentStateRecalculati
         return PaymentStatus::Refunded->value();
     }
 
-    public function calculate(int $orderTotalMinor, int $paidTotalMinor, int $refundTotalMinor): string
+    public function calculate(int $orderTotalMinor, int $paidTotalMinor, int $refundTotalMinor, int $expectedAdvanceMinor = 0): string
     {
         $orderTotalMinor = max(0, $orderTotalMinor);
         $paidTotalMinor = max(0, $paidTotalMinor);
         $refundTotalMinor = max(0, $refundTotalMinor);
-
+        $expectedAdvanceMinor = max(0, $expectedAdvanceMinor);
+ 
         $netPaidMinor = $this->netPaid($paidTotalMinor, $refundTotalMinor);
-
+ 
         if ($refundTotalMinor > 0) {
             return $netPaidMinor > 0
                 ? PaymentStatus::PartiallyRefunded->value()
                 : PaymentStatus::Refunded->value();
         }
-
+ 
         if ($paidTotalMinor === 0) {
             return PaymentStatus::Unpaid->value();
         }
-
-        if ($paidTotalMinor < $orderTotalMinor) {
-            return PaymentStatus::PartiallyPaid->value();
+ 
+        if ($paidTotalMinor >= $orderTotalMinor) {
+            return PaymentStatus::Paid->value();
         }
-
-        return PaymentStatus::Paid->value();
+ 
+        if ($expectedAdvanceMinor > 0 && $paidTotalMinor >= $expectedAdvanceMinor) {
+            return PaymentStatus::AdvancePaid->value();
+        }
+ 
+        return PaymentStatus::PartiallyPaid->value();
     }
 
     public function netPaid(int $paidTotalMinor, int $refundTotalMinor): int

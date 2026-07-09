@@ -158,7 +158,8 @@ class AdminOrderActionController extends Controller
                 $paymentStatus = app(PaymentStateRecalculationRules::class)->calculate(
                     $order->total_amount_minor,
                     Payment::where('order_id', $order->id)->where('status', 'succeeded')->sum('amount_minor'),
-                    Refund::where('order_id', $order->id)->where('status', 'succeeded')->sum('amount_minor')
+                    Refund::where('order_id', $order->id)->where('status', 'succeeded')->sum('amount_minor'),
+                    $order->getExpectedAdvanceAmount()
                 );
 
                 if ($request->wantsJson()) {
@@ -246,7 +247,8 @@ class AdminOrderActionController extends Controller
             $paymentStatus = app(PaymentStateRecalculationRules::class)->calculate(
                 $order->total_amount_minor,
                 $newPaidTotal,
-                $refundTotal
+                $refundTotal,
+                $order->getExpectedAdvanceAmount()
             );
 
             return [$payment, $paymentStatus];

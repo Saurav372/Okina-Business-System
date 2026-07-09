@@ -4,7 +4,6 @@ namespace App\Jobs;
 
 use App\Models\GoogleSheetsSyncLog;
 use App\Models\InventoryMovement;
-use App\Models\LeadFollowUp;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\VendorOrder;
@@ -27,7 +26,6 @@ class SyncRecordToGoogleSheetsJob extends QueuedOperation
         Order::class => ['customer'],
         Payment::class => ['order'],
         InventoryMovement::class => ['productSku'],
-        LeadFollowUp::class => ['assignedTo'],
         VendorOrder::class => ['vendor'],
     ];
 

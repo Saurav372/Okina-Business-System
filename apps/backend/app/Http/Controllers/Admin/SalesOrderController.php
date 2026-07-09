@@ -8,6 +8,7 @@ use App\Http\Requests\Admin\SalesOrderUpdateRequest;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\ProductSku;
+use App\Services\OrderPdfService;
 use App\Services\SalesOrderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -81,5 +82,25 @@ class SalesOrderController extends Controller
             'public_id' => $updatedOrder->public_id,
             'order' => $updatedOrder->toArray(),
         ], 200);
+    }
+
+    public function previewPdf(Order $order, OrderPdfService $pdfService, Request $request)
+    {
+        Gate::authorize('view', $order);
+
+        $html = $pdfService->renderHtml($order, $request->user());
+
+        return response($html)->header('Content-Type', 'text/html');
+    }
+
+    public function downloadPdf(Order $order, OrderPdfService $pdfService, Request $request)
+    {
+        Gate::authorize('view', $order);
+
+        $html = $pdfService->renderHtml($order, $request->user());
+
+        return response($html)
+            ->header('Content-Type', 'text/html')
+            ->header('Content-Disposition', 'attachment; filename="Order_Confirmation_' . $order->public_id . '.html"');
     }
 }

@@ -23,6 +23,8 @@ class PaymentStateRecalculationRulesTest extends TestCase
         $this->assertSame(PaymentStatus::PartiallyRefunded->value(), $rules->calculate(1000, 1000, 200));
         $this->assertSame(PaymentStatus::Refunded->value(), $rules->calculate(1000, 1000, 1000));
         $this->assertSame(PaymentStatus::Refunded->value(), $rules->calculate(1000, 400, 700));
+        $this->assertSame(PaymentStatus::AdvancePaid->value(), $rules->calculate(1000, 400, 0, 300));
+        $this->assertSame(PaymentStatus::PartiallyPaid->value(), $rules->calculate(1000, 200, 0, 300));
         $this->assertSame(300, $rules->netPaid(1000, 700));
         $this->assertTrue($rules->refundStateTakesPriorityOverPaidState());
     }

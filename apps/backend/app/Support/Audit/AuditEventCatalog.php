@@ -226,6 +226,18 @@ final class AuditEventCatalog
                 references: ['A2.3', 'C6.1.3'],
                 summary: 'User role assignments were fully synchronized.',
             ),
+            new AuditEventDefinition(
+                key: 'orders.pdf_generated',
+                module: 'orders',
+                action: 'order.pdf_generated',
+                subjectType: 'order',
+                actorTypes: ['user', 'system'],
+                safeFields: ['order_public_id', 'template', 'generated_by', 'generated_at'],
+                maskedFields: [],
+                relatedTypes: ['customer'],
+                references: [],
+                summary: 'An Order Confirmation PDF document was generated for the sales order.',
+            ),
         ];
     }
 

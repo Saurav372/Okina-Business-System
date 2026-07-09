@@ -331,7 +331,7 @@ class CustomerApiController extends Controller
     {
         $paidTotal = (int) $order->payments->where('status', 'succeeded')->sum('amount_minor');
         $refundTotal = (int) $order->refunds->where('status', 'succeeded')->sum('amount_minor');
-        $paymentStatus = $this->stateRules->calculate($order->total_amount_minor, $paidTotal, $refundTotal);
+        $paymentStatus = $this->stateRules->calculate($order->total_amount_minor, $paidTotal, $refundTotal, $order->getExpectedAdvanceAmount());
 
         return [
             'public_id' => $order->public_id,
@@ -349,7 +349,7 @@ class CustomerApiController extends Controller
     {
         $paidTotal = (int) $order->payments->where('status', 'succeeded')->sum('amount_minor');
         $refundTotal = (int) $order->refunds->where('status', 'succeeded')->sum('amount_minor');
-        $paymentStatus = $this->stateRules->calculate($order->total_amount_minor, $paidTotal, $refundTotal);
+        $paymentStatus = $this->stateRules->calculate($order->total_amount_minor, $paidTotal, $refundTotal, $order->getExpectedAdvanceAmount());
 
         return [
             'public_id' => $order->public_id,

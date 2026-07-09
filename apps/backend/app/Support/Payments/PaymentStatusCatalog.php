@@ -47,6 +47,13 @@ final class PaymentStatusCatalog
                 'source_of_truth' => 'payments and refunds',
                 'references' => ['A5.1.3', 'A5.1.4', 'A5.2.5'],
             ],
+            [
+                'key' => PaymentStatus::AdvancePaid->value(),
+                'label' => PaymentStatus::AdvancePaid->label(),
+                'calculation' => 'paid_total >= expected_advance and paid_total < order_total and refund_total = 0',
+                'source_of_truth' => 'payments and refunds',
+                'references' => ['A5.1.3', 'A5.1.4', 'B3.3.6'],
+            ],
         ];
     }
 

@@ -7,13 +7,9 @@ use App\Http\Controllers\Admin\ExpenseCategoryController;
 use App\Http\Controllers\Admin\ExpenseController;
 use App\Http\Controllers\Admin\GoogleSheetsConnectionController;
 use App\Http\Controllers\Admin\GoogleSheetsSyncLogController;
-use App\Http\Controllers\Admin\LeadActivityController;
-use App\Http\Controllers\Admin\LeadController;
-use App\Http\Controllers\Admin\LeadFollowUpController;
 use App\Http\Controllers\Admin\NotificationLogController;
 use App\Http\Controllers\Admin\OrderDetailController;
 use App\Http\Controllers\Admin\PaymentController;
-use App\Http\Controllers\Admin\QuotationController;
 use App\Http\Controllers\Admin\RefundController;
 use App\Http\Controllers\Admin\SalesOrderController;
 use App\Http\Controllers\Admin\VendorController;
@@ -65,28 +61,13 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     Route::post('/orders/{order:public_id}/status', [AdminOrderActionController::class, 'updateStatus'])->name('admin.orders.status.update');
     Route::post('/orders/{order:public_id}/shipping', [AdminOrderActionController::class, 'updateShipping'])->name('admin.orders.shipping.update');
     Route::post('/orders/{order:public_id}/payments', [AdminOrderActionController::class, 'recordPayment'])->name('admin.orders.payments.record');
+    Route::get('/orders/{order:public_id}/pdf/preview', [SalesOrderController::class, 'previewPdf'])->name('admin.orders.pdf.preview');
+    Route::get('/orders/{order:public_id}/pdf/download', [SalesOrderController::class, 'downloadPdf'])->name('admin.orders.pdf.download');
     Route::get('/sales-orders/create', [SalesOrderController::class, 'create'])->name('admin.sales_orders.create');
     Route::post('/sales-orders', [SalesOrderController::class, 'store'])->name('admin.sales_orders.store');
     Route::put('/sales-orders/{order:public_id}', [SalesOrderController::class, 'update'])->name('admin.sales_orders.update');
     Route::get('/skus/search', [SalesOrderController::class, 'skuSearch'])->name('admin.skus.search');
-    Route::get('/leads', [LeadController::class, 'index'])->name('admin.leads.index');
-    Route::post('/leads', [LeadController::class, 'store'])->name('admin.leads.store');
-    Route::get('/leads/follow-ups', [LeadFollowUpController::class, 'index'])->name('admin.leads.follow_ups.index');
-    Route::get('/leads/{lead}', [LeadController::class, 'show'])->name('admin.leads.show');
-    Route::patch('/leads/{lead}', [LeadController::class, 'update'])->name('admin.leads.update');
-    Route::get('/leads/{lead}/activities', [LeadActivityController::class, 'index'])->name('admin.leads.activities.index');
-    Route::post('/leads/{lead}/activities', [LeadActivityController::class, 'store'])->name('admin.leads.activities.store');
 
-    Route::scopeBindings()->group(function () {
-        Route::post('/leads/{lead}/follow-ups', [LeadFollowUpController::class, 'store'])->name('admin.leads.follow_ups.store');
-        Route::patch('/leads/{lead}/follow-ups/{follow_up}', [LeadFollowUpController::class, 'update'])->name('admin.leads.follow_ups.update');
-        Route::post('/leads/{lead}/follow-ups/{follow_up}/complete', [LeadFollowUpController::class, 'complete'])->name('admin.leads.follow_ups.complete');
-        Route::post('/leads/{lead}/follow-ups/{follow_up}/cancel', [LeadFollowUpController::class, 'cancel'])->name('admin.leads.follow_ups.cancel');
-    });
-
-    Route::post('/quotations', [QuotationController::class, 'store'])->name('admin.quotations.store');
-    Route::patch('/quotations/{quotation:public_id}/status', [QuotationController::class, 'updateStatus'])->name('admin.quotations.status.update');
-    Route::post('/quotations/{quotation:public_id}/convert', [QuotationController::class, 'convert'])->name('admin.quotations.convert');
     // B2.2.8 — Admin design-file access bridge (order-scoped, policy-gated)
     Route::get('/orders/{order:public_id}/files/{file:public_id}/preview', [AdminOrderDesignFileController::class, 'preview'])->name('admin.orders.files.preview')->withoutScopedBindings();
     Route::get('/orders/{order:public_id}/files/{file:public_id}/download', [AdminOrderDesignFileController::class, 'download'])->name('admin.orders.files.download')->withoutScopedBindings();
@@ -95,6 +76,11 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     Route::get('/payments', [PaymentController::class, 'index'])->name('admin.payments.index');
     Route::get('/payments/{payment}', [PaymentController::class, 'show'])->name('admin.payments.show');
     Route::get('/refunds', [RefundController::class, 'index'])->name('admin.refunds.index');
+ 
+    // Finance ledgers routes
+    Route::get('/accounting/customer-ledger', [\App\Http\Controllers\Admin\FinanceLedgerController::class, 'customerLedger'])->name('admin.accounting.customer_ledger');
+    Route::get('/accounting/vendor-ledger', [\App\Http\Controllers\Admin\FinanceLedgerController::class, 'vendorLedger'])->name('admin.accounting.vendor_ledger');
+    Route::get('/accounting/business-ledger', [\App\Http\Controllers\Admin\FinanceLedgerController::class, 'businessLedger'])->name('admin.accounting.business_ledger');
     Route::post('/refunds', [RefundController::class, 'store'])->name('admin.refunds.store');
     Route::post('/refunds/{refund}/approve', [RefundController::class, 'approve'])->name('admin.refunds.approve');
     Route::post('/refunds/{refund}/process', [RefundController::class, 'process'])->name('admin.refunds.process');
@@ -177,6 +163,10 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     Route::post('/google-sheets/sync-logs/bulk-retry', [GoogleSheetsSyncLogController::class, 'bulkRetry'])->name('admin.google_sheets.sync_logs.bulk_retry');
     Route::post('/google-sheets/sync-logs/prune', [GoogleSheetsSyncLogController::class, 'prune'])->name('admin.google_sheets.sync_logs.prune');
     Route::post('/google-sheets/sync-record', [GoogleSheetsSyncLogController::class, 'syncRecord'])->name('admin.google_sheets.sync_record');
+ 
+    // Settings admin routes
+    Route::get('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('admin.settings.index');
+    Route::post('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'update'])->name('admin.settings.update');
 });
 
 // Web App Manifest Dynamic Route

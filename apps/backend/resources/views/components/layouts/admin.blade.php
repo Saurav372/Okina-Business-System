@@ -160,7 +160,7 @@
         <!-- Main Workspace Area -->
         <div class="flex-1 flex flex-col min-w-0 relative">
             <!-- Top Header Navbar -->
-            <header class="h-16 bg-white border-b border-[color:var(--color-border)] flex items-center justify-between px-4 md:px-6 layout-header shrink-0 relative z-50">
+            <header class="h-16 bg-white border-b border-[color:var(--color-border)] flex items-center justify-between px-4 md:px-6 layout-header shrink-0">
                 <!-- Left Header Actions -->
                 <div class="flex items-center gap-4">
                     <!-- Collapse Button (Desktop) / Hamburger Trigger (Mobile) -->
@@ -313,7 +313,7 @@
             </header>
 
             <!-- Dynamic Slot Context Layout -->
-            <div class="flex-1 overflow-y-auto flex flex-col p-4 md:p-6 lg:p-8 relative z-10">
+            <div class="flex-1 overflow-y-auto flex flex-col p-4 md:p-6 lg:p-8">
                 <!-- Breadcrumbs & Slots Header -->
                 @if(isset($header))
                     <div class="mb-6">

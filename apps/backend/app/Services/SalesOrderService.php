@@ -19,6 +19,7 @@ readonly class SalesOrderService
         private readonly CustomizationSnapshotBuilder $snapshots,
         private readonly SalesOrderRules $rules,
         private readonly OrderTotalsCalculator $totalsCalculator,
+        private readonly SettingsService $settingsService,
     ) {}
 
     /**
@@ -76,7 +77,8 @@ readonly class SalesOrderService
         }
         $discountAmount = isset($input['discount_amount_minor']) ? (int) $input['discount_amount_minor'] : 0;
         $shippingAmount = isset($input['shipping_amount_minor']) ? (int) $input['shipping_amount_minor'] : 0;
-        $taxAmount = isset($input['tax_amount_minor']) ? (int) $input['tax_amount_minor'] : 0;
+        $enableGst = $this->settingsService->get('tax', 'enable_gst', false);
+        $taxAmount = $enableGst ? (isset($input['tax_amount_minor']) ? (int) $input['tax_amount_minor'] : 0) : 0;
 
         $totals = $this->totalsCalculator->fromLineTotals(
             $lineTotals,
@@ -85,7 +87,9 @@ readonly class SalesOrderService
             $taxAmount,
         );
 
-        $order = DB::transaction(function () use ($customer, $orderItemAttributes, $totals, $currency, $input, $actor) {
+        $paymentSchedule = isset($input['advance_payment']) ? ['payment_schedule' => $input['advance_payment']] : null;
+ 
+        $order = DB::transaction(function () use ($customer, $orderItemAttributes, $totals, $currency, $input, $actor, $paymentSchedule) {
             $order = Order::create([
                 'order_type' => $this->rules->orderType(),
                 'order_source' => $this->rules->orderSource(),
@@ -103,7 +107,8 @@ readonly class SalesOrderService
                 'total_amount_minor' => $totals->totalAmountMinor(),
                 'currency' => $currency,
                 'created_by_user_id' => $actor?->id ?? null,
-                'internal_notes' => isset($input['advance_payment']) ? json_encode(['payment_schedule' => $input['advance_payment']]) : null,
+                'internal_notes' => $paymentSchedule ? json_encode($paymentSchedule) : ($input['internal_notes'] ?? null),
+                'order_metadata' => $paymentSchedule,
             ]);
 
             $orderItems = $order->items()->createMany($orderItemAttributes);
@@ -257,7 +262,8 @@ readonly class SalesOrderService
             // Recalculate totals
             $discountAmount = isset($input['discount_amount_minor']) ? (int) $input['discount_amount_minor'] : 0;
             $shippingAmount = isset($input['shipping_amount_minor']) ? (int) $input['shipping_amount_minor'] : 0;
-            $taxAmount = isset($input['tax_amount_minor']) ? (int) $input['tax_amount_minor'] : 0;
+            $enableGst = $this->settingsService->get('tax', 'enable_gst', false);
+            $taxAmount = $enableGst ? (isset($input['tax_amount_minor']) ? (int) $input['tax_amount_minor'] : 0) : 0;
 
             $totals = $this->totalsCalculator->fromLineTotals(
                 $lineTotals,

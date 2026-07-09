@@ -10,15 +10,12 @@ use App\Models\Expense;
 use App\Models\ExpenseCategory;
 use App\Models\GoogleSheetsSyncLog;
 use App\Models\InventoryMovement;
-use App\Models\Lead;
-use App\Models\LeadFollowUp;
 use App\Models\NotificationLog;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\ProductSku;
-use App\Models\Quotation;
 use App\Models\Refund;
 use App\Models\VendorOrder;
 use App\Observers\CustomerObserver;
@@ -29,14 +26,11 @@ use App\Policies\AuditLogPolicy;
 use App\Policies\ExpenseCategoryPolicy;
 use App\Policies\ExpensePolicy;
 use App\Policies\GoogleSheetsSyncLogPolicy;
-use App\Policies\LeadFollowUpPolicy;
-use App\Policies\LeadPolicy;
 use App\Policies\NotificationLogPolicy;
 use App\Policies\OrderPolicy;
 use App\Policies\PaymentPolicy;
 use App\Policies\ProductCategoryPolicy;
 use App\Policies\ProductPolicy;
-use App\Policies\QuotationPolicy;
 use App\Policies\RefundPolicy;
 use App\Support\Products\CustomizationOptionRules;
 use App\Support\Products\PublicCatalogRules;
@@ -68,9 +62,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Order::class, OrderPolicy::class);
         Gate::policy(Product::class, ProductPolicy::class);
         Gate::policy(ProductCategory::class, ProductCategoryPolicy::class);
-        Gate::policy(Lead::class, LeadPolicy::class);
-        Gate::policy(LeadFollowUp::class, LeadFollowUpPolicy::class);
-        Gate::policy(Quotation::class, QuotationPolicy::class);
         Gate::policy(Payment::class, PaymentPolicy::class);
         Gate::policy(Refund::class, RefundPolicy::class);
         Gate::policy(ExpenseCategory::class, ExpenseCategoryPolicy::class);
@@ -82,12 +73,10 @@ class AppServiceProvider extends ServiceProvider
         Product::observe(ProductObserver::class);
 
         // Google Sheets Sync Observers
-        Lead::observe(GoogleSheetsSyncObserver::class);
         Order::observe(GoogleSheetsSyncObserver::class);
         Payment::observe(GoogleSheetsSyncObserver::class);
         InventoryMovement::observe(GoogleSheetsSyncObserver::class);
         Customer::observe(GoogleSheetsSyncObserver::class);
-        LeadFollowUp::observe(GoogleSheetsSyncObserver::class);
         VendorOrder::observe(GoogleSheetsSyncObserver::class);
 
         // Inject navigation items automatically to the admin layout

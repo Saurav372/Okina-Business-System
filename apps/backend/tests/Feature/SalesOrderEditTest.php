@@ -121,6 +121,7 @@ class SalesOrderEditTest extends TestCase
     public function test_authorized_user_can_edit_editable_order(): void
     {
         Event::fake([AuditEvent::class]);
+        app(\App\Services\SettingsService::class)->set('tax', 'enable_gst', true);
 
         $order = Order::factory()->create([
             'status' => 'confirmed',

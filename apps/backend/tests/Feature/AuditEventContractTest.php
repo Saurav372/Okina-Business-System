@@ -45,10 +45,12 @@ class AuditEventContractTest extends TestCase
                 'products.sku_updated',
                 'users.role_assigned',
                 'users.permission_updated',
+                'orders.pdf_generated',
             ],
             $catalog->keys(),
         );
 
+        $this->assertSame('orders', $catalog->definition('orders.pdf_generated')->module);
         $this->assertSame('orders', $catalog->definition('orders.order_created')->module);
         $this->assertSame('payments', $catalog->definition('payments.payment_recorded')->module);
         $this->assertSame('orders', $catalog->definition('orders.order_cancelled')->module);

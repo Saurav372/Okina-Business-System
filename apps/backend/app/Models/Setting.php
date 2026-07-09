@@ -34,6 +34,12 @@ class Setting extends Model
 
     public const GROUP_INTEGRATION = 'integration';
 
+    public const GROUP_DOCUMENTS = 'documents';
+
+    public const GROUP_TAX = 'tax';
+
+    public const GROUP_PAYMENTS = 'payments';
+
     public const GROUPS = [
         self::GROUP_BUSINESS,
         self::GROUP_PAYMENT,
@@ -41,6 +47,9 @@ class Setting extends Model
         self::GROUP_SEO,
         self::GROUP_UPLOAD,
         self::GROUP_INTEGRATION,
+        self::GROUP_DOCUMENTS,
+        self::GROUP_TAX,
+        self::GROUP_PAYMENTS,
     ];
 
     public const GROUP_LABELS = [
@@ -50,6 +59,9 @@ class Setting extends Model
         self::GROUP_SEO => 'SEO',
         self::GROUP_UPLOAD => 'Upload',
         self::GROUP_INTEGRATION => 'Integration',
+        self::GROUP_DOCUMENTS => 'Documents',
+        self::GROUP_TAX => 'Tax',
+        self::GROUP_PAYMENTS => 'Payments',
     ];
 
     public const TYPE_STRING = 'string';

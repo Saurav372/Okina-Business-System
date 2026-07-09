@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Enums\InventoryDirection;
 use App\Enums\InventoryMovementReason;
 use App\Enums\InventoryMovementType;
-use App\Enums\LeadFollowUpStatus;
 use App\Enums\VendorOrderPaymentStatus;
 use App\Enums\VendorOrderStatus;
 use App\Enums\VendorStatus;
@@ -13,8 +12,6 @@ use App\Models\Customer;
 use App\Models\CustomerAddress;
 use App\Models\InventoryItem;
 use App\Models\InventoryMovement;
-use App\Models\Lead;
-use App\Models\LeadFollowUp;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\ProductSku;
@@ -76,64 +73,7 @@ class GoogleSheetsPayloadMappingTest extends TestCase
         }
     }
 
-    /**
-     * Test mapping of Lead model verifying field resolution and UTC date normalization.
-     *
-     * The timezone conversion test uses an in-memory model (not DB-persisted) so
-     * that the Carbon object retains its original timezone and UTC conversion can
-     * be verified. DB-persisted timestamps lose timezone info when stored as strings.
-     */
-    public function test_lead_mapping_field_resolution(): void
-    {
-        $lead = Lead::factory()->create([
-            'contact_name' => 'Lead Name',
-            'email' => 'lead@example.com',
-            'phone' => '1234567890',
-            'source' => 'manual',
-            'status' => 'new',
-        ]);
 
-        $payload = $this->mapper->map($lead);
-
-        $this->assertCount(count($this->mapper->headers(Lead::class)), $payload);
-        $this->assertEquals($lead->id, $payload['id']);
-        $this->assertEquals('Lead Name', $payload['contact_name']);
-        $this->assertEquals('lead@example.com', $payload['email']);
-        $this->assertEquals('1234567890', $payload['phone']);
-        $this->assertEquals('manual', $payload['source']);
-        $this->assertEquals('new', $payload['status']);
-
-        $this->assertFlatPayload($payload);
-    }
-
-    /**
-     * Test that datetime fields are correctly converted to UTC ISO-8601 format.
-     * Uses an in-memory model with setRawAttributes to bypass Eloquent's datetime
-     * serialization, which would strip timezone metadata before it reaches the mapper.
-     */
-    public function test_utc_conversion_on_non_utc_timezone(): void
-    {
-        // Asia/Kolkata = UTC+5:30, so 10:00:00 IST is 04:30:00 UTC
-        $nonUtcCarbon = Carbon::parse('2026-07-01 10:00:00', 'Asia/Kolkata');
-
-        $lead = new Lead;
-        // setRawAttributes stores Carbon directly, bypassing Eloquent's fromDateTime() cast
-        // which would discard timezone info by serializing to a UTC string.
-        $lead->setRawAttributes([
-            'id' => 99,
-            'contact_name' => 'Test',
-            'email' => 'test@example.com',
-            'phone' => null,
-            'source' => 'manual',
-            'status' => 'new',
-            'created_at' => $nonUtcCarbon,
-        ]);
-
-        $payload = $this->mapper->map($lead);
-
-        // Verify correct UTC instant — not just a Z suffix appended to IST time
-        $this->assertEquals('2026-07-01T04:30:00Z', $payload['created_at']);
-    }
 
     /**
      * Test mapping of Order model — specifically the N+1 relation guard.
@@ -270,59 +210,7 @@ class GoogleSheetsPayloadMappingTest extends TestCase
         $this->assertFlatPayload($payload);
     }
 
-    /**
-     * Test mapping of LeadFollowUp model — N+1 guard and UTC conversion.
-     */
-    public function test_lead_follow_up_mapping(): void
-    {
-        $lead = Lead::factory()->create();
-        $staff = User::factory()->create([
-            'name' => 'Agent Cooper',
-            'user_type' => User::TYPE_STAFF,
-        ]);
 
-        $followUp = LeadFollowUp::create([
-            'lead_id' => $lead->id,
-            'assigned_to_user_id' => $staff->id,
-            'status' => LeadFollowUpStatus::PENDING,
-            'due_at' => now(),
-        ]);
-
-        // Without loaded assignedTo — assigned_staff returns null
-        $payloadNoStaff = $this->mapper->map($followUp);
-        $this->assertNull($payloadNoStaff['assigned_staff']);
-        $this->assertEquals($lead->id, $payloadNoStaff['lead_id']);
-
-        // With loaded assignedTo
-        $followUp->load('assignedTo');
-        $payload = $this->mapper->map($followUp);
-        $this->assertEquals('Agent Cooper', $payload['assigned_staff']);
-        // Status enum value should resolve
-        $this->assertEquals(LeadFollowUpStatus::PENDING->value, $payload['status']);
-
-        $this->assertFlatPayload($payload);
-    }
-
-    /**
-     * Test UTC date conversion using in-memory model to preserve timezone info.
-     */
-    public function test_utc_conversion_on_follow_up_due_at(): void
-    {
-        // 2026-07-05 14:00:00 Asia/Kolkata = 2026-07-05 08:30:00 UTC
-        $nonUtcDueAt = Carbon::parse('2026-07-05 14:00:00', 'Asia/Kolkata');
-
-        $followUp = new LeadFollowUp;
-        $followUp->setRawAttributes([
-            'id' => 1,
-            'lead_id' => 1,
-            'status' => LeadFollowUpStatus::PENDING,
-            'due_at' => $nonUtcDueAt,
-            'created_at' => Carbon::now('UTC'),
-        ]);
-
-        $payload = $this->mapper->map($followUp);
-        $this->assertEquals('2026-07-05T08:30:00Z', $payload['due_at']);
-    }
 
     /**
      * Test mapping of VendorOrder model.

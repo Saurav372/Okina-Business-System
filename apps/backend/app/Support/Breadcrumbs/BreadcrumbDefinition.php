@@ -49,16 +49,24 @@ class BreadcrumbDefinition
                 'label' => 'Vendors',
             ],
 
-            // Leads
-            'admin.leads.index' => [
-                'parent' => 'admin.dashboard',
-                'label' => 'Leads',
-            ],
-
             // Payments
             'admin.payments.index' => [
                 'parent' => 'admin.dashboard',
                 'label' => 'Payments',
+            ],
+
+            // Accounting Ledgers
+            'admin.accounting.customer_ledger' => [
+                'parent' => 'admin.dashboard',
+                'label' => 'Customer Ledger',
+            ],
+            'admin.accounting.vendor_ledger' => [
+                'parent' => 'admin.dashboard',
+                'label' => 'Vendor Ledger',
+            ],
+            'admin.accounting.business_ledger' => [
+                'parent' => 'admin.dashboard',
+                'label' => 'Business Ledger',
             ],
 
             // Refunds

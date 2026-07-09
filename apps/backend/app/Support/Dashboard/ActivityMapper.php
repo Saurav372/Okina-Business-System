@@ -80,14 +80,6 @@ class ActivityMapper
             ];
         }
 
-        if (str_starts_with($action, 'leads.')) {
-            return [
-                'title' => 'CRM Lead Logged',
-                'icon' => 'lucide-user-plus',
-                'variant' => 'info',
-            ];
-        }
-
         if (str_starts_with($action, 'purchase_orders.')) {
             return [
                 'title' => 'Purchase Order',
@@ -126,12 +118,6 @@ class ActivityMapper
             if (str_starts_with($log->action, 'payments.') && !empty($log->subject_id)) {
                 if (\App\Models\Payment::where('id', $log->subject_id)->exists()) {
                     return route('admin.payments.show', ['payment' => $log->subject_id]);
-                }
-            }
-
-            if (str_starts_with($log->action, 'leads.') && !empty($log->subject_id)) {
-                if (\App\Models\Lead::where('id', $log->subject_id)->exists()) {
-                    return route('admin.leads.show', ['lead' => $log->subject_id]);
                 }
             }
         } catch (\Exception $e) {

@@ -22,8 +22,6 @@ class AccessControlSeeder extends Seeder
             ['name' => 'View Orders', 'slug' => 'orders.view', 'group' => 'orders', 'is_sensitive' => false],
             ['name' => 'Update Orders', 'slug' => 'orders.update_status', 'group' => 'orders', 'is_sensitive' => false],
             ['name' => 'Delete Orders', 'slug' => 'orders.delete', 'group' => 'orders', 'is_sensitive' => true],
-            ['name' => 'View Quotations', 'slug' => 'quotations.view', 'group' => 'quotations', 'is_sensitive' => false],
-            ['name' => 'Manage Quotations', 'slug' => 'quotations.manage', 'group' => 'quotations', 'is_sensitive' => false],
             ['name' => 'View Payments', 'slug' => 'payments.view', 'group' => 'payments', 'is_sensitive' => false],
             ['name' => 'Record Payments', 'slug' => 'payments.record', 'group' => 'payments', 'is_sensitive' => true],
             ['name' => 'Edit Payments', 'slug' => 'payments.edit', 'group' => 'payments', 'is_sensitive' => true],
@@ -36,6 +34,7 @@ class AccessControlSeeder extends Seeder
             ['name' => 'View Finance Profit', 'slug' => 'finance.view_profit', 'group' => 'finance', 'is_sensitive' => true],
             ['name' => 'Manage Expenses', 'slug' => 'finance.manage_expenses', 'group' => 'finance', 'is_sensitive' => true],
             ['name' => 'Approve Expenses', 'slug' => 'finance.approve_expenses', 'group' => 'finance', 'is_sensitive' => true],
+            ['name' => 'View Ledgers', 'slug' => 'finance.view_ledgers', 'group' => 'finance', 'is_sensitive' => false],
             ['name' => 'View Reports', 'slug' => 'reports.view', 'group' => 'reports', 'is_sensitive' => false],
             ['name' => 'View Audit', 'slug' => 'audit.view', 'group' => 'audit', 'is_sensitive' => true],
             ['name' => 'View Notifications', 'slug' => 'notifications.view', 'group' => 'notifications', 'is_sensitive' => true],
@@ -43,7 +42,7 @@ class AccessControlSeeder extends Seeder
             ['name' => 'Manage Files', 'slug' => 'files.download_private', 'group' => 'files', 'is_sensitive' => true],
             ['name' => 'Manage Settings', 'slug' => 'settings.manage', 'group' => 'settings', 'is_sensitive' => true],
         ];
-
+ 
         foreach ($permissions as $permission) {
             Permission::query()->updateOrCreate(
                 ['slug' => $permission['slug']],
@@ -56,7 +55,7 @@ class AccessControlSeeder extends Seeder
                 ],
             );
         }
-
+ 
         $roles = [
             [
                 'name' => 'Super Admin',
@@ -80,12 +79,11 @@ class AccessControlSeeder extends Seeder
                     'products.manage',
                     'orders.view',
                     'orders.update_status',
-                    'quotations.view',
-                    'quotations.manage',
                     'production.manage',
                     'reports.view',
                     'finance.manage_expenses',
                     'finance.approve_expenses',
+                    'finance.view_ledgers',
                     'notifications.view',
                 ],
             ],
@@ -100,8 +98,6 @@ class AccessControlSeeder extends Seeder
                     'customers.manage',
                     'orders.view',
                     'orders.update_status',
-                    'quotations.view',
-                    'quotations.manage',
                     'payments.record',
                 ],
             ],
@@ -135,6 +131,7 @@ class AccessControlSeeder extends Seeder
                     'refunds.request',
                     'finance.view_cost',
                     'finance.view_profit',
+                    'finance.view_ledgers',
                     'reports.view',
                     'audit.view',
                     'finance.manage_expenses',

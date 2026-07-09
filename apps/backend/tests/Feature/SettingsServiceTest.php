@@ -38,6 +38,9 @@ class SettingsServiceTest extends TestCase
             'seo',
             'upload',
             'integration',
+            'documents',
+            'tax',
+            'payments',
         ], array_keys($groups));
 
         $this->assertSame('Business', $groups['business']['label']);
@@ -53,7 +56,7 @@ class SettingsServiceTest extends TestCase
 
         $service->seedDefaults();
 
-        $this->assertDatabaseCount('settings', 34);
+        $this->assertDatabaseCount('settings', 53);
         $this->assertSame('cashfree', $service->get('payment', 'default_gateway'));
         $this->assertSame(5, $service->get('upload', 'max_file_size_mb'));
         $this->assertTrue($service->get('seo', 'robots_index'));

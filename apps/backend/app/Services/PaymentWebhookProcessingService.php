@@ -796,7 +796,7 @@ class PaymentWebhookProcessingService
             ->where('status', $this->refundRules->succeededStatus())
             ->sum('amount_minor');
 
-        return $this->stateRules->calculate($order->total_amount_minor, $paidTotal, $refundTotal);
+        return $this->stateRules->calculate($order->total_amount_minor, $paidTotal, $refundTotal, $order->getExpectedAdvanceAmount());
     }
 
     /**

@@ -19,6 +19,7 @@ class PaymentStatusContractTest extends TestCase
             'paid',
             'partially_refunded',
             'refunded',
+            'advance_paid',
         ], PaymentStatus::values());
     }
 
@@ -27,6 +28,7 @@ class PaymentStatusContractTest extends TestCase
         $this->assertSame('Unpaid', PaymentStatus::Unpaid->label());
         $this->assertSame('Partially Paid', PaymentStatus::PartiallyPaid->label());
         $this->assertSame('Partially Refunded', PaymentStatus::PartiallyRefunded->label());
+        $this->assertSame('Advance Paid', PaymentStatus::AdvancePaid->label());
         $this->assertTrue(PaymentStatus::Unpaid->isOpenBalance());
         $this->assertTrue(PaymentStatus::PartiallyPaid->isOpenBalance());
         $this->assertTrue(PaymentStatus::Paid->isSettled());
@@ -55,6 +57,7 @@ class PaymentStatusContractTest extends TestCase
             'paid',
             'partially_refunded',
             'refunded',
+            'advance_paid',
         ], $catalog->keys());
 
         $paid = $catalog->definition(PaymentStatus::Paid);
