@@ -201,7 +201,7 @@ class DashboardService
      */
     public function getRevenueTrendSeries(): ChartSeriesDTO
     {
-        return Cache::remember('dashboard:charts:revenue', 300, function () {
+        $data = Cache::remember('dashboard:charts:revenue', 300, function () {
             $pointsMap = collect();
             for ($i = 5; $i >= 0; $i--) {
                 $date = Carbon::now()->subMonths($i);
@@ -228,32 +228,46 @@ class DashboardService
                 }
             }
  
-            $points = $pointsMap->map(fn($item) => new ChartPointDTO(
-                label: $item['label'],
-                value: $item['value'],
-                formattedValue: '₹' . number_format($item['value'], 0)
-            ))->values();
+            $points = $pointsMap->map(fn($item) => [
+                'label' => $item['label'],
+                'value' => $item['value'],
+                'formattedValue' => '₹' . number_format($item['value'], 0)
+            ])->values()->toArray();
  
             // Calculate MoM trend indicators
-            $n = $points->count();
-            $currentValue = $n >= 1 ? $points[$n - 1]->value : 0.0;
-            $previousValue = $n >= 2 ? $points[$n - 2]->value : 0.0;
+            $n = count($points);
+            $currentValue = $n >= 1 ? $points[$n - 1]['value'] : 0.0;
+            $previousValue = $n >= 2 ? $points[$n - 2]['value'] : 0.0;
  
             $diff = $currentValue - $previousValue;
             $changePercent = $previousValue > 0.0 ? ($diff / $previousValue) * 100.0 : 0.0;
             $changeDirection = $diff > 0.0 ? 'up' : ($diff < 0.0 ? 'down' : 'neutral');
  
-            return new ChartSeriesDTO(
-                title: 'Revenue Trend',
-                points: $points,
-                color: 'chart-2',
-                unit: '₹',
-                currentValue: $currentValue,
-                previousValue: $previousValue,
-                changePercent: round($changePercent, 1),
-                changeDirection: $changeDirection
-            );
+            return [
+                'points' => $points,
+                'currentValue' => $currentValue,
+                'previousValue' => $previousValue,
+                'changePercent' => round($changePercent, 1),
+                'changeDirection' => $changeDirection,
+            ];
         });
+ 
+        $points = collect($data['points'])->map(fn($item) => new ChartPointDTO(
+            label: $item['label'],
+            value: $item['value'],
+            formattedValue: $item['formattedValue']
+        ));
+ 
+        return new ChartSeriesDTO(
+            title: 'Revenue Trend',
+            points: $points,
+            color: 'chart-2',
+            unit: '₹',
+            currentValue: $data['currentValue'],
+            previousValue: $data['previousValue'],
+            changePercent: $data['changePercent'],
+            changeDirection: $data['changeDirection']
+        );
     }
  
     /**
@@ -261,7 +275,7 @@ class DashboardService
      */
     public function getMonthlyOrdersSeries(): ChartSeriesDTO
     {
-        return Cache::remember('dashboard:charts:orders', 300, function () {
+        $data = Cache::remember('dashboard:charts:orders', 300, function () {
             $pointsMap = collect();
             for ($i = 5; $i >= 0; $i--) {
                 $date = Carbon::now()->subMonths($i);
@@ -288,32 +302,46 @@ class DashboardService
                 }
             }
  
-            $points = $pointsMap->map(fn($item) => new ChartPointDTO(
-                label: $item['label'],
-                value: $item['value'],
-                formattedValue: number_format($item['value'], 0) . ' orders'
-            ))->values();
+            $points = $pointsMap->map(fn($item) => [
+                'label' => $item['label'],
+                'value' => $item['value'],
+                'formattedValue' => number_format($item['value'], 0) . ' orders'
+            ])->values()->toArray();
  
             // Calculate MoM trend indicators
-            $n = $points->count();
-            $currentValue = $n >= 1 ? $points[$n - 1]->value : 0.0;
-            $previousValue = $n >= 2 ? $points[$n - 2]->value : 0.0;
+            $n = count($points);
+            $currentValue = $n >= 1 ? $points[$n - 1]['value'] : 0.0;
+            $previousValue = $n >= 2 ? $points[$n - 2]['value'] : 0.0;
  
             $diff = $currentValue - $previousValue;
             $changePercent = $previousValue > 0.0 ? ($diff / $previousValue) * 100.0 : 0.0;
             $changeDirection = $diff > 0.0 ? 'up' : ($diff < 0.0 ? 'down' : 'neutral');
  
-            return new ChartSeriesDTO(
-                title: 'Monthly Orders',
-                points: $points,
-                color: 'chart-1',
-                unit: '',
-                currentValue: $currentValue,
-                previousValue: $previousValue,
-                changePercent: round($changePercent, 1),
-                changeDirection: $changeDirection
-            );
+            return [
+                'points' => $points,
+                'currentValue' => $currentValue,
+                'previousValue' => $previousValue,
+                'changePercent' => round($changePercent, 1),
+                'changeDirection' => $changeDirection,
+            ];
         });
+ 
+        $points = collect($data['points'])->map(fn($item) => new ChartPointDTO(
+            label: $item['label'],
+            value: $item['value'],
+            formattedValue: $item['formattedValue']
+        ));
+ 
+        return new ChartSeriesDTO(
+            title: 'Monthly Orders',
+            points: $points,
+            color: 'chart-1',
+            unit: '',
+            currentValue: $data['currentValue'],
+            previousValue: $data['previousValue'],
+            changePercent: $data['changePercent'],
+            changeDirection: $data['changeDirection']
+        );
     }
  
     /**
