@@ -160,7 +160,7 @@
         <!-- Main Workspace Area -->
         <div class="flex-1 flex flex-col min-w-0 relative">
             <!-- Top Header Navbar -->
-            <header class="h-16 bg-white border-b border-[color:var(--color-border)] flex items-center justify-between px-4 md:px-6 layout-header shrink-0">
+            <header class="h-16 bg-white border-b border-[color:var(--color-border)] flex items-center justify-between px-4 md:px-6 layout-header shrink-0 relative z-50">
                 <!-- Left Header Actions -->
                 <div class="flex items-center gap-4">
                     <!-- Collapse Button (Desktop) / Hamburger Trigger (Mobile) -->
@@ -221,10 +221,6 @@
                             <a href="{{ route('admin.sales_orders.create') }}" class="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 hover:text-[color:var(--color-brand-600)]">
                                 <span class="w-2 h-2 rounded-full bg-[color:var(--color-brand-500)]"></span>
                                 New Sales Order
-                            </a>
-                            <a href="{{ route('admin.leads.index') }}" class="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 hover:text-emerald-600">
-                                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                                Log CRM Lead
                             </a>
                             <a href="{{ route('admin.expenses.index') }}" class="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900 border-t border-[color:var(--color-border)] mt-1 pt-2">
                                 <span class="w-2 h-2 rounded-full bg-neutral-400"></span>
@@ -317,7 +313,7 @@
             </header>
 
             <!-- Dynamic Slot Context Layout -->
-            <div class="flex-1 overflow-y-auto flex flex-col p-4 md:p-6 lg:p-8">
+            <div class="flex-1 overflow-y-auto flex flex-col p-4 md:p-6 lg:p-8 relative z-10">
                 <!-- Breadcrumbs & Slots Header -->
                 @if(isset($header))
                     <div class="mb-6">
