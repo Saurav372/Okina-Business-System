@@ -115,8 +115,8 @@
                                 class="absolute z-50 bg-neutral-900 text-white text-[11px] rounded-xl p-2.5 shadow-xl border border-neutral-800 pointer-events-none"
                                 :style="`left: ${activePoint ? (activePoint.x - 35) : 0}px; top: ${activePoint ? (activePoint.y - 50) : 0}px;`"
                             >
-                                <span class="block font-bold text-[9px] text-neutral-400 uppercase tracking-wide" x-text="activePoint.label"></span>
-                                <span class="block font-bold text-xs mt-0.5" x-text="activePoint.formatted"></span>
+                                <span class="block font-bold text-[9px] text-neutral-400 uppercase tracking-wide" x-text="activePoint ? activePoint.label : ''"></span>
+                                <span class="block font-bold text-xs mt-0.5" x-text="activePoint ? activePoint.formatted : ''"></span>
                             </div>
                         </div>
                     @endif
@@ -203,8 +203,8 @@
                                 class="absolute z-50 bg-neutral-900 text-white text-[11px] rounded-xl p-2.5 shadow-xl border border-neutral-800 pointer-events-none"
                                 :style="`left: ${activeBar ? (activeBar.x - 35) : 0}px; top: ${activeBar ? (activeBar.y - 50) : 0}px;`"
                             >
-                                <span class="block font-bold text-[9px] text-neutral-400 uppercase tracking-wide" x-text="activeBar.label"></span>
-                                <span class="block font-bold text-xs mt-0.5" x-text="activeBar.formatted"></span>
+                                <span class="block font-bold text-[9px] text-neutral-400 uppercase tracking-wide" x-text="activeBar ? activeBar.label : ''"></span>
+                                <span class="block font-bold text-xs mt-0.5" x-text="activeBar ? activeBar.formatted : ''"></span>
                             </div>
                         </div>
                     @endif
