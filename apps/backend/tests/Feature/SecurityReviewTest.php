@@ -94,17 +94,17 @@ class SecurityReviewTest extends TestCase
         $order = Order::factory()->create(['public_id' => '123']);
 
         // GUEST: Returns 401 unauthenticated for JSON requests
-        $response = $this->getJson("/admin/orders/{$order->public_id}/detail");
+        $response = $this->getJson("/admin/orders/{$order->public_id}");
         $response->assertStatus(401);
 
         // UNAUTHORIZED STAFF (no orders.view): Returns 403 Forbidden
         $staff = $this->createStaffUser(Role::SALES_STAFF);
-        $response = $this->actingAs($staff)->getJson("/admin/orders/{$order->public_id}/detail");
+        $response = $this->actingAs($staff)->getJson("/admin/orders/{$order->public_id}");
         $response->assertStatus(403);
 
         // AUTHORIZED STAFF (Super Admin): Returns 200/OK (passes policy checks)
         $admin = $this->createStaffUser(Role::SUPER_ADMIN);
-        $response = $this->actingAs($admin)->getJson("/admin/orders/{$order->public_id}/detail");
+        $response = $this->actingAs($admin)->getJson("/admin/orders/{$order->public_id}");
         $response->assertStatus(200);
     }
 

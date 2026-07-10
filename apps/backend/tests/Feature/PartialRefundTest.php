@@ -641,7 +641,7 @@ class PartialRefundTest extends TestCase
 
         // 3. Check via Order Detail View summary data
         $response = $this->actingAs($this->financeStaff)
-            ->get(route('admin.orders.detail', $order->public_id))
+            ->get(route('admin.orders.show', $order->public_id))
             ->assertOk();
         $viewSummary = $response->viewData('summary');
         $this->assertSame(10000, $viewSummary['amounts']['paid_amount_minor']);
@@ -766,7 +766,7 @@ class PartialRefundTest extends TestCase
 
         // 3. Check via Order Detail View summary data
         $response = $this->actingAs($this->financeStaff)
-            ->get(route('admin.orders.detail', $order->public_id))
+            ->get(route('admin.orders.show', $order->public_id))
             ->assertOk();
         $viewSummary = $response->viewData('summary');
         $this->assertSame(10000, $viewSummary['amounts']['paid_amount_minor']);

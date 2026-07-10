@@ -5,6 +5,9 @@ namespace Tests\Feature;
 use App\Enums\OrderStatus;
 use App\Filament\Resources\Orders\OrderResource;
 use App\Models\Order;
+use App\Models\Permission;
+use App\Models\Role;
+use App\Models\User;
 use App\Support\Admin\OrderIndexCatalog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -17,21 +20,22 @@ class AdminOrderIndexTest extends TestCase
     {
         $index = OrderResource::registration()['index'];
 
-        $this->assertSame('website_orders_index', $index['key']);
+        $this->assertSame('orders_index', $index['key']);
         $this->assertSame(Order::class, $index['model']);
-        $this->assertSame('websiteOrders', $index['base_scope']);
+        $this->assertSame('all', $index['base_scope']);
         $this->assertSame(['placed_at' => 'desc', 'public_id' => 'desc'], $index['default_sort']);
-        $this->assertSame(['public_id', 'customer', 'status', 'total_amount_minor', 'currency', 'design_approved', 'placed_at'], $index['columns']);
+        $this->assertSame(['public_id', 'customer', 'order_source', 'status', 'payment_status', 'total_amount_minor', 'placed_at'], $index['columns']);
         $this->assertContains('pending_payment', array_column($index['scopes'], 'key'));
-        $this->assertContains('active_fulfillment', array_column($index['scopes'], 'key'));
-        $this->assertContains('closed', array_column($index['scopes'], 'key'));
+        $this->assertContains('active', array_column($index['scopes'], 'key'));
+        $this->assertContains('completed', array_column($index['scopes'], 'key'));
         $this->assertContains('status', array_column($index['filters'], 'key'));
+        $this->assertContains('order_source', array_column($index['filters'], 'key'));
         $this->assertContains('design_approved', array_column($index['filters'], 'key'));
         $this->assertContains('placed_from', array_column($index['filters'], 'key'));
         $this->assertContains('placed_to', array_column($index['filters'], 'key'));
     }
 
-    public function test_order_index_query_returns_only_website_orders_and_sorts_newest_first(): void
+    public function test_order_index_query_returns_all_orders_and_sorts_newest_first(): void
     {
         $catalog = app(OrderIndexCatalog::class);
 
@@ -53,21 +57,20 @@ class AdminOrderIndexTest extends TestCase
             'design_approved' => true,
         ]);
 
-        Order::factory()->create([
+        $salesOrder = Order::factory()->create([
             'public_id' => 'OD-SALES',
             'status' => OrderStatus::Delivered->value(),
             'order_type' => 'sales_order',
-            'order_source' => 'staff',
+            'order_source' => 'manual',
             'placed_at' => now()->subHours(6),
             'design_approved' => true,
         ]);
 
         $results = $catalog->query()->get();
 
-        $this->assertCount(2, $results);
-        $this->assertSame(['OD-NEWEST', 'OD-OLDEST'], $results->pluck('public_id')->all());
-        $this->assertTrue($results->every(fn (Order $order): bool => $order->order_type === 'website_order'));
-        $this->assertSame('website', $results->first()->order_source);
+        // Should return all 3 orders now that websiteOrders base scope restriction is removed
+        $this->assertCount(3, $results);
+        $this->assertSame(['OD-SALES', 'OD-NEWEST', 'OD-OLDEST'], $results->pluck('public_id')->all());
     }
 
     public function test_order_index_query_applies_scope_and_filter_rules_without_touching_payment_history(): void
@@ -121,5 +124,94 @@ class AdminOrderIndexTest extends TestCase
         $this->assertArrayNotHasKey('id', $summary);
         $this->assertArrayNotHasKey('payments', $summary);
         $this->assertArrayNotHasKey('refunds', $summary);
+    }
+
+    public function test_order_index_combined_search_filter_and_pagination_persistence(): void
+    {
+        // 1. Create permission, role and acting user
+        Permission::query()->updateOrCreate(['slug' => 'orders.view'], [
+            'name' => 'Orders View',
+            'group' => 'orders',
+            'guard_name' => 'web',
+            'description' => 'Allow viewing orders',
+            'is_sensitive' => false,
+        ]);
+
+        $role = Role::query()->updateOrCreate(['slug' => 'admin'], [
+            'name' => 'Admin',
+            'guard_name' => 'web',
+            'description' => 'Admin role',
+            'is_system' => true,
+            'sort_order' => 0,
+        ]);
+
+        $role->permissions()->sync(Permission::query()->where('slug', 'orders.view')->pluck('id')->all());
+
+        $user = User::factory()->create();
+        $user->assignRole($role);
+
+        // 2. Create sample orders with specific search parameters
+        Order::factory()->create([
+            'public_id' => 'OD-RAHUL-1',
+            'status' => OrderStatus::PendingPayment->value(),
+            'order_type' => 'website_order',
+            'order_source' => 'whatsapp',
+            'customer_snapshot' => ['name' => 'Rahul Sharma', 'phone' => '9999999999'],
+            'total_amount_minor' => 10000,
+            'placed_at' => now()->subDay(),
+        ]);
+        
+        Order::factory()->create([
+            'public_id' => 'OD-RAHUL-2',
+            'status' => OrderStatus::PendingPayment->value(),
+            'order_type' => 'website_order',
+            'order_source' => 'whatsapp',
+            'customer_snapshot' => ['name' => 'Rahul Verma', 'phone' => '9999999999'],
+            'total_amount_minor' => 15000,
+            'placed_at' => now()->subHours(2),
+        ]);
+
+        Order::factory()->create([
+            'public_id' => 'OD-OTHER',
+            'status' => OrderStatus::PendingPayment->value(),
+            'order_type' => 'website_order',
+            'order_source' => 'website',
+            'customer_snapshot' => ['name' => 'Saurav Sen', 'phone' => '8888888888'],
+            'total_amount_minor' => 20000,
+            'placed_at' => now()->subHours(5),
+        ]);
+
+        Order::factory()->create([
+            'public_id' => 'OD-RAHUL-CONFIRMED',
+            'status' => OrderStatus::Confirmed->value(),
+            'order_type' => 'website_order',
+            'order_source' => 'whatsapp',
+            'customer_snapshot' => ['name' => 'Rahul Gupta', 'phone' => '9999999999'],
+            'total_amount_minor' => 25000,
+            'placed_at' => now(),
+        ]);
+
+        // 3. Request order index with filters, sorting, search text, and pagination
+        $response = $this->actingAs($user)
+            ->get(route('admin.orders.index', [
+                'search' => 'Rahul',
+                'scope' => 'pending_payment',
+                'order_source' => 'whatsapp',
+                'per_page' => 1,
+                'page' => 1,
+                'sort' => 'total_amount_minor',
+                'direction' => 'asc'
+            ]));
+
+        $response->assertStatus(200);
+
+        // Verify that the query parameter values persist inside table header sort links
+        $response->assertSee('search=Rahul');
+        $response->assertSee('scope=pending_payment');
+        $response->assertSee('order_source=whatsapp');
+
+        // Verify pagination links render and carry over active search/filter parameters
+        $response->assertSee('page=2');
+        $response->assertSee('per_page=1');
     }
 }

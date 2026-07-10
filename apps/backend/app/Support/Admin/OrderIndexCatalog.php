@@ -13,10 +13,10 @@ final class OrderIndexCatalog
     public function definition(): array
     {
         return [
-            'key' => 'website_orders_index',
-            'label' => 'Website Orders',
+            'key' => 'orders_index',
+            'label' => 'Orders',
             'model' => Order::class,
-            'base_scope' => 'websiteOrders',
+            'base_scope' => 'all',
             'default_sort' => [
                 'placed_at' => 'desc',
                 'public_id' => 'desc',
@@ -24,15 +24,15 @@ final class OrderIndexCatalog
             'columns' => [
                 'public_id',
                 'customer',
+                'order_source',
                 'status',
+                'payment_status',
                 'total_amount_minor',
-                'currency',
-                'design_approved',
                 'placed_at',
             ],
             'scopes' => $this->scopes(),
             'filters' => $this->filters(),
-            'safety_note' => 'Website orders only; payment, refund, shipping, and finance histories remain out of scope.',
+            'safety_note' => 'All orders; payment, refund, shipping, and finance histories remain out of scope for the index display.',
         ];
     }
 
@@ -51,14 +51,29 @@ final class OrderIndexCatalog
                 'currency',
                 'design_approved',
                 'placed_at',
-            ])
-            ->websiteOrders();
+                'created_at',
+            ]);
+
+        // Eager-loading payments sum for N+1 prevention
+        $query->withSum(['payments' => fn($q) => $q->where('status', 'succeeded')], 'amount_minor');
 
         $scope = (string) ($criteria['scope'] ?? 'all');
         $query = $this->applyScope($query, $scope);
         $query = $this->applyFilters($query, $criteria);
 
-        return $query->orderByDesc('placed_at')->orderByDesc('public_id');
+        // Sorting (One active sort column supported at a time)
+        $sort = (string) ($criteria['sort'] ?? 'placed_at');
+        $direction = strtolower((string) ($criteria['direction'] ?? 'desc')) === 'asc' ? 'asc' : 'desc';
+
+        $sortField = match ($sort) {
+            'public_id' => 'public_id',
+            'placed_at' => 'placed_at',
+            'total_amount_minor' => 'total_amount_minor',
+            'status' => 'status',
+            default => 'placed_at',
+        };
+
+        return $query->orderBy($sortField, $direction);
     }
 
     public function summarize(Order $order): array
@@ -72,6 +87,7 @@ final class OrderIndexCatalog
                 'public_id' => data_get($order->customer_snapshot, 'public_id'),
                 'name' => data_get($order->customer_snapshot, 'name'),
                 'email' => data_get($order->customer_snapshot, 'email'),
+                'phone' => data_get($order->customer_snapshot, 'phone'),
             ],
             'total_amount_minor' => $order->total_amount_minor,
             'currency' => $order->currency,
@@ -85,7 +101,7 @@ final class OrderIndexCatalog
         return [
             [
                 'key' => 'all',
-                'label' => 'All Website Orders',
+                'label' => 'All Orders',
                 'statuses' => OrderStatus::values(),
             ],
             [
@@ -94,8 +110,8 @@ final class OrderIndexCatalog
                 'statuses' => [OrderStatus::PendingPayment->value()],
             ],
             [
-                'key' => 'active_fulfillment',
-                'label' => 'Active Fulfillment',
+                'key' => 'active',
+                'label' => 'Active Orders',
                 'statuses' => [
                     OrderStatus::Confirmed->value(),
                     OrderStatus::InProduction->value(),
@@ -104,12 +120,10 @@ final class OrderIndexCatalog
                 ],
             ],
             [
-                'key' => 'closed',
-                'label' => 'Closed',
+                'key' => 'completed',
+                'label' => 'Completed',
                 'statuses' => [
                     OrderStatus::Delivered->value(),
-                    OrderStatus::Cancelled->value(),
-                    OrderStatus::Refunded->value(),
                 ],
             ],
         ];
@@ -117,6 +131,12 @@ final class OrderIndexCatalog
 
     private function filters(): array
     {
+        $sources = config('orders.sources', []);
+        $sourceOptions = [];
+        foreach ($sources as $val => $lbl) {
+            $sourceOptions[] = ['value' => $val, 'label' => $lbl];
+        }
+
         return [
             [
                 'key' => 'status',
@@ -129,6 +149,12 @@ final class OrderIndexCatalog
                     ],
                     OrderStatus::options(),
                 ),
+            ],
+            [
+                'key' => 'order_source',
+                'label' => 'Order Source',
+                'type' => 'select',
+                'options' => $sourceOptions,
             ],
             [
                 'key' => 'design_approved',
@@ -156,17 +182,13 @@ final class OrderIndexCatalog
     {
         return match ($scope) {
             'pending_payment' => $query->where('status', OrderStatus::PendingPayment->value()),
-            'active_fulfillment' => $query->whereIn('status', [
+            'active' => $query->whereIn('status', [
                 OrderStatus::Confirmed->value(),
                 OrderStatus::InProduction->value(),
                 OrderStatus::ReadyToShip->value(),
                 OrderStatus::Shipped->value(),
             ]),
-            'closed' => $query->whereIn('status', [
-                OrderStatus::Delivered->value(),
-                OrderStatus::Cancelled->value(),
-                OrderStatus::Refunded->value(),
-            ]),
+            'completed' => $query->where('status', OrderStatus::Delivered->value()),
             'all' => $query,
             default => throw new InvalidArgumentException('Unknown order index scope: '.$scope),
         };
@@ -184,6 +206,10 @@ final class OrderIndexCatalog
             }
         }
 
+        if (array_key_exists('order_source', $criteria) && $criteria['order_source'] !== null && $criteria['order_source'] !== '') {
+            $query->where('order_source', (string) $criteria['order_source']);
+        }
+
         if (array_key_exists('design_approved', $criteria) && $criteria['design_approved'] !== null && $criteria['design_approved'] !== '') {
             $query->designApproved($this->toBoolean($criteria['design_approved']));
         }
@@ -194,6 +220,16 @@ final class OrderIndexCatalog
 
         if (! empty($criteria['placed_to'])) {
             $query->placedUntil($this->toDateString($criteria['placed_to']));
+        }
+
+        if (! empty($criteria['search'])) {
+            $search = (string) $criteria['search'];
+            $query->where(function (Builder $q) use ($search) {
+                $q->where('public_id', 'like', "%{$search}%")
+                  ->orWhere('customer_snapshot->name', 'like', "%{$search}%")
+                  ->orWhere('customer_snapshot->email', 'like', "%{$search}%")
+                  ->orWhere('customer_snapshot->phone', 'like', "%{$search}%");
+            });
         }
 
         return $query;

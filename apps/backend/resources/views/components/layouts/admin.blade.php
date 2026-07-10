@@ -236,7 +236,6 @@
                         aria-label="View system notifications"
                     >
                         <x-icons.lucide name="lucide-bell" class="w-5 h-5" />
-                        <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-[color:var(--color-brand-500)] rounded-full ring-2 ring-white"></span>
                     </button>
 
                     <!-- Help Trigger Placeholder -->

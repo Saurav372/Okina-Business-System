@@ -116,7 +116,7 @@ class AdminOrderDetailViewTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->get(route('admin.orders.detail', ['order' => $order->public_id]))
+            ->get(route('admin.orders.show', ['order' => $order->public_id]))
             ->assertStatus(200)
             ->assertSee('design-preview/SF-TEST-001');
     }

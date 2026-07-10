@@ -8,6 +8,15 @@ use Illuminate\Contracts\Auth\Authenticatable;
 
 class OrderPolicy
 {
+    public function viewAny(Authenticatable $actor): bool
+    {
+        if ($actor instanceof User) {
+            return $actor->hasPermissionTo('orders.view');
+        }
+
+        return false;
+    }
+
     public function view(Authenticatable $actor, Order $order): bool
     {
         if ($actor instanceof User) {
@@ -16,6 +25,7 @@ class OrderPolicy
 
         return false;
     }
+
 
     public function create(Authenticatable $actor): bool
     {

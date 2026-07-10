@@ -111,7 +111,7 @@ class ActivityMapper
         try {
             if (str_starts_with($log->action, 'orders.') && !empty($log->subject_public_id)) {
                 if (\App\Models\Order::where('public_id', $log->subject_public_id)->exists()) {
-                    return route('admin.orders.detail', ['order' => $log->subject_public_id]);
+                    return route('admin.orders.show', ['order' => $log->subject_public_id]);
                 }
             }
 

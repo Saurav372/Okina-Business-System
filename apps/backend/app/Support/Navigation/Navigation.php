@@ -101,7 +101,7 @@ class Navigation
                 'items' => [
                     [
                         'label' => 'Sales Orders',
-                        'route' => 'admin.sales_orders.create',
+                        'route' => 'admin.orders.index',
                         'icon' => 'lucide-shopping-cart',
                         'order' => 10,
                         'permission' => 'orders.view',
