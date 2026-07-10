@@ -1,27 +1,28 @@
 # Current Task
 
 ## Current Parent Task
-Orders Module (U3.1)
+Products Module (U3.2)
 
 ## Current Subtask
-U3.1.1 Order Index
+U3.2.1 Product Index
 
 ## Goal
-Implement the main listing page for orders with status filters, search capabilities, pagination, and bulk actions.
+Implement the main product listing page with status filters, search, pagination, and quick access to product detail/edit.
 
 ## Dependencies
 **Depends On:**
 - U2.1 (Application Shell Layout)
-- U1.2.1 (Table Component/Showcase patterns)
+- U1.2.1 (Table / Pagination Components)
 
 ## Required Deliverables
-- [ ] Responsive order listing table/grid.
-- [ ] Status filtering tabs or selectors (e.g. All, Pending, Paid, Shipped, Cancelled).
-- [ ] Text search for Order ID, Customer name, and Email.
-- [ ] Pagination controls for navigating large lists.
-- [ ] Bulk actions support (e.g., bulk status update or export).
+- [ ] Responsive product listing table (desktop) and card layout (mobile).
+- [ ] Status filter tabs or selectors (e.g. All, Active, Draft, Out of Stock, Bulk Only, Archived).
+- [ ] Text search for Product name, SKU, and slug.
+- [ ] Pagination controls for navigating large product catalogs.
+- [ ] Quick actions per row: View/Edit detail, status indicator.
 - [ ] Clean empty state handling.
 
-## Completed prerequisites
+## Completed Prerequisites
 - U2.1 (Application Shell Layout)
 - U1.2.1 (Table / Pagination Components)
+- U3.1 Orders Module (all subtasks U3.1.1–U3.1.6 Completed; U3.1.7 Deferred)

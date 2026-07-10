@@ -1,4 +1,4 @@
-@props(['title' => null])
+@props(['title' => null, 'hideTitle' => false])
 
 <x-layouts.app :title="$title">
     <div x-data="pageNavigator" class="min-h-screen bg-[color:var(--color-surface-page)] flex flex-col relative overflow-hidden">
@@ -314,33 +314,35 @@
             <!-- Dynamic Slot Context Layout -->
             <div class="flex-1 overflow-y-auto flex flex-col p-4 md:p-6 lg:p-8">
                 <!-- Breadcrumbs & Slots Header -->
-                @if(isset($header))
-                    <div class="mb-6">
-                        <!-- Simple dynamic breadcrumb fallback if not configured on controller page -->
-                        <div class="flex items-center gap-1.5 text-xs text-[color:var(--color-text-muted)] mb-2 font-medium">
-                            <a href="{{ route('admin.dashboard') }}" class="hover:text-[color:var(--color-text-body)]">Dashboard</a>
-                            <span>&gt;</span>
-                            <span class="text-[color:var(--color-text-body)] font-semibold">{{ $title ?? 'Administration' }}</span>
-                        </div>
-                        
-                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                            <div>
-                                <h1 class="text-2xl font-bold tracking-tight text-[color:var(--color-text-heading)]">{{ $title ?? 'Workspace Window' }}</h1>
+                @if(!$hideTitle)
+                    @if(isset($header))
+                        <div class="mb-6">
+                            <!-- Simple dynamic breadcrumb fallback if not configured on controller page -->
+                            <div class="flex items-center gap-1.5 text-xs text-[color:var(--color-text-muted)] mb-2 font-medium">
+                                <a href="{{ route('admin.dashboard') }}" class="hover:text-[color:var(--color-text-body)]">Dashboard</a>
+                                <span>&gt;</span>
+                                <span class="text-[color:var(--color-text-body)] font-semibold">{{ $title ?? 'Administration' }}</span>
                             </div>
-                            <div class="flex items-center gap-2.5 shrink-0">
-                                {{ $header }}
+                            
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                <div>
+                                    <h1 class="text-2xl font-bold tracking-tight text-[color:var(--color-text-heading)]">{{ $title ?? 'Workspace Window' }}</h1>
+                                </div>
+                                <div class="flex items-center gap-2.5 shrink-0">
+                                    {{ $header }}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                @else
-                    <div class="mb-6">
-                        <div class="flex items-center gap-1.5 text-xs text-[color:var(--color-text-muted)] mb-2 font-medium">
-                            <a href="{{ route('admin.dashboard') }}" class="hover:text-[color:var(--color-text-body)]">Dashboard</a>
-                            <span>&gt;</span>
-                            <span class="text-[color:var(--color-text-body)] font-semibold">{{ $title ?? 'Administration' }}</span>
+                    @else
+                        <div class="mb-6">
+                            <div class="flex items-center gap-1.5 text-xs text-[color:var(--color-text-muted)] mb-2 font-medium">
+                                <a href="{{ route('admin.dashboard') }}" class="hover:text-[color:var(--color-text-body)]">Dashboard</a>
+                                <span>&gt;</span>
+                                <span class="text-[color:var(--color-text-body)] font-semibold">{{ $title ?? 'Administration' }}</span>
+                            </div>
+                            <h1 class="text-2xl font-bold tracking-tight text-[color:var(--color-text-heading)]">{{ $title ?? 'Workspace Window' }}</h1>
                         </div>
-                        <h1 class="text-2xl font-bold tracking-tight text-[color:var(--color-text-heading)]">{{ $title ?? 'Workspace Window' }}</h1>
-                    </div>
+                    @endif
                 @endif
 
                 <!-- Content Slot Main Panel -->

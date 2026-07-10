@@ -99,12 +99,13 @@ Detailed validation for each subtask is maintained in `UI-SUBTASK-VALIDATION.md`
 | Task ID | Task Name | Tier | Phase | Description & Acceptance | Depends On | Status |
 |---|---|---|---|---|---|---|
 | **U3.1** | **Orders Module** | Admin | 3 | **Milestone** | U2.1 | Milestone |
-| U3.1.1 | Order Index | Admin | 3 | Main listing with filters and bulk actions. | U2.1, U1.2.1 | Pending |
-| U3.1.2 | Order Detail | Admin | 3 | Detail view with customer, total, and status cards. | U3.1.1 | Completed |
+| U3.1.1 | Order Index | Admin | 3 | Main listing with scope tabs, search, filters (status, source, design approval, date range), sortable columns, mobile card layout, desktop table, empty state. Bulk action checkboxes present as disabled stubs — see U3.1.7. | U2.1, U1.2.1 | Completed |
+| U3.1.2 | Order Detail | Admin | 3 | Detail view with customer, total, and status cards. *(Note: Both the Laravel Admin detail page and Customer Astro detail page are built and completed.)* | U3.1.1 | Completed |
 | U3.1.3 | Order Timeline | Admin | 3 | Chronological history of order changes. | U3.1.2 | Completed |
 | U3.1.4 | Order Files | Admin | 3 | Uploads and mockup preview panel. | U3.1.2 | Completed |
 | U3.1.5 | Order Shipping | Admin | 3 | Shipping tracking and status updates. | U3.1.2 | Completed |
 | U3.1.6 | Order PDF / Confirmation | Admin | 3 | Order confirmation document rendering and PDF download. | U3.1.2 | Completed |
+| U3.1.7 | Order Bulk Actions | Admin | 3 | Multi-select on Order Index with bulk status update (Confirm, Cancel) and bulk export to CSV / Google Sheets. **Deferred** — depends on Google Sheets UI module being built first so export has a destination. Activate checkboxes, add Alpine.js selection state, bulk action bar, `BulkOrderActionController`, and export endpoint. | U3.1.1, Google Sheets UI | Deferred |
 | **U3.2** | **Products Module** | Admin | 3 | **Milestone** | U2.1 | Milestone |
 | U3.2.1 | Product Index | Admin | 3 | Main listing with status filters. | U2.1, U1.2.1 | Pending |
 | U3.2.2 | Product Detail & Edit | Admin | 3 | Core product edit form and metadata. | U3.2.1 | Pending |

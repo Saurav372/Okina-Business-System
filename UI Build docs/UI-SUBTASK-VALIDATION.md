@@ -1427,27 +1427,182 @@ Result: [x] Pass [ ] Fail
 Notes: Dashboard includes links to Order Creation, Products, Stock, Expenses, and Ledgers.
  
 ---
- 
-### U3.1.2 / U3.1.3 / U3.1.4 / U3.1.6 Orders Module UI Pages
+
+### U3.1.1 Order Index
 **Status:** Completed
- 
+
 **Implementation Validation**
-- [x] Tabbed interface containing Items, Payments & Refunds, Shipping & Tracking, Mockups, and History Log.
-- [x] Chronological timeline rendered using standard spacing and list markers.
-- [x] Dynamic print preview modal rendering the Order Confirmation PDF in a responsive iframe overlay.
-- [x] Downloader dispatches audit events and saves the document cleanly.
- 
+- [x] Route: `GET /orders` → `admin.orders.index` → `OrderController@index`.
+- [x] `OrderIndexCatalog` powers all query logic: scopes, filters, search, sorting — controller remains thin.
+- [x] Scope tabs: All Orders / Pending Payment / Active Orders / Completed — horizontally scrollable, compact, `flex-nowrap`.
+- [x] Search: Order No, Customer name, phone, email — via `customer_snapshot` JSON field queries.
+- [x] Filters: Order Status, Order Source, Design Approved, Placed From, Placed To — collapsible on mobile, always-visible on desktop.
+- [x] Sort: Order No, Status, Total, Created (placed_at) — `<x-table.heading sortable>` components wired.
+- [x] Mobile card layout (`lg:hidden`): status badge, payment badge, customer name/phone, source, total, View Details + PDF actions.
+- [x] Desktop table (`hidden lg:block`): `<x-table>`, `<x-table.head>`, `<x-table.body>`, `<x-table.pagination>`.
+- [x] Empty state: `<x-empty-state>` on both mobile and desktop — Clear Filters + Create Order CTAs.
+- [x] Pagination: `<x-table.pagination :paginator="$orders">` wired on both layouts.
+- [x] "New Sales Order" header button linked to `admin.sales_orders.create`.
+- [x] PDF quick action: per-row download link, disabled stub for pending/cancelled orders.
+- [x] Bulk action checkboxes: present as `disabled` stubs — intentionally deferred to U3.1.7 (pending Google Sheets UI).
+- [x] Payment status derived in `OrderIndexResource`: Paid / Partially Paid / Unpaid from `payments_sum_amount_minor`.
+- [x] N+1 prevention: `->withSum(['payments' => ...], 'amount_minor')` eager-loaded in `OrderIndexCatalog::query()`.
+- [x] `$request->wantsJson()` content negotiation returns `OrderIndexResource::collection($orders)`.
+
+**UI Validation**
+- [x] Responsive: single-column mobile cards below `lg`, full table above `lg`.
+- [x] Design tokens used: `var(--color-brand-600)`, `var(--color-border)`, `var(--focus-ring-color)`.
+- [x] Scope tab active state uses brand-50/700/200 token hierarchy.
+- [x] Filter panel collapses via Alpine.js `x-show` with `ease-out duration-200` transition.
+
+**Accessibility Validation**
+- [x] Semantic table structure: `<th scope="col">` headers on desktop.
+- [x] Focus-visible ring on interactive elements (`focus-visible:ring-2`).
+- [ ] ARIA labels on icon-only action buttons not explicitly verified.
+
 **Process Validation**
-- [x] Entire backend test suite passes
+- [x] `AdminOrderIndexTest.php` (218 lines) covers: index definition, query sorting, scopes, filters, search, pagination, auth gates.
+- [x] Backend test suite passing at time of completion.
 - [x] Documentation updated.
 - [x] Git restore point created.
- 
+
+**Review Sign-off**
+Reviewer: AI Assistant
+Date: 2026-07-10
+Result: [x] Pass [ ] Fail
+Notes: Fully implemented. Bulk action checkboxes are disabled stubs — deferred to U3.1.7 after Google Sheets UI is complete.
+
+---
+
+### U3.1.2 Order Detail
+**Status:** Completed
+
+> **Dependency Note:** U3.1.2 was built before U3.1.1 was formally documented. U3.1.1 is now confirmed complete. The inversion was due to U3.1.2 being built as a customer-facing Astro page independently of the admin index.
+
+**Implementation Validation**
+- [x] Customer-facing Order Detail page built at `/account/orders/[public_id].astro` (1,339 lines).
+- [x] Order Header Panel: Public ID, placed date, order status badge, payment status badge, Reorder and Contact Support actions.
+- [x] Visual Tracking Timeline: 6-step status stepper (Placed → Confirmed → In Production → Ready to Ship → Shipped → Delivered) with cancelled/warning states.
+- [x] Design Issue Alert Block: conditionally shown when `design_status === 'issue_found'`.
+- [x] Items Ordered list: product name, SKU, customization snapshot, mockup preview (iframe), quantity × unit price, line total.
+- [x] Payments Received table: provider, transaction ID, status badge, paid date, amount.
+- [x] Refund History table: conditionally shown, refund ID, type, status, processed date, amount.
+- [x] Shipment Tracking card: conditionally shown, courier name, tracking number, external tracking link, estimated delivery.
+- [x] Summary card: subtotal, discount, shipping, tax, total (INR formatted via `Intl.NumberFormat`).
+- [x] Shipping Address and Billing Address snapshot cards.
+- [x] Design Review Notes panel: conditionally shown.
+- [x] Toast notification system with auto-dismiss.
+- [x] Auth check on load: redirects to login if session is `401`.
+- [x] Client-side API: `GET /api/customer/orders/{public_id}` → `CustomerApiController@orderDetail`.
+- [x] Admin-side backend: `GET /orders/{order:public_id}` → `OrderController@show` with `OrderDetailCatalog::summarize()`.
+- [x] `OrderDetailCatalog` loads items, paymentAttempts, payments, refunds, mockups.
+
+**UI Validation**
+- [x] Two-column responsive layout (1.4fr/1fr) collapses to single column at ≤820px.
+- [x] Timeline collapses to 3-column grid on mobile.
+- [x] Design tokens used throughout: `var(--accent)`, `var(--muted)`, `var(--surface)`, `var(--line)`, `var(--radius)`, `var(--shadow)`.
+- [x] Animations: `animate-fade-in` (header), `animate-slide-in` (cards) using cubic-bezier easing.
+- [x] Loading spinner shown during API fetch; hidden on completion.
+
+**Accessibility Validation**
+- [x] Semantic HTML (`<header>`, `<h1>`, `<h2>`, `<table>`, `<thead>`, `<tbody>`).
+- [ ] ARIA labels on interactive elements (reorder button, toast close) not explicitly verified.
+- [ ] Keyboard navigation across all interactive elements not formally tested.
+- [ ] Color contrast ratios not formally audited.
+
+**Process Validation**
+- [x] Backend test suite passing at time of implementation.
+- [x] Documentation updated.
+- [x] Git restore point created.
+
 **Review Sign-off**
 Reviewer: AI Assistant
 Date: 2026-07-09
 Result: [x] Pass [ ] Fail
-Notes: Details page is highly interactive and provides access to mockups, audit logs, and PDF triggers.
- 
+Notes: Page is fully functional. Three accessibility items remain as known gaps for U9.3 Accessibility Audit release task.
+
+---
+
+### U3.1.3 Order Timeline
+**Status:** Completed
+
+**Implementation Validation**
+- [x] Chronological order history log rendered on the Order Detail page via `AuditLog` query (filtered by `subject_type = 'order'` and `subject_id/public_id`).
+- [x] Timeline entries loaded from admin `OrderController@show` with `$timelineLogs` passed to view.
+- [x] Timeline events display most-recent-first (`->latest()->get()`).
+
+**Process Validation**
+- [x] Backend test suite passing.
+- [x] Git restore point created.
+
+**Review Sign-off**
+Reviewer: AI Assistant
+Date: 2026-07-09
+Result: [x] Pass [ ] Fail
+Notes: Timeline is implemented server-side on the admin detail view and driven by AuditLog records.
+
+---
+
+### U3.1.4 Order Files
+**Status:** Completed
+
+**Implementation Validation**
+- [x] Design file access routes registered: `GET /orders/{order:public_id}/files/{file:public_id}/preview` and `/download` via `AdminOrderDesignFileController`.
+- [x] Mockup files loaded via `$order->load(['mockups.file'])` in `OrderController@show`.
+- [x] Policy-gated access (`.withoutScopedBindings()`).
+- [x] Customer-facing: mockup preview URL rendered per item via `customization_snapshot.mockup_preview_url`.
+
+**Process Validation**
+- [x] Backend test suite passing.
+- [x] Git restore point created.
+
+**Review Sign-off**
+Reviewer: AI Assistant
+Date: 2026-07-09
+Result: [x] Pass [ ] Fail
+Notes: File access is policy-gated. Mockup previews render inline as iframes on the customer detail page.
+
+---
+
+### U3.1.5 Order Shipping
+**Status:** Completed
+
+**Implementation Validation**
+- [x] Shipping update route: `POST /orders/{order:public_id}/shipping` → `AdminOrderActionController@updateShipping`.
+- [x] Customer-facing shipment tracking card shows courier name, tracking number, external tracking URL, and estimated delivery date.
+- [x] Tracking card conditionally displayed only when `tracking_number` is present.
+
+**Process Validation**
+- [x] Backend test suite passing.
+- [x] Git restore point created.
+
+**Review Sign-off**
+Reviewer: AI Assistant
+Date: 2026-07-09
+Result: [x] Pass [ ] Fail
+Notes: Tracking data is rendered from the API response. External courier link opens in a new tab.
+
+---
+
+### U3.1.6 Order PDF / Confirmation
+**Status:** Completed
+
+**Implementation Validation**
+- [x] PDF preview route: `GET /orders/{order:public_id}/pdf/preview` → `SalesOrderController@previewPdf`.
+- [x] PDF download route: `GET /orders/{order:public_id}/pdf/download` → `SalesOrderController@downloadPdf`.
+- [x] Downloader dispatches audit events on download.
+
+**Process Validation**
+- [x] Backend test suite passing.
+- [x] Added automated feature test: `tests/Feature/AdminOrderPdfTest.php` verifying preview, download, permissions gating, and audit event dispatch.
+- [x] Git restore point created.
+
+**Review Sign-off**
+Reviewer: AI Assistant (Antigravity)
+Date: 2026-07-10
+Result: [x] Pass [ ] Fail
+Notes: PDF is rendered server-side and streamed. Preview and download routes are gated by admin auth (`orders.view` permission). Dispatches `order.pdf_generated` audit log successfully on preview and download. Verified via PHPUnit tests.
+
 ---
  
 ### U4.1 CRM Module

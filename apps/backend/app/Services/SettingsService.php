@@ -486,6 +486,12 @@ class SettingsService
                         'default' => 'State Bank of India',
                         'description' => 'Official receiving bank name.',
                     ],
+                    'account_holder' => [
+                        'label' => 'Account holder name',
+                        'value_type' => Setting::TYPE_STRING,
+                        'default' => 'Okina Craft',
+                        'description' => 'Official receiving corporate account holder name.',
+                    ],
                     'account_number' => [
                         'label' => 'Account number',
                         'value_type' => Setting::TYPE_STRING,
@@ -497,6 +503,18 @@ class SettingsService
                         'value_type' => Setting::TYPE_STRING,
                         'default' => 'SBIN0001234',
                         'description' => 'Receiving branch IFSC route code.',
+                    ],
+                    'branch' => [
+                        'label' => 'Branch name',
+                        'value_type' => Setting::TYPE_STRING,
+                        'default' => 'Main Branch',
+                        'description' => 'Official receiving bank branch name.',
+                    ],
+                    'upi_id' => [
+                        'label' => 'UPI ID',
+                        'value_type' => Setting::TYPE_STRING,
+                        'default' => 'okina@upi',
+                        'description' => 'UPI ID for scanning and dynamic QR payments.',
                     ],
                 ],
             ],

@@ -175,12 +175,24 @@
                             <input type="text" name="payments[bank_name]" value="{{ $groups['payments']['bank_name'] ?? '' }}" class="w-full px-4 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[color:var(--focus-ring-color)] text-sm">
                         </div>
                         <div class="space-y-1">
+                            <label class="block text-xs font-bold text-neutral-500 uppercase">Account Holder Name</label>
+                            <input type="text" name="payments[account_holder]" value="{{ $groups['payments']['account_holder'] ?? '' }}" class="w-full px-4 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[color:var(--focus-ring-color)] text-sm">
+                        </div>
+                        <div class="space-y-1">
                             <label class="block text-xs font-bold text-neutral-500 uppercase">Corporate Account Number</label>
                             <input type="text" name="payments[account_number]" value="{{ $groups['payments']['account_number'] ?? '' }}" class="w-full px-4 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[color:var(--focus-ring-color)] text-sm">
                         </div>
-                        <div class="space-y-1 col-span-2 md:col-span-1">
+                        <div class="space-y-1">
                             <label class="block text-xs font-bold text-neutral-500 uppercase">Branch Routing IFSC Route Code</label>
                             <input type="text" name="payments[ifsc_code]" value="{{ $groups['payments']['ifsc_code'] ?? '' }}" class="w-full px-4 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[color:var(--focus-ring-color)] text-sm">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-xs font-bold text-neutral-500 uppercase">Branch Name</label>
+                            <input type="text" name="payments[branch]" value="{{ $groups['payments']['branch'] ?? '' }}" class="w-full px-4 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[color:var(--focus-ring-color)] text-sm">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block text-xs font-bold text-neutral-500 uppercase">UPI ID (VPA)</label>
+                            <input type="text" name="payments[upi_id]" value="{{ $groups['payments']['upi_id'] ?? '' }}" class="w-full px-4 py-2 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-[color:var(--focus-ring-color)] text-sm" placeholder="company@upi">
                         </div>
                     </div>
                 </div>

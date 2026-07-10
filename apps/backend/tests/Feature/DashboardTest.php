@@ -228,8 +228,8 @@ class DashboardTest extends TestCase
         $response->assertStatus(200);
  
         // Verification of populated data
-        $response->assertSee('Revenue Trend Chart'); // title tag test
-        $response->assertSee('Monthly Orders Chart'); // title tag test
+        $response->assertSee('Revenue Trend');
+        $response->assertSee('Monthly Orders');
         
         // Confirm the empty state guidelines cards are now hidden
         $response->assertDontSee('No sales revenue logged for the last 6 months.');

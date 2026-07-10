@@ -12,6 +12,7 @@ use App\Services\OrderPdfService;
 use App\Services\SalesOrderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 
 class SalesOrderController extends Controller
 {
@@ -88,6 +89,12 @@ class SalesOrderController extends Controller
     {
         Gate::authorize('view', $order);
 
+        if ($order->items()->count() === 0) {
+            throw ValidationException::withMessages([
+                'order' => 'Order contains no items.',
+            ]);
+        }
+
         $html = $pdfService->renderHtml($order, $request->user());
 
         return response($html)->header('Content-Type', 'text/html');
@@ -97,10 +104,19 @@ class SalesOrderController extends Controller
     {
         Gate::authorize('view', $order);
 
-        $html = $pdfService->renderHtml($order, $request->user());
+        if ($order->items()->count() === 0) {
+            throw ValidationException::withMessages([
+                'order' => 'Order contains no items.',
+            ]);
+        }
 
-        return response($html)
-            ->header('Content-Type', 'text/html')
-            ->header('Content-Disposition', 'attachment; filename="Order_Confirmation_' . $order->public_id . '.html"');
+        $pdf = $pdfService->renderPdf($order, $request->user());
+
+        $filename = 'Order_Confirmation_' . $order->public_id . '.pdf';
+
+        return response($pdf)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"')
+            ->header('Content-Length', strlen($pdf));
     }
 }

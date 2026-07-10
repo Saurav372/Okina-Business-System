@@ -8,446 +8,618 @@
             size: {{ $settings['documents']['size'] ?? 'a4' }} {{ $settings['documents']['orientation'] ?? 'portrait' }};
             margin: {{ $settings['documents']['margin_top'] ?? 15 }}mm {{ $settings['documents']['margin_right'] ?? 15 }}mm {{ $settings['documents']['margin_bottom'] ?? 15 }}mm {{ $settings['documents']['margin_left'] ?? 15 }}mm;
         }
-        
+
+        * { box-sizing: border-box; }
+
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            color: #1a202c;
-            font-size: 13px;
-            line-height: 1.5;
+            font-family: "DejaVu Sans", sans-serif;
+            color: #0f172a;
+            font-size: 11px;
+            line-height: 1.4;
             margin: 0;
             padding: 0;
-            position: relative;
+            background-color: #ffffff;
         }
- 
-        /* Watermark */
+
         @if(!empty($settings['documents']['watermark_text']))
         .watermark {
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotate(-45deg);
-            font-size: 80px;
+            top: 40%;
+            left: 15%;
+            font-size: 70px;
             font-weight: bold;
-            color: rgba(226, 232, 240, 0.45);
-            z-index: -1000;
+            color: #000000;
+            opacity: 0.03;
+            z-index: -999;
             text-transform: uppercase;
             white-space: nowrap;
-            pointer-events: none;
+            transform: rotate(-35deg);
         }
         @endif
- 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
+
+        /* ===== HEADER STYLING ===== */
+        .header-container {
+            text-align: center;
             border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 20px;
+            padding-bottom: 12px;
             margin-bottom: 20px;
         }
- 
-        .logo-container img {
-            max-height: 60px;
-            max-width: 200px;
+        .header-logo {
+            max-height: 55px;
+            max-width: 180px;
+            margin: 0 auto 6px auto;
+            display: block;
         }
- 
-        .company-details {
-            text-align: right;
-            font-size: 12px;
-        }
- 
-        .document-title {
-            font-size: 24px;
+        .company-name {
+            font-size: 18px;
             font-weight: bold;
-            color: #2d3748;
-            margin-top: 0;
-            margin-bottom: 5px;
+            color: #0f172a;
+            margin: 0;
+        }
+        .company-tagline {
+            font-size: 9px;
+            color: #64748b;
+            margin: 2px 0 6px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .doc-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #0f172a;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            margin: 8px 0 2px 0;
         }
- 
-        .meta-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 25px;
+        .doc-order-id {
+            font-size: 11px;
+            color: #475569;
+            margin: 0;
+            font-weight: bold;
         }
- 
-        .card {
+
+        /* ===== ADDRESS / CARD STYLING ===== */
+        .meta-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .card-cell {
+            width: 48%;
+            vertical-align: top;
             border: 1px solid #e2e8f0;
-            border-radius: 6px;
+            border-radius: 8px;
+            background-color: #f8fafc;
             padding: 12px;
-            background-color: #f7fafc;
         }
- 
+        .card-spacer {
+            width: 4%;
+        }
         .card-title {
             font-weight: bold;
-            font-size: 12px;
-            color: #4a5568;
+            font-size: 9px;
+            color: #334155;
             text-transform: uppercase;
             margin-bottom: 6px;
-            border-bottom: 1px solid #edf2f7;
+            border-bottom: 1px solid #cbd5e1;
             padding-bottom: 4px;
+            letter-spacing: 0.5px;
         }
- 
+
+        /* ===== ITEMS TABLE ===== */
         .item-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
- 
         .item-table th {
-            background-color: #edf2f7;
-            color: #2d3748;
+            background-color: #f1f5f9;
+            color: #475569;
             font-weight: bold;
             text-align: left;
             padding: 8px 10px;
-            border: 1px solid #cbd5e0;
-            font-size: 11px;
+            border-bottom: 2px solid #cbd5e1;
+            font-size: 9px;
             text-transform: uppercase;
         }
- 
         .item-table td {
             padding: 8px 10px;
-            border: 1px solid #cbd5e0;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: top;
+            font-size: 10px;
+        }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+
+        /* ===== TOTALS ===== */
+        .totals-outer {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+        .bank-cell {
+            width: 53%;
+            vertical-align: top;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background-color: #f8fafc;
+            padding: 12px;
+        }
+        .totals-cell {
+            width: 44%;
             vertical-align: top;
         }
- 
-        .text-right {
-            text-align: right;
-        }
- 
-        .totals-section {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 30px;
-            page-break-inside: avoid;
-        }
- 
-        .bank-details {
-            width: 50%;
-        }
- 
-        .totals-table {
-            width: 45%;
+        .totals-inner {
+            width: 100%;
             border-collapse: collapse;
         }
- 
-        .totals-table td {
-            padding: 6px 10px;
-            border-bottom: 1px solid #e2e8f0;
+        .totals-inner td {
+            padding: 4px 6px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 10px;
         }
- 
-        .totals-table .grand-total {
+        .grand-total-row td {
             font-weight: bold;
-            font-size: 15px;
-            background-color: #edf2f7;
-            border-top: 2px solid #cbd5e0;
-        }
- 
-        .stamp-container {
-            margin-top: 15px;
-            text-align: right;
-        }
- 
-        .stamp-container img {
-            max-height: 80px;
-        }
- 
-        .mockups-section {
-            margin-top: 30px;
-            page-break-before: auto;
-        }
- 
-        .mockups-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
- 
-        .mockup-item {
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 15px;
-            background-color: #ffffff;
-            page-break-inside: avoid;
-        }
- 
-        .mockup-image {
-            max-width: 100%;
-            max-height: 400px;
-            display: block;
-            margin: 0 auto 10px auto;
-            border-radius: 4px;
-        }
- 
-        .mockup-meta {
             font-size: 12px;
-            color: #4a5568;
-            border-top: 1px solid #edf2f7;
-            padding-top: 8px;
+            background-color: #e2e8f0;
+            border-top: 1.5px solid #cbd5e1 !important;
+            border-bottom: 1.5px solid #cbd5e1 !important;
+            color: #0f172a;
+            padding: 6px;
         }
- 
-        .footer {
-            margin-top: 40px;
-            border-top: 1px solid #e2e8f0;
-            padding-top: 10px;
-            font-size: 11px;
-            color: #718096;
-            text-align: center;
-            page-break-inside: avoid;
-        }
- 
+
         .badge {
             display: inline-block;
             padding: 2px 6px;
             font-weight: bold;
-            font-size: 11px;
+            font-size: 8px;
             border-radius: 4px;
             text-transform: uppercase;
+            color: #ffffff;
         }
- 
-        .badge-success { background-color: #c6f6d5; color: #22543d; }
-        .badge-warning { background-color: #feebc8; color: #744210; }
-        .badge-danger { background-color: #fed7d7; color: #742a2a; }
-        .badge-info { background-color: #ebf8ff; color: #2b6cb0; }
+        .badge-success { background-color: #10b981; }
+        .badge-warning { background-color: #f59e0b; }
+        .badge-danger { background-color: #ef4444; }
+        .badge-info { background-color: #3b82f6; }
+
+        /* ===== MOCKUPS PAGE ===== */
+        .mockups-title {
+            border-bottom: 2.5px solid #0f172a;
+            padding-bottom: 8px;
+            color: #0f172a;
+            text-transform: uppercase;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            letter-spacing: 0.5px;
+        }
+        .mockup-table-grid {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .mockup-grid-cell {
+            width: 50%;
+            padding: 10px;
+            vertical-align: top;
+        }
+        .mockup-item-box {
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 12px;
+            background-color: #ffffff;
+        }
+        .mockup-img-large {
+            max-width: 100%;
+            max-height: 230px;
+            display: block;
+            margin: 0 auto 10px auto;
+            border-radius: 4px;
+        }
+        .mockup-meta-block {
+            font-size: 10px;
+            color: #475569;
+            border-top: 1px dashed #cbd5e1;
+            padding-top: 6px;
+            margin-top: 6px;
+        }
+
+        /* ===== FOOTER ===== */
+        .footer-table {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            border-collapse: collapse;
+            border-top: 1px solid #cbd5e1;
+            padding-top: 10px;
+            font-size: 9px;
+            color: #64748b;
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body>
- 
+
     @if(!empty($settings['documents']['watermark_text']))
         <div class="watermark">{{ $settings['documents']['watermark_text'] }}</div>
     @endif
- 
-    <div class="header">
-        <div class="logo-container">
-            @if(!empty($settings['documents']['logo_path']))
-                <img src="{{ $settings['documents']['logo_path'] }}" alt="Logo">
-            @else
-                <div style="font-size: 20px; font-weight: bold; color: #2b6cb0;">{{ $settings['business']['company_name'] }}</div>
-            @endif
-            @if(!empty($settings['documents']['website_url']))
-                <div style="font-size: 11px; color: #718096; margin-top: 4px;">{{ $settings['documents']['website_url'] }}</div>
-            @endif
-        </div>
-        <div class="company-details">
-            <div class="document-title">Order Confirmation</div>
-            <strong>{{ $settings['business']['legal_name'] ?? $settings['business']['company_name'] }}</strong><br>
-            @if(!empty($settings['business']['address']))
-                {!! nl2br(e($settings['business']['address'])) !!}<br>
-            @endif
-            @if(!empty($settings['business']['support_email']))
-                Email: {{ $settings['business']['support_email'] }} |
-            @endif
-            @if(!empty($settings['business']['support_phone']))
-                Phone: {{ $settings['business']['support_phone'] }}
-            @endif
-            @if(!empty($settings['tax']['enable_gst']) && !empty($settings['tax']['gstin']))
-                <br><strong>GSTIN:</strong> {{ $settings['tax']['gstin'] }}
-            @endif
-        </div>
+
+    {{-- ===== HEADER ===== --}}
+    <div class="header-container">
+        @if(!empty($settings['documents']['logo_path']))
+            <img class="header-logo" src="{{ $settings['documents']['logo_path'] }}" alt="Logo">
+        @endif
+        <h1 class="company-name">{{ $settings['business']['legal_name'] ?? $settings['business']['company_name'] ?? 'Okina Craft' }}</h1>
+        <div class="company-tagline">Premium Custom Apparel Printing</div>
+        <div class="doc-title">Order Confirmation</div>
+        <div class="doc-order-id">Order #{{ $order->public_id }}</div>
     </div>
- 
-    <div class="meta-grid">
-        <div class="card">
-            <div class="card-title">Order Summary</div>
-            <table style="width:100%; font-size:12px;">
-                <tr>
-                    <td style="color:#718096; width:35%;">Order ID:</td>
-                    <td><strong>{{ $order->public_id }}</strong></td>
-                </tr>
-                <tr>
-                    <td style="color:#718096;">Date:</td>
-                    <td>{{ $order->placed_at?->format('d M Y') ?? $order->created_at->format('d M Y') }}</td>
-                </tr>
-                <tr>
-                    <td style="color:#718096;">Order Status:</td>
-                    <td><span class="badge badge-info">{{ $order->status }}</span></td>
-                </tr>
-                <tr>
-                    <td style="color:#718096;">Payment Status:</td>
-                    <td>
-                        <span class="badge @if($payment_status === 'paid') badge-success @elseif(in_array($payment_status, ['partially_paid', 'advance_paid'])) badge-warning @else badge-danger @endif">
-                            {{ str_replace('_', ' ', $payment_status) }}
-                        </span>
-                    </td>
-                </tr>
-            </table>
-        </div>
- 
-        <div class="card">
-            <div class="card-title">Customer Billing & Shipping</div>
-            <strong style="font-size:13px;">{{ $order->customer_snapshot['name'] ?? $order->customer?->name }}</strong><br>
-            @if(!empty($order->customer_snapshot['email']) || !empty($order->customer?->email))
-                Email: {{ $order->customer_snapshot['email'] ?? $order->customer?->email }}<br>
-            @endif
-            @if(!empty($order->customer?->phone))
-                Phone: {{ $order->customer?->phone }}<br>
-            @endif
-            @if(!empty($order->shipping_address_snapshot))
-                <div style="margin-top: 6px; font-size:11px; color:#4a5568;">
-                    <strong>Shipping Address:</strong><br>
-                    {{ $order->shipping_address_snapshot['address_line_1'] ?? '' }},
-                    {{ $order->shipping_address_snapshot['address_line_2'] ?? '' }}
-                    {{ $order->shipping_address_snapshot['city'] ?? '' }}, {{ $order->shipping_address_snapshot['state'] ?? '' }} - {{ $order->shipping_address_snapshot['postal_code'] ?? '' }}
-                </div>
-            @endif
-        </div>
-    </div>
- 
+
+    {{-- ===== META GRID ===== --}}
+    <table class="meta-table">
+        <tr>
+            {{-- Order Summary --}}
+            <td class="card-cell">
+                <div class="card-title">Order Info</div>
+                <table style="width: 100%; font-size: 10px; border-spacing: 0 4px;">
+                    <tr>
+                        <td style="color:#64748b; width:40%;">Order ID:</td>
+                        <td style="font-weight: bold; color: #0f172a;">{{ $order->public_id }}</td>
+                    </tr>
+                    <tr>
+                        <td style="color:#64748b;">Date Placed:</td>
+                        <td style="color: #334155;">{{ $order->placed_at?->format('d M Y') ?? $order->created_at->format('d M Y') }}</td>
+                    </tr>
+                    <tr>
+                        <td style="color:#64748b;">Order Status:</td>
+                        <td>
+                            @php
+                                $orderStatus = strtolower($order->status);
+                                $orderClass = 'badge-info';
+                                if (in_array($orderStatus, ['confirmed', 'delivered'])) $orderClass = 'badge-success';
+                                elseif (in_array($orderStatus, ['pending_payment', 'pending'])) $orderClass = 'badge-warning';
+                                elseif ($orderStatus === 'cancelled') $orderClass = 'badge-danger';
+                            @endphp
+                            <span class="badge {{ $orderClass }}">{{ str_replace('_', ' ', $order->status) }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="color:#64748b;">Payment Status:</td>
+                        <td>
+                            @php
+                                $payStatus = strtolower($payment_status);
+                                $payClass = 'badge-danger';
+                                if ($payStatus === 'paid') $payClass = 'badge-success';
+                                elseif (in_array($payStatus, ['partially_paid', 'advance_paid', 'partial'])) $payClass = 'badge-warning';
+                            @endphp
+                            <span class="badge {{ $payClass }}">{{ str_replace('_', ' ', $payment_status) }}</span>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+            <td class="card-spacer"></td>
+            {{-- Customer & Addresses --}}
+            <td class="card-cell">
+                <div class="card-title">Customer Profile</div>
+                <strong style="font-size: 11px; color: #0f172a;">{{ $order->customer_snapshot['name'] ?? $order->customer?->name }}</strong><br>
+                <span style="font-size: 9px; color: #475569;">
+                    @if(!empty($order->customer_snapshot['email']) || !empty($order->customer?->email))
+                        {{ $order->customer_snapshot['email'] ?? $order->customer?->email }}
+                    @endif
+                    @if(!empty($order->customer_snapshot['phone']) || !empty($order->customer?->phone))
+                        | {{ $order->customer_snapshot['phone'] ?? $order->customer?->phone }}
+                    @endif
+                </span>
+                
+                <table style="width: 100%; margin-top: 8px; border-top: 1px dashed #cbd5e1; padding-top: 6px;">
+                    <tr>
+                        <td style="width: 50%; vertical-align: top; font-size: 9px; padding-right: 6px;">
+                            <span style="font-weight: bold; color: #64748b; font-size: 8px; text-transform: uppercase;">Billing</span><br>
+                            @if($billing_address)
+                                <strong>{{ $billing_address['contact_name'] }}</strong><br>
+                                {{ $billing_address['address_line_1'] }}<br>
+                                {{ $billing_address['city'] }}, {{ $billing_address['state'] }} - {{ $billing_address['postal_code'] }}
+                            @else
+                                <span style="color:#94a3b8;">Not recorded.</span>
+                            @endif
+                        </td>
+                        <td style="width: 50%; vertical-align: top; font-size: 9px; padding-left: 6px; border-left: 1px dashed #cbd5e1;">
+                            <span style="font-weight: bold; color: #64748b; font-size: 8px; text-transform: uppercase;">Shipping</span><br>
+                            @if($shipping_address)
+                                <strong>{{ $shipping_address['contact_name'] }}</strong><br>
+                                {{ $shipping_address['address_line_1'] }}<br>
+                                {{ $shipping_address['city'] }}, {{ $shipping_address['state'] }} - {{ $shipping_address['postal_code'] }}
+                            @else
+                                <span style="color:#94a3b8;">Not recorded.</span>
+                            @endif
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+    {{-- ===== ITEMS TABLE ===== --}}
     <table class="item-table">
         <thead>
             <tr>
                 <th style="width: 5%;">#</th>
-                <th style="width: 45%;">Product Details</th>
-                <th style="width: 15%; text-align: right;">Unit Price</th>
+                <th style="width: 45%;">Product</th>
+                <th style="width: 15%; text-align: center;">Size</th>
                 <th style="width: 10%; text-align: center;">Qty</th>
-                <th style="width: 25%; text-align: right;">Total</th>
+                <th style="width: 12%; text-align: right;">Unit Price</th>
+                <th style="width: 13%; text-align: right;">Total</th>
             </tr>
         </thead>
         <tbody>
-            @foreach($order->items as $index => $item)
+            @foreach($items as $item)
                 <tr>
-                    <td>{{ $index + 1 }}</td>
+                    <td>{{ $item['index'] }}</td>
                     <td>
-                        <strong>{{ $item->product_name_snapshot }}</strong>
-                        @if(!empty($item->sku_code_snapshot))
-                            <br><span style="font-size: 11px; color: #718096;">SKU: {{ $item->sku_code_snapshot }}</span>
+                        <strong style="color: #0f172a; font-size: 10.5px;">{{ $item['name'] }}</strong>
+                        @if($item['sku'])
+                            <br><span style="font-size: 8.5px; color: #64748b;">SKU: {{ $item['sku'] }}</span>
                         @endif
-                        @if(!empty($item->customization_snapshot))
-                            <div style="margin-top: 4px; font-size: 10px; color: #4a5568; background: #edf2f7; padding: 4px 6px; border-radius: 4px;">
-                                <strong>Customization:</strong>
-                                @foreach($item->customization_snapshot as $ckey => $cval)
-                                    @if(is_scalar($cval))
-                                        <br>&bull; {{ ucwords(str_replace('_', ' ', $ckey)) }}: {{ $cval }}
-                                    @endif
-                                @endforeach
-                            </div>
+                        
+                        {{-- Production Details Summary (For Staff Use) --}}
+                        @if(!empty($item['customization_details']))
+                            <table style="width: 100%; margin-top: 6px; background-color: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 4px; padding: 4px 6px; border-spacing: 0;">
+                                <tr>
+                                    @php $count = 0; @endphp
+                                    @foreach($item['customization_details'] as $ckey => $cval)
+                                        @if($count > 0 && $count % 3 === 0)
+                                            </tr><tr>
+                                        @endif
+                                        <td style="font-size: 8px; color: #475569; padding: 1px 3px;">
+                                            <strong>{{ $ckey }}:</strong> {{ $cval }}
+                                        </td>
+                                        @php $count++; @endphp
+                                    @endforeach
+                                </tr>
+                            </table>
                         @endif
                     </td>
-                    <td class="text-right">₹{{ number_format($item->unit_price_minor / 100, 2) }}</td>
-                    <td style="text-align: center;">{{ $item->quantity }}</td>
-                    <td class="text-right">₹{{ number_format($item->line_total_minor / 100, 2) }}</td>
+                    <td style="text-align: center; font-weight: bold; color: #334155;">{{ $item['size'] }}</td>
+                    <td style="text-align: center; color: #334155;">{{ $item['qty'] }}</td>
+                    <td class="text-right" style="color: #334155;">₹{{ number_format($item['unit_price_minor'] / 100, 2) }}</td>
+                    <td class="text-right" style="font-weight: bold; color: #0f172a;">₹{{ number_format($item['line_total_minor'] / 100, 2) }}</td>
                 </tr>
             @endforeach
         </tbody>
     </table>
- 
-    <div class="totals-section">
-        <div class="bank-details">
-            @if(!empty($settings['payments']['bank_name']))
-                <div class="card" style="font-size:11px;">
-                    <div class="card-title">Payment Bank Details</div>
-                    <strong>Bank Name:</strong> {{ $settings['payments']['bank_name'] }}<br>
-                    <strong>Account No:</strong> {{ $settings['payments']['account_number'] }}<br>
-                    <strong>IFSC Code:</strong> {{ $settings['payments']['ifsc_code'] }}
-                </div>
-            @endif
-            
-            @if(!empty($order->customer_notes))
-                <div style="margin-top: 10px; font-size: 11px; color:#4a5568;">
-                    <strong>Customer Notes:</strong><br>
-                    {{ $order->customer_notes }}
-                </div>
-            @endif
-        </div>
- 
-        <table class="totals-table">
-            <tr>
-                <td style="color:#718096;">Subtotal</td>
-                <td class="text-right">₹{{ number_format($order->subtotal_amount_minor / 100, 2) }}</td>
-            </tr>
-            @if($order->discount_amount_minor > 0)
-                <tr>
-                    <td style="color:#718096;">Discount</td>
-                    <td class="text-right">-₹{{ number_format($order->discount_amount_minor / 100, 2) }}</td>
-                </tr>
-            @endif
-            @if($order->shipping_amount_minor > 0)
-                <tr>
-                    <td style="color:#718096;">Shipping</td>
-                    <td class="text-right">₹{{ number_format($order->shipping_amount_minor / 100, 2) }}</td>
-                </tr>
-            @endif
- 
-            @if(!empty($settings['tax']['enable_gst']) && $order->tax_amount_minor > 0)
-                @php
-                    $taxAmount = $order->tax_amount_minor / 100;
-                    $halfTax = $taxAmount / 2;
-                    $isSameState = empty($settings['tax']['registered_state']) || empty($order->shipping_address_snapshot['state']) || 
-                                   strcasecmp($settings['tax']['registered_state'], $order->shipping_address_snapshot['state']) === 0;
-                @endphp
-                @if($isSameState)
+
+    {{-- ===== TOTALS + BANK/PAYMENT DETAILS ===== --}}
+    <table class="totals-outer">
+        <tr>
+            {{-- Payment Details & UPI QR --}}
+            <td class="bank-cell">
+                @if($payment_status !== 'paid' && !empty($settings['payments']['bank_name']))
+                    <div class="card-title">Payment Instructions</div>
+                    <table style="width: 100%; font-size: 9px; border-spacing: 0 2px;">
+                        <tr>
+                            <td style="color: #64748b; width: 35%;">Bank Name:</td>
+                            <td style="font-weight: bold; color: #334155;">{{ $settings['payments']['bank_name'] }}</td>
+                        </tr>
+                        @if(!empty($settings['payments']['account_holder']))
+                            <tr>
+                                <td style="color: #64748b;">A/C Holder:</td>
+                                <td style="font-weight: bold; color: #334155;">{{ $settings['payments']['account_holder'] }}</td>
+                            </tr>
+                        @endif
+                        <tr>
+                            <td style="color: #64748b;">Account No:</td>
+                            <td style="font-weight: bold; color: #334155;">{{ $settings['payments']['account_number'] }}</td>
+                        </tr>
+                        <tr>
+                            <td style="color: #64748b;">IFSC Code:</td>
+                            <td style="font-weight: bold; color: #334155;">{{ $settings['payments']['ifsc_code'] }}</td>
+                        </tr>
+                    </table>
+                    
+                    {{-- Base64 Embedded UPI QR Code --}}
+                    @if(!empty($qr_code_base64))
+                        <table style="width: 100%; margin-top: 10px; border-top: 1px dashed #cbd5e1; padding-top: 8px;">
+                            <tr>
+                                <td style="vertical-align: middle;">
+                                    <div style="font-size: 8px; color: #64748b; font-weight: bold; text-transform: uppercase;">Scan To Pay Instantly via UPI</div>
+                                    <div style="font-size: 8px; color: #94a3b8; margin-top: 2px;">Account ID: {{ $settings['payments']['upi_id'] }}</div>
+                                </td>
+                                <td style="text-align: right; width: 90px;">
+                                    <img src="{{ $qr_code_base64 }}" alt="Scan to Pay" style="width: 75px; height: 75px; border: 1px solid #e2e8f0; border-radius: 4px; padding: 2px; background: white;">
+                                    <div style="font-size: 7px; color: #64748b; font-weight: bold; text-align: center; margin-top: 2px;">Scan with UPI App</div>
+                                </td>
+                            </tr>
+                        </table>
+                    @endif
+                @else
+                    <div style="font-size: 11px; color: #10b981; font-weight: bold; padding: 8px 0;">✓ Order Fully Paid. Thank you!</div>
+                @endif
+                
+                @if(!empty($order->customer_notes))
+                    <div style="margin-top: 10px; font-size: 9px; color:#475569; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px;">
+                        <strong>Customer Notes:</strong><br>
+                        <span style="font-style: italic;">{{ $order->customer_notes }}</span>
+                    </div>
+                @endif
+            </td>
+            <td style="width: 3%;"></td>
+            {{-- Totals --}}
+            <td class="totals-cell">
+                <table class="totals-inner">
                     <tr>
-                        <td style="color:#718096;">CGST (9%)</td>
-                        <td class="text-right">₹{{ number_format($halfTax, 2) }}</td>
+                        <td style="color:#64748b;">Subtotal</td>
+                        <td class="text-right" style="color: #334155;">₹{{ number_format($subtotal_amount_minor / 100, 2) }}</td>
+                    </tr>
+                    @if($order->discount_amount_minor > 0)
+                        <tr>
+                            <td style="color:#64748b;">Discount</td>
+                            <td class="text-right" style="color: #ef4444;">-₹{{ number_format($order->discount_amount_minor / 100, 2) }}</td>
+                        </tr>
+                    @endif
+                    @if($order->shipping_amount_minor > 0)
+                        <tr>
+                            <td style="color:#64748b;">Shipping</td>
+                            <td class="text-right" style="color: #334155;">₹{{ number_format($order->shipping_amount_minor / 100, 2) }}</td>
+                        </tr>
+                    @endif
+
+                    @if(!empty($settings['tax']['enable_gst']) && $order->tax_amount_minor > 0)
+                        @php
+                            $taxAmount = $order->tax_amount_minor / 100;
+                            $halfTax = $taxAmount / 2;
+                            $isSameState = empty($settings['tax']['registered_state']) || empty($shipping_address['state']) || 
+                                           strcasecmp($settings['tax']['registered_state'], $shipping_address['state']) === 0;
+                        @endphp
+                        @if($isSameState)
+                            <tr>
+                                <td style="color:#64748b;">CGST (9%)</td>
+                                <td class="text-right" style="color: #334155;">₹{{ number_format($halfTax, 2) }}</td>
+                            </tr>
+                            <tr>
+                                <td style="color:#64748b;">SGST (9%)</td>
+                                <td class="text-right" style="color: #334155;">₹{{ number_format($halfTax, 2) }}</td>
+                            </tr>
+                        @else
+                            <tr>
+                                <td style="color:#64748b;">IGST (18%)</td>
+                                <td class="text-right" style="color: #334155;">₹{{ number_format($taxAmount, 2) }}</td>
+                            </tr>
+                        @endif
+                    @endif
+
+                    <tr class="grand-total-row">
+                        <td style="font-weight: bold;">Grand Total</td>
+                        <td class="text-right" style="font-weight: bold; font-size: 13px;">₹{{ number_format($total_amount_minor / 100, 2) }}</td>
                     </tr>
                     <tr>
-                        <td style="color:#718096;">SGST (9%)</td>
-                        <td class="text-right">₹{{ number_format($halfTax, 2) }}</td>
+                        <td style="font-size: 9.5px; color:#64748b;">Total Paid</td>
+                        <td class="text-right" style="font-size: 9.5px; color:#10b981; font-weight: bold;">₹{{ number_format($paid_total / 100, 2) }}</td>
+                    </tr>
+                    @if($refund_total > 0)
+                        <tr>
+                            <td style="font-size: 9.5px; color:#ef4444;">Total Refunded</td>
+                            <td class="text-right" style="font-size: 9.5px; color:#ef4444;">₹{{ number_format($refund_total / 100, 2) }}</td>
+                        </tr>
+                    @endif
+                    <tr style="border-top: 1px solid #cbd5e1;">
+                        <td style="font-weight: bold; color: #0f172a; padding-top: 5px;">Balance Due</td>
+                        <td class="text-right" style="font-weight: bold; color: #ef4444; font-size: 11.5px; padding-top: 5px;">₹{{ number_format($balance_due / 100, 2) }}</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+    {{-- ===== ORDER TIMELINE ===== --}}
+    <table style="width: 100%; margin-top: 15px; border-top: 1px solid #e2e8f0; padding-top: 12px; border-spacing: 0;">
+        <tr>
+            <td style="width: 20%; text-align: center; font-size: 8px; font-weight: bold; color: #10b981;">✓ Placed</td>
+            <td style="width: 20%; text-align: center; font-size: 8px; font-weight: bold; color: #10b981;">✓ Confirmed</td>
+            <td style="width: 20%; text-align: center; font-size: 8px; font-weight: bold; color: #94a3b8;">○ Production</td>
+            <td style="width: 20%; text-align: center; font-size: 8px; font-weight: bold; color: #94a3b8;">○ Shipped</td>
+            <td style="width: 20%; text-align: center; font-size: 8px; font-weight: bold; color: #94a3b8;">○ Delivered</td>
+        </tr>
+        <tr>
+            <td colspan="5" style="padding-top: 4px;">
+                <div style="height: 3px; background-color: #e2e8f0; border-radius: 1.5px;">
+                    <div style="width: 40%; height: 100%; background-color: #10b981; border-radius: 1.5px;"></div>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    @if(!empty($settings['documents']['stamp_path']))
+        <div style="margin-top: 15px; text-align: right;">
+            <div style="font-size: 8.5px; color: #64748b; margin-bottom: 2px;">Authorized Signatory</div>
+            <img src="{{ $settings['documents']['stamp_path'] }}" alt="Stamp" style="max-height: 55px;">
+        </div>
+    @endif
+
+    {{-- ===== SECOND PAGE (MOCKUPS & APPROVAL) ===== --}}
+    @if(isset($mockup_images) && count($mockup_images) > 0)
+        <div style="page-break-before: always;">
+            <h2 class="mockups-title">Featured Mockups &amp; Production Previews</h2>
+            
+            <table class="mockup-table-grid">
+                @if(count($mockup_images) === 1)
+                    {{-- 1 Mockup: Large Visual Centerpiece --}}
+                    @php $mockup = $mockup_images[0]; @endphp
+                    <tr>
+                        <td colspan="2" style="padding: 10px; text-align: center;">
+                            <div class="mockup-item-box" style="width: 70%; margin: 0 auto;">
+                                @if(!empty($mockup['image_src']))
+                                    <img class="mockup-img-large" src="{{ $mockup['image_src'] }}" alt="{{ $mockup['display_name'] }}" style="max-height: 280px;">
+                                @endif
+                                <div class="mockup-meta-block">
+                                    <strong style="color: #0f172a; font-size: 11px;">{{ $mockup['display_name'] }}</strong>
+                                    @if(!empty($mockup['notes']))
+                                        <div style="margin-top: 4px; color: #64748b; font-size: 9px; font-style: italic;">Notes: {{ $mockup['notes'] }}</div>
+                                    @endif
+                                </div>
+                            </div>
+                        </td>
                     </tr>
                 @else
-                    <tr>
-                        <td style="color:#718096;">IGST (18%)</td>
-                        <td class="text-right">₹{{ number_format($taxAmount, 2) }}</td>
-                    </tr>
-                @endif
-            @endif
- 
-            <tr class="grand-total">
-                <td>Grand Total</td>
-                <td class="text-right">₹{{ number_format($order->total_amount_minor / 100, 2) }}</td>
-            </tr>
-            <tr>
-                <td style="font-size: 11px; color:#4a5568;">Total Paid</td>
-                <td class="text-right" style="font-size: 11px; color:#2f855a; font-weight:bold;">₹{{ number_format($paid_total / 100, 2) }}</td>
-            </tr>
-            @if($refund_total > 0)
-                <tr>
-                    <td style="font-size: 11px; color:#742a2a;">Total Refunded</td>
-                    <td class="text-right" style="font-size: 11px; color:#c53030;">₹{{ number_format($refund_total / 100, 2) }}</td>
-                </tr>
-            @endif
-            <tr style="border-top: 1px solid #cbd5e0;">
-                <td style="font-weight:bold;">Balance Due</td>
-                <td class="text-right" style="font-weight:bold; color: #c53030;">₹{{ number_format($balance_due / 100, 2) }}</td>
-            </tr>
-        </table>
-    </div>
- 
-    @if(!empty($settings['documents']['stamp_path']))
-        <div class="stamp-container">
-            <div style="font-size:10px; color:#718096; margin-bottom: 2px;">Authorized Signatory</div>
-            <img src="{{ $settings['documents']['stamp_path'] }}" alt="Stamp">
-        </div>
-    @endif
- 
-    @if($order->mockups->isNotEmpty())
-        <div class="mockups-section">
-            <h3 style="border-bottom: 1px solid #cbd5e0; padding-bottom: 4px; color:#2d3748; text-transform:uppercase; font-size:13px; margin-bottom:15px;">Featured Mockups & Print Previews</h3>
-            <div class="mockups-grid">
-                @foreach($order->mockups as $mockup)
-                    @if($mockup->is_featured)
-                        <div class="mockup-item">
-                            @if($mockup->file)
-                                <img class="mockup-image" src="{{ $mockup->file->url ?? Storage::disk('private')->url($mockup->file->path) }}" alt="{{ $mockup->display_name }}">
+                    {{-- 2+ Mockups: Neat 2-Column Grid --}}
+                    @php $mockupChunks = array_chunk($mockup_images, 2); @endphp
+                    @foreach($mockupChunks as $chunk)
+                        <tr>
+                            @foreach($chunk as $mockup)
+                                <td class="mockup-grid-cell">
+                                    <div class="mockup-item-box">
+                                        @if(!empty($mockup['image_src']))
+                                            <img class="mockup-img-large" src="{{ $mockup['image_src'] }}" alt="{{ $mockup['display_name'] }}">
+                                        @endif
+                                        <div class="mockup-meta-block">
+                                            <strong style="color: #0f172a; font-size: 10px;">{{ $mockup['display_name'] }}</strong>
+                                            @if(!empty($mockup['notes']))
+                                                <div style="margin-top: 4px; color: #64748b; font-size: 8.5px; font-style: italic;">Notes: {{ $mockup['notes'] }}</div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </td>
+                            @endforeach
+                            @if(count($chunk) === 1)
+                                <td class="mockup-grid-cell"></td>
                             @endif
-                            <div class="mockup-meta">
-                                <strong>{{ $mockup->display_name }}</strong>
-                                @if(!empty($mockup->notes))
-                                    <p style="margin: 4px 0 0 0; color:#718096;">{{ $mockup->notes }}</p>
-                                @endif
-                            </div>
-                        </div>
-                    @endif
-                @endforeach
-            </div>
+                        </tr>
+                    @endforeach
+                @endif
+            </table>
+
+            {{-- Design Approval Box --}}
+            <table style="width: 100%; border: 1.5px solid #cbd5e1; border-radius: 8px; background-color: #f8fafc; padding: 12px; margin-top: 25px; border-spacing: 0;">
+                <tr>
+                    <td style="font-size: 11px; font-weight: bold; color: #334155; width: 60%;">
+                        Design Status: <span style="color: #10b981; font-weight: bold;">✓ Approved</span>
+                    </td>
+                    <td style="font-size: 9px; color: #64748b; text-align: right; font-weight: bold;">
+                        Approved by Customer
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="font-size: 9px; color: #64748b; padding-top: 4px;">
+                        Approval Reference Date: {{ $order->placed_at?->format('d M Y') ?? $order->created_at->format('d M Y') }}
+                    </td>
+                </tr>
+            </table>
         </div>
     @endif
- 
-    <div class="footer">
-        {{ $settings['documents']['footer_placeholder'] ?? 'Page 1 of 1' }}
-    </div>
- 
+
+    {{-- ===== FOOTER ===== --}}
+    <table class="footer-table">
+        <tr>
+            <td style="width: 70%; text-align: left; vertical-align: middle;">
+                <strong>Need Help?</strong> Support: {{ $settings['business']['support_email'] ?? 'support@okinacraft.com' }}
+                @if(!empty($settings['business']['support_phone'])) | Phone: {{ $settings['business']['support_phone'] }} @endif
+                @if(!empty($settings['documents']['website_url'])) | {{ $settings['documents']['website_url'] }} @endif
+            </td>
+            <td style="width: 30%; text-align: right; vertical-align: middle; font-weight: bold;">
+                Page 1 of 1
+            </td>
+        </tr>
+    </table>
+
 </body>
 </html>
