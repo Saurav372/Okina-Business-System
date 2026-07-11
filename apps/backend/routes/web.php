@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\NotificationLogController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ProductMediaController;
 use App\Http\Controllers\Admin\ProductSkuController;
 use App\Http\Controllers\Admin\ProductVariantController;
 use App\Http\Controllers\Admin\RefundController;
@@ -74,6 +75,11 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     Route::post('/products/{product}/skus/generate', [ProductSkuController::class, 'generate'])->name('admin.products.skus.generate');
     Route::put('/products/{product}/skus/{sku}', [ProductSkuController::class, 'update'])->name('admin.products.skus.update')->scopeBindings();
     Route::delete('/products/{product}/skus/{sku}', [ProductSkuController::class, 'destroy'])->name('admin.products.skus.destroy')->scopeBindings();
+    // Product Media
+    Route::post('/products/{product}/media', [ProductMediaController::class, 'store'])->name('admin.products.media.store');
+    Route::post('/products/{product}/media/reorder', [ProductMediaController::class, 'reorder'])->name('admin.products.media.reorder');
+    Route::post('/products/{product}/media/{media}/cover', [ProductMediaController::class, 'setCover'])->name('admin.products.media.cover')->scopeBindings();
+    Route::delete('/products/{product}/media/{media}', [ProductMediaController::class, 'destroy'])->name('admin.products.media.destroy')->scopeBindings();
     Route::get('/orders/{order:public_id}', [OrderController::class, 'show'])->name('admin.orders.show');
     Route::post('/orders/{order:public_id}/status', [AdminOrderActionController::class, 'updateStatus'])->name('admin.orders.status.update');
     Route::post('/orders/bulk', [BulkOrderActionController::class, 'handle'])->middleware('can:orders.manage')->name('admin.orders.bulk');

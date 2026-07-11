@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -127,6 +128,25 @@ class Product extends Model
     public function skus(): HasMany
     {
         return $this->hasMany(ProductSku::class);
+    }
+
+    /**
+     * All product media ordered by sort_order, then id for stable ordering.
+     */
+    public function media(): HasMany
+    {
+        return $this->hasMany(ProductMedia::class)->orderBy('sort_order')->orderBy('id');
+    }
+
+    /**
+     * The single cover image (first cover in sort order, then id).
+     */
+    public function coverMedia(): HasOne
+    {
+        return $this->hasOne(ProductMedia::class)
+            ->where('role', ProductMedia::ROLE_COVER)
+            ->orderBy('sort_order')
+            ->orderBy('id');
     }
 
     public function isPubliclyVisible(): bool

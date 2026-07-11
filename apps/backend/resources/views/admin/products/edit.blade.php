@@ -36,7 +36,8 @@
                     <x-tabs defaultTab="{{ request('tab', 'general') }}">
                         <x-tabs.list class="mb-6">
                             <x-tabs.trigger value="general">General</x-tabs.trigger>
-                            <x-tabs.trigger value="variants">Variants</x-tabs.trigger>
+                            <x-tabs.trigger value="variants">Variants &amp; SKUs</x-tabs.trigger>
+                            <x-tabs.trigger value="media">Media</x-tabs.trigger>
                         </x-tabs.list>
 
                         <!-- General & Pricing Tab Content -->
@@ -470,6 +471,277 @@
                                 @endif
                             </div>
                         </x-tabs.content>
+
+                        {{-- ─────────────── Media Tab Content ─────────────── --}}
+                        <x-tabs.content value="media" class="space-y-6">
+
+                            {{-- Upload errors (redirected back to ?tab=media) --}}
+                            @if($errors->hasBag('default') && request('tab') === 'media')
+                                <div class="mb-2">
+                                    <x-alert type="danger" dismissible="true">
+                                        Please correct the upload errors below.
+                                    </x-alert>
+                                </div>
+                            @endif
+
+                            {{-- Upload Card --}}
+                            <div class="bg-white border border-[color:var(--color-border)] rounded-2xl p-5 shadow-xs space-y-4">
+                                <h3 class="font-bold text-neutral-800 text-sm border-b border-neutral-100 pb-3">Upload Images</h3>
+
+                                <div id="product-media-upload-form-container">
+                                    <div class="space-y-4">
+                                        {{-- Dropzone --}}
+                                        <label
+                                            for="product_images"
+                                            id="media-dropzone"
+                                            class="flex flex-col items-center justify-center gap-3 w-full min-h-[140px] rounded-2xl border-2 border-dashed border-neutral-300 bg-neutral-50 hover:bg-neutral-100 hover:border-[color:var(--color-cta)] cursor-pointer transition-colors group"
+                                        >
+                                            <svg class="w-8 h-8 text-neutral-400 group-hover:text-[color:var(--color-cta)] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                                            </svg>
+                                            <div class="text-center">
+                                                <span class="block text-sm font-semibold text-neutral-700">Click to select images</span>
+                                                <span class="block text-xs text-neutral-400 mt-0.5">JPG, PNG, GIF, WEBP &mdash; up to 10&thinsp;MB each, max 10 images</span>
+                                            </div>
+                                            <input
+                                                id="product_images"
+                                                name="images[]"
+                                                type="file"
+                                                accept="image/jpeg,image/png,image/gif,image/webp"
+                                                multiple
+                                                class="sr-only"
+                                                form="product-media-upload-form"
+                                            />
+                                        </label>
+
+                                        @error('images')
+                                            <p class="text-xs text-red-600">{{ $message }}</p>
+                                        @enderror
+                                        @error('images.*')
+                                            <p class="text-xs text-red-600">{{ $message }}</p>
+                                        @enderror
+
+                                        {{-- Alt text (applies to entire batch) --}}
+                                        <x-form.input
+                                            id="media_alt_text"
+                                            name="alt_text"
+                                            label="Alt Text"
+                                            placeholder="Describe the image(s)…"
+                                            value="{{ old('alt_text') }}"
+                                            hint="Applied to all images in this upload batch. Per-image editing is planned for a future release."
+                                            error="{{ $errors->first('alt_text') }}"
+                                            form="product-media-upload-form"
+                                        />
+
+                                        <div class="flex justify-end">
+                                            <button
+                                                type="submit"
+                                                form="product-media-upload-form"
+                                                class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold bg-neutral-800 hover:bg-neutral-900 text-white rounded-xl transition-colors cursor-pointer"
+                                            >
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                                                </svg>
+                                                Upload Images
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            {{-- Gallery Card --}}
+                            <div class="bg-white border border-[color:var(--color-border)] rounded-2xl p-5 shadow-xs space-y-4">
+                                <div class="flex items-center justify-between border-b border-neutral-100 pb-3">
+                                    <h3 class="font-bold text-neutral-800 text-sm">Product Gallery</h3>
+                                    @if($product->media->isNotEmpty())
+                                        <span class="text-xs text-neutral-400">{{ $product->media->count() }} {{ Str::plural('image', $product->media->count()) }} &mdash; drag to reorder</span>
+                                    @endif
+                                </div>
+
+                                @if($product->media->isEmpty())
+                                    <x-empty-state
+                                        title="No images yet"
+                                        description="Upload images above to build your product gallery."
+                                        size="sm"
+                                    />
+                                @else
+                                    <div
+                                        id="product-media-gallery"
+                                        class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"
+                                    >
+                                        @foreach($product->media as $media)
+                                            @php
+                                                $previewUrl = URL::temporarySignedRoute(
+                                                    'files.preview',
+                                                    now()->addMinutes(60),
+                                                    ['file' => $media->file->public_id]
+                                                );
+                                            @endphp
+                                            <div
+                                                data-id="{{ $media->id }}"
+                                                class="relative group rounded-xl overflow-hidden border border-neutral-200 bg-neutral-50 aspect-square"
+                                            >
+                                                {{-- Thumbnail --}}
+                                                <img
+                                                    src="{{ $previewUrl }}"
+                                                    alt="{{ $media->alt_text ?? $media->file->original_filename }}"
+                                                    title="{{ $media->alt_text ?? '' }}"
+                                                    class="w-full h-full object-cover transition-opacity"
+                                                    loading="lazy"
+                                                />
+
+                                                {{-- Drag handle overlay --}}
+                                                <div class="drag-handle absolute inset-0 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity flex items-start justify-start p-2">
+                                                    <div class="bg-white/80 backdrop-blur-sm rounded-lg p-1.5 shadow-sm">
+                                                        <svg class="w-4 h-4 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+
+                                                {{-- Cover badge --}}
+                                                @if($media->isCover())
+                                                    <div class="absolute top-2 right-2">
+                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold bg-amber-400 text-amber-900 rounded-full shadow-sm">
+                                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                                            Cover
+                                                        </span>
+                                                    </div>
+                                                @endif
+
+                                                {{-- Action bar (visible on hover) --}}
+                                                <div class="absolute bottom-0 inset-x-0 flex items-center justify-between gap-1 p-2 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    @unless($media->isCover())
+                                                        <div class="flex-1">
+                                                            <button
+                                                                type="submit"
+                                                                form="set-cover-form-{{ $media->id }}"
+                                                                title="Set as cover image"
+                                                                class="w-full flex items-center justify-center gap-1 px-2 py-1 text-[10px] font-semibold bg-white/90 hover:bg-white rounded-lg transition-colors cursor-pointer"
+                                                            >
+                                                                <svg class="w-3 h-3 text-amber-500" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                                                Cover
+                                                            </button>
+                                                        </div>
+                                                    @endunless
+
+                                                    {{-- Delete --}}
+                                                    <div class="flex-shrink-0">
+                                                        <button
+                                                            type="submit"
+                                                            form="delete-media-form-{{ $media->id }}"
+                                                            onclick="return confirm('Delete this image? This cannot be undone.')"
+                                                            title="Delete image"
+                                                            class="flex items-center justify-center w-7 h-7 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors cursor-pointer"
+                                                        >
+                                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+
+                                    {{-- SortableJS --}}
+                                    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.3/Sortable.min.js"></script>
+                                    <script>
+                                        (function () {
+                                            const gridEl = document.getElementById('product-media-gallery');
+                                            if (!gridEl) return;
+
+                                            Sortable.create(gridEl, {
+                                                animation: 150,
+                                                handle: '.drag-handle',
+                                                ghostClass: 'opacity-40',
+                                                onEnd: function () {
+                                                    const ids = Array.from(
+                                                        gridEl.querySelectorAll('[data-id]')
+                                                    ).map(el => parseInt(el.dataset.id, 10));
+
+                                                    fetch('{{ route('admin.products.media.reorder', $product) }}', {
+                                                        method: 'POST',
+                                                        headers: {
+                                                            'Content-Type': 'application/json',
+                                                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                                        },
+                                                        body: JSON.stringify({ ids }),
+                                                    });
+                                                },
+                                            });
+                                        })();
+                                    </script>
+                                @endif
+
+                                {{-- Drag-and-drop & selection feedback script --}}
+                                <script>
+                                    (function () {
+                                        const input = document.getElementById('product_images');
+                                        const dropzone = document.getElementById('media-dropzone');
+                                        if (!input || !dropzone) return;
+
+                                        const textSpan = dropzone.querySelector('span.text-neutral-700');
+                                        const hintSpan = dropzone.querySelector('span.text-neutral-400');
+                                        const originalText = textSpan ? textSpan.textContent : 'Click to select images';
+
+                                        function updateFeedback(files) {
+                                            if (!textSpan) return;
+                                            if (!files || files.length === 0) {
+                                                textSpan.textContent = originalText;
+                                                textSpan.style.color = '';
+                                                return;
+                                            }
+                                            textSpan.style.color = 'var(--color-cta, #e11d48)';
+                                            if (files.length === 1) {
+                                                textSpan.textContent = `Selected: ${files[0].name}`;
+                                            } else {
+                                                textSpan.textContent = `Selected: ${files.length} images`;
+                                            }
+                                        }
+
+                                        // Input change event
+                                        input.addEventListener('change', function () {
+                                            updateFeedback(this.files);
+                                        });
+
+                                        // Drag over/enter
+                                        ['dragenter', 'dragover'].forEach(eventName => {
+                                            dropzone.addEventListener(eventName, e => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                dropzone.classList.add('bg-neutral-100');
+                                                dropzone.style.borderColor = 'var(--color-cta, #e11d48)';
+                                            }, false);
+                                        });
+
+                                        // Drag leave/drop
+                                        ['dragleave', 'drop'].forEach(eventName => {
+                                            dropzone.addEventListener(eventName, e => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                dropzone.classList.remove('bg-neutral-100');
+                                                dropzone.style.borderColor = '';
+                                            }, false);
+                                        });
+
+                                        // Drop event
+                                        dropzone.addEventListener('drop', e => {
+                                            const dt = e.dataTransfer;
+                                            const files = dt.files;
+                                            
+                                            if (files && files.length > 0) {
+                                                input.files = files;
+                                                updateFeedback(files);
+                                            }
+                                        }, false);
+                                    })();
+                                </script>
+                            </div>
+
+                        </x-tabs.content>
+
                     </x-tabs>
                 </div>
 
@@ -614,6 +886,39 @@
         >
             @csrf
         </form>
+
+        <!-- Form for Product Media Upload (placed outside main product form) -->
+        <form
+            id="product-media-upload-form"
+            action="{{ route('admin.products.media.store', $product) }}"
+            method="POST"
+            enctype="multipart/form-data"
+            class="hidden"
+        >
+            @csrf
+        </form>
+
+        <!-- Forms for Product Media Actions (placed outside main product form) -->
+        @foreach($product->media as $media)
+            <form
+                id="set-cover-form-{{ $media->id }}"
+                action="{{ route('admin.products.media.cover', [$product, $media]) }}"
+                method="POST"
+                class="hidden"
+            >
+                @csrf
+            </form>
+            <form
+                id="delete-media-form-{{ $media->id }}"
+                action="{{ route('admin.products.media.destroy', [$product, $media]) }}"
+                method="POST"
+                class="hidden"
+            >
+                @csrf
+                @method('DELETE')
+            </form>
+        @endforeach
+
 
     <!-- Modals for adding/updating options (placed outside main product form) -->
     <!-- Add Variant Option Modal -->
