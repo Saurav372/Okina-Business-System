@@ -4,19 +4,18 @@
 Products Module (U3.2)
 
 ## Current Subtask
-U3.2.2 Product Detail & Edit
+U3.2.3 Categories & Attributes
 
 ## Goal
-Implement the product detail and edit screen where administrators can edit core product information and metadata.
+Implement category assignments and custom attributes mapping for products in the admin panel.
 
 ## Dependencies
 **Depends On:**
-- U3.2.1 (Product Index)
+- U3.2.2 (Product Detail & Edit)
 
 ## Required Deliverables
-- Product detail/edit page view with forms for product attributes.
-- Fields for name, slug, short description, description, status, visibility, base price, customization modes, etc.
-- Integration with backend update APIs.
+- Interface components supporting category assignment and attributes mapping.
+- Integration with backend category/attribute management schemas.
 
 ## Completed Prerequisites
-- U3.2.1 (Product Index)
+- U3.2.2 (Product Detail & Edit)

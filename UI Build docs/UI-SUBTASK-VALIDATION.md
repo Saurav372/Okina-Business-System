@@ -1720,6 +1720,35 @@ Notes: The page renders all product details accurately and filters/sorts cleanly
  
 ---
 
+### U3.2.2 Product Detail & Edit
+**Status:** Completed
+
+**Implementation Validation**
+- [x] Registered routes `admin.products.edit` and `admin.products.update` gated securely.
+- [x] Created `UpdateProductRequest` checking authorizations, and validating all input scopes (slug normalization, currency INR limit, categories status check, published date before now).
+- [x] Implemented `ProductService` executing updates inside database transactions, with dirty properties check, model refresh, and DB::afterCommit hook logging.
+
+**UI Validation**
+- [x] Rendered two-column dashboard layouts containing general information, pricing metadata, checkbox options, and SEO configs.
+- [x] Included read-only metadata blocks displaying internal Product ID, created, and updated timestamps.
+- [x] Rendered styled conditional alert banners for draft status and private visibility.
+- [x] Configured Save Changes button matching brand interaction tokens.
+
+**Process Validation**
+- [x] AdminProductEditTest fully passing.
+- [x] PHPStan analysis passes with 0 errors.
+- [x] Pint formatting passes.
+- [x] Documentation updated.
+- [x] Git restore point created.
+
+**Review Sign-off**
+Reviewer: AI Assistant
+Date: 2026-07-11
+Result: [x] Pass [ ] Fail
+Notes: The form handles values validation perfectly, checks box modifications, and ensures transactions commit and model refresh rules apply reliably.
+ 
+---
+
 ## Motion Validation Template (U1.6)
 *(Apply this checklist to transitions, loaders, page changes, and similar features)*
 

@@ -64,6 +64,8 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     Route::post('/logout', [AdminAuthController::class, 'destroy'])->name('admin.logout');
     Route::get('/orders', [OrderController::class, 'index'])->name('admin.orders.index');
     Route::get('/products', [ProductController::class, 'index'])->name('admin.products.index');
+    Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('admin.products.edit');
+    Route::put('/products/{product}', [ProductController::class, 'update'])->name('admin.products.update');
     Route::get('/orders/{order:public_id}', [OrderController::class, 'show'])->name('admin.orders.show');
     Route::post('/orders/{order:public_id}/status', [AdminOrderActionController::class, 'updateStatus'])->name('admin.orders.status.update');
     Route::post('/orders/bulk', [BulkOrderActionController::class, 'handle'])->middleware('can:orders.manage')->name('admin.orders.bulk');
