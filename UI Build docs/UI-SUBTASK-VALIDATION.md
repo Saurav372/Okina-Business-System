@@ -1749,6 +1749,35 @@ Notes: The form handles values validation perfectly, checks box modifications, a
  
 ---
 
+### U3.2.3 Categories & Attributes
+**Status:** Completed
+
+**Implementation Validation**
+- [x] Registered store, update, and destroy product variant routes with scoped bindings.
+- [x] Developed StoreProductVariantRequest and UpdateProductVariantRequest validating unique option codes.
+- [x] Implemented ProductVariantService parsing CSV values with case-insensitive deduplication and order preservation.
+- [x] Loaded variants in ProductController edit method.
+
+**UI Validation**
+- [x] Wrapped product edit view in x-tabs dividing into General and Variants panes.
+- [x] Placed Category Assignment selection under Variants tab.
+- [x] Integrated product option attributes table/list with Add, Edit, and Delete modals.
+
+**Process Validation**
+- [x] AdminProductVariantTest fully passing.
+- [x] PHPStan analysis passes with 0 errors.
+- [x] Pint formatting passes.
+- [x] Documentation updated.
+- [x] Git restore point created.
+
+**Review Sign-off**
+Reviewer: AI Assistant
+Date: 2026-07-11
+Result: [x] Pass [ ] Fail
+Notes: Variants CRUD updates are fast and securely scoped to the parent product. Validation handles case-insensitive unique duplicates, comma empty lists, and mismatched variant IDs natively.
+ 
+---
+
 ## Motion Validation Template (U1.6)
 *(Apply this checklist to transitions, loaders, page changes, and similar features)*
 
