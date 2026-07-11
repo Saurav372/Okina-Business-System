@@ -51,7 +51,7 @@ class ProductController extends Controller
     {
         Gate::authorize('update', $product);
 
-        $product->load('variants');
+        $product->load(['variants', 'skus' => fn ($q) => $q->orderBy('sort_order')->orderBy('id')]);
 
         $categories = ProductCategory::where('status', 'active')
             ->orderBy('name')

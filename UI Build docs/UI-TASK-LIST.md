@@ -110,7 +110,7 @@ Detailed validation for each subtask is maintained in `UI-SUBTASK-VALIDATION.md`
 | U3.2.1 | Product Index | Admin | 3 | Main listing with status filters. | U2.1, U1.2.1 | Completed |
 | U3.2.2 | Product Detail & Edit | Admin | 3 | Core product edit form and metadata. | U3.2.1 | Completed |
 | U3.2.3 | Categories & Attributes | Admin | 3 | Category assignment and custom attributes. | U3.2.2 | Completed |
-| U3.2.4 | Variants & SKUs | Admin | 3 | Matrix generation and SKU pricing/stock. | U3.2.2 | Pending |
+| U3.2.4 | Variants & SKUs | Admin | 3 | Matrix generation and SKU pricing/stock. | U3.2.2 | Completed |
 | U3.2.5 | Product Media | Admin | 3 | Image gallery and video management. | U3.2.2 | Pending |
 | U3.2.6 | SEO Metadata Management | Admin | 3 | Meta title, description, canonical, OG image, slug preview. | U3.2.2 | Pending |
 | **U4.1** | **CRM Module** | Admin | 4 | **Milestone** | U2.1 | Removed |

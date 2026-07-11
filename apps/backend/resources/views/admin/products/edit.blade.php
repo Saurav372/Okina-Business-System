@@ -21,9 +21,10 @@
         </div>
     @endif
 
-    {{-- Main wrapper scoping both main form actions and Alpine states for variant CRUD --}}
+    {{-- Main wrapper scoping both main form actions and Alpine states for variant/SKU CRUD --}}
     <div x-data="{ 
-        activeVariant: { id: '', name: '', code: '', display_type: 'select', values_csv: '', is_required: true, sort_order: 10 } 
+        activeVariant: { id: '', name: '', code: '', display_type: 'select', values_csv: '', is_required: true, sort_order: 10 },
+        activeSku: { id: '', sku_code: '', barcode: '', price_minor: 0, compare_at_price_minor: '', status: 'active', direct_checkout_enabled: true, quote_required: false, track_stock: true, stock_quantity: 0, low_stock_threshold: '', allow_backorder: false, weight_grams: '', length_mm: '', width_mm: '', height_mm: '', sort_order: 0 }
     }">
         <form method="POST" action="{{ route('admin.products.update', $product) }}">
             @csrf
@@ -346,6 +347,128 @@
                                     </div>
                                 @endif
                             </div>
+
+                            {{-- ────────────────────────────────────────────
+                                 Product SKUs
+                            ──────────────────────────────────────────────── --}}
+                            <div class="bg-white border border-[color:var(--color-border)] rounded-2xl p-5 shadow-xs space-y-4">
+                                <div class="flex items-center justify-between border-b border-neutral-100 pb-3">
+                                    <h3 class="font-bold text-neutral-800 text-sm">SKU Matrix</h3>
+                                    <button
+                                        type="submit"
+                                        form="generate-skus-form"
+                                        class="inline-flex items-center justify-center px-3 py-1.5 text-xs font-bold bg-[color:var(--color-brand-600)] text-white rounded-xl hover:bg-[color:var(--color-brand-700)] transition-colors focus-visible:outline-none cursor-pointer"
+                                    >
+                                        Generate SKUs
+                                    </button>
+                                </div>
+
+                                @if($product->skus->isEmpty())
+                                    <x-empty-state
+                                        title="No SKUs Generated"
+                                        description="Click &ldquo;Generate SKUs&rdquo; to auto-create combinations from your configured variant options."
+                                        size="sm"
+                                    />
+                                @else
+                                    <div class="overflow-x-auto -mx-1">
+                                        <table class="w-full text-xs">
+                                            <thead>
+                                                <tr class="border-b border-neutral-100">
+                                                    <th class="text-left font-semibold text-neutral-500 py-2 px-2">Combination</th>
+                                                    <th class="text-left font-semibold text-neutral-500 py-2 px-2">SKU Code</th>
+                                                    <th class="text-right font-semibold text-neutral-500 py-2 px-2">Price</th>
+                                                    <th class="text-center font-semibold text-neutral-500 py-2 px-2">Stock</th>
+                                                    <th class="text-center font-semibold text-neutral-500 py-2 px-2">Status</th>
+                                                    <th class="text-right font-semibold text-neutral-500 py-2 px-2">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-neutral-50">
+                                                @foreach($product->skus as $sku)
+                                                    @php
+                                                        $skuStatusColors = [
+                                                            'active'       => 'bg-emerald-50 text-emerald-700 border-emerald-100',
+                                                            'out_of_stock' => 'bg-amber-50 text-amber-700 border-amber-100',
+                                                            'inactive'     => 'bg-neutral-100 text-neutral-500 border-neutral-200',
+                                                        ];
+                                                        $skuStatusColor = $skuStatusColors[$sku->status] ?? 'bg-neutral-100 text-neutral-500';
+                                                        $priceFormatted = $sku->price_minor !== null
+                                                            ? '₹' . number_format($sku->price_minor / 100, 2)
+                                                            : '—';
+                                                    @endphp
+                                                    <tr class="hover:bg-neutral-50 transition-colors">
+                                                        <td class="py-2.5 px-2">
+                                                            @if($sku->name_suffix)
+                                                                <span class="font-semibold text-neutral-800">{{ $sku->name_suffix }}</span>
+                                                            @else
+                                                                <span class="text-neutral-400 italic">Default</span>
+                                                            @endif
+                                                        </td>
+                                                        <td class="py-2.5 px-2">
+                                                            <span class="font-mono text-[10px] bg-neutral-100 px-1.5 py-0.5 rounded text-neutral-600">{{ $sku->sku_code }}</span>
+                                                        </td>
+                                                        <td class="py-2.5 px-2 text-right font-semibold text-neutral-700">{{ $priceFormatted }}</td>
+                                                        <td class="py-2.5 px-2 text-center">
+                                                            @if($sku->track_stock)
+                                                                <span class="font-mono text-neutral-600">{{ $sku->stock_quantity }}</span>
+                                                            @else
+                                                                <span class="text-neutral-400 italic">Untracked</span>
+                                                            @endif
+                                                        </td>
+                                                        <td class="py-2.5 px-2 text-center">
+                                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border {{ $skuStatusColor }}">
+                                                                {{ ucwords(str_replace('_', ' ', $sku->status)) }}
+                                                            </span>
+                                                        </td>
+                                                        <td class="py-2.5 px-2 text-right">
+                                                            <div class="flex items-center justify-end gap-2">
+                                                                <button
+                                                                    type="button"
+                                                                    @click="
+                                                                        activeSku = {
+                                                                            id: '{{ $sku->id }}',
+                                                                            sku_code: '{{ $sku->sku_code }}',
+                                                                            barcode: '{{ $sku->barcode ?? '' }}',
+                                                                            price_minor: {{ $sku->price_minor ?? 0 }},
+                                                                            compare_at_price_minor: '{{ $sku->compare_at_price_minor ?? '' }}',
+                                                                            status: '{{ $sku->status }}',
+                                                                            direct_checkout_enabled: {{ $sku->direct_checkout_enabled ? 'true' : 'false' }},
+                                                                            quote_required: {{ $sku->quote_required ? 'true' : 'false' }},
+                                                                            track_stock: {{ $sku->track_stock ? 'true' : 'false' }},
+                                                                            stock_quantity: {{ $sku->stock_quantity }},
+                                                                            low_stock_threshold: '{{ $sku->low_stock_threshold ?? '' }}',
+                                                                            allow_backorder: {{ $sku->allow_backorder ? 'true' : 'false' }},
+                                                                            weight_grams: '{{ $sku->weight_grams ?? '' }}',
+                                                                            length_mm: '{{ $sku->length_mm ?? '' }}',
+                                                                            width_mm: '{{ $sku->width_mm ?? '' }}',
+                                                                            height_mm: '{{ $sku->height_mm ?? '' }}',
+                                                                            sort_order: {{ $sku->sort_order }}
+                                                                        };
+                                                                        $dispatch('open-overlay', 'edit-sku-modal')
+                                                                    "
+                                                                    class="px-2.5 py-1 border border-neutral-200 rounded-lg text-xs font-semibold text-neutral-600 hover:bg-neutral-50 transition-colors cursor-pointer"
+                                                                >
+                                                                    Edit
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    @click="
+                                                                        if (confirm('Delete this SKU? Inventory history will be retained.')) {
+                                                                            $refs['deleteSkuForm{{ $sku->id }}'].submit();
+                                                                        }
+                                                                    "
+                                                                    class="px-2.5 py-1 border border-rose-100 rounded-lg text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                                                >
+                                                                    Delete
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                @endif
+                            </div>
                         </x-tabs.content>
                     </x-tabs>
                 </div>
@@ -456,18 +579,41 @@
             </div>
         </form>
 
-        <!-- Hidden delete forms for option dimensions -->
+        <!-- Hidden delete forms for variant option dimensions -->
         @foreach($product->variants as $v)
-            <form 
-                x-ref="deleteForm{{ $v->id }}" 
-                action="{{ route('admin.products.variants.destroy', [$product, $v]) }}" 
-                method="POST" 
+            <form
+                x-ref="deleteForm{{ $v->id }}"
+                action="{{ route('admin.products.variants.destroy', [$product, $v]) }}"
+                method="POST"
                 class="hidden"
             >
                 @csrf
                 @method('DELETE')
             </form>
         @endforeach
+
+        <!-- Hidden delete forms for SKU records -->
+        @foreach($product->skus as $sku)
+            <form
+                x-ref="deleteSkuForm{{ $sku->id }}"
+                action="{{ route('admin.products.skus.destroy', [$product, $sku]) }}"
+                method="POST"
+                class="hidden"
+            >
+                @csrf
+                @method('DELETE')
+            </form>
+        @endforeach
+
+        <!-- Form for SKU matrix generation -->
+        <form
+            id="generate-skus-form"
+            action="{{ route('admin.products.skus.generate', $product) }}"
+            method="POST"
+            class="hidden"
+        >
+            @csrf
+        </form>
 
     <!-- Modals for adding/updating options (placed outside main product form) -->
     <!-- Add Variant Option Modal -->
@@ -625,6 +771,197 @@
                 <button 
                     type="button" 
                     @click="$dispatch('close-overlay', 'edit-variant-modal')"
+                    class="px-4 py-2 text-xs font-semibold border border-neutral-300 hover:bg-neutral-50 rounded-xl transition-colors cursor-pointer"
+                >
+                    Cancel
+                </button>
+                <button 
+                    type="submit" 
+                    class="px-4 py-2 text-xs font-bold bg-neutral-800 hover:bg-neutral-900 text-white rounded-xl transition-colors cursor-pointer"
+                >
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </x-modal>
+
+    <!-- Edit SKU Modal -->
+    <x-modal id="edit-sku-modal" title="Edit SKU Details" size="lg">
+        <form 
+            method="POST" 
+            :action="'/admin/products/' + {{ $product->id }} + '/skus/' + activeSku.id" 
+            class="space-y-4"
+        >
+            @csrf
+            @method('PUT')
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <x-form.input 
+                    id="edit_sku_code" 
+                    name="sku_code" 
+                    label="SKU Code" 
+                    x-model="activeSku.sku_code"
+                    required="true"
+                />
+                <x-form.input 
+                    id="edit_sku_barcode" 
+                    name="barcode" 
+                    label="Barcode (UPC/EAN)" 
+                    x-model="activeSku.barcode"
+                />
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <x-form.input 
+                    id="edit_sku_price_minor" 
+                    name="price_minor" 
+                    type="number"
+                    label="Price (in Paise)" 
+                    x-model="activeSku.price_minor"
+                    required="true"
+                    hint="Enter amount in minor units (e.g., 149900 for ₹1,499.00)."
+                />
+                <x-form.input 
+                    id="edit_sku_compare_at_price_minor" 
+                    name="compare_at_price_minor" 
+                    type="number"
+                    label="Compare At Price (in Paise)" 
+                    x-model="activeSku.compare_at_price_minor"
+                    hint="Original/MSRP price for strike-through display."
+                />
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <x-form.select 
+                    id="edit_sku_status" 
+                    name="status" 
+                    label="Status" 
+                    x-model="activeSku.status"
+                    :options="[
+                        ['value' => 'active', 'label' => 'Active'],
+                        ['value' => 'out_of_stock', 'label' => 'Out of Stock'],
+                        ['value' => 'inactive', 'label' => 'Inactive']
+                    ]"
+                />
+                <x-form.input 
+                    id="edit_sku_sort_order" 
+                    name="sort_order" 
+                    type="number"
+                    label="Sort Order" 
+                    x-model="activeSku.sort_order"
+                    required="true"
+                />
+            </div>
+
+            <div class="bg-neutral-50 rounded-xl p-4 border border-neutral-100 space-y-4">
+                <h4 class="font-bold text-neutral-800 text-[10px] uppercase tracking-wider">Inventory & Checkout</h4>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div class="flex items-center gap-2">
+                        <input 
+                            type="checkbox" 
+                            id="edit_sku_direct_checkout_enabled" 
+                            name="direct_checkout_enabled" 
+                            value="1" 
+                            x-model="activeSku.direct_checkout_enabled"
+                            class="rounded border-neutral-300 text-[color:var(--color-brand-600)] focus:ring-[color:var(--color-brand-500)] cursor-pointer"
+                        />
+                        <label for="edit_sku_direct_checkout_enabled" class="text-xs text-neutral-600 font-semibold select-none">Direct Checkout</label>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <input 
+                            type="checkbox" 
+                            id="edit_sku_quote_required" 
+                            name="quote_required" 
+                            value="1" 
+                            x-model="activeSku.quote_required"
+                            class="rounded border-neutral-300 text-[color:var(--color-brand-600)] focus:ring-[color:var(--color-brand-500)] cursor-pointer"
+                        />
+                        <label for="edit_sku_quote_required" class="text-xs text-neutral-600 font-semibold select-none">Requires Quote</label>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <input 
+                            type="checkbox" 
+                            id="edit_sku_track_stock" 
+                            name="track_stock" 
+                            value="1" 
+                            x-model="activeSku.track_stock"
+                            class="rounded border-neutral-300 text-[color:var(--color-brand-600)] focus:ring-[color:var(--color-brand-500)] cursor-pointer"
+                        />
+                        <label for="edit_sku_track_stock" class="text-xs text-neutral-600 font-semibold select-none">Track Stock</label>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-neutral-100" x-show="activeSku.track_stock">
+                    <x-form.input 
+                        id="edit_sku_stock_quantity" 
+                        name="stock_quantity" 
+                        type="number"
+                        label="Stock Quantity" 
+                        x-model="activeSku.stock_quantity"
+                    />
+                    <x-form.input 
+                        id="edit_sku_low_stock_threshold" 
+                        name="low_stock_threshold" 
+                        type="number"
+                        label="Low Stock Threshold" 
+                        x-model="activeSku.low_stock_threshold"
+                    />
+                    <div class="flex items-center gap-2 pt-5">
+                        <input 
+                            type="checkbox" 
+                            id="edit_sku_allow_backorder" 
+                            name="allow_backorder" 
+                            value="1" 
+                            x-model="activeSku.allow_backorder"
+                            class="rounded border-neutral-300 text-[color:var(--color-brand-600)] focus:ring-[color:var(--color-brand-500)] cursor-pointer"
+                        />
+                        <label for="edit_sku_allow_backorder" class="text-xs text-neutral-600 font-semibold select-none">Allow Backorder</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-neutral-50 rounded-xl p-4 border border-neutral-100 space-y-4">
+                <h4 class="font-bold text-neutral-800 text-[10px] uppercase tracking-wider">Dimensions & Weight</h4>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <x-form.input 
+                        id="edit_sku_weight_grams" 
+                        name="weight_grams" 
+                        type="number"
+                        label="Weight (g)" 
+                        x-model="activeSku.weight_grams"
+                    />
+                    <x-form.input 
+                        id="edit_sku_length_mm" 
+                        name="length_mm" 
+                        type="number"
+                        label="Length (mm)" 
+                        x-model="activeSku.length_mm"
+                    />
+                    <x-form.input 
+                        id="edit_sku_width_mm" 
+                        name="width_mm" 
+                        type="number"
+                        label="Width (mm)" 
+                        x-model="activeSku.width_mm"
+                    />
+                    <x-form.input 
+                        id="edit_sku_height_mm" 
+                        name="height_mm" 
+                        type="number"
+                        label="Height (mm)" 
+                        x-model="activeSku.height_mm"
+                    />
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-4 border-t border-neutral-100">
+                <button 
+                    type="button" 
+                    @click="$dispatch('close-overlay', 'edit-sku-modal')"
                     class="px-4 py-2 text-xs font-semibold border border-neutral-300 hover:bg-neutral-50 rounded-xl transition-colors cursor-pointer"
                 >
                     Cancel
