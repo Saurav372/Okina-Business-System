@@ -8,7 +8,7 @@ class Navigation
 {
     /**
      * Get the defined admin navigation structure filtered for the user.
-     * 
+     *
      * @return array<NavigationGroup>
      */
     public function forUser(?User $user): array
@@ -20,15 +20,15 @@ class Navigation
             $groupItems = [];
             foreach ($groupConfig['items'] as $itemConfig) {
                 // If item has a permission constraint, verify the user has it
-                if ($user && $itemConfig['permission'] && !$user->hasPermissionTo($itemConfig['permission'])) {
+                if ($user && $itemConfig['permission'] && ! $user->hasPermissionTo($itemConfig['permission'])) {
                     continue;
                 }
 
                 // Sub-items/children check
                 $children = [];
-                if (!empty($itemConfig['children'])) {
+                if (! empty($itemConfig['children'])) {
                     foreach ($itemConfig['children'] as $childConfig) {
-                        if ($user && $childConfig['permission'] && !$user->hasPermissionTo($childConfig['permission'])) {
+                        if ($user && $childConfig['permission'] && ! $user->hasPermissionTo($childConfig['permission'])) {
                             continue;
                         }
                         $children[] = new NavigationItem(
@@ -56,9 +56,9 @@ class Navigation
             }
 
             // Hide empty groups
-            if (!empty($groupItems)) {
+            if (! empty($groupItems)) {
                 // Sort items by order
-                usort($groupItems, fn($a, $b) => $a->order <=> $b->order);
+                usort($groupItems, fn ($a, $b) => $a->order <=> $b->order);
                 $filteredGroups[] = new NavigationGroup(
                     group: $groupConfig['group'],
                     order: $groupConfig['order'],
@@ -68,7 +68,7 @@ class Navigation
         }
 
         // Sort groups by order
-        usort($filteredGroups, fn($a, $b) => $a->order <=> $b->order);
+        usort($filteredGroups, fn ($a, $b) => $a->order <=> $b->order);
 
         return $filteredGroups;
     }
@@ -114,7 +114,15 @@ class Navigation
                 'group' => 'Products',
                 'order' => 30,
                 'items' => [
-                    // Future items will be registered here
+                    [
+                        'label' => 'Products',
+                        'route' => 'admin.products.index',
+                        'icon' => 'lucide-tag',
+                        'order' => 10,
+                        'permission' => 'products.view',
+                        'active' => ['admin.products.*'],
+                        'children' => [],
+                    ],
                 ],
             ],
             [

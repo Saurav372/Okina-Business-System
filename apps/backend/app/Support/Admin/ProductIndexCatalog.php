@@ -3,6 +3,7 @@
 namespace App\Support\Admin;
 
 use App\Models\Product;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * A3.2.7 Admin catalog management — product index definition.
@@ -60,5 +61,49 @@ final class ProductIndexCatalog
             'searchable' => true,
             'per_page' => 25,
         ];
+    }
+
+    /**
+     * Build the query for products listing based on filters and search parameters.
+     */
+    public function query(array $criteria = []): Builder
+    {
+        $query = Product::query()
+            ->with(['category'])
+            ->withCount('skus');
+
+        // Search on Name
+        if (! empty($criteria['search'])) {
+            $query->where('name', 'like', '%'.$criteria['search'].'%');
+        }
+
+        // Filters
+        if (! empty($criteria['status'])) {
+            $query->where('status', $criteria['status']);
+        }
+
+        if (! empty($criteria['visibility'])) {
+            $query->where('visibility', $criteria['visibility']);
+        }
+
+        if (! empty($criteria['product_type'])) {
+            $query->where('product_type', $criteria['product_type']);
+        }
+
+        // Sorting
+        $sort = (string) ($criteria['sort'] ?? 'created_at');
+        $direction = strtolower((string) ($criteria['direction'] ?? 'desc')) === 'asc' ? 'asc' : 'desc';
+
+        $sortField = match ($sort) {
+            'id' => 'id',
+            'name' => 'name',
+            'status' => 'status',
+            'visibility' => 'visibility',
+            'product_type' => 'product_type',
+            'created_at' => 'created_at',
+            default => 'created_at',
+        };
+
+        return $query->orderBy($sortField, $direction);
     }
 }

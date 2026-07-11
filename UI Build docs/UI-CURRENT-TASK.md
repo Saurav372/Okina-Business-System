@@ -4,21 +4,19 @@
 Products Module (U3.2)
 
 ## Current Subtask
-U3.2.1 Product Index
+U3.2.2 Product Detail & Edit
 
 ## Goal
-Implement the main products index page listing all products with status filtering, search capabilities, table listing, and pagination.
+Implement the product detail and edit screen where administrators can edit core product information and metadata.
 
 ## Dependencies
 **Depends On:**
-- U2.1 (Application Shell Layout)
-- U1.2.1 (DataTable)
-- U1.2.2 (Pagination)
+- U3.2.1 (Product Index)
 
 ## Required Deliverables
-- Product index view with standard table and responsive layouts.
-- Product status filtering controls (active, draft, out of stock, archived).
-- Search and pagination capabilities.
+- Product detail/edit page view with forms for product attributes.
+- Fields for name, slug, short description, description, status, visibility, base price, customization modes, etc.
+- Integration with backend update APIs.
 
 ## Completed Prerequisites
-- U3.1.7 (Order Bulk Actions)
+- U3.2.1 (Product Index)

@@ -107,7 +107,7 @@ Detailed validation for each subtask is maintained in `UI-SUBTASK-VALIDATION.md`
 | U3.1.6 | Order PDF / Confirmation | Admin | 3 | Order confirmation document rendering and PDF download. | U3.1.2 | Completed |
 | U3.1.7 | Order Bulk Actions | Admin | 3 | Multi-select on Order Index with bulk status update (Confirm, Cancel). Active checkboxes, Alpine.js selection state, bulk action bar, `BulkOrderActionController`, `BulkOrderActionService`, and bulk endpoint. | U3.1.1 | Completed |
 | **U3.2** | **Products Module** | Admin | 3 | **Milestone** | U2.1 | Milestone |
-| U3.2.1 | Product Index | Admin | 3 | Main listing with status filters. | U2.1, U1.2.1 | Pending |
+| U3.2.1 | Product Index | Admin | 3 | Main listing with status filters. | U2.1, U1.2.1 | Completed |
 | U3.2.2 | Product Detail & Edit | Admin | 3 | Core product edit form and metadata. | U3.2.1 | Pending |
 | U3.2.3 | Categories & Attributes | Admin | 3 | Category assignment and custom attributes. | U3.2.2 | Pending |
 | U3.2.4 | Variants & SKUs | Admin | 3 | Matrix generation and SKU pricing/stock. | U3.2.2 | Pending |

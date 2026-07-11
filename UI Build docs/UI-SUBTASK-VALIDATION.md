@@ -1690,6 +1690,36 @@ Notes: Features lock rows with pessimistic lockForUpdate(), verify unique IDs so
  
 ---
 
+### U3.2.1 Product Index
+**Status:** Completed
+
+**Implementation Validation**
+- [x] Registered the `/admin/products` route gated on `viewAny` using `Gate::authorize`.
+- [x] Implemented `query()` method inside `ProductIndexCatalog` supporting status, visibility, type filters, name search, and column sorting.
+- [x] Created `ProductController` returning products query matches and index parameters to the view.
+
+**UI Validation**
+- [x] Designed responsive index layout containing desktop table and mobile product card grid.
+- [x] Included search input and dropdown selectors for Status, Visibility, and Type.
+- [x] Set color badges mapped dynamically to status and visibility intents.
+- [x] Connected sortable table header buttons with query parameter updates.
+- [x] Rendered server-side pagination links.
+
+**Process Validation**
+- [x] AdminProductIndexTest fully passing.
+- [x] PHPStan analysis passes with 0 errors.
+- [x] Pint formatting passes.
+- [x] Documentation updated.
+- [x] Git restore point created.
+
+**Review Sign-off**
+Reviewer: AI Assistant
+Date: 2026-07-11
+Result: [x] Pass [ ] Fail
+Notes: The page renders all product details accurately and filters/sorts cleanly. Layout complies with the spacing, layout, color, and accessibility tokens.
+ 
+---
+
 ## Motion Validation Template (U1.6)
 *(Apply this checklist to transitions, loaders, page changes, and similar features)*
 
