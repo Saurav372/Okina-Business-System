@@ -165,7 +165,7 @@
                 </div>
                 @can('update', $p)
                     <div class="mt-4 pt-3 border-t border-neutral-100 flex justify-end">
-                        <a href="#" class="inline-flex items-center justify-center px-3.5 py-1.5 border border-neutral-300 rounded-xl text-xs font-bold text-neutral-700 hover:bg-neutral-50">
+                        <a href="{{ route('admin.products.edit', $p) }}" class="inline-flex items-center justify-center px-3.5 py-1.5 border border-neutral-300 rounded-xl text-xs font-bold text-neutral-700 hover:bg-neutral-50">
                             Edit
                         </a>
                     </div>
@@ -258,7 +258,7 @@
                         </x-table.cell>
                         <x-table.cell align="right">
                             @can('update', $p)
-                                <a href="#" class="inline-flex px-3 py-1.5 border border-neutral-300 text-neutral-700 hover:bg-neutral-50 rounded-xl text-xs font-bold transition-colors">
+                                <a href="{{ route('admin.products.edit', $p) }}" class="inline-flex px-3 py-1.5 border border-neutral-300 text-neutral-700 hover:bg-neutral-50 rounded-xl text-xs font-bold transition-colors">
                                     Edit
                                 </a>
                             @endcan
