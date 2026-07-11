@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Refund;
+use App\Services\SalesOrderService;
 use App\Support\Payments\PaymentStateRecalculationRules;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -34,65 +35,9 @@ class AdminOrderActionController extends Controller
             'cancellation_reason' => ['nullable', 'string'],
         ]);
 
-        $currentStatus = OrderStatus::tryFrom($order->status);
-        $targetStatus = OrderStatus::tryFrom($validated['status']);
-
-        if ($currentStatus && $targetStatus && ! $currentStatus->canTransitionTo($targetStatus)) {
-            throw ValidationException::withMessages([
-                'status' => 'Invalid order status transition.',
-            ]);
-        }
-
-        // Capture old values snapshot before updating
-        $oldValues = [
-            'status' => $currentStatus?->value,
-            'design_status' => $order->design_status,
-            'production_status' => $order->production_status,
-            'shipping_status' => $order->shipping_status,
-        ];
-
-        $newValues = [
-            'status' => $targetStatus?->value ?? $validated['status'],
-            'design_status' => $validated['design_status'],
-            'production_status' => $validated['production_status'],
-            'shipping_status' => $validated['shipping_status'],
-        ];
-
-        // Auto-update timestamps based on status transitions
-        if ($validated['status'] === 'confirmed' && $order->confirmed_at === null) {
-            $order->confirmed_at = now();
-        }
-        if ($validated['status'] === 'cancelled' && $order->cancelled_at === null) {
-            $order->cancelled_at = now();
-        }
-        if ($validated['production_status'] === 'completed' && $order->ready_to_ship_at === null) {
-            $order->ready_to_ship_at = now();
-        }
-        if ($validated['shipping_status'] === 'shipped' && $order->shipped_at === null) {
-            $order->shipped_at = now();
-        }
-        if ($validated['shipping_status'] === 'delivered' && $order->delivered_at === null) {
-            $order->delivered_at = now();
-        }
-
-        $order->update($validated);
-
-        $actor = $request->user();
-
-        DB::afterCommit(function () use ($order, $actor, $oldValues, $newValues): void {
-            event(new AuditEvent('orders.order_edited', $actor, [
-                'subject_type' => 'order',
-                'subject_id' => $order->id,
-                'subject_public_id' => $order->public_id,
-                'customer_id' => $order->customer_id,
-                'customer_public_id' => $order->customer?->public_id,
-                'old_values' => $oldValues,
-                'new_values' => $newValues,
-                'metadata' => [
-                    'cancellation_reason' => $order->cancellation_reason ?? null,
-                ],
-            ]));
-        });
+        $salesOrderService = app(SalesOrderService::class);
+        $targetStatus = OrderStatus::from($validated['status']);
+        $salesOrderService->transitionStatus($order, $targetStatus, $validated, $request->user());
 
         if ($request->wantsJson()) {
             return response()->json([

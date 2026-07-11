@@ -7,6 +7,33 @@
         @endif
     </x-slot:header>
 
+    <div 
+        x-data="{
+            selectedOrders: [],
+            pageOrderIds: {{ json_encode($orders->pluck('public_id')->all()) }},
+            get allSelected() {
+                return this.pageOrderIds.length > 0 && this.pageOrderIds.every(id => this.selectedOrders.includes(id));
+            },
+            get someSelected() {
+                return this.selectedOrders.length > 0 && !this.allSelected;
+            },
+            toggleAll() {
+                if (this.allSelected) {
+                    this.selectedOrders = this.selectedOrders.filter(id => !this.pageOrderIds.includes(id));
+                } else {
+                    this.pageOrderIds.forEach(id => {
+                        if (!this.selectedOrders.includes(id)) {
+                            this.selectedOrders.push(id);
+                        }
+                    });
+                }
+            },
+            submitBulkAction(action) {
+                document.getElementById('bulk-action-input').value = action;
+                document.getElementById('bulk-action-form').submit();
+            }
+        }"
+    >
     @php
         $hasFilters = !empty($activeFilters['search']) || !empty($activeFilters['order_source']) || isset($activeFilters['design_approved']) && $activeFilters['design_approved'] !== '' || !empty($activeFilters['placed_from']) || !empty($activeFilters['placed_to']);
     @endphp
@@ -200,7 +227,12 @@
             <div class="bg-white border border-[color:var(--color-border)] rounded-2xl p-4 shadow-xs hover:border-neutral-300 transition-colors">
                 <div class="flex items-center justify-between gap-2 border-b border-neutral-100 pb-2.5 mb-2.5">
                     <div class="flex items-center gap-2">
-                        <input type="checkbox" disabled class="rounded border-neutral-300 opacity-50 cursor-not-allowed">
+                        <input 
+                            type="checkbox" 
+                            :value="'{{ $o->public_id }}'" 
+                            x-model="selectedOrders"
+                            class="rounded border-neutral-300 text-[color:var(--color-brand-600)] focus:ring-[color:var(--color-brand-500)] cursor-pointer"
+                        >
                         <a href="{{ route('admin.orders.show', ['order' => $o->public_id]) }}" class="font-mono font-bold text-[color:var(--color-brand-600)] text-sm hover:underline">
                             {{ $o->public_id }}
                         </a>
@@ -304,7 +336,13 @@
             <x-table.head>
                 <tr>
                     <th scope="col" class="w-10 px-4 py-3">
-                        <input type="checkbox" disabled class="rounded border-neutral-300 text-[color:var(--color-brand-600)] focus:ring-[color:var(--color-brand-500)] cursor-not-allowed opacity-50" title="Bulk actions are disabled in V1">
+                        <input 
+                            type="checkbox" 
+                            @change="toggleAll()"
+                            :checked="allSelected"
+                            :indeterminate="someSelected"
+                            class="rounded border-neutral-300 text-[color:var(--color-brand-600)] focus:ring-[color:var(--color-brand-500)] cursor-pointer"
+                        >
                     </th>
                     <x-table.heading sortable :direction="($activeFilters['sort'] ?? '') === 'public_id' ? ($activeFilters['direction'] ?? 'desc') : null" :href="route('admin.orders.index', array_merge($activeFilters, ['sort' => 'public_id', 'direction' => ($activeFilters['sort'] ?? '') === 'public_id' && ($activeFilters['direction'] ?? 'desc') === 'asc' ? 'desc' : 'asc']))">
                         Order No
@@ -361,7 +399,12 @@
                     @endphp
                     <x-table.row>
                         <x-table.cell>
-                            <input type="checkbox" disabled class="rounded border-neutral-300 opacity-50 cursor-not-allowed">
+                            <input 
+                                type="checkbox" 
+                                :value="'{{ $o->public_id }}'" 
+                                x-model="selectedOrders"
+                                class="rounded border-neutral-300 text-[color:var(--color-brand-600)] focus:ring-[color:var(--color-brand-500)] cursor-pointer"
+                            >
                         </x-table.cell>
                         <x-table.cell class="font-mono font-bold text-[color:var(--color-brand-600)]">
                             <a href="{{ route('admin.orders.show', ['order' => $o->public_id]) }}" class="hover:underline focus-visible:ring-2 focus-visible:ring-[color:var(--focus-ring-color)] rounded">
@@ -471,4 +514,79 @@
             display: none;
         }
     </style>
+
+    <!-- Hidden Form for Bulk Action Submission -->
+    <form id="bulk-action-form" method="POST" action="{{ route('admin.orders.bulk') }}" class="hidden">
+        @csrf
+        <input type="hidden" name="action" id="bulk-action-input">
+        <template x-for="id in selectedOrders" :key="id">
+            <input type="hidden" name="order_ids[]" :value="id">
+        </template>
+    </form>
+
+    <!-- Floating Bulk Action Toolbar -->
+    <div 
+        x-show="selectedOrders.length > 0"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 translate-y-10"
+        x-transition:enter-end="opacity-100 translate-y-0"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100 translate-y-0"
+        x-transition:leave-end="opacity-0 translate-y-10"
+        class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-neutral-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-6 z-50 border border-neutral-800"
+    >
+        <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-[color:var(--color-brand-500)] animate-pulse"></span>
+            <span class="text-xs font-bold text-neutral-300 whitespace-nowrap">
+                <span x-text="selectedOrders.length + (selectedOrders.length === 1 ? ' order selected' : ' orders selected')"></span>
+            </span>
+        </div>
+        
+        <div class="h-4 w-px bg-neutral-800"></div>
+
+        <div class="flex items-center gap-2">
+            <button 
+                type="button"
+                @click="$dispatch('open-overlay', 'bulk-confirm-modal')"
+                class="px-3.5 py-1.5 bg-white text-neutral-900 hover:bg-neutral-100 rounded-xl text-xs font-bold transition-colors focus:outline-none cursor-pointer"
+            >
+                Confirm
+            </button>
+            <button 
+                type="button"
+                @click="$dispatch('open-overlay', 'bulk-cancel-modal')"
+                class="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-colors focus:outline-none cursor-pointer"
+            >
+                Cancel
+            </button>
+        </div>
+
+        <div class="h-4 w-px bg-neutral-800"></div>
+
+        <button 
+            type="button"
+            @click="selectedOrders = []"
+            class="text-neutral-400 hover:text-white text-xs font-bold transition-colors focus:outline-none whitespace-nowrap cursor-pointer"
+        >
+            Clear Selection
+        </button>
+    </div>
+
+    <!-- Confirmation Modals -->
+    <x-modal id="bulk-confirm-modal" title="Confirm selected orders?">
+        <p class="text-sm text-neutral-600">This action will change the status of all selected orders. Are you sure you want to proceed?</p>
+        <x-slot:footer>
+            <button type="button" @click="$dispatch('close-overlay', 'bulk-confirm-modal')" class="px-4 py-2 border border-neutral-300 rounded-xl text-xs font-semibold text-neutral-700 bg-white hover:bg-neutral-50 cursor-pointer">Cancel</button>
+            <button type="button" @click="submitBulkAction('confirm')" class="px-4 py-2 bg-[color:var(--color-brand-600)] text-white hover:bg-[color:var(--color-brand-700)] rounded-xl text-xs font-bold cursor-pointer">Confirm</button>
+        </x-slot:footer>
+    </x-modal>
+
+    <x-modal id="bulk-cancel-modal" title="Cancel selected orders?">
+        <p class="text-sm text-neutral-600">This action will cancel all selected orders. Are you sure you want to proceed?</p>
+        <x-slot:footer>
+            <button type="button" @click="$dispatch('close-overlay', 'bulk-cancel-modal')" class="px-4 py-2 border border-neutral-300 rounded-xl text-xs font-semibold text-neutral-700 bg-white hover:bg-neutral-50 cursor-pointer">Cancel</button>
+            <button type="button" @click="submitBulkAction('cancel')" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold cursor-pointer">Cancel Orders</button>
+        </x-slot:footer>
+    </x-modal>
+    </div>
 </x-layouts.admin>

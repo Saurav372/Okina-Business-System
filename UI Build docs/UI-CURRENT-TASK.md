@@ -7,22 +7,18 @@ Products Module (U3.2)
 U3.2.1 Product Index
 
 ## Goal
-Implement the main product listing page with status filters, search, pagination, and quick access to product detail/edit.
+Implement the main products index page listing all products with status filtering, search capabilities, table listing, and pagination.
 
 ## Dependencies
 **Depends On:**
 - U2.1 (Application Shell Layout)
-- U1.2.1 (Table / Pagination Components)
+- U1.2.1 (DataTable)
+- U1.2.2 (Pagination)
 
 ## Required Deliverables
-- [ ] Responsive product listing table (desktop) and card layout (mobile).
-- [ ] Status filter tabs or selectors (e.g. All, Active, Draft, Out of Stock, Bulk Only, Archived).
-- [ ] Text search for Product name, SKU, and slug.
-- [ ] Pagination controls for navigating large product catalogs.
-- [ ] Quick actions per row: View/Edit detail, status indicator.
-- [ ] Clean empty state handling.
+- Product index view with standard table and responsive layouts.
+- Product status filtering controls (active, draft, out of stock, archived).
+- Search and pagination capabilities.
 
 ## Completed Prerequisites
-- U2.1 (Application Shell Layout)
-- U1.2.1 (Table / Pagination Components)
-- U3.1 Orders Module (all subtasks U3.1.1–U3.1.6 Completed; U3.1.7 Deferred)
+- U3.1.7 (Order Bulk Actions)

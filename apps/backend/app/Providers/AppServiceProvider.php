@@ -17,6 +17,7 @@ use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\ProductSku;
 use App\Models\Refund;
+use App\Models\User;
 use App\Models\VendorOrder;
 use App\Observers\CustomerObserver;
 use App\Observers\GoogleSheetsSyncObserver;
@@ -32,6 +33,7 @@ use App\Policies\PaymentPolicy;
 use App\Policies\ProductCategoryPolicy;
 use App\Policies\ProductPolicy;
 use App\Policies\RefundPolicy;
+use App\Support\Navigation\Navigation;
 use App\Support\Products\CustomizationOptionRules;
 use App\Support\Products\PublicCatalogRules;
 use Illuminate\Support\Facades\DB;
@@ -57,6 +59,12 @@ class AppServiceProvider extends ServiceProvider
         if (config('database.default') === 'sqlite') {
             DB::statement('PRAGMA foreign_keys = ON;');
         }
+        Gate::before(function ($user, $ability) {
+            if ($user instanceof User && str_contains($ability, '.')) {
+                return $user->hasPermissionTo($ability) ? true : null;
+            }
+        });
+
         Gate::policy(AuditLog::class, AuditLogPolicy::class);
         Gate::policy(NotificationLog::class, NotificationLogPolicy::class);
         Gate::policy(Order::class, OrderPolicy::class);
@@ -81,7 +89,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Inject navigation items automatically to the admin layout
         view()->composer('components.layouts.admin', function ($view) {
-            $view->with('navigation', (new \App\Support\Navigation\Navigation)->forUser(auth()->user()));
+            $view->with('navigation', (new Navigation)->forUser(auth()->user()));
         });
     }
 }

@@ -2,10 +2,12 @@
 
 namespace App\Services;
 
+use App\Enums\OrderStatus;
 use App\Events\AuditEvent;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\ProductSku;
+use App\Models\User;
 use App\Support\Orders\OrderTotalsCalculator;
 use App\Support\Orders\SalesOrderRules;
 use App\Support\Products\CustomizationSnapshotBuilder;
@@ -88,7 +90,7 @@ readonly class SalesOrderService
         );
 
         $paymentSchedule = isset($input['advance_payment']) ? ['payment_schedule' => $input['advance_payment']] : null;
- 
+
         $order = DB::transaction(function () use ($customer, $orderItemAttributes, $totals, $currency, $input, $actor, $paymentSchedule) {
             $order = Order::create([
                 'order_type' => $this->rules->orderType(),
@@ -331,5 +333,77 @@ readonly class SalesOrderService
         });
 
         return $order->fresh();
+    }
+
+    /**
+     * Transition the status of an order using unified rules and events.
+     */
+    public function transitionStatus(
+        Order $order,
+        OrderStatus $targetStatus,
+        array $attributes = [],
+        ?User $actor = null
+    ): Order {
+        $currentStatus = OrderStatus::tryFrom($order->status);
+
+        if ($currentStatus && ! $currentStatus->canTransitionTo($targetStatus)) {
+            throw ValidationException::withMessages([
+                'status' => 'Invalid order status transition.',
+            ]);
+        }
+
+        $oldValues = [
+            'status' => $order->status,
+            'design_status' => $order->design_status,
+            'production_status' => $order->production_status,
+            'shipping_status' => $order->shipping_status,
+        ];
+
+        $updateData = array_merge([
+            'status' => $targetStatus->value(),
+        ], $attributes);
+
+        // Auto-update timestamps based on status transitions
+        if ($targetStatus === OrderStatus::Confirmed && $order->confirmed_at === null) {
+            $order->confirmed_at = now();
+        }
+        if ($targetStatus === OrderStatus::Cancelled && $order->cancelled_at === null) {
+            $order->cancelled_at = now();
+        }
+        if (isset($updateData['production_status']) && $updateData['production_status'] === 'completed' && $order->ready_to_ship_at === null) {
+            $order->ready_to_ship_at = now();
+        }
+        if (isset($updateData['shipping_status']) && $updateData['shipping_status'] === 'shipped' && $order->shipped_at === null) {
+            $order->shipped_at = now();
+        }
+        if (isset($updateData['shipping_status']) && $updateData['shipping_status'] === 'delivered' && $order->delivered_at === null) {
+            $order->delivered_at = now();
+        }
+
+        $order->update($updateData);
+
+        $newValues = [
+            'status' => $order->status,
+            'design_status' => $order->design_status,
+            'production_status' => $order->production_status,
+            'shipping_status' => $order->shipping_status,
+        ];
+
+        DB::afterCommit(function () use ($order, $actor, $oldValues, $newValues): void {
+            event(new AuditEvent('orders.order_edited', $actor, [
+                'subject_type' => 'order',
+                'subject_id' => $order->id,
+                'subject_public_id' => $order->public_id,
+                'customer_id' => $order->customer_id,
+                'customer_public_id' => $order->customer?->public_id,
+                'old_values' => $oldValues,
+                'new_values' => $newValues,
+                'metadata' => [
+                    'cancellation_reason' => $order->cancellation_reason ?? null,
+                ],
+            ]));
+        });
+
+        return $order;
     }
 }

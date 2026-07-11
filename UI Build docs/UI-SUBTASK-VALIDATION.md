@@ -1659,6 +1659,37 @@ Notes: Tax fields validate states dynamically. Settings values persist correctly
  
 ---
 
+### U3.1.7 Order Bulk Actions
+**Status:** Completed
+
+**Implementation Validation**
+- [x] Refactored SalesOrderService to add unified transitionStatus method.
+- [x] Refactored AdminOrderActionController to consume transitionStatus.
+- [x] Created BulkOrderActionRequest, BulkOrderActionController, BulkOrderActionService, and BulkOrderActionResult.
+- [x] Registered routes with can:orders.manage middleware.
+- [x] Configured Gate::before in AppServiceProvider.
+
+**UI Validation**
+- [x] Desktop table and mobile cards support row selection.
+- [x] Table header checkbox supports checked/indeterminate toggle.
+- [x] x-show floating actions toolbar slides in/out dynamically.
+- [x] Integrates confirmation overlay modals.
+
+**Process Validation**
+- [x] AdminOrderBulkActionTest fully passing.
+- [x] PHPStan analysis passes with 0 errors.
+- [x] Pint format passes.
+- [x] Documentation updated.
+- [x] Git restore point created.
+
+**Review Sign-off**
+Reviewer: AI Assistant
+Date: 2026-07-11
+Result: [x] Pass [ ] Fail
+Notes: Features lock rows with pessimistic lockForUpdate(), verify unique IDs sorting and matching, and rollback atomically.
+ 
+---
+
 ## Motion Validation Template (U1.6)
 *(Apply this checklist to transitions, loaders, page changes, and similar features)*
 

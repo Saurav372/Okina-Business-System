@@ -3,8 +3,10 @@
 use App\Http\Controllers\Admin\AdminOrderActionController;
 use App\Http\Controllers\Admin\AdminOrderDesignFileController;
 use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\Admin\BulkOrderActionController;
 use App\Http\Controllers\Admin\ExpenseCategoryController;
 use App\Http\Controllers\Admin\ExpenseController;
+use App\Http\Controllers\Admin\FinanceLedgerController;
 use App\Http\Controllers\Admin\GoogleSheetsConnectionController;
 use App\Http\Controllers\Admin\GoogleSheetsSyncLogController;
 use App\Http\Controllers\Admin\NotificationLogController;
@@ -12,11 +14,13 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\RefundController;
 use App\Http\Controllers\Admin\SalesOrderController;
+use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\VendorController;
 use App\Http\Controllers\Admin\VendorOrderController;
 use App\Http\Controllers\Admin\VendorOrderItemController;
 use App\Http\Controllers\Admin\VendorPaymentController;
 use App\Http\Controllers\AdminAuthController;
+use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\CustomerAuthController;
 use App\Http\Controllers\StoredFileAccessController;
 use Illuminate\Support\Facades\Route;
@@ -53,13 +57,14 @@ Route::prefix('admin')->group(function () {
 });
 
 Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function () {
-    Route::get('/', [\App\Http\Controllers\AdminDashboardController::class, 'index'])->name('admin.dashboard');
+    Route::get('/', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
     Route::get('/profile', [AdminAuthController::class, 'profile'])->name('admin.profile');
     Route::get('/security', [AdminAuthController::class, 'security'])->name('admin.security');
     Route::post('/logout', [AdminAuthController::class, 'destroy'])->name('admin.logout');
     Route::get('/orders', [OrderController::class, 'index'])->name('admin.orders.index');
     Route::get('/orders/{order:public_id}', [OrderController::class, 'show'])->name('admin.orders.show');
     Route::post('/orders/{order:public_id}/status', [AdminOrderActionController::class, 'updateStatus'])->name('admin.orders.status.update');
+    Route::post('/orders/bulk', [BulkOrderActionController::class, 'handle'])->middleware('can:orders.manage')->name('admin.orders.bulk');
     Route::post('/orders/{order:public_id}/shipping', [AdminOrderActionController::class, 'updateShipping'])->name('admin.orders.shipping.update');
     Route::post('/orders/{order:public_id}/payments', [AdminOrderActionController::class, 'recordPayment'])->name('admin.orders.payments.record');
     Route::get('/orders/{order:public_id}/pdf/preview', [SalesOrderController::class, 'previewPdf'])->name('admin.orders.pdf.preview');
@@ -77,11 +82,11 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     Route::get('/payments', [PaymentController::class, 'index'])->name('admin.payments.index');
     Route::get('/payments/{payment}', [PaymentController::class, 'show'])->name('admin.payments.show');
     Route::get('/refunds', [RefundController::class, 'index'])->name('admin.refunds.index');
- 
+
     // Finance ledgers routes
-    Route::get('/accounting/customer-ledger', [\App\Http\Controllers\Admin\FinanceLedgerController::class, 'customerLedger'])->name('admin.accounting.customer_ledger');
-    Route::get('/accounting/vendor-ledger', [\App\Http\Controllers\Admin\FinanceLedgerController::class, 'vendorLedger'])->name('admin.accounting.vendor_ledger');
-    Route::get('/accounting/business-ledger', [\App\Http\Controllers\Admin\FinanceLedgerController::class, 'businessLedger'])->name('admin.accounting.business_ledger');
+    Route::get('/accounting/customer-ledger', [FinanceLedgerController::class, 'customerLedger'])->name('admin.accounting.customer_ledger');
+    Route::get('/accounting/vendor-ledger', [FinanceLedgerController::class, 'vendorLedger'])->name('admin.accounting.vendor_ledger');
+    Route::get('/accounting/business-ledger', [FinanceLedgerController::class, 'businessLedger'])->name('admin.accounting.business_ledger');
     Route::post('/refunds', [RefundController::class, 'store'])->name('admin.refunds.store');
     Route::post('/refunds/{refund}/approve', [RefundController::class, 'approve'])->name('admin.refunds.approve');
     Route::post('/refunds/{refund}/process', [RefundController::class, 'process'])->name('admin.refunds.process');
@@ -164,26 +169,27 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     Route::post('/google-sheets/sync-logs/bulk-retry', [GoogleSheetsSyncLogController::class, 'bulkRetry'])->name('admin.google_sheets.sync_logs.bulk_retry');
     Route::post('/google-sheets/sync-logs/prune', [GoogleSheetsSyncLogController::class, 'prune'])->name('admin.google_sheets.sync_logs.prune');
     Route::post('/google-sheets/sync-record', [GoogleSheetsSyncLogController::class, 'syncRecord'])->name('admin.google_sheets.sync_record');
- 
+
     // Settings admin routes
-    Route::get('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('admin.settings.index');
-    Route::post('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'update'])->name('admin.settings.update');
+    Route::get('/settings', [SettingController::class, 'index'])->name('admin.settings.index');
+    Route::post('/settings', [SettingController::class, 'update'])->name('admin.settings.update');
 });
 
 // Web App Manifest Dynamic Route
 Route::get('/manifest.webmanifest', function () {
     $b = config('branding');
+
     return response()->json([
-        'name'             => $b['name'],
-        'short_name'       => $b['short_name'],
-        'description'      => $b['seo']['description'],
-        'theme_color'      => $b['colors']['theme'],
+        'name' => $b['name'],
+        'short_name' => $b['short_name'],
+        'description' => $b['seo']['description'],
+        'theme_color' => $b['colors']['theme'],
         'background_color' => '#ffffff',
-        'display'          => 'standalone',
-        'icons'            => [[
-            'src'     => $b['logo']['icon'],
-            'sizes'   => 'any',
-            'type'    => 'image/svg+xml',
+        'display' => 'standalone',
+        'icons' => [[
+            'src' => $b['logo']['icon'],
+            'sizes' => 'any',
+            'type' => 'image/svg+xml',
             'purpose' => 'any maskable',
         ]],
     ])->header('Content-Type', 'application/manifest+json');
