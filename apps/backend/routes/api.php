@@ -7,11 +7,11 @@ use App\Http\Controllers\Api\ProductCustomizationController;
 use App\Http\Controllers\Api\PublicCatalogController;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Support\Facades\Route;
- 
+
 Route::get('/health', function () {
     return ['status' => 'ok'];
 });
- 
+
 Route::prefix('catalog')->group(function () {
     Route::get('/categories', [PublicCatalogController::class, 'categories']);
     Route::get('/categories/{category:slug}/products', [PublicCatalogController::class, 'categoryProducts']);

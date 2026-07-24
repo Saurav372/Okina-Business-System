@@ -46,7 +46,7 @@ class OrderIndexResource extends JsonResource
             'status' => $this->status,
             'payment_status' => $paymentStatus,
             'total_amount_minor' => $totalAmount,
-            'total_amount_formatted' => '₹' . number_format($totalAmount / 100, 2),
+            'total_amount_formatted' => '₹'.number_format($totalAmount / 100, 2),
             'design_approved' => (bool) $this->design_approved,
             'created_at' => $this->created_at?->toIso8601String(),
             'placed_at' => $this->placed_at?->toIso8601String(),

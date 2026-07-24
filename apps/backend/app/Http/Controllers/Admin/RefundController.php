@@ -2,273 +2,158 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Events\AuditEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\RefundLedgerIndexRequest;
 use App\Http\Requests\Admin\StoreRefundRequest;
 use App\Http\Resources\RefundResource;
-use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Refund;
-use Illuminate\Support\Facades\DB;
+use App\Services\RefundService;
+use App\Support\Finance\RefundCatalog;
+use App\Support\Finance\RefundFilters;
+use App\Support\Finance\RefundMetrics;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Validation\ValidationException;
 
 class RefundController extends Controller
 {
-    private array $auditPayload = [];
+    public function __construct(
+        protected RefundCatalog $catalog,
+        protected RefundService $refundService
+    ) {}
 
     public function index(RefundLedgerIndexRequest $request)
     {
         Gate::authorize('viewAny', Refund::class);
 
-        $query = Refund::query()->with(['order', 'payment']);
+        $filters = new RefundFilters($request->all());
+        $metrics = new RefundMetrics($filters);
+        $refunds = $this->catalog->getPaginatedRefunds($filters, $request->integer('per_page', 25));
 
-        $validated = $request->validated();
-
-        if (! empty($validated['start_date'])) {
-            $query->whereDate('created_at', '>=', $validated['start_date']);
-        }
-        if (! empty($validated['end_date'])) {
-            $query->whereDate('created_at', '<=', $validated['end_date']);
-        }
-        if (! empty($validated['provider'])) {
-            $query->where('provider', $validated['provider']);
-        }
-        if (isset($validated['status'])) {
-            $query->where('status', $validated['status']);
-        }
-        if (! empty($validated['refund_type'])) {
-            $query->where('refund_type', $validated['refund_type']);
+        if ($request->wantsJson()) {
+            return RefundResource::collection($refunds)->additional([
+                'meta' => [
+                    'total_amount_minor' => $metrics->totalRefundedVolumeMinor,
+                ],
+            ]);
         }
 
-        $totalQuery = clone $query;
+        $succeededPayments = Payment::where('status', Payment::STATUS_SUCCEEDED)
+            ->with('order.customer')
+            ->latest('id')
+            ->limit(50)
+            ->get();
 
-        $perPage = $validated['per_page'] ?? 20;
-        $refunds = $query->latest('id')->paginate($perPage);
-
-        return RefundResource::collection($refunds)->additional([
-            'meta' => [
-                'total_amount_minor' => (int) $totalQuery->sum('amount_minor'),
-            ],
+        return view('admin.refunds.index', [
+            'filters' => $filters,
+            'metrics' => $metrics,
+            'refunds' => $refunds,
+            'succeededPayments' => $succeededPayments,
         ]);
     }
 
-    public function show(Refund $refund)
+    public function show(Request $request, Refund $refund)
     {
         Gate::authorize('view', $refund);
 
-        $refund->load(['order', 'payment']);
+        $refund->load(['order.customer', 'payment', 'requester', 'approver', 'processor']);
 
-        return new RefundResource($refund);
+        if ($request->wantsJson()) {
+            return new RefundResource($refund);
+        }
+
+        return view('admin.refunds.show', [
+            'refund' => $refund,
+        ]);
     }
 
     public function store(StoreRefundRequest $request)
     {
         Gate::authorize('create', Refund::class);
 
-        $validated = $request->validated();
-        $actor = $request->user();
+        $payment = Payment::findOrFail($request->integer('payment_id'));
 
-        $refund = DB::transaction(function () use ($validated, $actor) {
-            $payment = Payment::where('id', $validated['payment_id'])
-                ->lockForUpdate()
-                ->firstOrFail();
+        $refund = $this->refundService->requestRefund(
+            payment: $payment,
+            amountMinor: $request->integer('amount_minor'),
+            reasonCode: $request->string('reason_code'),
+            reasonNote: $request->input('reason_note'),
+            actor: $request->user()
+        );
 
-            $order = Order::where('public_id', $validated['order_public_id'])->firstOrFail();
+        if ($request->wantsJson()) {
+            return new RefundResource($refund);
+        }
 
-            $existingRefundsSum = (int) $payment->refunds()
-                ->reservesBalance()
-                ->sum('amount_minor');
-
-            $remainingBefore = $payment->amount_minor - $existingRefundsSum;
-            $requestedAmount = (int) $validated['amount_minor'];
-
-            if ($requestedAmount > $remainingBefore) {
-                throw ValidationException::withMessages([
-                    'amount_minor' => ['The requested refund amount exceeds the remaining refundable balance of '.$remainingBefore.' minor units.'],
-                ]);
-            }
-
-            if ($validated['refund_type'] === Refund::TYPE_FULL && $requestedAmount !== $remainingBefore) {
-                throw ValidationException::withMessages([
-                    'amount_minor' => ['A full refund must equal the remaining refundable balance of '.$remainingBefore.' minor units.'],
-                ]);
-            }
-
-            $refund = Refund::create([
-                'order_id' => $order->id,
-                'payment_id' => $payment->id,
-                'provider' => $payment->provider,
-                'refund_type' => $validated['refund_type'],
-                'status' => Refund::STATUS_REQUESTED,
-                'amount_minor' => $requestedAmount,
-                'currency' => $payment->currency ?? 'INR',
-                'reason_code' => $validated['reason_code'] ?? null,
-                'reason_note' => $validated['reason_note'] ?? null,
-                'requested_by_user_id' => $actor?->id,
-                'requested_at' => now(),
-            ]);
-
-            $remainingAfter = $remainingBefore - $requestedAmount;
-
-            $this->auditPayload = [
-                'refund_id' => $refund->id,
-                'refund_public_id' => $refund->id,
-                'payment_id' => $payment->id,
-                'payment_public_id' => $payment->id,
-                'order_public_id' => $order->public_id,
-                'amount_minor' => $refund->amount_minor,
-                'refund_type' => $refund->refund_type,
-                'requested_by_user_id' => $actor?->id,
-                'remaining_refundable_amount_before_request' => $remainingBefore,
-                'remaining_after_request' => $remainingAfter,
-            ];
-
-            return $refund;
-        });
-
-        event(new AuditEvent('refunds.refund_requested', $actor, $this->auditPayload));
-
-        $refund->load(['order', 'payment']);
-
-        return (new RefundResource($refund))
-            ->response($request)
-            ->setStatusCode(201)
-            ->header('Location', route('admin.refunds.show', $refund));
+        return redirect()->route('admin.refunds.show', $refund)
+            ->with('success', "Refund request [#{$refund->id}] of ₹".number_format($refund->amount_minor / 100, 2).' created in REQUESTED status.');
     }
 
-    public function approve(Refund $refund)
+    public function approve(Request $request, Refund $refund)
     {
         Gate::authorize('approve', $refund);
 
-        $actor = request()->user();
+        $approved = $this->refundService->approveRefund(
+            refund: $refund,
+            actor: $request->user()
+        );
 
-        $lockedRefund = DB::transaction(function () use ($refund, $actor) {
-            $lockedRefund = Refund::query()
-                ->lockForUpdate()
-                ->findOrFail($refund->getKey());
+        if ($request->wantsJson()) {
+            return new RefundResource($approved);
+        }
 
-            $lockedRefund->loadMissing(['order', 'payment']);
-
-            $oldStatus = $lockedRefund->status;
-
-            try {
-                $lockedRefund->approve($actor);
-            } catch (\LogicException $e) {
-                throw ValidationException::withMessages([
-                    'refund' => [$e->getMessage()],
-                ]);
-            }
-
-            $lockedRefund->save();
-
-            $this->auditPayload = [
-                'refund_public_id' => $lockedRefund->id,
-                'payment_public_id' => $lockedRefund->payment_id,
-                'order_public_id' => $lockedRefund->order?->public_id,
-                'old_status' => $oldStatus,
-                'new_status' => Refund::STATUS_APPROVED,
-                'status' => Refund::STATUS_APPROVED,
-                'approved_by_user_id' => $actor?->id,
-                'actor_type' => 'user',
-                'actor_id' => $actor?->id,
-                'occurred_at' => now()->toIso8601String(),
-            ];
-
-            return $lockedRefund;
-        });
-
-        event(new AuditEvent('refunds.refund_approved', $actor, $this->auditPayload));
-
-        return new RefundResource($lockedRefund);
+        return redirect()->back()
+            ->with('success', "Refund [#{$approved->id}] successfully APPROVED for processing.");
     }
 
-    public function process(Refund $refund)
+    public function process(Request $request, Refund $refund)
     {
         Gate::authorize('process', $refund);
 
-        $actor = request()->user();
+        $providerRefundId = $request->input('provider_refund_id');
 
-        $lockedRefund = DB::transaction(function () use ($refund, $actor) {
-            $lockedRefund = Refund::query()
-                ->lockForUpdate()
-                ->findOrFail($refund->getKey());
+        $processed = $this->refundService->processRefund(
+            refund: $refund,
+            providerRefundId: $providerRefundId,
+            actor: $request->user()
+        );
 
-            $lockedRefund->loadMissing(['order', 'payment']);
+        if ($request->wantsJson()) {
+            return new RefundResource($processed);
+        }
 
-            $oldStatus = $lockedRefund->status;
-
-            try {
-                $lockedRefund->markProcessing($actor);
-            } catch (\LogicException $e) {
-                throw ValidationException::withMessages([
-                    'refund' => [$e->getMessage()],
-                ]);
-            }
-
-            $lockedRefund->save();
-
-            $this->auditPayload = [
-                'refund_public_id' => $lockedRefund->id,
-                'payment_public_id' => $lockedRefund->payment_id,
-                'order_public_id' => $lockedRefund->order?->public_id,
-                'old_status' => $oldStatus,
-                'new_status' => Refund::STATUS_PROCESSING,
-                'actor_type' => 'user',
-                'actor_id' => $actor?->id,
-                'occurred_at' => now()->toIso8601String(),
-            ];
-
-            return $lockedRefund;
-        });
-
-        event(new AuditEvent('refunds.refund_processing_started', $actor, $this->auditPayload));
-
-        return new RefundResource($lockedRefund);
+        return redirect()->back()
+            ->with('success', "Refund [#{$processed->id}] successfully PROCESSED and marked SUCCEEDED.");
     }
 
-    public function cancel(Refund $refund)
+    public function retry(Request $request, Refund $refund): RedirectResponse
+    {
+        Gate::authorize('retry', $refund);
+
+        $retried = $this->refundService->retryRefund(
+            refund: $refund,
+            actor: $request->user()
+        );
+
+        return redirect()->back()
+            ->with('success', "Refund [#{$retried->id}] payout successfully retried and SUCCEEDED.");
+    }
+
+    public function cancel(Request $request, Refund $refund)
     {
         Gate::authorize('cancel', $refund);
 
-        $actor = request()->user();
+        $cancelled = $this->refundService->cancelRefund(
+            refund: $refund,
+            actor: $request->user()
+        );
 
-        $lockedRefund = DB::transaction(function () use ($refund, $actor) {
-            $lockedRefund = Refund::query()
-                ->lockForUpdate()
-                ->findOrFail($refund->getKey());
+        if ($request->wantsJson()) {
+            return new RefundResource($cancelled);
+        }
 
-            $lockedRefund->loadMissing(['order', 'payment']);
-
-            $oldStatus = $lockedRefund->status;
-
-            try {
-                $lockedRefund->cancel();
-            } catch (\LogicException $e) {
-                throw ValidationException::withMessages([
-                    'refund' => [$e->getMessage()],
-                ]);
-            }
-
-            $lockedRefund->save();
-
-            $this->auditPayload = [
-                'refund_public_id' => $lockedRefund->id,
-                'payment_public_id' => $lockedRefund->payment_id,
-                'order_public_id' => $lockedRefund->order?->public_id,
-                'old_status' => $oldStatus,
-                'new_status' => Refund::STATUS_CANCELLED,
-                'actor_type' => 'user',
-                'actor_id' => $actor?->id,
-                'occurred_at' => now()->toIso8601String(),
-            ];
-
-            return $lockedRefund;
-        });
-
-        event(new AuditEvent('refunds.refund_cancelled', $actor, $this->auditPayload));
-
-        return new RefundResource($lockedRefund);
+        return redirect()->back()
+            ->with('success', "Refund [#{$cancelled->id}] has been CANCELLED.");
     }
 }

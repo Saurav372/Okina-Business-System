@@ -26,7 +26,6 @@ class OrderPolicy
         return false;
     }
 
-
     public function create(Authenticatable $actor): bool
     {
         if ($actor instanceof User) {

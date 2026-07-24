@@ -6,62 +6,60 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\PaymentLedgerIndexRequest;
 use App\Http\Resources\PaymentResource;
 use App\Models\Payment;
+use App\Support\Finance\FinanceDashboardSummary;
+use App\Support\Finance\PaymentCatalog;
+use App\Support\Finance\PaymentFilters;
+use App\Support\Finance\PaymentMetrics;
+use App\Support\Finance\RefundFilters;
+use App\Support\Finance\RefundMetrics;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
 class PaymentController extends Controller
 {
+    public function __construct(
+        protected PaymentCatalog $catalog
+    ) {}
+
     public function index(PaymentLedgerIndexRequest $request)
     {
         Gate::authorize('viewAny', Payment::class);
 
-        $query = Payment::query()->with('order');
+        $filters = new PaymentFilters($request->all());
+        $paymentMetrics = new PaymentMetrics($filters);
+        $refundMetrics = new RefundMetrics(new RefundFilters($request->all()));
+        $summary = new FinanceDashboardSummary($paymentMetrics, $refundMetrics);
+        $payments = $this->catalog->getPaginatedPayments($filters, $request->integer('per_page', 25));
 
-        $validated = $request->validated();
-
-        if (! empty($validated['start_date'])) {
-            $query->whereDate('created_at', '>=', $validated['start_date']);
-        }
-        if (! empty($validated['end_date'])) {
-            $query->whereDate('created_at', '<=', $validated['end_date']);
-        }
-        if (! empty($validated['provider'])) {
-            $query->where('provider', $validated['provider']);
-        }
-        if (! empty($validated['method'])) {
-            $query->where('method', $validated['method']);
-        }
-        if (isset($validated['status'])) {
-            $query->where('status', $validated['status']);
-        }
-        if (! empty($validated['payment_type'])) {
-            $query->where('payment_type', $validated['payment_type']);
+        if ($request->wantsJson()) {
+            return PaymentResource::collection($payments)->additional([
+                'meta' => [
+                    'total_amount_minor' => $summary->grossCollectionsMinor,
+                    'total_gateway_fee_minor' => $summary->totalGatewayFeesMinor,
+                    'net_revenue_minor' => $summary->netRevenueMinor,
+                ],
+            ]);
         }
 
-        $totalQuery = clone $query;
-
-        $perPage = $validated['per_page'] ?? 20;
-        $payments = $query->latest('id')->paginate($perPage);
-
-        $meta = [
-            'total_amount_minor' => (int) $totalQuery->sum('amount_minor'),
-        ];
-
-        if ($request->user()?->hasPermissionTo('finance.view_cost')) {
-            $meta['total_gateway_fee_minor'] = (int) $totalQuery->sum('gateway_fee_minor');
-            $meta['total_net_amount_minor'] = (int) $totalQuery->sum('net_amount_minor');
-        }
-
-        return PaymentResource::collection($payments)->additional([
-            'meta' => $meta,
+        return view('admin.payments.index', [
+            'filters' => $filters,
+            'summary' => $summary,
+            'payments' => $payments,
         ]);
     }
 
-    public function show(Payment $payment)
+    public function show(Request $request, Payment $payment)
     {
         Gate::authorize('view', $payment);
 
-        $payment->load('order');
+        $payment->load(['order.customer', 'refunds']);
 
-        return new PaymentResource($payment);
+        if ($request->wantsJson()) {
+            return new PaymentResource($payment);
+        }
+
+        return view('admin.payments.show', [
+            'payment' => $payment,
+        ]);
     }
 }

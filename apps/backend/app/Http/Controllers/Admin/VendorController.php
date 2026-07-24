@@ -14,20 +14,23 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\View\View;
 
 class VendorController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of vendors (supports HTML Blade view and JSON API).
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): JsonResponse|View
     {
         Gate::authorize('viewAny', Vendor::class);
 
-        $query = Vendor::query();
+        $search = $request->input('search');
+        $status = $request->input('status');
 
-        if ($request->filled('search')) {
-            $search = $request->input('search');
+        $query = Vendor::withCount('purchaseOrders');
+
+        if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('vendor_code', 'like', "%{$search}%")
                     ->orWhere('name', 'like', "%{$search}%")
@@ -38,14 +41,36 @@ class VendorController extends Controller
             });
         }
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->input('status'));
+        if ($status && $status !== 'all') {
+            $query->where('status', $status);
         }
 
-        $vendors = $query->paginate($request->integer('per_page', 15));
+        $vendors = $query->orderBy('name')->paginate($request->integer('per_page', 15))->withQueryString();
 
-        return response()->json($vendors);
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json($vendors);
+        }
+
+        // KPI metrics (global, ignoring current filter)
+        $totalVendors  = Vendor::count();
+        $activeVendors = Vendor::where('status', VendorStatus::ACTIVE)->count();
+        $inactiveVendors = Vendor::where('status', VendorStatus::INACTIVE)->count();
+        $blockedVendors  = Vendor::where('status', VendorStatus::BLOCKED)->count();
+
+        return view('admin.vendors.index', [
+            'vendors'         => $vendors,
+            'statuses'        => VendorStatus::cases(),
+            'filters'         => (object) [
+                'search' => $search ?? '',
+                'status' => $status ?? '',
+            ],
+            'totalVendors'    => $totalVendors,
+            'activeVendors'   => $activeVendors,
+            'inactiveVendors' => $inactiveVendors,
+            'blockedVendors'  => $blockedVendors,
+        ]);
     }
+
 
     /**
      * Store a newly created resource in storage.

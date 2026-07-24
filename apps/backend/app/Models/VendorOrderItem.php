@@ -9,15 +9,32 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable([
+    'vendor_order_id',
     'product_sku_id',
+    'sku_code_snapshot',
     'quantity_ordered',
+    'quantity_received',
     'unit_cost_minor',
     'tax_amount_minor',
+    'line_total_minor',
     'expected_at',
     'notes',
 ])]
 class VendorOrderItem extends Model
 {
+    protected static function booted(): void
+    {
+        static::saving(function (VendorOrderItem $item) {
+            if (empty($item->sku_code_snapshot) && $item->product_sku_id) {
+                $sku = ProductSku::find($item->product_sku_id);
+                $item->sku_code_snapshot = $sku?->sku_code ?? 'SKU-SNAPSHOT';
+            }
+            if ($item->line_total_minor === null || $item->isDirty(['quantity_ordered', 'unit_cost_minor', 'tax_amount_minor'])) {
+                $item->line_total_minor = $item->calculateLineTotal();
+            }
+        });
+    }
+
     protected function casts(): array
     {
         return [
@@ -42,6 +59,23 @@ class VendorOrderItem extends Model
         $tax = $this->tax_amount_minor ?? 0;
 
         return ($qty * $cost) + $tax;
+    }
+
+    /**
+     * Remaining quantity yet to be received for this line item.
+     * Single source of truth: ordered − received (min 0).
+     */
+    public function remainingQuantity(): int
+    {
+        return max(0, $this->quantity_ordered - $this->quantity_received);
+    }
+
+    /**
+     * Whether this line item has been fully received.
+     */
+    public function isFullyReceived(): bool
+    {
+        return $this->remainingQuantity() === 0;
     }
 
     /**

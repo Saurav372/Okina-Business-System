@@ -2,9 +2,8 @@
 
 namespace App\Presenters;
 
-use App\Support\Dashboard\ChartSeriesDTO;
 use App\Support\Dashboard\ChartLayoutDTO;
-use Illuminate\Support\Collection;
+use App\Support\Dashboard\ChartSeriesDTO;
 
 class ChartGeometryPresenter
 {
@@ -48,7 +47,7 @@ class ChartGeometryPresenter
         // 3. Map X and Y coordinates inside viewBox
         $coordinates = collect();
         $valRange = max(0.0001, $graphMax - $graphMin);
-        
+
         foreach ($points as $index => $point) {
             $x = $paddingX + ($index / max(1, $n - 1)) * ($width - 2 * $paddingX);
             $y = $height - $paddingY - (($point->value - $graphMin) / $valRange) * ($height - 2 * $paddingY);
@@ -58,7 +57,7 @@ class ChartGeometryPresenter
                 'y' => round($y, 2),
                 'label' => $point->label,
                 'value' => $point->value,
-                'formatted' => $point->formattedValue ?? $series->unit . number_format($point->value, 2),
+                'formatted' => $point->formattedValue ?? $series->unit.number_format($point->value, 2),
             ]);
         }
 
@@ -67,10 +66,10 @@ class ChartGeometryPresenter
 
         return new ChartLayoutDTO(
             coordinates: $coordinates,
-            ticks: $ticks->map(fn($t) => [
+            ticks: $ticks->map(fn ($t) => [
                 'value' => $t,
                 'y' => round($height - $paddingY - (($t - $graphMin) / $valRange) * ($height - 2 * $paddingY), 2),
-                'label' => $series->unit . self::formatTickLabel($t),
+                'label' => $series->unit.self::formatTickLabel($t),
             ]),
             baselineY: round($baselineY, 2),
             maxY: $graphMax,
@@ -85,7 +84,7 @@ class ChartGeometryPresenter
     {
         $range = self::niceNum($max - $min, false);
         $d = self::niceNum($range / max(1, $maxTicks - 1), true);
-        
+
         $graphMin = floor($min / $d) * $d;
         $graphMax = ceil($max / $d) * $d;
 
@@ -106,20 +105,30 @@ class ChartGeometryPresenter
         if ($range <= 0) {
             return 10.0;
         }
-        
+
         $exponent = floor(log10($range));
         $fraction = $range / pow(10, $exponent);
 
         if ($round) {
-            if ($fraction < 1.5) $niceFraction = 1;
-            elseif ($fraction < 3) $niceFraction = 2;
-            elseif ($fraction < 7) $niceFraction = 5;
-            else $niceFraction = 10;
+            if ($fraction < 1.5) {
+                $niceFraction = 1;
+            } elseif ($fraction < 3) {
+                $niceFraction = 2;
+            } elseif ($fraction < 7) {
+                $niceFraction = 5;
+            } else {
+                $niceFraction = 10;
+            }
         } else {
-            if ($fraction <= 1) $niceFraction = 1;
-            elseif ($fraction <= 2) $niceFraction = 2;
-            elseif ($fraction <= 5) $niceFraction = 5;
-            else $niceFraction = 10;
+            if ($fraction <= 1) {
+                $niceFraction = 1;
+            } elseif ($fraction <= 2) {
+                $niceFraction = 2;
+            } elseif ($fraction <= 5) {
+                $niceFraction = 5;
+            } else {
+                $niceFraction = 10;
+            }
         }
 
         return $niceFraction * pow(10, $exponent);
@@ -129,11 +138,12 @@ class ChartGeometryPresenter
     {
         $abs = abs($value);
         if ($abs >= 1000000) {
-            return round($value / 1000000, 1) . 'M';
+            return round($value / 1000000, 1).'M';
         }
         if ($abs >= 1000) {
-            return round($value / 1000, 1) . 'K';
+            return round($value / 1000, 1).'K';
         }
-        return (string)$value;
+
+        return (string) $value;
     }
 }

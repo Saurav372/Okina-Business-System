@@ -2,10 +2,10 @@
 
 namespace Tests\Unit;
 
+use App\Presenters\ChartGeometryPresenter;
+use App\Support\Dashboard\ChartPathBuilder;
 use App\Support\Dashboard\ChartPointDTO;
 use App\Support\Dashboard\ChartSeriesDTO;
-use App\Support\Dashboard\ChartPathBuilder;
-use App\Presenters\ChartGeometryPresenter;
 use Tests\TestCase;
 
 class ChartGeometryTest extends TestCase
@@ -44,7 +44,7 @@ class ChartGeometryTest extends TestCase
         ]);
 
         $series = new ChartSeriesDTO('Static Series', $points, 'chart-2', '$');
-        
+
         // This should run without any division-by-zero errors
         $layout = ChartGeometryPresenter::present($series, 500, 200, 40, 20);
 
@@ -65,7 +65,7 @@ class ChartGeometryTest extends TestCase
         // Verify baseline is in the middle of max and min
         $this->assertLessThan(0.0, $layout->minY);
         $this->assertGreaterThan(0.0, $layout->maxY);
-        
+
         // Baseline Y coordinate must not be at the bottom (200 - 20 = 180)
         $this->assertLessThan(180.0, $layout->baselineY);
         $this->assertGreaterThan(20.0, $layout->baselineY);

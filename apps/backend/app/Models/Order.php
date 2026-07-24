@@ -179,32 +179,34 @@ class Order extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
- 
+
     public function mockups(): HasMany
     {
         return $this->hasMany(OrderMockup::class)->orderBy('sort_order');
     }
- 
+
     public function getExpectedAdvanceAmount(): int
     {
-        $extract = function($data) {
+        $extract = function ($data) {
             if (is_array($data) && isset($data['payment_schedule'])) {
                 $sched = $data['payment_schedule'];
                 if (is_array($sched) && isset($sched['amount_minor'])) {
                     return (int) $sched['amount_minor'];
                 }
+
                 return (int) $sched;
             }
+
             return 0;
         };
- 
+
         if (is_array($this->order_metadata)) {
             $val = $extract($this->order_metadata);
             if ($val > 0) {
                 return $val;
             }
         }
- 
+
         if ($this->internal_notes) {
             $data = json_decode($this->internal_notes, true);
             $val = $extract($data);
@@ -212,7 +214,7 @@ class Order extends Model
                 return $val;
             }
         }
- 
+
         return 0;
     }
 

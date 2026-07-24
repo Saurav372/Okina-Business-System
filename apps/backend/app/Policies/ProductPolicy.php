@@ -41,6 +41,13 @@ final class ProductPolicy
         return $user->hasAnyRole([Role::SUPER_ADMIN, Role::ADMIN]);
     }
 
+    public function manageSeo(User $user, Product $product): bool
+    {
+        return $user->hasPermissionTo('products.manage_seo')
+            || $user->hasPermissionTo('products.manage')
+            || $user->hasAnyRole([Role::SUPER_ADMIN, Role::ADMIN]);
+    }
+
     public function delete(User $user, Product $product): bool
     {
         return $user->hasRole(Role::SUPER_ADMIN);

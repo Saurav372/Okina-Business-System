@@ -14,7 +14,10 @@ class VendorOrderPolicy
     public function viewAny(Authenticatable $actor): bool
     {
         if ($actor instanceof User) {
-            return $actor->hasPermissionTo('purchases.view') || $actor->hasPermissionTo('purchases.manage');
+            return $actor->hasPermissionTo('purchases.view')
+                || $actor->hasPermissionTo('purchases.manage')
+                || $actor->hasPermissionTo('inventory.view')
+                || $actor->hasPermissionTo('inventory.manage');
         }
 
         return false;
@@ -26,7 +29,10 @@ class VendorOrderPolicy
     public function view(Authenticatable $actor, VendorOrder $vendorOrder): bool
     {
         if ($actor instanceof User) {
-            return $actor->hasPermissionTo('purchases.view') || $actor->hasPermissionTo('purchases.manage');
+            return $actor->hasPermissionTo('purchases.view')
+                || $actor->hasPermissionTo('purchases.manage')
+                || $actor->hasPermissionTo('inventory.view')
+                || $actor->hasPermissionTo('inventory.manage');
         }
 
         return false;
@@ -38,7 +44,8 @@ class VendorOrderPolicy
     public function create(Authenticatable $actor): bool
     {
         if ($actor instanceof User) {
-            return $actor->hasPermissionTo('purchases.manage');
+            return $actor->hasPermissionTo('purchases.manage')
+                || $actor->hasPermissionTo('inventory.manage');
         }
 
         return false;
@@ -50,7 +57,8 @@ class VendorOrderPolicy
     public function update(Authenticatable $actor, VendorOrder $vendorOrder): bool
     {
         if ($actor instanceof User) {
-            return $actor->hasPermissionTo('purchases.manage');
+            return $actor->hasPermissionTo('purchases.manage')
+                || $actor->hasPermissionTo('inventory.manage');
         }
 
         return false;
@@ -62,7 +70,8 @@ class VendorOrderPolicy
     public function delete(Authenticatable $actor, VendorOrder $vendorOrder): bool
     {
         if ($actor instanceof User) {
-            return $actor->hasPermissionTo('purchases.manage');
+            return $actor->hasPermissionTo('purchases.manage')
+                || $actor->hasPermissionTo('inventory.manage');
         }
 
         return false;

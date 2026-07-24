@@ -7,14 +7,7 @@ use Illuminate\Support\Collection;
 class ChartSeriesDTO
 {
     /**
-     * @param string $title
-     * @param Collection<ChartPointDTO> $points
-     * @param string $color
-     * @param string $unit
-     * @param float|null $currentValue
-     * @param float|null $previousValue
-     * @param float|null $changePercent
-     * @param string $changeDirection
+     * @param  Collection<ChartPointDTO>  $points
      */
     public function __construct(
         public readonly string $title,

@@ -6,15 +6,15 @@ return [
     'items' => [
         [
             'process' => 'Deprecated State definitions',
-            'details' => 'A deprecated token remains functional but triggers warnings in compiler code. Developers should avoid using these in new features.'
+            'details' => 'A deprecated token remains functional but triggers warnings in compiler code. Developers should avoid using these in new features.',
         ],
         [
             'process' => 'Sunset / Removal process',
-            'details' => 'Retire old CSS properties and variables during major version releases. Document exact migration paths to modern semantic alternatives.'
+            'details' => 'Retire old CSS properties and variables during major version releases. Document exact migration paths to modern semantic alternatives.',
         ],
         [
             'process' => 'Mismatched overrides review',
-            'details' => 'Audit hardcoded fallbacks and legacy color references regularly. Point components directly to Tier 2 semantic variables.'
+            'details' => 'Audit hardcoded fallbacks and legacy color references regularly. Point components directly to Tier 2 semantic variables.',
         ],
-    ]
+    ],
 ];

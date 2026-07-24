@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\OrderIndexResource;
+use App\Models\AuditLog;
 use App\Models\Order;
 use App\Support\Admin\OrderDetailCatalog;
 use App\Support\Admin\OrderIndexCatalog;
@@ -25,7 +26,7 @@ class OrderController extends Controller
             'placed_from',
             'placed_to',
             'sort',
-            'direction'
+            'direction',
         ]);
 
         $perPage = (int) $request->query('per_page', 20);
@@ -65,11 +66,11 @@ class OrderController extends Controller
 
         $summary = app(OrderDetailCatalog::class)->summarize($order);
 
-        $timelineLogs = \App\Models\AuditLog::query()
+        $timelineLogs = AuditLog::query()
             ->where('subject_type', 'order')
-            ->where(function($query) use ($order) {
+            ->where(function ($query) use ($order) {
                 $query->where('subject_id', $order->public_id)
-                      ->orWhere('subject_public_id', $order->public_id);
+                    ->orWhere('subject_public_id', $order->public_id);
             })
             ->latest()
             ->get();

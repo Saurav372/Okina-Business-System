@@ -9,13 +9,17 @@ use App\Http\Controllers\Admin\ExpenseController;
 use App\Http\Controllers\Admin\FinanceLedgerController;
 use App\Http\Controllers\Admin\GoogleSheetsConnectionController;
 use App\Http\Controllers\Admin\GoogleSheetsSyncLogController;
+use App\Http\Controllers\Admin\InventoryController;
+use App\Http\Controllers\Admin\InventoryMovementController;
 use App\Http\Controllers\Admin\NotificationLogController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductMediaController;
+use App\Http\Controllers\Admin\ProductSeoController;
 use App\Http\Controllers\Admin\ProductSkuController;
 use App\Http\Controllers\Admin\ProductVariantController;
+use App\Http\Controllers\Admin\PurchaseOrderAdminController;
 use App\Http\Controllers\Admin\RefundController;
 use App\Http\Controllers\Admin\SalesOrderController;
 use App\Http\Controllers\Admin\SettingController;
@@ -23,6 +27,7 @@ use App\Http\Controllers\Admin\VendorController;
 use App\Http\Controllers\Admin\VendorOrderController;
 use App\Http\Controllers\Admin\VendorOrderItemController;
 use App\Http\Controllers\Admin\VendorPaymentController;
+use App\Http\Controllers\Admin\WarehouseTransferController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\CustomerAuthController;
@@ -80,6 +85,26 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     Route::post('/products/{product}/media/reorder', [ProductMediaController::class, 'reorder'])->name('admin.products.media.reorder');
     Route::post('/products/{product}/media/{media}/cover', [ProductMediaController::class, 'setCover'])->name('admin.products.media.cover')->scopeBindings();
     Route::delete('/products/{product}/media/{media}', [ProductMediaController::class, 'destroy'])->name('admin.products.media.destroy')->scopeBindings();
+    // Product SEO
+    Route::put('/products/{product}/seo', [ProductSeoController::class, 'update'])->name('admin.products.seo.update');
+    // Purchase Orders & Vendor Stock In
+    Route::get('/purchases', [PurchaseOrderAdminController::class, 'index'])->name('admin.purchases.index');
+    Route::get('/purchases/create', [PurchaseOrderAdminController::class, 'create'])->name('admin.purchases.create');
+    Route::get('/purchases/{vendorOrder:public_id}', [PurchaseOrderAdminController::class, 'show'])->name('admin.purchases.show');
+    Route::post('/purchases/{vendorOrder:public_id}/receive', [PurchaseOrderAdminController::class, 'receive'])->name('admin.purchases.receive');
+    // Inventory & Stock Balances
+    Route::get('/inventory', [InventoryController::class, 'index'])->name('admin.inventory.index');
+    Route::post('/inventory/{sku}/adjust', [InventoryController::class, 'adjust'])->name('admin.inventory.adjust');
+    Route::get('/inventory/movements', [InventoryMovementController::class, 'index'])->name('admin.inventory.movements.index');
+    Route::get('/inventory/movements/export', [InventoryMovementController::class, 'export'])->name('admin.inventory.movements.export');
+    // Warehouse Transfers (Multi-Location Logistics)
+    Route::get('/inventory/transfers', [WarehouseTransferController::class, 'index'])->name('admin.inventory.transfers.index');
+    Route::get('/inventory/transfers/create', [WarehouseTransferController::class, 'create'])->name('admin.inventory.transfers.create');
+    Route::post('/inventory/transfers', [WarehouseTransferController::class, 'store'])->name('admin.inventory.transfers.store');
+    Route::get('/inventory/transfers/{transfer}', [WarehouseTransferController::class, 'show'])->name('admin.inventory.transfers.show');
+    Route::post('/inventory/transfers/{transfer}/ship', [WarehouseTransferController::class, 'ship'])->name('admin.inventory.transfers.ship');
+    Route::post('/inventory/transfers/{transfer}/receive', [WarehouseTransferController::class, 'receive'])->name('admin.inventory.transfers.receive');
+    Route::post('/inventory/transfers/{transfer}/cancel', [WarehouseTransferController::class, 'cancel'])->name('admin.inventory.transfers.cancel');
     Route::get('/orders/{order:public_id}', [OrderController::class, 'show'])->name('admin.orders.show');
     Route::post('/orders/{order:public_id}/status', [AdminOrderActionController::class, 'updateStatus'])->name('admin.orders.status.update');
     Route::post('/orders/bulk', [BulkOrderActionController::class, 'handle'])->middleware('can:orders.manage')->name('admin.orders.bulk');
@@ -108,6 +133,7 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     Route::post('/refunds', [RefundController::class, 'store'])->name('admin.refunds.store');
     Route::post('/refunds/{refund}/approve', [RefundController::class, 'approve'])->name('admin.refunds.approve');
     Route::post('/refunds/{refund}/process', [RefundController::class, 'process'])->name('admin.refunds.process');
+    Route::post('/refunds/{refund}/retry', [RefundController::class, 'retry'])->name('admin.refunds.retry');
     Route::post('/refunds/{refund}/cancel', [RefundController::class, 'cancel'])->name('admin.refunds.cancel');
     Route::get('/refunds/{refund}', [RefundController::class, 'show'])->name('admin.refunds.show');
 
@@ -158,6 +184,8 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
         ->name('admin.purchase_orders.status.update');
     Route::post('/purchase-orders/{purchase_order}/payments', [VendorPaymentController::class, 'store'])
         ->name('admin.purchase_orders.payments.store');
+    Route::get('/vendor-payments', [VendorPaymentController::class, 'index'])
+        ->name('admin.vendor_payments.index');
 
     // Purchase Order Items admin routes
     Route::apiResource('/purchase-orders.items', VendorOrderItemController::class)->parameters([

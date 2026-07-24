@@ -1953,3 +1953,55 @@ Reviewer: AI Assistant
 Date: 2026-07-11
 Result: [x] Pass [ ] Fail
 Notes: Full Cartesian SKU matrix generation, Alpine-driven edit modal, scoped route binding ownership, idempotent firstOrCreate pattern, collision suffix retry, and no-op save optimization all implemented and verified. 10/10 feature tests pass. Full suite: 723/725 pass (2 pre-existing skips unrelated to this task).
+
+---
+
+### U3.2.5 Product Media
+**Status:** Completed ✅
+
+**Implementation Validation**
+- [x] Multi-file media upload gallery UI implemented on product edit screen under Media tab
+- [x] Cover image toggle (`ROLE_COVER`) with backend route and service handler
+- [x] Drag-and-drop sortable gallery ordering connected to `ProductMediaController::reorder`
+- [x] Single/multi media delete action with soft-delete safety
+- [x] Backend feature test suite `AdminProductMediaTest` passing cleanly
+
+---
+
+### U3.2.6 SEO Metadata Management
+**Status:** Completed ✅
+
+**Implementation Validation**
+- [x] `SeoableContract` universal interface implemented for model fallback reuse
+- [x] `ProductSeo` Eloquent model and migration created (`product_seos` table with explicit `product_id` foreign key, unique constraint, stored_files relationships, and soft-deletes)
+- [x] `products.manage_seo` permission seeded and granted to Super Admin and Admin roles
+- [x] `ProductSeoPresenter` fallback engine implemented with zero N+1 database queries
+- [x] `ProductSchemaGenerator` producing Schema.org `Product` JSON-LD with config-driven brand/currency and explicit availability mapping
+- [x] `ProductSeoService` handling `ProductSeo` mutation and diff-only `products.seo_updated` audit logging
+- [x] `UpdateProductSeoRequest` with slug auto-sanitization (`Str::slug`) and boolean normalization
+- [x] `ProductSeoController` and `ProductPolicy::manageSeo` handling route authorization
+- [x] Eager loading (`seo.ogImage`, `seo.twitterImage`, `coverMedia.file`, `media.file`, `category`) in `ProductController::edit`
+- [x] Admin Product Edit UI SEO Tab featuring:
+  - 1-Click Copy Public URL Bar with Alpine `.clipboard` writeText and feedback state
+  - Section 1: Search Engine setup (Meta Title, Description, Focus Keyword, Canonical URL, 2 independent Robots switches for index and follow)
+  - Section 2 & 3: Open Graph and Twitter Card settings with stored_files image selector
+  - Section 4: Structured Data JSON-LD read-only pretty-printed code preview container
+  - Section 5: Custom URL Slug field with dynamic route preview
+  - Section 6: Live Google SERP Snippet Preview (Favicon, Site Title, Breadcrumbs, Title in Google blue, URL path in green, snippet)
+  - Section 7: Character count & remaining indicators + qualitative status badges ("Excellent", "Good", "Too Short", "Too Long")
+
+**Test Validation**
+- [x] `AdminProductSeoTest` created with 18 comprehensive tests asserting view, CRUD, authorization, diff-only audit event, validation, slug sanitization, JSON-LD generation, image associations, robots directives, soft deletes, no-op prevention, fallback engine, cover image fallback, and route resolution — 18/18 pass (48 assertions).
+- [x] PHPStan static analysis passes with zero errors on all SEO classes.
+- [x] Laravel Pint formatting clean across all modified files.
+
+**Process Validation**
+- [x] Documentation updated (UI-TASK-LIST.md, UI-CURRENT-TASK.md, UI-SUBTASK-VALIDATION.md)
+- [x] Git restore point created
+
+**Review Sign-off**
+Reviewer: AI Assistant
+Date: 2026-07-24
+Result: [x] Pass [ ] Fail
+Notes: Complete, decoupled SEO Metadata Management System implemented and verified. All 18 feature tests pass cleanly. Products Module (U3.2) is 100% completed.
+

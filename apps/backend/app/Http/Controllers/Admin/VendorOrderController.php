@@ -24,15 +24,20 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
 
 class VendorOrderController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of purchase orders.
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): JsonResponse|View
     {
         Gate::authorize('viewAny', VendorOrder::class);
+
+        if (! $request->wantsJson() && ! $request->is('api/*')) {
+            return app(PurchaseOrderAdminController::class)->index($request);
+        }
 
         $query = VendorOrder::query()
             ->with(['vendor:id,name,vendor_code', 'creator:id,name'])
@@ -121,9 +126,13 @@ class VendorOrderController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(VendorOrder $purchaseOrder): JsonResponse
+    public function show(VendorOrder $purchaseOrder, Request $request): JsonResponse|View
     {
         Gate::authorize('view', $purchaseOrder);
+
+        if (! $request->wantsJson() && ! $request->is('api/*')) {
+            return app(PurchaseOrderAdminController::class)->show($purchaseOrder);
+        }
 
         $purchaseOrder->load(['vendor:id,name,vendor_code', 'items.productSku']);
 

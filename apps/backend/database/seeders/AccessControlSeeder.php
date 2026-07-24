@@ -42,7 +42,7 @@ class AccessControlSeeder extends Seeder
             ['name' => 'Manage Files', 'slug' => 'files.download_private', 'group' => 'files', 'is_sensitive' => true],
             ['name' => 'Manage Settings', 'slug' => 'settings.manage', 'group' => 'settings', 'is_sensitive' => true],
         ];
- 
+
         foreach ($permissions as $permission) {
             Permission::query()->updateOrCreate(
                 ['slug' => $permission['slug']],
@@ -55,7 +55,7 @@ class AccessControlSeeder extends Seeder
                 ],
             );
         }
- 
+
         $roles = [
             [
                 'name' => 'Super Admin',

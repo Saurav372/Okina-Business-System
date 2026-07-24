@@ -9,11 +9,13 @@ use App\Events\AuditEvent;
 use App\Events\LowStockDetected;
 use App\Exceptions\InsufficientStockException;
 use App\Exceptions\InventoryItemNotFoundException;
+use App\Exceptions\StaleInventoryBalanceException;
 use App\Models\InventoryItem;
 use App\Models\InventoryMovement;
 use App\Models\Order;
 use App\Models\ProductSku;
 use App\Models\User;
+use App\Support\Inventory\StockAdjustmentResultDTO;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -124,6 +126,55 @@ class InventoryBalanceService
             ]);
 
             return $this->recordMovement($sku, $quantity, InventoryMovementType::MANUAL_ADJUSTMENT, InventoryDirection::ADJUST, $reason, $mergedOptions);
+        });
+    }
+
+    /**
+     * Perform stock adjustment with stale balance protection within an explicit database transaction.
+     *
+     * @throws StaleInventoryBalanceException
+     */
+    public function adjustWithExpectedBalance(
+        ProductSku $sku,
+        int $expectedOnHand,
+        int $newOnHand,
+        int $newReserved,
+        InventoryMovementReason $reason,
+        array $options = []
+    ): StockAdjustmentResultDTO {
+        return DB::transaction(function () use ($sku, $expectedOnHand, $newOnHand, $newReserved, $reason, $options) {
+            /** @var InventoryItem|null $inventoryItem */
+            $inventoryItem = InventoryItem::query()
+                ->where('product_sku_id', $sku->id)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $inventoryItem) {
+                throw new InventoryItemNotFoundException($sku);
+            }
+
+            if ($inventoryItem->on_hand_quantity !== $expectedOnHand) {
+                throw new StaleInventoryBalanceException($expectedOnHand, $inventoryItem->on_hand_quantity);
+            }
+
+            $beforeOnHand = $inventoryItem->on_hand_quantity;
+            $beforeReserved = $inventoryItem->reserved_quantity;
+
+            $movement = $this->adjust($sku, $newOnHand, $newReserved, $reason, $options);
+
+            $deltaOnHand = $newOnHand - $beforeOnHand;
+            $deltaReserved = $newReserved - $beforeReserved;
+
+            return new StockAdjustmentResultDTO(
+                skuCode: $sku->sku_code,
+                previousOnHand: $beforeOnHand,
+                newOnHand: $newOnHand,
+                deltaOnHand: $deltaOnHand,
+                previousReserved: $beforeReserved,
+                newReserved: $newReserved,
+                deltaReserved: $deltaReserved,
+                movementId: $movement->id,
+            );
         });
     }
 

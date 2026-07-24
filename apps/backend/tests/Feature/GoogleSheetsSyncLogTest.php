@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use App\Jobs\SyncRecordToGoogleSheetsJob;
-use App\Models\GoogleSheetsSyncLog;
 use App\Models\Customer;
+use App\Models\GoogleSheetsSyncLog;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
@@ -107,7 +107,7 @@ class GoogleSheetsSyncLogTest extends TestCase
         Config::set('sheets.enabled', false);
         $customer = Customer::factory()->create(['display_name' => 'Test Customer']);
         Config::set('sheets.enabled', true);
- 
+
         // Pre-create the log in queued status (as the observer would)
         $log = GoogleSheetsSyncLog::create([
             'model_class' => Customer::class,
@@ -118,15 +118,15 @@ class GoogleSheetsSyncLogTest extends TestCase
             'triggered_by' => 'automatic',
             'payload_hash' => '',
         ]);
- 
+
         $mockClient = Mockery::mock(GoogleSheetsClient::class);
         $mockClient->shouldReceive('syncRow')->once()->andReturnNull();
         $this->app->instance(GoogleSheetsClient::class, $mockClient);
- 
+
         // 2. Handle the job to transition to processing -> success
         $job = new SyncRecordToGoogleSheetsJob(Customer::class, $customer->id, $log->id);
         $this->app->call([$job, 'handle']);
- 
+
         // Reload log and assert state transitions
         $log->refresh();
         $this->assertEquals(GoogleSheetsSyncLog::STATUS_SUCCESS, $log->status);
@@ -135,7 +135,7 @@ class GoogleSheetsSyncLogTest extends TestCase
         $this->assertNull($log->payload); // No payload stored on success
         $this->assertNotNull($log->payload_hash);
     }
- 
+
     /**
      * Test log lifecycle on permanent failure.
      */
@@ -145,7 +145,7 @@ class GoogleSheetsSyncLogTest extends TestCase
         $customer = Customer::factory()->create();
         Config::set('sheets.enabled', true);
         Config::set('sheets.logging.store_payloads', true);
- 
+
         $log = GoogleSheetsSyncLog::create([
             'model_class' => Customer::class,
             'model_id' => $customer->id,
@@ -155,15 +155,15 @@ class GoogleSheetsSyncLogTest extends TestCase
             'triggered_by' => 'automatic',
             'payload_hash' => '',
         ]);
- 
+
         $mockClient = Mockery::mock(GoogleSheetsClient::class);
         // Throw a permanent error (404)
         $mockClient->shouldReceive('syncRow')->andThrow(new \Exception('Spreadsheet not found', 404));
         $this->app->instance(GoogleSheetsClient::class, $mockClient);
- 
+
         $job = new SyncRecordToGoogleSheetsJob(Customer::class, $customer->id, $log->id);
         $this->app->call([$job, 'handle']);
- 
+
         $log->refresh();
         $this->assertEquals(GoogleSheetsSyncLog::STATUS_FAILED, $log->status);
         $this->assertEquals(1, $log->attempts);
@@ -171,7 +171,7 @@ class GoogleSheetsSyncLogTest extends TestCase
         $this->assertEquals('Spreadsheet not found', $log->error_message);
         $this->assertNotNull($log->payload); // Payload stored on failure
     }
- 
+
     /**
      * Test subsequent model saves create separate sync log events.
      */
@@ -179,7 +179,7 @@ class GoogleSheetsSyncLogTest extends TestCase
     {
         Config::set('sheets.enabled', false);
         $customer = Customer::factory()->create();
- 
+
         $log1 = GoogleSheetsSyncLog::create([
             'model_class' => Customer::class,
             'model_id' => $customer->id,
@@ -189,22 +189,22 @@ class GoogleSheetsSyncLogTest extends TestCase
             'triggered_by' => 'automatic',
             'payload_hash' => '',
         ]);
- 
+
         $mockClient = Mockery::mock(GoogleSheetsClient::class);
         $mockClient->shouldReceive('syncRow')->twice()->andReturnNull();
         $this->app->instance(GoogleSheetsClient::class, $mockClient);
- 
+
         // Turn enabled to true before running the job
         Config::set('sheets.enabled', true);
- 
+
         $job1 = new SyncRecordToGoogleSheetsJob(Customer::class, $customer->id, $log1->id);
         $this->app->call([$job1, 'handle']);
- 
+
         // Update customer. Disable sync during update to avoid auto-firing.
         Config::set('sheets.enabled', false);
         $customer->update(['display_name' => 'Updated Name']);
         Config::set('sheets.enabled', true);
- 
+
         $log2 = GoogleSheetsSyncLog::create([
             'model_class' => Customer::class,
             'model_id' => $customer->id,
@@ -214,12 +214,12 @@ class GoogleSheetsSyncLogTest extends TestCase
             'triggered_by' => 'automatic',
             'payload_hash' => '',
         ]);
- 
+
         $this->assertNotEquals($log1->id, $log2->id);
- 
+
         $job2 = new SyncRecordToGoogleSheetsJob(Customer::class, $customer->id, $log2->id);
         $this->app->call([$job2, 'handle']);
- 
+
         $log2->refresh();
         $this->assertEquals(GoogleSheetsSyncLog::STATUS_SUCCESS, $log2->status);
     }
@@ -232,7 +232,7 @@ class GoogleSheetsSyncLogTest extends TestCase
         Config::set('sheets.enabled', false);
         $customer = Customer::factory()->create();
         Config::set('sheets.enabled', true);
- 
+
         $log = GoogleSheetsSyncLog::create([
             'model_class' => Customer::class,
             'model_id' => $customer->id,
@@ -242,7 +242,7 @@ class GoogleSheetsSyncLogTest extends TestCase
             'triggered_by' => 'automatic',
             'payload_hash' => '',
         ]);
- 
+
         $mockClient = Mockery::mock(GoogleSheetsClient::class);
         // First call fails with transient error, second call succeeds
         $mockClient->shouldReceive('syncRow')->twice()->andReturnUsing(function () {
@@ -251,11 +251,11 @@ class GoogleSheetsSyncLogTest extends TestCase
             if ($count === 1) {
                 throw new \Exception('Transient quota error', 429);
             }
- 
+
             return null;
         });
         $this->app->instance(GoogleSheetsClient::class, $mockClient);
- 
+
         // First attempt (fails and throws)
         $job = new SyncRecordToGoogleSheetsJob(Customer::class, $customer->id, $log->id);
         try {
@@ -263,19 +263,19 @@ class GoogleSheetsSyncLogTest extends TestCase
         } catch (\Throwable $e) {
             $this->assertEquals('Transient quota error', $e->getMessage());
         }
- 
+
         $log->refresh();
         $this->assertEquals(GoogleSheetsSyncLog::STATUS_QUEUED, $log->status);
         $this->assertEquals(1, $log->attempts);
- 
+
         // Second attempt (retry, succeeds)
         $this->app->call([$job, 'handle']);
- 
+
         $log->refresh();
         $this->assertEquals(GoogleSheetsSyncLog::STATUS_SUCCESS, $log->status);
         $this->assertEquals(2, $log->attempts);
     }
- 
+
     /**
      * Test manual sync endpoint creates a new log.
      */
@@ -285,17 +285,17 @@ class GoogleSheetsSyncLogTest extends TestCase
         $customer = Customer::factory()->create();
         Config::set('sheets.enabled', true);
         Queue::fake();
- 
+
         $admin = $this->createStaffUser(Role::SUPER_ADMIN);
- 
+
         // Clear automatic logs to isolate manual test
         GoogleSheetsSyncLog::truncate();
- 
+
         $response = $this->actingAs($admin)->postJson(route('admin.google_sheets.sync_record'), [
             'model_class' => Customer::class,
             'model_id' => $customer->id,
         ]);
- 
+
         $response->assertStatus(200);
         $this->assertDatabaseHas('google_sheets_sync_logs', [
             'model_class' => Customer::class,
@@ -304,10 +304,10 @@ class GoogleSheetsSyncLogTest extends TestCase
             'triggered_by' => 'manual',
             'user_id' => $admin->id,
         ]);
- 
+
         Queue::assertPushed(SyncRecordToGoogleSheetsJob::class);
     }
- 
+
     /**
      * Test retry endpoint on failed logs.
      */
@@ -315,9 +315,9 @@ class GoogleSheetsSyncLogTest extends TestCase
     {
         Config::set('sheets.enabled', true);
         Queue::fake();
- 
+
         $admin = $this->createStaffUser(Role::SUPER_ADMIN);
- 
+
         $log = GoogleSheetsSyncLog::create([
             'model_class' => Customer::class,
             'model_id' => 123,
@@ -327,14 +327,14 @@ class GoogleSheetsSyncLogTest extends TestCase
             'payload_hash' => 'hash',
             'error_message' => 'Failed permanently',
         ]);
- 
+
         $response = $this->actingAs($admin)->postJson(route('admin.google_sheets.sync_logs.retry', $log));
- 
+
         $response->assertStatus(200);
         $log->refresh();
         $this->assertEquals(GoogleSheetsSyncLog::STATUS_QUEUED, $log->status);
         $this->assertNull($log->error_message);
- 
+
         Queue::assertPushed(SyncRecordToGoogleSheetsJob::class, function ($job) use ($log, $admin) {
             // Retrieve properties using reflection
             $refLogId = (new \ReflectionClass($job))->getProperty('syncLogId');
@@ -343,13 +343,13 @@ class GoogleSheetsSyncLogTest extends TestCase
             $refTriggeredBy->setAccessible(true);
             $refUserId = (new \ReflectionClass($job))->getProperty('userId');
             $refUserId->setAccessible(true);
- 
+
             return $refLogId->getValue($job) === $log->id &&
                 $refTriggeredBy->getValue($job) === 'retry' &&
                 $refUserId->getValue($job) === $admin->id;
         });
     }
- 
+
     /**
      * Test authorization on admin endpoints.
      */
@@ -357,7 +357,7 @@ class GoogleSheetsSyncLogTest extends TestCase
     {
         $staff = $this->createStaffUser(Role::SALES_STAFF); // has sheets.view, but not sheets.manage
         $unauthorized = $this->createStaffUser(Role::INVENTORY_STAFF); // no sheets permissions
- 
+
         $log = GoogleSheetsSyncLog::create([
             'model_class' => Customer::class,
             'model_id' => 123,
@@ -366,25 +366,25 @@ class GoogleSheetsSyncLogTest extends TestCase
             'status' => GoogleSheetsSyncLog::STATUS_FAILED,
             'payload_hash' => 'hash',
         ]);
- 
+
         // 1. Staff can view logs
         $this->actingAs($staff)->getJson(route('admin.google_sheets.sync_logs.index'))->assertStatus(200);
         $this->actingAs($staff)->getJson(route('admin.google_sheets.sync_logs.show', $log))->assertStatus(200);
- 
+
         // 2. Staff CANNOT retry (returns 403)
         $this->actingAs($staff)->postJson(route('admin.google_sheets.sync_logs.retry', $log))->assertStatus(403);
- 
+
         // 3. Unauthorized user cannot view logs (returns 403)
         $this->actingAs($unauthorized)->getJson(route('admin.google_sheets.sync_logs.index'))->assertStatus(403);
     }
- 
+
     /**
      * Test pruning command deletes old logs.
      */
     public function test_pruning_command(): void
     {
         Config::set('sheets.logging.prune_days', 10);
- 
+
         // Create log older than 10 days
         $oldLog = GoogleSheetsSyncLog::create([
             'model_class' => Customer::class,
@@ -397,7 +397,7 @@ class GoogleSheetsSyncLogTest extends TestCase
         $oldLog->timestamps = false;
         $oldLog->created_at = now()->subDays(11);
         $oldLog->save();
- 
+
         // Create log newer than 10 days
         $newLog = GoogleSheetsSyncLog::create([
             'model_class' => Customer::class,
@@ -410,9 +410,9 @@ class GoogleSheetsSyncLogTest extends TestCase
         $newLog->timestamps = false;
         $newLog->created_at = now()->subDays(5);
         $newLog->save();
- 
+
         Artisan::call('sheets:prune-logs');
- 
+
         $this->assertDatabaseMissing('google_sheets_sync_logs', ['id' => $oldLog->id]);
         $this->assertDatabaseHas('google_sheets_sync_logs', ['id' => $newLog->id]);
     }

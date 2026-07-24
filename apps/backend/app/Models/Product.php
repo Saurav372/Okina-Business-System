@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Contracts\SeoableContract;
+use App\Support\Seo\Presenters\ProductSeoPresenter;
 use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -38,10 +40,12 @@ use Illuminate\Support\Str;
     'published_at',
 ])]
 #[Hidden(['deleted_at'])]
-class Product extends Model
+class Product extends Model implements SeoableContract
 {
     /** @use HasFactory<ProductFactory> */
     use HasFactory, SoftDeletes;
+
+    protected ?ProductSeoPresenter $seoPresenter = null;
 
     public const TYPE_SIMPLE = 'simple';
 
@@ -147,6 +151,106 @@ class Product extends Model
             ->where('role', ProductMedia::ROLE_COVER)
             ->orderBy('sort_order')
             ->orderBy('id');
+    }
+
+    /**
+     * Associated ProductSeo model record.
+     */
+    public function seo(): HasOne
+    {
+        return $this->hasOne(ProductSeo::class);
+    }
+
+    /**
+     * Cached ProductSeoPresenter getter.
+     */
+    public function seoPresenter(): ProductSeoPresenter
+    {
+        return $this->seoPresenter ??= new ProductSeoPresenter($this);
+    }
+
+    public function refresh()
+    {
+        $this->seoPresenter = null;
+
+        return parent::refresh();
+    }
+
+    // --- SeoableContract Implementation ---
+
+    public function getSeo(): ?ProductSeo
+    {
+        return $this->seo;
+    }
+
+    public function getSeoTitleFallback(): string
+    {
+        return $this->name;
+    }
+
+    public function getSeoDescriptionFallback(): ?string
+    {
+        if (! empty($this->short_description)) {
+            return $this->short_description;
+        }
+
+        if (! empty($this->description)) {
+            return Str::limit(strip_tags($this->description), 160);
+        }
+
+        return null;
+    }
+
+    public function getSeoCanonicalUrlFallback(): string
+    {
+        return url('/products/'.($this->slug ?? Str::slug($this->name)));
+    }
+
+    public function getSeoImageFallback(): ?StoredFile
+    {
+        // 1. Cover media file
+        if ($this->relationLoaded('coverMedia') && $this->coverMedia && $this->coverMedia->file) {
+            return $this->coverMedia->file;
+        }
+
+        if (! $this->relationLoaded('coverMedia')) {
+            $cover = $this->coverMedia()->with('file')->first();
+            if ($cover && $cover->file) {
+                return $cover->file;
+            }
+        }
+
+        // 2. Primary / first media file
+        if ($this->relationLoaded('media') && $this->media->isNotEmpty()) {
+            $firstMedia = $this->media->first();
+            if ($firstMedia && $firstMedia->file) {
+                return $firstMedia->file;
+            }
+        }
+
+        return null;
+    }
+
+    public function getSeoBreadcrumbs(): array
+    {
+        $breadcrumbs = [
+            ['name' => 'Home', 'url' => url('/')],
+            ['name' => 'Products', 'url' => url('/products')],
+        ];
+
+        if ($this->relationLoaded('category') && $this->category) {
+            $breadcrumbs[] = [
+                'name' => $this->category->name,
+                'url' => url('/categories/'.$this->category->slug),
+            ];
+        }
+
+        $breadcrumbs[] = [
+            'name' => $this->name,
+            'url' => $this->getSeoCanonicalUrlFallback(),
+        ];
+
+        return $breadcrumbs;
     }
 
     public function isPubliclyVisible(): bool

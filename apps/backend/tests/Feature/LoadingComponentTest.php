@@ -116,7 +116,7 @@ class LoadingComponentTest extends TestCase
         $standalone->assertSee('Syncing data...', false);
 
         // Standalone should NOT emit wrapper divs
-        $html = (string)$standalone;
+        $html = (string) $standalone;
         $this->assertEquals(0, substr_count($html, 'relative overflow-hidden'));
         $this->assertEquals(0, substr_count($html, ':inert'));
 

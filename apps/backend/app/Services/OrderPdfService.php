@@ -1,20 +1,22 @@
 <?php
- 
+
 namespace App\Services;
- 
+
 use App\Events\AuditEvent;
 use App\Models\Order;
 use App\Support\Payments\PaymentStateRecalculationRules;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
- 
+
 class OrderPdfService
 {
     public function __construct(
         private readonly SettingsService $settingsService,
         private readonly PaymentStateRecalculationRules $stateRules,
     ) {}
- 
+
     /**
      * Build the full print/PDF preview dataset for an order.
      */
@@ -25,16 +27,16 @@ class OrderPdfService
         $documents = $this->settingsService->all('documents');
         $tax = $this->settingsService->all('tax');
         $payments = $this->settingsService->all('payments');
- 
+
         // 2. Load relationships (including addresses)
         $order->load(['items', 'payments', 'refunds', 'mockups.file', 'shippingAddress', 'billingAddress']);
- 
+
         // 3. Fallback customer billing & shipping addresses
-        $shippingAddress = !empty($order->shipping_address_snapshot['address_line_1'])
+        $shippingAddress = ! empty($order->shipping_address_snapshot['address_line_1'])
             ? $order->shipping_address_snapshot
             : ($order->shippingAddress ? $order->shippingAddress->toArray() : null);
 
-        $billingAddress = !empty($order->billing_address_snapshot['address_line_1'])
+        $billingAddress = ! empty($order->billing_address_snapshot['address_line_1'])
             ? $order->billing_address_snapshot
             : ($order->billingAddress ? $order->billingAddress->toArray() : null);
 
@@ -57,13 +59,13 @@ class OrderPdfService
         foreach ($order->items as $index => $item) {
             $size = null;
             $customizationSnapshot = $item->customization_snapshot;
-            
+
             if (is_array($customizationSnapshot)) {
                 // Direct size key check
                 if (isset($customizationSnapshot['size'])) {
                     $size = $customizationSnapshot['size'];
                 }
-                
+
                 // Nested selected options check
                 if (empty($size) && isset($customizationSnapshot['selected_options_snapshot']) && is_array($customizationSnapshot['selected_options_snapshot'])) {
                     foreach ($customizationSnapshot['selected_options_snapshot'] as $opt) {
@@ -74,16 +76,16 @@ class OrderPdfService
                     }
                 }
             }
-            
+
             // Format customization options (excluding size and meta variables)
             $customizationDetails = [];
             if (is_array($customizationSnapshot)) {
                 foreach ($customizationSnapshot as $key => $val) {
-                    if (is_scalar($val) && !in_array($key, ['size', 'mockup_preview_url', 'expires_in_minutes', 'route_name', 'schema_version'])) {
+                    if (is_scalar($val) && ! in_array($key, ['size', 'mockup_preview_url', 'expires_in_minutes', 'route_name', 'schema_version'])) {
                         $customizationDetails[ucwords(str_replace('_', ' ', $key))] = $val;
                     }
                 }
-                
+
                 if (isset($customizationSnapshot['selected_options_snapshot']) && is_array($customizationSnapshot['selected_options_snapshot'])) {
                     foreach ($customizationSnapshot['selected_options_snapshot'] as $opt) {
                         $code = $opt['option_code'] ?? '';
@@ -93,7 +95,7 @@ class OrderPdfService
                     }
                 }
             }
-            
+
             $formattedItems[] = [
                 'index' => $index + 1,
                 'name' => $item->product_name_snapshot,
@@ -112,20 +114,20 @@ class OrderPdfService
         $balanceDueMinor = max(0, $totalAmountMinor - $paidTotal + $refundTotal);
         if ($upiId && $balanceDueMinor > 0) {
             $balanceDueAmount = number_format($balanceDueMinor / 100, 2, '.', '');
-            $upiUrl = "upi://pay?pa={$upiId}&pn=" . urlencode($business['company_name'] ?? 'Okina Craft') . "&am={$balanceDueAmount}&cu=INR";
-            $qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=120x120&margin=0&data=" . urlencode($upiUrl);
-            
+            $upiUrl = "upi://pay?pa={$upiId}&pn=".urlencode($business['company_name'] ?? 'Okina Craft')."&am={$balanceDueAmount}&cu=INR";
+            $qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=120x120&margin=0&data='.urlencode($upiUrl);
+
             try {
                 $ctx = stream_context_create(['http' => ['timeout' => 3]]);
                 $qrContent = file_get_contents($qrCodeUrl, false, $ctx);
                 if ($qrContent) {
-                    $qrCodeBase64 = 'data:image/png;base64,' . base64_encode($qrContent);
+                    $qrCodeBase64 = 'data:image/png;base64,'.base64_encode($qrContent);
                 }
             } catch (\Throwable $e) {
                 // Fail silently and keep qrCodeBase64 as null
             }
         }
- 
+
         // 8. Dispatch audit event for PDF generation
         event(new AuditEvent('orders.pdf_generated', $actor, [
             'order_public_id' => $order->public_id,
@@ -138,7 +140,7 @@ class OrderPdfService
             'customer_id' => $order->customer?->id,
             'customer_public_id' => $order->customer?->public_id,
         ]));
- 
+
         return [
             'order' => $order,
             'items' => $formattedItems,
@@ -176,7 +178,7 @@ class OrderPdfService
         }
 
         // Use featured mockups if any exist, otherwise show all
-        $filtered = $mockups->filter(fn($m) => $m->is_featured);
+        $filtered = $mockups->filter(fn ($m) => $m->is_featured);
         if ($filtered->isEmpty()) {
             $filtered = $mockups;
         }
@@ -192,7 +194,7 @@ class OrderPdfService
                     if ($path && Storage::disk($disk)->exists($path)) {
                         $contents = Storage::disk($disk)->get($path);
                         $mimeType = $mockup->file->mime_type ?? 'image/jpeg';
-                        $imageSrc = 'data:' . $mimeType . ';base64,' . base64_encode($contents);
+                        $imageSrc = 'data:'.$mimeType.';base64,'.base64_encode($contents);
                     }
                 } catch (\Throwable $e) {
                     // Skip images that cannot be read
@@ -208,7 +210,7 @@ class OrderPdfService
 
         return $images;
     }
- 
+
     /**
      * Render the order confirmation document template to HTML.
      */
@@ -228,13 +230,13 @@ class OrderPdfService
     {
         $html = $this->renderHtml($order, $actor);
 
-        $options = new \Dompdf\Options();
+        $options = new Options;
         $options->set('isHtml5ParserEnabled', true);
         $options->set('isRemoteEnabled', true);
         $options->set('defaultFont', 'Helvetica');
         $options->set('dpi', 96);
 
-        $dompdf = new \Dompdf\Dompdf($options);
+        $dompdf = new Dompdf($options);
         $dompdf->loadHtml($html, 'UTF-8');
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
@@ -242,4 +244,3 @@ class OrderPdfService
         return $dompdf->output();
     }
 }
-

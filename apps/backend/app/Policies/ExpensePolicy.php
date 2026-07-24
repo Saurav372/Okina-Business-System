@@ -33,17 +33,27 @@ class ExpensePolicy
 
     /**
      * Determine whether the user can update the model.
+     * Approved expenses are immutable and cannot be updated.
      */
     public function update(User $user, Expense $expense): bool
     {
+        if ($expense->status === Expense::STATUS_APPROVED) {
+            return false;
+        }
+
         return $user->hasPermissionTo('finance.manage_expenses');
     }
 
     /**
      * Determine whether the user can delete the model.
+     * Approved expenses are immutable and cannot be deleted.
      */
     public function delete(User $user, Expense $expense): bool
     {
+        if ($expense->status === Expense::STATUS_APPROVED) {
+            return false;
+        }
+
         return $user->hasPermissionTo('finance.manage_expenses');
     }
 

@@ -62,6 +62,15 @@ class RefundPolicy
         return false;
     }
 
+    public function retry(Authenticatable $actor, Refund $refund): bool
+    {
+        if ($actor instanceof User) {
+            return $actor->hasPermissionTo('refunds.approve');
+        }
+
+        return false;
+    }
+
     public function cancel(Authenticatable $actor, Refund $refund): bool
     {
         if ($actor instanceof User) {

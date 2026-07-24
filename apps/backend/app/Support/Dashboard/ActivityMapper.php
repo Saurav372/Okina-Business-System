@@ -3,7 +3,8 @@
 namespace App\Support\Dashboard;
 
 use App\Models\AuditLog;
-use Illuminate\Support\Str;
+use App\Models\Order;
+use App\Models\Payment;
 
 class ActivityMapper
 {
@@ -12,10 +13,10 @@ class ActivityMapper
      */
     public function map(AuditLog $log): ActivityItemDTO
     {
-        $actorName = $log->actor_label_snapshot 
-            ?? $log->actorUser?->name 
+        $actorName = $log->actor_label_snapshot
+            ?? $log->actorUser?->name
             ?? 'System';
-        
+
         $actorInitials = $this->getInitials($actorName);
 
         // Map categories based on action keys
@@ -46,8 +47,9 @@ class ActivityMapper
         if (empty($words)) {
             return 'SY';
         }
-        return count($words) >= 2 
-            ? mb_strtoupper(mb_substr($words[0], 0, 1, 'UTF-8') . mb_substr(end($words), 0, 1, 'UTF-8'), 'UTF-8')
+
+        return count($words) >= 2
+            ? mb_strtoupper(mb_substr($words[0], 0, 1, 'UTF-8').mb_substr(end($words), 0, 1, 'UTF-8'), 'UTF-8')
             : mb_strtoupper(mb_substr($words[0], 0, 2, 'UTF-8'), 'UTF-8');
     }
 
@@ -109,14 +111,14 @@ class ActivityMapper
     protected function resolveLink(AuditLog $log): ?string
     {
         try {
-            if (str_starts_with($log->action, 'orders.') && !empty($log->subject_public_id)) {
-                if (\App\Models\Order::where('public_id', $log->subject_public_id)->exists()) {
+            if (str_starts_with($log->action, 'orders.') && ! empty($log->subject_public_id)) {
+                if (Order::where('public_id', $log->subject_public_id)->exists()) {
                     return route('admin.orders.show', ['order' => $log->subject_public_id]);
                 }
             }
 
-            if (str_starts_with($log->action, 'payments.') && !empty($log->subject_id)) {
-                if (\App\Models\Payment::where('id', $log->subject_id)->exists()) {
+            if (str_starts_with($log->action, 'payments.') && ! empty($log->subject_id)) {
+                if (Payment::where('id', $log->subject_id)->exists()) {
                     return route('admin.payments.show', ['payment' => $log->subject_id]);
                 }
             }

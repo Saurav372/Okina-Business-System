@@ -19,7 +19,7 @@ class ChartPathBuilder
         foreach ($coords as $index => $point) {
             $x = $point['x'];
             $y = $point['y'];
-            $path .= ($index === 0 ? 'M' : ' L') . " {$x},{$y}";
+            $path .= ($index === 0 ? 'M' : ' L')." {$x},{$y}";
         }
 
         return $path;
@@ -35,7 +35,7 @@ class ChartPathBuilder
         }
 
         $linePath = self::toLinePath($coords);
-        
+
         $first = $coords->first();
         $last = $coords->last();
 

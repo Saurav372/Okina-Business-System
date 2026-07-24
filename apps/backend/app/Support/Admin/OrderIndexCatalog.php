@@ -55,7 +55,7 @@ final class OrderIndexCatalog
             ]);
 
         // Eager-loading payments sum for N+1 prevention
-        $query->withSum(['payments' => fn($q) => $q->where('status', 'succeeded')], 'amount_minor');
+        $query->withSum(['payments' => fn ($q) => $q->where('status', 'succeeded')], 'amount_minor');
 
         $scope = (string) ($criteria['scope'] ?? 'all');
         $query = $this->applyScope($query, $scope);
@@ -226,9 +226,9 @@ final class OrderIndexCatalog
             $search = (string) $criteria['search'];
             $query->where(function (Builder $q) use ($search) {
                 $q->where('public_id', 'like', "%{$search}%")
-                  ->orWhere('customer_snapshot->name', 'like', "%{$search}%")
-                  ->orWhere('customer_snapshot->email', 'like', "%{$search}%")
-                  ->orWhere('customer_snapshot->phone', 'like', "%{$search}%");
+                    ->orWhere('customer_snapshot->name', 'like', "%{$search}%")
+                    ->orWhere('customer_snapshot->email', 'like', "%{$search}%")
+                    ->orWhere('customer_snapshot->phone', 'like', "%{$search}%");
             });
         }
 

@@ -82,18 +82,18 @@ class SkeletonComponentTest extends TestCase
     public function test_class_merging_and_duplication_prevention(): void
     {
         $merged = $this->blade('<x-skeleton class="mt-4 shadow-sm" rounded="md" />');
-        
-        $html = (string)$merged;
+
+        $html = (string) $merged;
         $merged->assertSee('mt-4 shadow-sm', false);
         $merged->assertSee('rounded-[var(--radius-md)]', false);
 
         // Parse class list to verify duplicate class names do not exist
         preg_match('/class="([^"]+)"/', $html, $matches);
         $this->assertNotEmpty($matches, 'Class attribute was not found.');
-        
+
         $classes = explode(' ', $matches[1]);
         $duplicates = array_diff_assoc($classes, array_unique($classes));
-        $this->assertEmpty($duplicates, 'Duplicate classes found: ' . implode(', ', $duplicates));
+        $this->assertEmpty($duplicates, 'Duplicate classes found: '.implode(', ', $duplicates));
     }
 
     /**
@@ -128,7 +128,7 @@ HTML;
         // Wrapper modes with empty slots should render without failure
         $emptySlot = $this->blade('<x-skeleton :loading="true"></x-skeleton>');
         $emptySlot->assertSee('data-skeleton', false);
-        
+
         $whitespaceSlot = $this->blade('<x-skeleton :loading="true">   </x-skeleton>');
         $whitespaceSlot->assertSee('data-skeleton', false);
     }

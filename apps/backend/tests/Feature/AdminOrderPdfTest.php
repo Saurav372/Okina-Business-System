@@ -2,14 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Models\AuditLog;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Permission;
 use App\Models\Product;
 use App\Models\ProductSku;
-use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
-use App\Models\AuditLog;
 use App\Services\SettingsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -19,7 +19,9 @@ class AdminOrderPdfTest extends TestCase
     use RefreshDatabase;
 
     private User $viewerUser;
+
     private User $unauthorizedUser;
+
     private Order $order;
 
     protected function setUp(): void
@@ -98,7 +100,7 @@ class AdminOrderPdfTest extends TestCase
                 'city' => 'Test City',
                 'state' => 'TS',
                 'postal_code' => '12345',
-            ]
+            ],
         ]);
 
         $product = Product::factory()->create(['name' => 'Premium Polo T-Shirt']);
@@ -141,7 +143,7 @@ class AdminOrderPdfTest extends TestCase
             ->assertSee($this->order->public_id)
             ->assertSee('Order Confirmation')
             ->assertSee('Test Customer');
-        
+
         // Assert audit log event was dispatched
         $auditLog = AuditLog::where('action', 'order.pdf_generated')->first();
         $this->assertNotNull($auditLog);
@@ -159,8 +161,8 @@ class AdminOrderPdfTest extends TestCase
             ->get("/admin/orders/{$this->order->public_id}/pdf/download")
             ->assertOk()
             ->assertHeader('Content-Type', 'application/pdf')
-            ->assertHeader('Content-Disposition', 'attachment; filename="Order_Confirmation_' . $this->order->public_id . '.pdf"');
-        
+            ->assertHeader('Content-Disposition', 'attachment; filename="Order_Confirmation_'.$this->order->public_id.'.pdf"');
+
         // Assert binary PDF content starts with %PDF marker
         $this->assertStringStartsWith('%PDF', $response->getContent());
 
@@ -180,7 +182,7 @@ class AdminOrderPdfTest extends TestCase
         $this->actingAs($this->unauthorizedUser)
             ->get("/admin/orders/{$this->order->public_id}/pdf/preview")
             ->assertStatus(403);
-            
+
         $this->assertNull(AuditLog::where('action', 'orders.pdf_generated')->first());
     }
 
@@ -192,7 +194,7 @@ class AdminOrderPdfTest extends TestCase
         $this->actingAs($this->unauthorizedUser)
             ->get("/admin/orders/{$this->order->public_id}/pdf/download")
             ->assertStatus(403);
-            
+
         $this->assertNull(AuditLog::where('action', 'orders.pdf_generated')->first());
     }
 

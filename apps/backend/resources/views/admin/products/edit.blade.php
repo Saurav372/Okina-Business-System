@@ -38,6 +38,7 @@
                             <x-tabs.trigger value="general">General</x-tabs.trigger>
                             <x-tabs.trigger value="variants">Variants &amp; SKUs</x-tabs.trigger>
                             <x-tabs.trigger value="media">Media</x-tabs.trigger>
+                            <x-tabs.trigger value="seo">SEO &amp; Social</x-tabs.trigger>
                         </x-tabs.list>
 
                         <!-- General & Pricing Tab Content -->
@@ -740,6 +741,360 @@
                                 </script>
                             </div>
 
+                        </x-tabs.content>
+
+                        <!-- SEO & Social Tab Content -->
+                        <x-tabs.content value="seo" class="space-y-6">
+                            <form method="POST" action="{{ route('admin.products.seo.update', $product) }}" class="space-y-6" x-data="{
+                                metaTitle: {{ json_encode(old('meta_title', $product->seo?->meta_title ?? '')) }},
+                                metaDescription: {{ json_encode(old('meta_description', $product->seo?->meta_description ?? '')) }},
+                                slug: {{ json_encode(old('slug', $product->slug)) }},
+                                focusKeyword: {{ json_encode(old('focus_keyword', $product->seo?->focus_keyword ?? '')) }},
+                                canonicalUrl: {{ json_encode(old('canonical_url', $product->seo?->canonical_url ?? '')) }},
+                                robotsIndex: {{ ($product->seo?->robots_index ?? true) ? 'true' : 'false' }},
+                                robotsFollow: {{ ($product->seo?->robots_follow ?? true) ? 'true' : 'false' }},
+                                ogTitle: {{ json_encode(old('og_title', $product->seo?->og_title ?? '')) }},
+                                ogDescription: {{ json_encode(old('og_description', $product->seo?->og_description ?? '')) }},
+                                ogImageId: {{ json_encode(old('og_image_id', $product->seo?->og_image_id ?? '')) }},
+                                twitterTitle: {{ json_encode(old('twitter_title', $product->seo?->twitter_title ?? '')) }},
+                                twitterDescription: {{ json_encode(old('twitter_description', $product->seo?->twitter_description ?? '')) }},
+                                twitterImageId: {{ json_encode(old('twitter_image_id', $product->seo?->twitter_image_id ?? '')) }},
+                                copiedUrl: false,
+                                get fallbackTitle() {
+                                    return {{ json_encode($product->name) }};
+                                },
+                                get fallbackDescription() {
+                                    return {{ json_encode($product->short_description ?? Str::limit(strip_tags($product->description ?? ''), 160)) }};
+                                },
+                                get effectiveTitle() {
+                                    return this.metaTitle.trim() ? this.metaTitle : this.fallbackTitle;
+                                },
+                                get effectiveDescription() {
+                                    return this.metaDescription.trim() ? this.metaDescription : (this.fallbackDescription || 'No meta description provided for this product.');
+                                },
+                                get baseUrl() {
+                                    return {{ json_encode(config('app.url')) }};
+                                },
+                                get publicUrl() {
+                                    return this.canonicalUrl.trim() ? this.canonicalUrl : (this.baseUrl + '/products/' + (this.slug || 'product-slug'));
+                                },
+                                get titleStatus() {
+                                    const len = this.metaTitle.length;
+                                    if (len === 0) return { badge: 'Default Fallback', color: 'bg-neutral-100 text-neutral-600 border-neutral-200' };
+                                    if (len < 20) return { badge: 'Too Short', color: 'bg-amber-50 text-amber-700 border-amber-200' };
+                                    if (len <= 39) return { badge: 'Good', color: 'bg-blue-50 text-blue-700 border-blue-200' };
+                                    if (len <= 60) return { badge: 'Excellent', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
+                                    return { badge: 'Too Long', color: 'bg-rose-50 text-rose-700 border-rose-200' };
+                                },
+                                get descStatus() {
+                                    const len = this.metaDescription.length;
+                                    if (len === 0) return { badge: 'Default Fallback', color: 'bg-neutral-100 text-neutral-600 border-neutral-200' };
+                                    if (len < 80) return { badge: 'Too Short', color: 'bg-amber-50 text-amber-700 border-amber-200' };
+                                    if (len <= 119) return { badge: 'Good', color: 'bg-blue-50 text-blue-700 border-blue-200' };
+                                    if (len <= 160) return { badge: 'Excellent', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
+                                    return { badge: 'Too Long', color: 'bg-rose-50 text-rose-700 border-rose-200' };
+                                }
+                            }">
+                                @csrf
+                                @method('PUT')
+
+                                <!-- Section 0: 1-Click Copy Public URL Bar -->
+                                <div class="bg-neutral-900 text-white border border-neutral-800 rounded-2xl p-5 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                    <div class="space-y-1">
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-neutral-400">Current Public Storefront URL</span>
+                                        <div class="text-xs font-mono font-semibold text-emerald-400 break-all" x-text="publicUrl"></div>
+                                    </div>
+                                    <button 
+                                        type="button" 
+                                        @click="navigator.clipboard.writeText(publicUrl); copiedUrl = true; setTimeout(() => copiedUrl = false, 2000)"
+                                        class="shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                                    >
+                                        <template x-if="!copiedUrl">
+                                            <span class="inline-flex items-center gap-1.5">
+                                                <svg class="w-3.5 h-3.5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                                Copy URL
+                                            </span>
+                                        </template>
+                                        <template x-if="copiedUrl">
+                                            <span class="inline-flex items-center gap-1.5 text-emerald-400">
+                                                <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                                Copied!
+                                            </span>
+                                        </template>
+                                    </button>
+                                </div>
+
+                                <!-- Section 6: Live Google SERP Snippet Preview (Yoast / RankMath Style) -->
+                                <div class="bg-white border border-[color:var(--color-border)] rounded-2xl p-5 shadow-xs space-y-3">
+                                    <div class="flex items-center justify-between border-b border-neutral-100 pb-3">
+                                        <h3 class="font-bold text-neutral-800 text-sm flex items-center gap-2">
+                                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                            Live Search Engine Snippet Preview
+                                        </h3>
+                                        <span class="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md bg-neutral-100 text-neutral-600 border border-neutral-200">Google SERP</span>
+                                    </div>
+
+                                    <!-- Google Search Snippet Card -->
+                                    <div class="p-4 bg-neutral-50 border border-neutral-200 rounded-xl space-y-1 font-sans text-left">
+                                        <!-- Header / Breadcrumb -->
+                                        <div class="flex items-center gap-2 text-xs text-neutral-600">
+                                            <div class="w-4 h-4 rounded-full bg-neutral-200 border border-neutral-300 flex items-center justify-center text-[9px] font-bold text-neutral-700">O</div>
+                                            <span class="font-semibold text-neutral-800">{{ config('app.name', 'Okina Craft') }}</span>
+                                            <span class="text-neutral-400">•</span>
+                                            <span class="text-[11px] text-neutral-500 font-mono" x-text="publicUrl"></span>
+                                        </div>
+
+                                        <!-- Title (Google Blue #1a0dab) -->
+                                        <div class="text-base font-medium text-[#1a0dab] hover:underline cursor-pointer leading-snug line-clamp-1" x-text="effectiveTitle"></div>
+
+                                        <!-- Description Snippet (#4d5156) -->
+                                        <div class="text-xs text-[#4d5156] leading-relaxed line-clamp-2" x-text="effectiveDescription"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Section 1 & 5: Search Engine Metadata & Slug -->
+                                <div class="bg-white border border-[color:var(--color-border)] rounded-2xl p-5 shadow-xs space-y-5">
+                                    <h3 class="font-bold text-neutral-800 text-sm border-b border-neutral-100 pb-3">Search Engine Setup</h3>
+
+                                    <!-- Meta Title Input + Character Counter -->
+                                    <div class="space-y-1.5">
+                                        <div class="flex items-center justify-between">
+                                            <label for="meta_title" class="text-xs font-semibold text-neutral-700">Meta Title</label>
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border" :class="titleStatus.color" x-text="titleStatus.badge"></span>
+                                                <span class="text-[11px] font-mono text-neutral-500" x-text="metaTitle.length + ' / 60 chars • ' + (60 - metaTitle.length) + ' left'"></span>
+                                            </div>
+                                        </div>
+                                        <input 
+                                            type="text" 
+                                            id="meta_title" 
+                                            name="meta_title" 
+                                            x-model="metaTitle"
+                                            placeholder="{{ $product->name }}"
+                                            class="block w-full border border-neutral-300 rounded-xl px-4 py-2 text-xs text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)]"
+                                        />
+                                        <p class="text-[10px] text-neutral-400">Leave empty to automatically use the product name.</p>
+                                    </div>
+
+                                    <!-- Meta Description Input + Character Counter -->
+                                    <div class="space-y-1.5">
+                                        <div class="flex items-center justify-between">
+                                            <label for="meta_description" class="text-xs font-semibold text-neutral-700">Meta Description</label>
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border" :class="descStatus.color" x-text="descStatus.badge"></span>
+                                                <span class="text-[11px] font-mono text-neutral-500" x-text="metaDescription.length + ' / 160 chars • ' + (160 - metaDescription.length) + ' left'"></span>
+                                            </div>
+                                        </div>
+                                        <textarea 
+                                            id="meta_description" 
+                                            name="meta_description" 
+                                            rows="3" 
+                                            x-model="metaDescription"
+                                            placeholder="{{ $product->short_description ?? 'Summary snippet of the product for search engine results.' }}"
+                                            class="block w-full border border-neutral-300 rounded-xl px-4 py-2 text-xs text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)]"
+                                        ></textarea>
+                                        <p class="text-[10px] text-neutral-400">Recommended 120-160 characters. Summarize key selling points and custom options.</p>
+                                    </div>
+
+                                    <!-- Focus Keyword & Slug Row -->
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <x-form.wrapper id="focus_keyword" label="Focus Keyword">
+                                            <input 
+                                                type="text" 
+                                                id="focus_keyword" 
+                                                name="focus_keyword" 
+                                                x-model="focusKeyword"
+                                                placeholder="e.g. custom polo t-shirt"
+                                                class="block w-full border border-neutral-300 rounded-xl px-4 py-2 text-xs text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)]"
+                                            />
+                                            <p class="text-[10px] text-neutral-400 mt-1">Used for internal editor guidance only, never rendered on storefront.</p>
+                                        </x-form.wrapper>
+
+                                        <x-form.wrapper id="seo_slug" label="URL Slug" required="true">
+                                            <input 
+                                                type="text" 
+                                                id="seo_slug" 
+                                                name="slug" 
+                                                x-model="slug"
+                                                required
+                                                class="block w-full border border-neutral-300 rounded-xl px-4 py-2 text-xs text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)]"
+                                            />
+                                            <p class="text-[10px] text-emerald-600 font-semibold mt-1 inline-flex items-center gap-1">
+                                                <svg class="w-3 h-3 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                                Normalized to lowercase, hyphenated URL slug automatically.
+                                            </p>
+                                        </x-form.wrapper>
+                                    </div>
+
+                                    <!-- Canonical URL Override -->
+                                    <x-form.wrapper id="canonical_url" label="Canonical URL Override">
+                                        <input 
+                                            type="url" 
+                                            id="canonical_url" 
+                                            name="canonical_url" 
+                                            x-model="canonicalUrl"
+                                            placeholder="https://okinacraft.com/products/custom-polo"
+                                            class="block w-full border border-neutral-300 rounded-xl px-4 py-2 text-xs text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)]"
+                                        />
+                                        <p class="text-[10px] text-neutral-400 mt-1">Leave empty to use default route canonical URL (<span class="font-mono" x-text="baseUrl + '/products/' + (slug || 'product-slug')"></span>).</p>
+                                    </x-form.wrapper>
+
+                                    <!-- Robots Directives (2 Independent Switches) -->
+                                    <div class="pt-2 border-t border-neutral-100 space-y-3">
+                                        <span class="text-xs font-semibold text-neutral-700 block">Robots Directives</span>
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <label class="flex items-center gap-3 p-3 border border-neutral-200 rounded-xl hover:bg-neutral-50 cursor-pointer transition-colors">
+                                                <input 
+                                                    type="checkbox" 
+                                                    name="robots_index" 
+                                                    value="1" 
+                                                    x-model="robotsIndex"
+                                                    class="rounded border-neutral-300 text-[color:var(--color-brand-600)] focus:ring-[color:var(--color-brand-500)]"
+                                                />
+                                                <div class="text-xs">
+                                                    <span class="font-bold text-neutral-800 block">Allow Indexing (index)</span>
+                                                    <span class="text-[10px] text-neutral-500">Permit search engines to index this product page.</span>
+                                                </div>
+                                            </label>
+
+                                            <label class="flex items-center gap-3 p-3 border border-neutral-200 rounded-xl hover:bg-neutral-50 cursor-pointer transition-colors">
+                                                <input 
+                                                    type="checkbox" 
+                                                    name="robots_follow" 
+                                                    value="1" 
+                                                    x-model="robotsFollow"
+                                                    class="rounded border-neutral-300 text-[color:var(--color-brand-600)] focus:ring-[color:var(--color-brand-500)]"
+                                                />
+                                                <div class="text-xs">
+                                                    <span class="font-bold text-neutral-800 block">Allow Following Links (follow)</span>
+                                                    <span class="text-[10px] text-neutral-500">Permit search engines to crawl links on this page.</span>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Section 2: Open Graph (Facebook / LinkedIn) -->
+                                <div class="bg-white border border-[color:var(--color-border)] rounded-2xl p-5 shadow-xs space-y-4">
+                                    <div class="flex items-center gap-2 border-b border-neutral-100 pb-3">
+                                        <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                                        <h3 class="font-bold text-neutral-800 text-sm">Open Graph Settings (Facebook &amp; LinkedIn)</h3>
+                                    </div>
+
+                                    <div class="space-y-4">
+                                        <x-form.input 
+                                            id="og_title" 
+                                            name="og_title" 
+                                            label="OG Title" 
+                                            x-model="ogTitle"
+                                            placeholder="Defaults to Meta Title"
+                                        />
+
+                                        <x-form.wrapper id="og_description" label="OG Description">
+                                            <textarea 
+                                                id="og_description" 
+                                                name="og_description" 
+                                                rows="2" 
+                                                x-model="ogDescription"
+                                                placeholder="Defaults to Meta Description"
+                                                class="block w-full border border-neutral-300 rounded-xl px-4 py-2 text-xs text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)]"
+                                            ></textarea>
+                                        </x-form.wrapper>
+
+                                        <x-form.wrapper id="og_image_id" label="OG Image Selection">
+                                            <select 
+                                                id="og_image_id" 
+                                                name="og_image_id" 
+                                                x-model="ogImageId"
+                                                class="block w-full border border-neutral-300 rounded-xl px-4 py-2 text-xs text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)] bg-white"
+                                            >
+                                                <option value="">-- Fallback to Cover / Primary Product Image --</option>
+                                                @foreach($product->media as $mediaItem)
+                                                    @if($mediaItem->file)
+                                                        <option value="{{ $mediaItem->file->id }}">
+                                                            Image: {{ $mediaItem->file->original_filename }} ({{ $mediaItem->role }})
+                                                        </option>
+                                                    @endif
+                                                @endforeach
+                                            </select>
+                                        </x-form.wrapper>
+                                    </div>
+                                </div>
+
+                                <!-- Section 3: Twitter Card -->
+                                <div class="bg-white border border-[color:var(--color-border)] rounded-2xl p-5 shadow-xs space-y-4">
+                                    <div class="flex items-center gap-2 border-b border-neutral-100 pb-3">
+                                        <svg class="w-4 h-4 text-sky-400" fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.936 9.936 0 0024 4.59z"/></svg>
+                                        <h3 class="font-bold text-neutral-800 text-sm">Twitter Card Settings</h3>
+                                    </div>
+
+                                    <div class="space-y-4">
+                                        <x-form.input 
+                                            id="twitter_title" 
+                                            name="twitter_title" 
+                                            label="Twitter Title" 
+                                            x-model="twitterTitle"
+                                            placeholder="Defaults to OG / Meta Title"
+                                        />
+
+                                        <x-form.wrapper id="twitter_description" label="Twitter Description">
+                                            <textarea 
+                                                id="twitter_description" 
+                                                name="twitter_description" 
+                                                rows="2" 
+                                                x-model="twitterDescription"
+                                                placeholder="Defaults to OG / Meta Description"
+                                                class="block w-full border border-neutral-300 rounded-xl px-4 py-2 text-xs text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)]"
+                                            ></textarea>
+                                        </x-form.wrapper>
+
+                                        <x-form.wrapper id="twitter_image_id" label="Twitter Image Selection">
+                                            <select 
+                                                id="twitter_image_id" 
+                                                name="twitter_image_id" 
+                                                x-model="twitterImageId"
+                                                class="block w-full border border-neutral-300 rounded-xl px-4 py-2 text-xs text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)] bg-white"
+                                            >
+                                                <option value="">-- Fallback to OG Image / Product Image --</option>
+                                                @foreach($product->media as $mediaItem)
+                                                    @if($mediaItem->file)
+                                                        <option value="{{ $mediaItem->file->id }}">
+                                                            Image: {{ $mediaItem->file->original_filename }} ({{ $mediaItem->role }})
+                                                        </option>
+                                                    @endif
+                                                @endforeach
+                                            </select>
+                                        </x-form.wrapper>
+                                    </div>
+                                </div>
+
+                                <!-- Section 4: Structured Data (JSON-LD Read-only Pretty Preview) -->
+                                <div class="bg-white border border-[color:var(--color-border)] rounded-2xl p-5 shadow-xs space-y-3">
+                                    <div class="flex items-center justify-between border-b border-neutral-100 pb-3">
+                                        <h3 class="font-bold text-neutral-800 text-sm flex items-center gap-2">
+                                            <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                                            Structured Data (Schema.org Product JSON-LD)
+                                        </h3>
+                                        <span class="text-[10px] font-mono text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200 font-bold">Read-only Output</span>
+                                    </div>
+                                    <p class="text-[11px] text-neutral-500">Automatically generated for search engines and rich snippet features using your product attributes and SEO values.</p>
+
+                                    <div class="relative bg-neutral-900 border border-neutral-800 rounded-xl p-4 overflow-x-auto">
+                                        <pre class="font-mono text-xs text-emerald-400 leading-relaxed whitespace-pre">{{ $product->seoPresenter()->jsonLdFormatted() }}</pre>
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="flex justify-end gap-3 pt-4">
+                                    <button 
+                                        type="submit" 
+                                        class="px-6 py-2.5 text-xs font-bold bg-neutral-800 hover:bg-neutral-900 text-white rounded-xl shadow-xs transition-colors cursor-pointer inline-flex items-center gap-2"
+                                    >
+                                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                        Save SEO &amp; Social Settings
+                                    </button>
+                                </div>
+                            </form>
                         </x-tabs.content>
 
                     </x-tabs>

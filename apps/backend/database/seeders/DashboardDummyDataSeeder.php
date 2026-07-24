@@ -1,14 +1,16 @@
 <?php
- 
+
 namespace Database\Seeders;
- 
-use App\Models\User;
-use App\Models\Order;
-use App\Models\AuditLog;
+
+use App\Enums\AuditActorType;
 use App\Enums\OrderStatus;
+use App\Models\AuditLog;
+use App\Models\Order;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
- 
+use Illuminate\Support\Str;
+
 class DashboardDummyDataSeeder extends Seeder
 {
     /**
@@ -16,10 +18,10 @@ class DashboardDummyDataSeeder extends Seeder
      */
     public function run(): void
     {
-        $user = User::where('email', 'test@example.com')->first() 
-            ?? User::first() 
+        $user = User::where('email', 'test@example.com')->first()
+            ?? User::first()
             ?? User::factory()->create(['name' => 'Saurav Nanda', 'email' => 'saurav@example.com']);
- 
+
         // 1. Seed Orders for the last 6 calendar months
         for ($i = 5; $i >= 0; $i--) {
             $monthDate = Carbon::now()->subMonths($i);
@@ -33,7 +35,7 @@ class DashboardDummyDataSeeder extends Seeder
                 ]);
             }
         }
- 
+
         // 2. Seed Audit logs for recent activity timeline
         $logs = [
             [
@@ -61,15 +63,15 @@ class DashboardDummyDataSeeder extends Seeder
                 'actor_label_snapshot' => 'Amit Sharma',
             ],
         ];
- 
+
         foreach ($logs as $log) {
             AuditLog::create([
-                'event_id' => (string) \Illuminate\Support\Str::uuid(),
+                'event_id' => (string) Str::uuid(),
                 'action' => $log['action'],
                 'module' => explode('.', $log['action'])[0],
                 'summary' => $log['summary'],
                 'occurred_at' => $log['occurred_at'],
-                'actor_type' => \App\Enums\AuditActorType::USER,
+                'actor_type' => AuditActorType::USER,
                 'subject_type' => 'unknown',
                 'actor_label_snapshot' => $log['actor_label_snapshot'],
                 'actor_user_id' => $user->id,

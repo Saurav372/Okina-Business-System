@@ -52,9 +52,13 @@ class ProductController extends Controller
         Gate::authorize('update', $product);
 
         $product->load([
+            'category',
             'variants',
-            'skus'  => fn ($q) => $q->orderBy('sort_order')->orderBy('id'),
+            'skus' => fn ($q) => $q->orderBy('sort_order')->orderBy('id'),
             'media.file',
+            'coverMedia.file',
+            'seo.ogImage',
+            'seo.twitterImage',
         ]);
 
         $categories = ProductCategory::where('status', 'active')

@@ -10,6 +10,7 @@ use App\Models\ProductSku;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\SalesOrderService;
+use App\Services\SettingsService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
@@ -121,7 +122,7 @@ class SalesOrderEditTest extends TestCase
     public function test_authorized_user_can_edit_editable_order(): void
     {
         Event::fake([AuditEvent::class]);
-        app(\App\Services\SettingsService::class)->set('tax', 'enable_gst', true);
+        app(SettingsService::class)->set('tax', 'enable_gst', true);
 
         $order = Order::factory()->create([
             'status' => 'confirmed',

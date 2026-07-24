@@ -2,7 +2,7 @@
 
 /**
  * Colors Token Configuration
- * 
+ *
  * @schema
  * [
  *     'name' => string,
@@ -34,7 +34,7 @@ return [
             ['shade' => '800', 'variable' => 'var(--color-brand-800)', 'hex' => '#7a1616'],
             ['shade' => '900', 'variable' => 'var(--color-brand-900)', 'hex' => '#5c1212'],
             ['shade' => '950', 'variable' => 'var(--color-brand-950)', 'hex' => '#360808'],
-        ]
+        ],
     ],
     [
         'name' => 'Ink',
@@ -56,7 +56,7 @@ return [
             ['shade' => '800', 'variable' => 'var(--color-ink-800)', 'hex' => '#2a2724'],
             ['shade' => '900', 'variable' => 'var(--color-ink-900)', 'hex' => '#1a1816'],
             ['shade' => '950', 'variable' => 'var(--color-ink-950)', 'hex' => '#0e0d0c'],
-        ]
+        ],
     ],
     [
         'name' => 'Neutral Grays',
@@ -77,7 +77,7 @@ return [
             ['shade' => '800', 'variable' => 'var(--color-neutral-800)', 'hex' => '#1f2937'],
             ['shade' => '900', 'variable' => 'var(--color-neutral-900)', 'hex' => '#111827'],
             ['shade' => '950', 'variable' => 'var(--color-neutral-950)', 'hex' => '#030712'],
-        ]
+        ],
     ],
     [
         'name' => 'Success Alert',
@@ -98,7 +98,7 @@ return [
             ['shade' => '800', 'variable' => 'var(--color-success-800)', 'hex' => '#065f46'],
             ['shade' => '900', 'variable' => 'var(--color-success-900)', 'hex' => '#064e3b'],
             ['shade' => '950', 'variable' => 'var(--color-success-950)', 'hex' => '#022c22'],
-        ]
+        ],
     ],
     [
         'name' => 'Warning Alert',
@@ -119,7 +119,7 @@ return [
             ['shade' => '800', 'variable' => 'var(--color-warning-800)', 'hex' => '#92400e'],
             ['shade' => '900', 'variable' => 'var(--color-warning-900)', 'hex' => '#78350f'],
             ['shade' => '950', 'variable' => 'var(--color-warning-950)', 'hex' => '#451a03'],
-        ]
+        ],
     ],
     [
         'name' => 'Danger Alert',
@@ -140,6 +140,6 @@ return [
             ['shade' => '800', 'variable' => 'var(--color-danger-800)', 'hex' => '#991b1b'],
             ['shade' => '900', 'variable' => 'var(--color-danger-900)', 'hex' => '#7f1d1d'],
             ['shade' => '950', 'variable' => 'var(--color-danger-950)', 'hex' => '#450a0a'],
-        ]
+        ],
     ],
 ];

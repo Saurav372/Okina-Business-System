@@ -1,27 +1,24 @@
 # Current Task
 
 ## Current Parent Task
-Products Module (U3.2)
+Inventory & Purchasing Module (U5.1)
 
 ## Current Subtask
-U3.2.5 Product Media
+U5.1.1 Stock Balances
 
 ## Goal
-Implement image gallery and video management for products. Allow administrators to upload, reorder, and delete product media (images and videos) via an intuitive gallery UI on the product edit screen.
+Implement real-time SKU stock level listing with warehouse/location filters, stock status badges (In Stock, Low Stock, Out of Stock), and search.
 
 ## Dependencies
 **Depends On:**
-- U3.2.2 (Product Detail & Edit)
 - U3.2.4 (Variants & SKUs) — Completed ✅
+- U3.2.6 (SEO Metadata Management & Products Module Completion) — Completed ✅
 
-## Required Deliverables
-- Image/video upload UI on the product edit page (new tab or section under General/Variants).
-- Support for multi-file upload with drag-and-drop reorder.
-- Display gallery of existing media with delete action.
-- Integration with backend stored file APIs.
-- No placeholder UI — connect to real backend StoredFile / ProductMedia models.
-
-## Completed Prerequisites
-- U3.2.2 (Product Detail & Edit)
-- U3.2.3 (Categories & Attributes)
-- U3.2.4 (Variants & SKUs)
+## Completed Milestones
+- **U3.2 Products Module:** 100% Completed ✅
+  - U3.2.1 Product Index — Completed ✅
+  - U3.2.2 Product Detail & Edit — Completed ✅
+  - U3.2.3 Categories & Attributes — Completed ✅
+  - U3.2.4 Variants & SKUs — Completed ✅
+  - U3.2.5 Product Media — Completed ✅
+  - U3.2.6 SEO Metadata Management — Completed ✅

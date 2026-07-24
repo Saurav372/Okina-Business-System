@@ -43,6 +43,7 @@ class AuditEventContractTest extends TestCase
                 'customers.customer_updated',
                 'products.product_updated',
                 'products.sku_updated',
+                'products.seo_updated',
                 'users.role_assigned',
                 'users.permission_updated',
                 'orders.pdf_generated',
@@ -68,6 +69,7 @@ class AuditEventContractTest extends TestCase
         $this->assertSame('customers', $catalog->definition('customers.customer_updated')->module);
         $this->assertSame('products', $catalog->definition('products.product_updated')->module);
         $this->assertSame('products', $catalog->definition('products.sku_updated')->module);
+        $this->assertSame('products', $catalog->definition('products.seo_updated')->module);
         $this->assertSame('users', $catalog->definition('users.role_assigned')->module);
         $this->assertSame('users', $catalog->definition('users.permission_updated')->module);
     }

@@ -1,9 +1,9 @@
 <?php
- 
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
- 
+
 return new class extends Migration
 {
     /**
@@ -20,13 +20,13 @@ return new class extends Migration
             $table->integer('sort_order')->default(0);
             $table->text('notes')->nullable();
             $table->timestamps();
- 
+
             // Indexes
             $table->index(['order_id', 'sort_order']);
             $table->index('stored_file_id');
         });
     }
- 
+
     /**
      * Reverse the migrations.
      */

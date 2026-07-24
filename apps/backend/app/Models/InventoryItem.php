@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\InventoryStatus;
+use App\Support\Inventory\InventoryStatusResolver;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -23,6 +25,7 @@ class InventoryItem extends Model
         'product_sku_id',
         'on_hand_quantity',
         'reserved_quantity',
+        'available_quantity',
         'low_stock_threshold',
         'allow_negative_stock',
         'last_movement_at',
@@ -41,6 +44,10 @@ class InventoryItem extends Model
     protected static function booted(): void
     {
         static::creating(function (InventoryItem $item) {
+            $item->recalculateAvailable();
+        });
+
+        static::updating(function (InventoryItem $item) {
             $item->recalculateAvailable();
         });
     }
@@ -67,6 +74,27 @@ class InventoryItem extends Model
     public function resolvedLowStockThreshold(): ?int
     {
         return $this->low_stock_threshold ?? $this->productSku?->low_stock_threshold;
+    }
+
+    /**
+     * Compute the InventoryStatus enum for this item.
+     * Used by the view as $item->resolvedStatus().
+     */
+    public function resolvedStatus(): InventoryStatus
+    {
+        return InventoryStatusResolver::resolve(
+            $this->available_quantity,
+            $this->on_hand_quantity,
+            $this->resolvedLowStockThreshold()
+        );
+    }
+
+    /**
+     * Eloquent attribute accessor so {{ $item->status }} works in Blade.
+     */
+    public function getStatusAttribute(): InventoryStatus
+    {
+        return $this->resolvedStatus();
     }
 
     /**

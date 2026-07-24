@@ -112,11 +112,11 @@ class SalesOrderController extends Controller
 
         $pdf = $pdfService->renderPdf($order, $request->user());
 
-        $filename = 'Order_Confirmation_' . $order->public_id . '.pdf';
+        $filename = 'Order_Confirmation_'.$order->public_id.'.pdf';
 
         return response($pdf)
             ->header('Content-Type', 'application/pdf')
-            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"')
+            ->header('Content-Disposition', 'attachment; filename="'.$filename.'"')
             ->header('Content-Length', strlen($pdf));
     }
 }

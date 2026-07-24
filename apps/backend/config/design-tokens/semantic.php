@@ -2,7 +2,7 @@
 
 /**
  * Semantic Design Token Mappings
- * 
+ *
  * Maps interface roles/intents to design token properties.
  */
 return [

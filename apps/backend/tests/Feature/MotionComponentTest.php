@@ -121,7 +121,7 @@ class MotionComponentTest extends TestCase
     {
         // Specifying fade twice shouldn't double classes in the enter-start sequence
         $duplicate = $this->blade('<x-motion type="fade" effect="fade">Content</x-motion>');
-        
+
         $duplicate->assertSee('x-transition:enter-start="opacity-0"', false);
         $duplicate->assertDontSee('opacity-0 opacity-0');
     }
@@ -145,11 +145,11 @@ class MotionComponentTest extends TestCase
     {
         // Grid collapse wrapper is rendered and transform effects are stripped
         $collapse = $this->blade('<x-motion type="collapse" effect="scale slide-up" show="open">Content</x-motion>');
-        
+
         $collapse->assertSee('class="ui-motion grid transition-all duration-[var(--motion-normal)] ease-[var(--motion-ease)] overflow-hidden"', false);
         $collapse->assertSee(':class="open ? \'grid-rows-[1fr] opacity-100\' : \'grid-rows-[0fr] opacity-0\'"', false);
         $collapse->assertSee('<div class="min-h-0 overflow-hidden">', false);
-        
+
         // Confirm x-transition enter/leave is absent (replaced by grid transition)
         $collapse->assertDontSee('x-transition:enter', false);
     }

@@ -13,7 +13,7 @@ class ScrollRevealComponentTest extends TestCase
     {
         $rendered = $this->blade('<x-scroll-reveal>Reveal Content</x-scroll-reveal>');
 
-        $html = (string)$rendered;
+        $html = (string) $rendered;
 
         // Check tags and classes
         $this->assertStringStartsWith('<div', $html);
@@ -38,18 +38,18 @@ class ScrollRevealComponentTest extends TestCase
     {
         // Valid tag from allowlist (section)
         $section = $this->blade('<x-scroll-reveal as="section" />');
-        $this->assertStringStartsWith('<section', (string)$section);
-        $this->assertStringEndsWith('</section>', trim((string)$section));
+        $this->assertStringStartsWith('<section', (string) $section);
+        $this->assertStringEndsWith('</section>', trim((string) $section));
 
         // Valid tag from allowlist (li)
         $li = $this->blade('<x-scroll-reveal as="li" />');
-        $this->assertStringStartsWith('<li', (string)$li);
-        $this->assertStringEndsWith('</li>', trim((string)$li));
+        $this->assertStringStartsWith('<li', (string) $li);
+        $this->assertStringEndsWith('</li>', trim((string) $li));
 
         // Invalid tag falls back to div
         $invalid = $this->blade('<x-scroll-reveal as="banana" />');
-        $this->assertStringStartsWith('<div', (string)$invalid);
-        $this->assertStringEndsWith('</div>', trim((string)$invalid));
+        $this->assertStringStartsWith('<div', (string) $invalid);
+        $this->assertStringEndsWith('</div>', trim((string) $invalid));
     }
 
     /**

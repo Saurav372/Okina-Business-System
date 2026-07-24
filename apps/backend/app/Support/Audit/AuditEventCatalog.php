@@ -203,6 +203,18 @@ final class AuditEventCatalog
                 summary: 'Product SKU pricing, status, or configuration was updated.',
             ),
             new AuditEventDefinition(
+                key: 'products.seo_updated',
+                module: 'products',
+                action: 'seo.updated',
+                subjectType: 'product',
+                actorTypes: ['user', 'system'],
+                safeFields: ['product_id', 'robots_index', 'robots_follow', 'og_image_id', 'twitter_image_id'],
+                maskedFields: ['meta_title', 'meta_description', 'focus_keyword', 'canonical_url', 'og_title', 'og_description', 'twitter_title', 'twitter_description', 'raw_payload'],
+                relatedTypes: ['product'],
+                references: ['U3.2.6', 'C6.1.3'],
+                summary: 'Product SEO metadata, OpenGraph, or Twitter Card configuration was updated.',
+            ),
+            new AuditEventDefinition(
                 key: 'users.role_assigned',
                 module: 'users',
                 action: 'role.assigned',

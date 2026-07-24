@@ -2,126 +2,99 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\VendorOrderStatus;
+use App\Enums\VendorPaymentMethod;
 use App\Enums\VendorPaymentStatus;
-use App\Events\AuditEvent;
 use App\Exceptions\PurchaseOrderNotPayableException;
 use App\Exceptions\PurchaseOrderPaymentLimitExceededException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PurchaseOrder\StoreVendorPaymentRequest;
+use App\Models\Vendor;
 use App\Models\VendorOrder;
-use App\Models\VendorPayment;
+use App\Services\VendorPaymentService;
+use App\Support\Vendors\VendorPaymentCatalog;
+use App\Support\Vendors\VendorPaymentFilters;
+use App\Support\Vendors\VendorPaymentMetrics;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
 
 class VendorPaymentController extends Controller
 {
+    public function __construct(
+        protected VendorPaymentService $paymentService,
+        protected VendorPaymentCatalog $catalog
+    ) {}
+
     /**
-     * Store a newly created vendor payment in storage.
+     * Display a listing of vendor payments (Accounts Payable ledger).
      */
-    public function store(StoreVendorPaymentRequest $request, VendorOrder $purchaseOrder): JsonResponse
+    public function index(Request $request): JsonResponse|View
     {
-        Gate::authorize('update', $purchaseOrder);
+        Gate::authorize('viewAny', VendorOrder::class);
 
-        $user = Auth::user();
-        $validated = $request->validated();
+        $filters = new VendorPaymentFilters($request->all());
+        $metrics = new VendorPaymentMetrics($filters);
+        $payments = $this->catalog->getPaginatedPayments($filters, 15);
+        $vendors = Vendor::orderBy('name')->get();
 
-        try {
-            $purchaseOrder = DB::transaction(function () use ($purchaseOrder, $validated, $user, &$payment) {
-                // Lock parent purchase order
-                $lockedPo = VendorOrder::whereKey($purchaseOrder->id)->lockForUpdate()->firstOrFail();
-
-                // Compute current total paid via explicit collection locking
-                $payments = VendorPayment::where('vendor_order_id', $lockedPo->id)
-                    ->where('status', VendorPaymentStatus::PAID->value)
-                    ->lockForUpdate()
-                    ->get();
-                $existingPaymentsSum = $payments->sum('amount_minor');
-
-                // Validate PO state: if draft or cancelled, throw PurchaseOrderNotPayableException
-                if ($lockedPo->isEditable() || $lockedPo->status === VendorOrderStatus::CANCELLED) {
-                    throw new PurchaseOrderNotPayableException(
-                        "Cannot record payment on a purchase order in {$lockedPo->status->value} status."
-                    );
-                }
-
-                // Validate remaining balance
-                $remaining = $lockedPo->total_amount_minor - $existingPaymentsSum;
-                if ($validated['amount_minor'] > $remaining) {
-                    throw new PurchaseOrderPaymentLimitExceededException(
-                        'The payment amount exceeds the remaining payable balance.'
-                    );
-                }
-
-                // Capture previous payment status
-                $previousPaymentStatus = $lockedPo->payment_status;
-
-                // Create the immutable VendorPayment record
-                $payment = VendorPayment::create([
-                    'vendor_order_id' => $lockedPo->id,
-                    'recorded_by_user_id' => $user->id,
-                    'status' => VendorPaymentStatus::PAID,
-                    'payment_method' => $validated['payment_method'],
-                    'amount_minor' => $validated['amount_minor'],
-                    'currency' => $lockedPo->currency,
-                    'reference' => $validated['reference'] ?? null,
-                    'paid_at' => $validated['paid_at'] ?? now(),
-                    'notes' => $validated['notes'] ?? null,
-                ]);
-
-                // Compute new total paid
-                $newTotalPaid = $existingPaymentsSum + $payment->amount_minor;
-
-                // Call recalculatePaymentStatus
-                $lockedPo->recalculatePaymentStatus($newTotalPaid);
-
-                // Save parent PO
-                $lockedPo->save();
-
-                // Perform non-optional refresh of models
-                $payment->refresh();
-                $lockedPo->refresh();
-
-                // Define local variables for the audit payload before registering afterCommit
-                $totalPaidMinor = $newTotalPaid;
-                $remainingBalanceMinor = $lockedPo->total_amount_minor - $newTotalPaid;
-                $previousStatusValue = $previousPaymentStatus->value;
-                $currentStatusValue = $lockedPo->payment_status->value;
-
-                DB::afterCommit(function () use ($lockedPo, $payment, $totalPaidMinor, $remainingBalanceMinor, $previousStatusValue, $currentStatusValue, $user) {
-                    event(new AuditEvent('purchase_orders.payments.recorded', $user, [
-                        'vendor_order_id' => $lockedPo->id,
-                        'vendor_payment_id' => $payment->id,
-                        'payment_amount_minor' => $payment->amount_minor,
-                        'total_paid_minor' => $totalPaidMinor,
-                        'remaining_balance_minor' => $remainingBalanceMinor,
-                        'previous_payment_status' => $previousStatusValue,
-                        'payment_status' => $currentStatusValue,
-                        'currency' => $payment->currency,
-                        'payment_method' => $payment->payment_method->value,
-                        'reference' => $payment->reference,
-                        'actor_id' => $user->id,
-                    ]));
-                });
-
-                return $lockedPo;
-            });
-        } catch (PurchaseOrderPaymentLimitExceededException $e) {
-            throw ValidationException::withMessages([
-                'amount_minor' => $e->getMessage(),
-            ]);
-        } catch (PurchaseOrderNotPayableException $e) {
-            throw ValidationException::withMessages([
-                'purchase_order' => $e->getMessage(),
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'metrics' => $metrics,
+                'payments' => $payments,
             ]);
         }
 
-        return response()->json([
-            'payment' => $payment,
-            'purchase_order' => $purchaseOrder,
+        return view('admin.vendor-payments.index', [
+            'filters' => $filters,
+            'metrics' => $metrics,
+            'payments' => $payments,
+            'vendors' => $vendors,
+            'paymentMethods' => VendorPaymentMethod::cases(),
+            'paymentStatuses' => VendorPaymentStatus::cases(),
         ]);
+    }
+
+    /**
+     * Store a newly created vendor payment in storage.
+     */
+    public function store(StoreVendorPaymentRequest $request, VendorOrder $purchaseOrder): JsonResponse|RedirectResponse
+    {
+        Gate::authorize('update', $purchaseOrder);
+
+        $validated = $request->validated();
+
+        try {
+            $result = $this->paymentService->recordPayment(
+                order: $purchaseOrder,
+                data: $validated,
+                actor: $request->user()
+            );
+        } catch (PurchaseOrderPaymentLimitExceededException $e) {
+            if ($request->wantsJson() || $request->is('api/*')) {
+                throw ValidationException::withMessages(['amount_minor' => $e->getMessage()]);
+            }
+
+            return redirect()->back()->withErrors(['amount_minor' => $e->getMessage()]);
+        } catch (PurchaseOrderNotPayableException $e) {
+            if ($request->wantsJson() || $request->is('api/*')) {
+                throw ValidationException::withMessages(['purchase_order' => $e->getMessage()]);
+            }
+
+            return redirect()->back()->withErrors(['purchase_order' => $e->getMessage()]);
+        }
+
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'payment' => $result['payment'],
+                'purchase_order' => $result['purchase_order'],
+            ]);
+        }
+
+        $formattedAmount = number_format($result['payment']->amount_minor / 100, 2);
+
+        return redirect()->back()->with('success', "Vendor payment of ₹{$formattedAmount} recorded successfully for PO [{$purchaseOrder->public_id}].");
     }
 }

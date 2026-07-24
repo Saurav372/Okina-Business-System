@@ -9,6 +9,7 @@ use App\Models\Customer;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
 use App\Models\GoogleSheetsSyncLog;
+use App\Models\InventoryItem;
 use App\Models\InventoryMovement;
 use App\Models\NotificationLog;
 use App\Models\Order;
@@ -27,6 +28,7 @@ use App\Policies\AuditLogPolicy;
 use App\Policies\ExpenseCategoryPolicy;
 use App\Policies\ExpensePolicy;
 use App\Policies\GoogleSheetsSyncLogPolicy;
+use App\Policies\InventoryPolicy;
 use App\Policies\NotificationLogPolicy;
 use App\Policies\OrderPolicy;
 use App\Policies\PaymentPolicy;
@@ -75,6 +77,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(ExpenseCategory::class, ExpenseCategoryPolicy::class);
         Gate::policy(Expense::class, ExpensePolicy::class);
         Gate::policy(GoogleSheetsSyncLog::class, GoogleSheetsSyncLogPolicy::class);
+        Gate::policy(InventoryItem::class, InventoryPolicy::class);
 
         ProductSku::observe(ProductSkuObserver::class);
         Customer::observe(CustomerObserver::class);

@@ -6,16 +6,6 @@ use Carbon\Carbon;
 
 class ActivityItemDTO
 {
-    /**
-     * @param string $title
-     * @param string $description
-     * @param string $icon
-     * @param string $variant
-     * @param Carbon $occurredAt
-     * @param string|null $href
-     * @param string|null $actorName
-     * @param string|null $actorInitials
-     */
     public function __construct(
         public readonly string $title,
         public readonly string $description,
@@ -36,13 +26,13 @@ class ActivityItemDTO
     public function formatTimeForDashboard(): string
     {
         $now = Carbon::now();
-        
+
         if ($this->occurredAt->diffInHours($now) < 24) {
             return $this->occurredAt->diffForHumans();
         }
 
         if ($this->occurredAt->isYesterday()) {
-            return 'Yesterday, ' . $this->occurredAt->format('g:i A');
+            return 'Yesterday, '.$this->occurredAt->format('g:i A');
         }
 
         return $this->occurredAt->format('d M Y');

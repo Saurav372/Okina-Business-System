@@ -77,9 +77,9 @@ class ShowcaseRegistrationTest extends TestCase
                     'aliases' => ['custom'],
                     'used_by' => ['Testing'],
                     'contrast' => 'Compliant',
-                    'shades' => []
-                ]
-            ]
+                    'shades' => [],
+                ],
+            ],
         ]);
 
         // Clear presenter's internal cache state by calling section on a newly instantiated presenter or clearing it
@@ -87,8 +87,8 @@ class ShowcaseRegistrationTest extends TestCase
         // Wait, because colors was already fetched in previous tests, it would be cached. Let's register a new section 'mock_override'
         config([
             'design-tokens.mock_override' => [
-                ['name' => 'Mocked Override Item']
-            ]
+                ['name' => 'Mocked Override Item'],
+            ],
         ]);
 
         $normalized = DesignTokenCatalog::section('mock_override');

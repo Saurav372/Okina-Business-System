@@ -6,16 +6,11 @@ class DesignTokenCatalog
 {
     /**
      * Cache container to store normalized configurations.
-     *
-     * @var array
      */
     private static array $cache = [];
 
     /**
      * Get a specific normalized section from design tokens config.
-     *
-     * @param string $name
-     * @return array
      */
     public static function section(string $name): array
     {
@@ -28,7 +23,7 @@ class DesignTokenCatalog
 
         // Fully normalize structures to avoid leaking associative index offsets in Blade loops
         self::$cache[$name] = collect($data)
-            ->map(fn($item) => (array)$item)
+            ->map(fn ($item) => (array) $item)
             ->values()
             ->all();
 

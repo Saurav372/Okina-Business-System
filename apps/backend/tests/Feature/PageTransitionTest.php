@@ -13,7 +13,7 @@ class PageTransitionTest extends TestCase
     {
         $rendered = $this->blade('<x-layouts.admin>Dashboard Page Content</x-layouts.admin>');
 
-        $html = (string)$rendered;
+        $html = (string) $rendered;
 
         // Verify Alpine Navigator wrapper is attached
         $rendered->assertSee('x-data="pageNavigator"', false);

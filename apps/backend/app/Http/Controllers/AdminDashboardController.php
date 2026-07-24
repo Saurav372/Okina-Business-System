@@ -17,7 +17,7 @@ class AdminDashboardController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        
+
         $widgets = $this->dashboardService->getWidgetsData();
         $activities = $this->dashboardService->getRecentActivity($user);
         $revenueSeries = $this->dashboardService->getRevenueTrendSeries();
@@ -27,7 +27,7 @@ class AdminDashboardController extends Controller
         $isEmptyState = true;
         foreach ($widgets as $widget) {
             $cleanedVal = preg_replace('/[^0-9.]/', '', $widget->value);
-            if (!empty($cleanedVal) && (float)$cleanedVal > 0) {
+            if (! empty($cleanedVal) && (float) $cleanedVal > 0) {
                 $isEmptyState = false;
                 break;
             }

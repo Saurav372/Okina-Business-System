@@ -160,7 +160,7 @@ class AdminOrderIndexTest extends TestCase
             'total_amount_minor' => 10000,
             'placed_at' => now()->subDay(),
         ]);
-        
+
         Order::factory()->create([
             'public_id' => 'OD-RAHUL-2',
             'status' => OrderStatus::PendingPayment->value(),
@@ -200,7 +200,7 @@ class AdminOrderIndexTest extends TestCase
                 'per_page' => 1,
                 'page' => 1,
                 'sort' => 'total_amount_minor',
-                'direction' => 'asc'
+                'direction' => 'asc',
             ]));
 
         $response->assertStatus(200);

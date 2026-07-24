@@ -128,7 +128,17 @@ class Navigation
             [
                 'group' => 'Inventory',
                 'order' => 40,
-                'items' => [],
+                'items' => [
+                    [
+                        'label' => 'Stock Balances',
+                        'route' => 'admin.inventory.index',
+                        'icon' => 'lucide-boxes',
+                        'order' => 10,
+                        'permission' => 'inventory.view',
+                        'active' => ['admin.inventory.*'],
+                        'children' => [],
+                    ],
+                ],
             ],
             [
                 'group' => 'Purchase',
