@@ -21,10 +21,11 @@ class ExpenseCategoryFactory extends Factory
     public function definition(): array
     {
         $name = $this->faker->unique()->words(2, true);
+        $code = Str::upper(preg_replace('/[^A-Z0-9]+/', '_', Str::upper($name)));
 
         return [
-            'name' => $name,
-            'code' => Str::slug($name),
+            'name' => ucwords($name),
+            'code' => $code,
             'description' => $this->faker->optional()->sentence(),
             'is_active' => true,
         ];

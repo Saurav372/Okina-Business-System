@@ -59,14 +59,21 @@ class ExpenseService
                 $this->attachmentService->attachProof($expense, $proofFile, $actor);
             }
 
-            DB::afterCommit(function () use ($expense, $actor) {
+            $expenseId = $expense->id;
+            $publicId = $expense->public_id;
+            $amountMinor = $expense->amount_minor;
+            $currency = $expense->currency;
+            $status = $expense->status;
+            $actorId = $actor?->id;
+
+            DB::afterCommit(function () use ($expenseId, $publicId, $amountMinor, $currency, $status, $actorId, $actor) {
                 event(new AuditEvent('expenses.created', $actor, [
-                    'expense_id' => $expense->id,
-                    'public_id' => $expense->public_id,
-                    'amount_minor' => $expense->amount_minor,
-                    'currency' => $expense->currency,
-                    'status' => $expense->status,
-                    'actor_id' => $actor?->id,
+                    'expense_id' => $expenseId,
+                    'public_id' => $publicId,
+                    'amount_minor' => $amountMinor,
+                    'currency' => $currency,
+                    'status' => $status,
+                    'actor_id' => $actorId,
                 ]));
             });
 
@@ -142,15 +149,21 @@ class ExpenseService
                 $this->attachmentService->attachProof($expense, $proofFile, $actor);
             }
 
-            DB::afterCommit(function () use ($expense, $oldStatus, $oldAmount, $actor) {
+            $expenseId = $expense->id;
+            $publicId = $expense->public_id;
+            $newAmount = $expense->amount_minor;
+            $newStatus = $expense->status;
+            $actorId = $actor?->id;
+
+            DB::afterCommit(function () use ($expenseId, $publicId, $oldAmount, $newAmount, $oldStatus, $newStatus, $actorId, $actor) {
                 event(new AuditEvent('expenses.updated', $actor, [
-                    'expense_id' => $expense->id,
-                    'public_id' => $expense->public_id,
+                    'expense_id' => $expenseId,
+                    'public_id' => $publicId,
                     'old_amount_minor' => $oldAmount,
-                    'amount_minor' => $expense->amount_minor,
+                    'amount_minor' => $newAmount,
                     'old_status' => $oldStatus,
-                    'status' => $expense->status,
-                    'actor_id' => $actor?->id,
+                    'status' => $newStatus,
+                    'actor_id' => $actorId,
                 ]));
             });
 

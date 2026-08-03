@@ -47,22 +47,21 @@ class ExpenseWorkflowService
             $lockedExpense->appendHistoryEntry('submit', $oldStatus, Expense::STATUS_PENDING_APPROVAL, $actor?->id ?: 0, $now);
             $lockedExpense->save();
 
-            $dispatchAudit = function () use ($lockedExpense, $oldStatus, $actor) {
-                event(new AuditEvent('expense.submitted', $actor, [
-                    'expense_id' => $lockedExpense->id,
-                    'public_id' => $lockedExpense->public_id,
+            $expenseId = $lockedExpense->id;
+            $publicId = $lockedExpense->public_id;
+            $submittedAtIso = $lockedExpense->submitted_at?->toIso8601String();
+            $actorId = $actor?->id;
+
+            DB::afterCommit(function () use ($expenseId, $publicId, $oldStatus, $submittedAtIso, $actorId, $actor) {
+                event(new AuditEvent('expenses.submitted', $actor, [
+                    'expense_id' => $expenseId,
+                    'public_id' => $publicId,
                     'from_status' => $oldStatus,
                     'to_status' => Expense::STATUS_PENDING_APPROVAL,
-                    'submitted_at' => $lockedExpense->submitted_at?->toIso8601String(),
-                    'actor_id' => $actor?->id,
+                    'submitted_at' => $submittedAtIso,
+                    'actor_id' => $actorId,
                 ]));
-            };
-
-            if (app()->environment('testing')) {
-                $dispatchAudit();
-            } else {
-                DB::afterCommit($dispatchAudit);
-            }
+            });
 
             return $lockedExpense->fresh(['expenseCategory', 'recordedBy', 'attachment']);
         });
@@ -94,23 +93,23 @@ class ExpenseWorkflowService
             $lockedExpense->appendHistoryEntry('approve', $oldStatus, Expense::STATUS_APPROVED, $actor?->id ?: 0, $now);
             $lockedExpense->save();
 
-            $dispatchAudit = function () use ($lockedExpense, $oldStatus, $actor) {
-                event(new AuditEvent('expense.approved', $actor, [
-                    'expense_id' => $lockedExpense->id,
-                    'public_id' => $lockedExpense->public_id,
-                    'amount_minor' => $lockedExpense->amount_minor,
+            $expenseId = $lockedExpense->id;
+            $publicId = $lockedExpense->public_id;
+            $amountMinor = $lockedExpense->amount_minor;
+            $approvedAtIso = $lockedExpense->approved_at?->toIso8601String();
+            $actorId = $actor?->id;
+
+            DB::afterCommit(function () use ($expenseId, $publicId, $amountMinor, $oldStatus, $approvedAtIso, $actorId, $actor) {
+                event(new AuditEvent('expenses.approved', $actor, [
+                    'expense_id' => $expenseId,
+                    'public_id' => $publicId,
+                    'amount_minor' => $amountMinor,
                     'from_status' => $oldStatus,
                     'to_status' => Expense::STATUS_APPROVED,
-                    'approved_at' => $lockedExpense->approved_at?->toIso8601String(),
-                    'actor_id' => $actor?->id,
+                    'approved_at' => $approvedAtIso,
+                    'actor_id' => $actorId,
                 ]));
-            };
-
-            if (app()->environment('testing')) {
-                $dispatchAudit();
-            } else {
-                DB::afterCommit($dispatchAudit);
-            }
+            });
 
             return $lockedExpense->fresh(['expenseCategory', 'recordedBy', 'attachment']);
         });
@@ -150,23 +149,22 @@ class ExpenseWorkflowService
             $lockedExpense->appendHistoryEntry('reject', $oldStatus, Expense::STATUS_REJECTED, $actor?->id ?: 0, $now, $reason);
             $lockedExpense->save();
 
-            $dispatchAudit = function () use ($lockedExpense, $oldStatus, $reason, $actor) {
-                event(new AuditEvent('expense.rejected', $actor, [
-                    'expense_id' => $lockedExpense->id,
-                    'public_id' => $lockedExpense->public_id,
+            $expenseId = $lockedExpense->id;
+            $publicId = $lockedExpense->public_id;
+            $rejectedAtIso = $lockedExpense->rejected_at?->toIso8601String();
+            $actorId = $actor?->id;
+
+            DB::afterCommit(function () use ($expenseId, $publicId, $oldStatus, $reason, $rejectedAtIso, $actorId, $actor) {
+                event(new AuditEvent('expenses.rejected', $actor, [
+                    'expense_id' => $expenseId,
+                    'public_id' => $publicId,
                     'from_status' => $oldStatus,
                     'to_status' => Expense::STATUS_REJECTED,
-                    'rejected_at' => $lockedExpense->rejected_at?->toIso8601String(),
+                    'rejected_at' => $rejectedAtIso,
                     'rejection_reason' => $reason,
-                    'actor_id' => $actor?->id,
+                    'actor_id' => $actorId,
                 ]));
-            };
-
-            if (app()->environment('testing')) {
-                $dispatchAudit();
-            } else {
-                DB::afterCommit($dispatchAudit);
-            }
+            });
 
             return $lockedExpense->fresh(['expenseCategory', 'recordedBy', 'attachment']);
         });
@@ -198,22 +196,21 @@ class ExpenseWorkflowService
             $lockedExpense->appendHistoryEntry('withdraw', $oldStatus, Expense::STATUS_DRAFT, $actor?->id ?: 0, $now);
             $lockedExpense->save();
 
-            $dispatchAudit = function () use ($lockedExpense, $oldStatus, $actor) {
-                event(new AuditEvent('expense.withdrawn', $actor, [
-                    'expense_id' => $lockedExpense->id,
-                    'public_id' => $lockedExpense->public_id,
+            $expenseId = $lockedExpense->id;
+            $publicId = $lockedExpense->public_id;
+            $withdrawnAtIso = $lockedExpense->withdrawn_at?->toIso8601String();
+            $actorId = $actor?->id;
+
+            DB::afterCommit(function () use ($expenseId, $publicId, $oldStatus, $withdrawnAtIso, $actorId, $actor) {
+                event(new AuditEvent('expenses.withdrawn', $actor, [
+                    'expense_id' => $expenseId,
+                    'public_id' => $publicId,
                     'from_status' => $oldStatus,
                     'to_status' => Expense::STATUS_DRAFT,
-                    'withdrawn_at' => $lockedExpense->withdrawn_at?->toIso8601String(),
-                    'actor_id' => $actor?->id,
+                    'withdrawn_at' => $withdrawnAtIso,
+                    'actor_id' => $actorId,
                 ]));
-            };
-
-            if (app()->environment('testing')) {
-                $dispatchAudit();
-            } else {
-                DB::afterCommit($dispatchAudit);
-            }
+            });
 
             return $lockedExpense->fresh(['expenseCategory', 'recordedBy', 'attachment']);
         });

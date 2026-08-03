@@ -142,11 +142,6 @@ class Expense extends Model
         return $this->hasOne(ExpenseAttachment::class, 'expense_id');
     }
 
-    public function attachments(): \Illuminate\Database\Eloquent\Relations\HasMany
-    {
-        return $this->hasMany(ExpenseAttachment::class, 'expense_id');
-    }
-
     public function canTransitionTo(string $targetStatus): bool
     {
         $current = $this->status;

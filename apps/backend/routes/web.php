@@ -166,8 +166,8 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     Route::post('/expenses/{expense:public_id}/withdraw', [ExpenseWorkflowController::class, 'withdraw'])->name('admin.expenses.withdraw');
     Route::post('/expenses/{expense:public_id}/approve', [ExpenseWorkflowController::class, 'approve'])->name('admin.expenses.approve');
     Route::post('/expenses/{expense:public_id}/reject', [ExpenseWorkflowController::class, 'reject'])->name('admin.expenses.reject');
-    Route::get('/expenses/{expense:public_id}/attachments/{attachment:public_id}/download', [ExpenseAttachmentController::class, 'download'])->name('admin.expenses.attachments.download');
-    Route::delete('/expenses/{expense:public_id}/attachments/{attachment:public_id}', [ExpenseAttachmentController::class, 'destroy'])->name('admin.expenses.attachments.destroy');
+    Route::get('/expenses/{expense:public_id}/attachments/{attachment:public_id}/download', [ExpenseAttachmentController::class, 'download'])->name('admin.expenses.attachments.download')->withoutScopedBindings();
+    Route::delete('/expenses/{expense:public_id}/attachments/{attachment:public_id}', [ExpenseAttachmentController::class, 'destroy'])->name('admin.expenses.attachments.destroy')->withoutScopedBindings();
 
     // Vendors admin routes
     Route::apiResource('/vendors', VendorController::class)->names([

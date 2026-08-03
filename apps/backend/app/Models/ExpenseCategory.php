@@ -60,33 +60,11 @@ class ExpenseCategory extends Model
         });
 
         // Guard: code is immutable after persistence — reject any dirty write to it.
-        static::saving(function (ExpenseCategory $category) {
+        static::saving(function (ExpenseCategory $category): void {
             if ($category->exists && $category->isDirty('code')) {
                 throw new \LogicException('Expense category code is immutable.');
             }
         });
-    }
-
-    /**
-     * Override save() to enforce immutability contract:
-     *
-     * Calling save() on an already-persisted category with no dirty attributes
-     * is treated as an attempt to "re-affirm" the record without a real update.
-     * This is disallowed to prevent silent no-op saves on immutable resources.
-     *
-     * Legitimate updates (name, description, is_active) will have dirty attributes
-     * and are allowed through normally.
-     *
-     * {@inheritdoc}
-     */
-    public function save(array $options = []): bool
-    {
-        if ($this->exists && ! $this->isDirty()) {
-            // Plain save() with no changes on an existing model — enforce immutability.
-            throw new \LogicException('Expense category code is immutable.');
-        }
-
-        return parent::save($options);
     }
 
     /**

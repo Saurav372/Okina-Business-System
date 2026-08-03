@@ -17,11 +17,10 @@ class CreateExpenseCategoryRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         if ($this->has('code')) {
-            $raw = trim((string) $this->code);
-            // Normalize to slug (lowercase, replace non-alphanumeric with dash, trim dashes)
-            $normalized = preg_replace('/[^a-z0-9]+/', '-', strtolower($raw));
-            $normalized = trim($normalized, '-');
-            $this->merge(['code' => $normalized]);
+            $code = strtoupper(trim((string) $this->input('code')));
+            $code = preg_replace('/[^A-Z0-9]+/', '_', $code);
+            $code = trim((string) $code, '_');
+            $this->merge(['code' => $code]);
         }
     }
 
@@ -33,7 +32,7 @@ class CreateExpenseCategoryRequest extends FormRequest
                 'required',
                 'string',
                 'max:100',
-                'regex:/^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/',
+                'regex:/^[A-Z][A-Z0-9_]*$/',
                 Rule::unique('expense_categories', 'code'),
             ],
             'description' => ['nullable', 'string', 'max:1000'],

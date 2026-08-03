@@ -178,7 +178,7 @@ class AdminExpenseTest extends TestCase
         $service->submitExpense($expense, $this->adminUser);
 
         Event::assertDispatched(AuditEvent::class, function (AuditEvent $event) use ($expense) {
-            return $event->key === 'expense.submitted'
+            return $event->key === 'expenses.submitted'
                 && $event->payload['expense_id'] === $expense->id
                 && $event->payload['to_status'] === Expense::STATUS_PENDING_APPROVAL;
         });
@@ -209,7 +209,7 @@ class AdminExpenseTest extends TestCase
         $service->approveExpense($expense, $this->approverUser);
 
         Event::assertDispatched(AuditEvent::class, function (AuditEvent $event) use ($expense) {
-            return $event->key === 'expense.approved'
+            return $event->key === 'expenses.approved'
                 && $event->payload['expense_id'] === $expense->id
                 && $event->payload['to_status'] === Expense::STATUS_APPROVED;
         });
@@ -238,12 +238,12 @@ class AdminExpenseTest extends TestCase
         $expense = $this->createTestExpense(['status' => Expense::STATUS_PENDING_APPROVAL]);
         $service = app(ExpenseService::class);
 
-        $service->rejectExpense($expense, $this->approverUser, 'Duplicate submission');
+        $service->rejectExpense($expense, $this->approverUser, 'Duplicate submission for reimbursement');
 
         Event::assertDispatched(AuditEvent::class, function (AuditEvent $event) use ($expense) {
-            return $event->key === 'expense.rejected'
+            return $event->key === 'expenses.rejected'
                 && $event->payload['expense_id'] === $expense->id
-                && $event->payload['rejection_reason'] === 'Duplicate submission';
+                && $event->payload['rejection_reason'] === 'Duplicate submission for reimbursement';
         });
     }
 

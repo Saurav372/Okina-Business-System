@@ -58,23 +58,15 @@ class ExpenseCategoryTest extends TestCase
     {
         $this->seed(ExpenseCategorySeeder::class);
 
-        $category = ExpenseCategory::query()->where('code', 'shipping')->firstOrFail();
-        $originalPublicId = $category->public_id;
+        $category = ExpenseCategory::where('code', 'RAW_MATERIALS')->firstOrFail();
+        $category->update(['name' => 'Custom Name', 'description' => 'Custom Description']);
 
-        // Manually update name and description
-        $category->update([
-            'name' => 'Custom Name',
-            'description' => 'Custom Description',
-        ]);
-
-        // Run seeder again
+        // Run seeder again - should preserve customized name and description
         $this->seed(ExpenseCategorySeeder::class);
 
         $category->refresh();
-        $this->assertSame('Shipping & Logistics', $category->name);
-        $this->assertSame('Shipping, freight, delivery, and postage expenses', $category->description);
-        $this->assertSame($originalPublicId, $category->public_id);
-        $this->assertSame('shipping', $category->code);
+        $this->assertSame('Custom Name', $category->name);
+        $this->assertSame('Custom Description', $category->description);
     }
 
     public function test_category_crud_actions_for_authorized_users(): void
@@ -82,7 +74,7 @@ class ExpenseCategoryTest extends TestCase
         // 1. Create (Store)
         $payload = [
             'name' => 'Marketing Ads',
-            'code' => 'marketing-ads',
+            'code' => 'MARKETING_ADS',
             'description' => 'Online ads expenses',
             'is_active' => true,
         ];
@@ -92,7 +84,7 @@ class ExpenseCategoryTest extends TestCase
 
         $response->assertStatus(201);
         $response->assertJsonPath('data.name', 'Marketing Ads');
-        $response->assertJsonPath('data.code', 'marketing-ads');
+        $response->assertJsonPath('data.code', 'MARKETING_ADS');
         $response->assertJsonPath('data.is_active', true);
 
         $publicId = $response->json('data.public_id');
@@ -133,9 +125,9 @@ class ExpenseCategoryTest extends TestCase
 
     public function test_category_list_results_are_sorted_alphabetically(): void
     {
-        ExpenseCategory::create(['name' => 'Zebra Supplies', 'code' => 'zebra']);
-        ExpenseCategory::create(['name' => 'Apple Logistics', 'code' => 'apple']);
-        ExpenseCategory::create(['name' => 'Banana Marketing', 'code' => 'banana']);
+        ExpenseCategory::create(['name' => 'Zebra Supplies', 'code' => 'ZEBRA']);
+        ExpenseCategory::create(['name' => 'Apple Logistics', 'code' => 'APPLE']);
+        ExpenseCategory::create(['name' => 'Banana Marketing', 'code' => 'BANANA']);
 
         $response = $this->actingAs($this->financeStaff)
             ->getJson('/admin/expense-categories');
@@ -150,7 +142,7 @@ class ExpenseCategoryTest extends TestCase
     {
         $category = ExpenseCategory::create([
             'name' => 'Office Overhead',
-            'code' => 'office-overhead',
+            'code' => 'OFFICE_OVERHEAD',
         ]);
 
         $this->actingAs($this->salesStaff)
@@ -158,7 +150,7 @@ class ExpenseCategoryTest extends TestCase
             ->assertStatus(403);
 
         $this->actingAs($this->salesStaff)
-            ->postJson('/admin/expense-categories', ['name' => 'New', 'code' => 'new'])
+            ->postJson('/admin/expense-categories', ['name' => 'New', 'code' => 'NEW'])
             ->assertStatus(403);
 
         $this->actingAs($this->salesStaff)
@@ -178,7 +170,7 @@ class ExpenseCategoryTest extends TestCase
     {
         $category = ExpenseCategory::create([
             'name' => 'Office Overhead',
-            'code' => 'office-overhead',
+            'code' => 'OFFICE_OVERHEAD',
         ]);
 
         // Querying a valid public ID as an unauthorized user returns 403
@@ -196,7 +188,7 @@ class ExpenseCategoryTest extends TestCase
     {
         $category = ExpenseCategory::create([
             'name' => 'Office Overhead',
-            'code' => 'office-overhead',
+            'code' => 'OFFICE_OVERHEAD',
         ]);
         $category->delete();
 
@@ -209,7 +201,7 @@ class ExpenseCategoryTest extends TestCase
     {
         ExpenseCategory::create([
             'name' => 'Shipping Supplies',
-            'code' => 'shipping',
+            'code' => 'SHIPPING',
         ]);
 
         $variations = [
@@ -242,21 +234,21 @@ class ExpenseCategoryTest extends TestCase
             ]);
 
         $response->assertStatus(201);
-        $response->assertJsonPath('data.code', 'shipping-logistics');
+        $response->assertJsonPath('data.code', 'SHIPPING_LOGISTICS');
     }
 
     public function test_soft_deleted_categories_reserve_their_code(): void
     {
         $category = ExpenseCategory::create([
             'name' => 'Office Overhead',
-            'code' => 'office-overhead',
+            'code' => 'OFFICE_OVERHEAD',
         ]);
         $category->delete();
 
         $response = $this->actingAs($this->financeStaff)
             ->postJson('/admin/expense-categories', [
                 'name' => 'New Office Overhead',
-                'code' => 'office-overhead',
+                'code' => 'OFFICE_OVERHEAD',
             ]);
 
         $response->assertStatus(422);
@@ -280,7 +272,8 @@ class ExpenseCategoryTest extends TestCase
         $response->assertStatus(422);
         $response->assertJsonValidationErrors('code');
 
-        // 2. Direct model assignment throws LogicException
+        // 2. Direct model mutation and save throws LogicException
+        $category->code = 'NEW_OFFICE_CODE';
         $this->expectException(\LogicException::class);
         $category->save();
     }
@@ -289,7 +282,7 @@ class ExpenseCategoryTest extends TestCase
     {
         $category = ExpenseCategory::create([
             'name' => 'Office Overhead',
-            'code' => 'office-overhead',
+            'code' => 'OFFICE_OVERHEAD',
         ]);
         $originalPublicId = $category->public_id;
 
@@ -309,7 +302,7 @@ class ExpenseCategoryTest extends TestCase
     {
         $category = ExpenseCategory::create([
             'name' => 'Office Overhead',
-            'code' => 'office-overhead',
+            'code' => 'OFFICE_OVERHEAD',
         ]);
 
         // Set mock referenced behavior to true

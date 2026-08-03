@@ -62,32 +62,34 @@ class ExpenseAttachmentService
                     ]);
                 });
 
-                $dispatchAudit = function () use ($expense, $attachment, $isReplacement, $oldStoragePath, $oldAttachmentId, $actor, $checksum) {
-                    if ($isReplacement && $oldStoragePath) {
-                        Storage::disk('local')->delete($oldStoragePath);
+                $expenseId = $expense->id;
+                $newAttachmentId = $attachment->id;
+                $actorId = $actor?->id;
 
-                        event(new AuditEvent('expense_attachments.replaced', $actor, [
-                            'expense_id' => $expense->id,
-                            'old_attachment_id' => $oldAttachmentId,
-                            'new_attachment_id' => $attachment->id,
-                            'checksum' => $checksum,
-                            'actor_id' => $actor?->id,
-                        ]));
-                    } else {
-                        event(new AuditEvent('expense_attachments.created', $actor, [
-                            'expense_id' => $expense->id,
-                            'attachment_id' => $attachment->id,
-                            'checksum' => $checksum,
-                            'actor_id' => $actor?->id,
-                        ]));
+                DB::afterCommit(function () use ($expenseId, $isReplacement, $oldStoragePath, $oldAttachmentId, $newAttachmentId, $checksum, $actorId, $actor) {
+                    try {
+                        if ($isReplacement && $oldStoragePath && Storage::disk('local')->exists($oldStoragePath)) {
+                            Storage::disk('local')->delete($oldStoragePath);
+                        }
+                    } finally {
+                        if ($isReplacement) {
+                            event(new AuditEvent('expense_attachments.replaced', $actor, [
+                                'expense_id' => $expenseId,
+                                'old_attachment_id' => $oldAttachmentId,
+                                'new_attachment_id' => $newAttachmentId,
+                                'checksum' => $checksum,
+                                'actor_id' => $actorId,
+                            ]));
+                        } else {
+                            event(new AuditEvent('expense_attachments.created', $actor, [
+                                'expense_id' => $expenseId,
+                                'attachment_id' => $newAttachmentId,
+                                'checksum' => $checksum,
+                                'actor_id' => $actorId,
+                            ]));
+                        }
                     }
-                };
-
-                if (app()->environment('testing')) {
-                    $dispatchAudit();
-                } else {
-                    DB::afterCommit($dispatchAudit);
-                }
+                });
 
                 return $attachment;
             });
@@ -119,27 +121,27 @@ class ExpenseAttachmentService
         }
 
         $storagePath = $attachment->storage_path;
+        $attachmentDisk = $attachment->disk;
         $attachmentId = $attachment->id;
+        $expenseId = $expense->id;
 
         DB::transaction(function () use ($expense) {
             ExpenseAttachment::query()->where('expense_id', $expense->id)->delete();
         });
 
-        Storage::disk($attachment->disk)->delete($storagePath);
-
-        $dispatchAudit = function () use ($expense, $attachmentId, $actor) {
-            event(new AuditEvent('expense_attachments.deleted', $actor, [
-                'expense_id' => $expense->id,
-                'attachment_id' => $attachmentId,
-                'actor_id' => $actor?->id,
-            ]));
-        };
-
-        if (app()->environment('testing')) {
-            $dispatchAudit();
-        } else {
-            DB::afterCommit($dispatchAudit);
-        }
+        DB::afterCommit(function () use ($expenseId, $attachmentId, $storagePath, $attachmentDisk, $actor) {
+            try {
+                if ($storagePath && Storage::disk($attachmentDisk)->exists($storagePath)) {
+                    Storage::disk($attachmentDisk)->delete($storagePath);
+                }
+            } finally {
+                event(new AuditEvent('expense_attachments.deleted', $actor, [
+                    'expense_id' => $expenseId,
+                    'attachment_id' => $attachmentId,
+                    'actor_id' => $actor?->id,
+                ]));
+            }
+        });
     }
 
     /**
