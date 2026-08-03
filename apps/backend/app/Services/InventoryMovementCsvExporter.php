@@ -69,26 +69,26 @@ class InventoryMovementCsvExporter
                     $user = $movement->user;
 
                     fputcsv($file, [
-                        (string) $movement->id,
+                        $movement->id,
                         $movement->occurred_at ? $movement->occurred_at->toIso8601String() : $movement->created_at->toIso8601String(),
-                        $sku?->sku_code ?? 'N/A',
-                        $sku?->barcode ?? '',
-                        $product?->name ?? 'Unknown Product',
+                        $this->sanitizeCsvCell($sku?->sku_code ?? 'N/A'),
+                        $this->sanitizeCsvCell($sku?->barcode ?? ''),
+                        $this->sanitizeCsvCell($product?->name ?? 'Unknown Product'),
                         $movement->movement_type ? $movement->movement_type->label() : '',
                         $movement->direction ? $movement->direction->label() : '',
                         $movement->reason_code ? $movement->reason_code->label() : '',
-                        (string) $movement->quantity,
-                        (string) $movement->before_on_hand_quantity,
-                        (string) $movement->after_on_hand_quantity,
-                        (string) $movement->before_reserved_quantity,
-                        (string) $movement->after_reserved_quantity,
-                        (string) $movement->before_available_quantity,
-                        (string) $movement->after_available_quantity,
-                        $user ? "{$user->name} ({$user->email})" : 'System / Automated',
-                        $movement->reference_type ?? ($movement->order_id ? 'Order' : ($movement->vendor_order_id ? 'VendorOrder' : 'N/A')),
-                        (string) ($movement->reference_id ?? $movement->order_id ?? $movement->vendor_order_id ?? ''),
-                        $movement->idempotency_key ?? '',
-                        $movement->notes ?? '',
+                        $movement->quantity,
+                        $movement->before_on_hand_quantity,
+                        $movement->after_on_hand_quantity,
+                        $movement->before_reserved_quantity,
+                        $movement->after_reserved_quantity,
+                        $movement->before_available_quantity,
+                        $movement->after_available_quantity,
+                        $this->sanitizeCsvCell($user ? "{$user->name} ({$user->email})" : 'System / Automated'),
+                        $this->sanitizeCsvCell($movement->reference_type ?? ($movement->order_id ? 'Order' : ($movement->vendor_order_id ? 'VendorOrder' : 'N/A'))),
+                        $movement->reference_id ?? $movement->order_id ?? $movement->vendor_order_id ?? '',
+                        $this->sanitizeCsvCell($movement->idempotency_key ?? ''),
+                        $this->sanitizeCsvCell($movement->notes ?? ''),
                     ]);
                 }
             });
@@ -97,5 +97,18 @@ class InventoryMovementCsvExporter
         };
 
         return new StreamedResponse($callback, 200, $headers);
+    }
+
+    protected function sanitizeCsvCell(mixed $value): mixed
+    {
+        if (! is_string($value)) {
+            return $value;
+        }
+
+        if (preg_match('/^[\s]*[=+\-@]/u', $value)) {
+            return "'".$value;
+        }
+
+        return $value;
     }
 }

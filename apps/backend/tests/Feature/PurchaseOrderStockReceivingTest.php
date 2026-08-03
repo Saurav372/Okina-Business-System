@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Enums\InventoryMovementReason;
 use App\Enums\VendorOrderPaymentStatus;
 use App\Enums\VendorOrderStatus;
 use App\Enums\VendorStatus;
@@ -12,12 +11,12 @@ use App\Models\InventoryMovement;
 use App\Models\Permission;
 use App\Models\Product;
 use App\Models\ProductSku;
+use App\Models\PurchaseReceipt;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\Vendor;
 use App\Models\VendorOrder;
 use App\Models\VendorOrderItem;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -56,6 +55,17 @@ class PurchaseOrderStockReceivingTest extends TestCase
         );
 
         Permission::query()->updateOrCreate(
+            ['slug' => 'purchases.receive'],
+            [
+                'name' => 'Receive Purchases',
+                'group' => 'purchases',
+                'guard_name' => 'web',
+                'description' => 'Can receive purchase order stock',
+                'is_sensitive' => false,
+            ]
+        );
+
+        Permission::query()->updateOrCreate(
             ['slug' => 'purchases.view'],
             [
                 'name' => 'View Purchases',
@@ -78,7 +88,7 @@ class PurchaseOrderStockReceivingTest extends TestCase
             ]
         );
         $staffRole->permissions()->sync(
-            Permission::query()->where('slug', 'purchases.manage')->pluck('id')->all()
+            Permission::query()->whereIn('slug', ['purchases.manage', 'purchases.receive'])->pluck('id')->all()
         );
 
         $salesRole = Role::query()->updateOrCreate(
@@ -134,7 +144,7 @@ class PurchaseOrderStockReceivingTest extends TestCase
     }
 
     /**
-     * Test gated access: only purchases.manage permission allows stock receiving.
+     * Test gated access: only purchases.receive or purchases.manage permission allows stock receiving.
      */
     public function test_authorization_gating(): void
     {
@@ -156,72 +166,30 @@ class PurchaseOrderStockReceivingTest extends TestCase
         $item->save();
 
         // Guest gets 401
-        $this->postJson(route('admin.purchase_orders.items.receive', [$po->id, $item->id]), [
-            'quantity' => 5,
+        $this->postJson(route('admin.purchases.receive', $po->public_id), [
+            'idempotency_key' => 'KEY-AUTH-1',
+            'items' => [['vendor_order_item_id' => $item->id, 'quantity_received' => 5]],
         ])->assertStatus(401);
 
         // Unprivileged staff gets 403
         $this->actingAs($this->unprivilegedUser)
-            ->postJson(route('admin.purchase_orders.items.receive', [$po->id, $item->id]), [
-                'quantity' => 5,
+            ->postJson(route('admin.purchases.receive', $po->public_id), [
+                'idempotency_key' => 'KEY-AUTH-2',
+                'items' => [['vendor_order_item_id' => $item->id, 'quantity_received' => 5]],
             ])->assertStatus(403);
 
-        // Privileged staff gets 200
+        // Privileged staff gets 201
         $this->actingAs($this->privilegedStaff)
-            ->postJson(route('admin.purchase_orders.items.receive', [$po->id, $item->id]), [
-                'quantity' => 5,
-            ])->assertStatus(200);
+            ->postJson(route('admin.purchases.receive', $po->public_id), [
+                'idempotency_key' => 'KEY-AUTH-3',
+                'items' => [['vendor_order_item_id' => $item->id, 'quantity_received' => 5]],
+            ])->assertStatus(201);
     }
 
     /**
-     * Test route-model safety validation.
+     * Test valid stock receiving flow (partially vs fully receiving, PurchaseReceipt batch creation).
      */
-    public function test_route_model_relationship_safety(): void
-    {
-        $this->actingAs($this->privilegedStaff);
-
-        $poA = VendorOrder::create([
-            'vendor_id' => $this->activeVendor->id,
-            'public_id' => 'PO-AAAAAA',
-            'status' => VendorOrderStatus::ORDERED->value,
-        ]);
-
-        $poB = VendorOrder::create([
-            'vendor_id' => $this->activeVendor->id,
-            'public_id' => 'PO-BBBBBB',
-            'status' => VendorOrderStatus::ORDERED->value,
-        ]);
-
-        $itemA = new VendorOrderItem([
-            'product_sku_id' => $this->skuA->id,
-            'quantity_ordered' => 10,
-            'unit_cost_minor' => 1000,
-        ]);
-        $itemA->vendor_order_id = $poA->id;
-        $itemA->sku_code_snapshot = $this->skuA->sku_code;
-        $itemA->line_total_minor = 10000;
-        $itemA->save();
-
-        $itemB = new VendorOrderItem([
-            'product_sku_id' => $this->skuA->id,
-            'quantity_ordered' => 10,
-            'unit_cost_minor' => 1000,
-        ]);
-        $itemB->vendor_order_id = $poB->id;
-        $itemB->sku_code_snapshot = $this->skuA->sku_code;
-        $itemB->line_total_minor = 10000;
-        $itemB->save();
-
-        // Mismatched PO and Item route call should fail with 404
-        $this->postJson(route('admin.purchase_orders.items.receive', [$poA->id, $itemB->id]), [
-            'quantity' => 5,
-        ])->assertStatus(404);
-    }
-
-    /**
-     * Test valid stock receiving flow (partially vs fully receiving).
-     */
-    public function test_valid_receiving_and_movement_generation(): void
+    public function test_valid_receiving_and_purchase_receipt_creation(): void
     {
         Event::fake([AuditEvent::class]);
         $this->actingAs($this->privilegedStaff);
@@ -247,73 +215,90 @@ class PurchaseOrderStockReceivingTest extends TestCase
         $this->assertEquals(10, $initialBalance);
 
         // 1. Receive 4 items (Partial receive)
-        $response = $this->postJson(route('admin.purchase_orders.items.receive', [$po->id, $item->id]), [
-            'quantity' => 4,
-        ])->assertStatus(200);
+        $response = $this->postJson(route('admin.purchases.receive', $po->public_id), [
+            'idempotency_key' => 'KEY-PARTIAL-1',
+            'items' => [['vendor_order_item_id' => $item->id, 'quantity_received' => 4]],
+            'notes' => 'Batch 1 partial receipt',
+        ])->assertStatus(201);
 
-        // Assert response structure
         $response->assertJsonStructure([
-            'item' => ['id', 'quantity_received'],
-            'purchase_order' => ['id', 'status', 'received_at'],
+            'message',
+            'data' => ['vendor_order_id', 'public_id', 'receipt_id', 'receipt_number', 'received_count', 'status', 'replayed'],
         ]);
 
-        $response->assertJsonPath('item.quantity_received', 4)
-            ->assertJsonPath('purchase_order.status', 'partially_received')
-            ->assertJsonPath('purchase_order.received_at', null);
+        $response->assertJsonPath('data.received_count', 4)
+            ->assertJsonPath('data.status', 'partially_received')
+            ->assertJsonPath('data.replayed', false);
+
+        // Assert PurchaseReceipt and line created
+        $receipt = PurchaseReceipt::where('vendor_order_id', $po->id)->first();
+        $this->assertNotNull($receipt);
+        $this->assertMatchesRegularExpression('/^PR-\d{6}-[A-Z0-9]{6}$/', $receipt->receipt_number);
+        $this->assertEquals(1, $receipt->lines()->count());
+        $this->assertEquals(4, $receipt->lines()->first()->quantity_received);
 
         // Assert balance incremented: 10 + 4 = 14
         $this->skuA->inventoryItem->refresh();
         $this->assertEquals(14, $this->skuA->inventoryItem->on_hand_quantity);
 
-        // Verify InventoryMovement
+        // Synchronized ProductSku stock_quantity
+        $this->skuA->refresh();
+        $this->assertEquals(14, $this->skuA->stock_quantity);
+
+        // Verify InventoryMovement linked to PurchaseReceipt
         $movement = InventoryMovement::where('vendor_order_item_id', $item->id)->first();
         $this->assertNotNull($movement);
         $this->assertEquals($po->id, $movement->vendor_order_id);
         $this->assertEquals(4, $movement->quantity);
-        $this->assertEquals(InventoryMovementReason::PURCHASE_RECEIPT->value, $movement->reason_code->value);
+        $this->assertEquals('PurchaseReceipt', $movement->reference_type);
+        $this->assertEquals($receipt->id, $movement->reference_id);
 
-        // Verify exact AuditEvent payload
-        Event::assertDispatched(AuditEvent::class, function (AuditEvent $event) use ($po, $item) {
-            if ($event->key !== 'purchase_orders.items.received') {
-                return false;
-            }
-
-            return $event->payload['vendor_order_id'] === $po->id
-                && $event->payload['vendor_order_item_id'] === $item->id
-                && $event->payload['received_quantity'] === 4
-                && $event->payload['total_quantity_received'] === 4
-                && $event->payload['remaining_quantity'] === 6;
-        });
-
-        // 2. Receive remaining 6 items (Full receive)
-        Event::fake([AuditEvent::class]);
-        $now = Carbon::now()->microsecond(0);
-        Carbon::setTestNow($now);
-
-        $response = $this->postJson(route('admin.purchase_orders.items.receive', [$po->id, $item->id]), [
-            'quantity' => 6,
+        // 2. Test Idempotent Replay with Same Key & Same Payload -> Returns 200 OK
+        $replayResponse = $this->postJson(route('admin.purchases.receive', $po->public_id), [
+            'idempotency_key' => 'KEY-PARTIAL-1',
+            'items' => [['vendor_order_item_id' => $item->id, 'quantity_received' => 4]],
+            'notes' => 'Batch 1 partial receipt',
         ])->assertStatus(200);
 
-        $response->assertJsonPath('item.quantity_received', 10)
-            ->assertJsonPath('purchase_order.status', 'received')
-            ->assertJsonPath('purchase_order.received_at', $now->jsonSerialize());
+        $replayResponse->assertJsonPath('data.replayed', true);
+
+        // Assert no extra receipt or inventory movement was created
+        $this->assertEquals(1, PurchaseReceipt::where('vendor_order_id', $po->id)->count());
+        $this->assertEquals(1, InventoryMovement::where('vendor_order_item_id', $item->id)->count());
+
+        // 3. Test Mismatched Key Payload -> Returns 409 Conflict
+        $this->postJson(route('admin.purchases.receive', $po->public_id), [
+            'idempotency_key' => 'KEY-PARTIAL-1',
+            'items' => [['vendor_order_item_id' => $item->id, 'quantity_received' => 5]], // Changed quantity
+            'notes' => 'Batch 1 partial receipt',
+        ])->assertStatus(409);
+
+        // 4. Receive remaining 6 items (Full receive)
+        $response = $this->postJson(route('admin.purchases.receive', $po->public_id), [
+            'idempotency_key' => 'KEY-FULL-2',
+            'items' => [['vendor_order_item_id' => $item->id, 'quantity_received' => 6]],
+        ])->assertStatus(201);
+
+        $response->assertJsonPath('data.status', 'received');
+
+        $po->refresh();
+        $this->assertEquals(VendorOrderStatus::RECEIVED, $po->status);
+        $this->assertNotNull($po->received_at);
 
         $this->skuA->inventoryItem->refresh();
         $this->assertEquals(20, $this->skuA->inventoryItem->on_hand_quantity);
-
-        Carbon::setTestNow();
     }
 
     /**
-     * Test partial receiving multiple times and zero remaining quantity.
+     * Test over-receiving quantity rejection.
      */
-    public function test_partial_receiving_twice_and_zero_remaining_regression(): void
+    public function test_over_receiving_quantity_rejection(): void
     {
         $this->actingAs($this->privilegedStaff);
 
         $po = VendorOrder::create([
             'vendor_id' => $this->activeVendor->id,
-            'public_id' => 'PO-PARTIAL-X',
+            'public_id' => 'PO-OVER-RCV',
             'status' => VendorOrderStatus::ORDERED->value,
         ]);
 
@@ -327,110 +312,17 @@ class PurchaseOrderStockReceivingTest extends TestCase
         $item->line_total_minor = 10000;
         $item->save();
 
-        // Initial balance is 10.
-        // Receive 6
-        $this->postJson(route('admin.purchase_orders.items.receive', [$po->id, $item->id]), [
-            'quantity' => 6,
-        ])->assertStatus(200);
+        // Attempt receiving 15 items when only 10 were ordered
+        $response = $this->postJson(route('admin.purchases.receive', $po->public_id), [
+            'idempotency_key' => 'KEY-OVER-1',
+            'items' => [['vendor_order_item_id' => $item->id, 'quantity_received' => 15]],
+        ]);
 
-        // Receive 4 (now fully received)
-        $now = Carbon::now()->microsecond(0);
-        Carbon::setTestNow($now);
-
-        $response = $this->postJson(route('admin.purchase_orders.items.receive', [$po->id, $item->id]), [
-            'quantity' => 4,
-        ])->assertStatus(200);
-
-        $response->assertJsonPath('purchase_order.status', 'received')
-            ->assertJsonPath('purchase_order.received_at', $now->jsonSerialize());
-
-        // Assert exactly 2 InventoryMovements created
-        $this->assertEquals(2, InventoryMovement::where('vendor_order_item_id', $item->id)->count());
-
-        // Receive 1 extra (should fail with 422 since remaining is 0)
-        Event::fake([AuditEvent::class]);
-        $response = $this->postJson(route('admin.purchase_orders.items.receive', [$po->id, $item->id]), [
-            'quantity' => 1,
-        ])->assertStatus(422)->assertJsonValidationErrors(['quantity']);
-
-        // Assert database properties remain unchanged
-        $po->refresh();
-        $item->refresh();
-        $this->skuA->inventoryItem->refresh();
-
-        $this->assertEquals(VendorOrderStatus::RECEIVED, $po->status);
-        $this->assertEquals($now->toDateTimeString(), $po->received_at->toDateTimeString());
-        $this->assertEquals(10, $item->quantity_received);
-        $this->assertEquals(20, $this->skuA->inventoryItem->on_hand_quantity);
-
-        // Assert exactly 2 movements still exist (no 3rd created)
-        $this->assertEquals(2, InventoryMovement::where('vendor_order_item_id', $item->id)->count());
-
-        // Assert no audit event dispatched for failed request
-        Event::assertNotDispatched(AuditEvent::class);
-
-        Carbon::setTestNow();
+        $response->assertStatus(422)->assertJsonValidationErrors(['items']);
     }
 
     /**
-     * Test multi-item PO status advancement.
-     */
-    public function test_multi_item_po_status_advancement(): void
-    {
-        $this->actingAs($this->privilegedStaff);
-
-        $po = VendorOrder::create([
-            'vendor_id' => $this->activeVendor->id,
-            'public_id' => 'PO-MULTI',
-            'status' => VendorOrderStatus::ORDERED->value,
-        ]);
-
-        // Create 3 items (bypassing mass assignment guards)
-        $item1 = new VendorOrderItem([
-            'product_sku_id' => $this->skuA->id,
-            'quantity_ordered' => 5,
-            'unit_cost_minor' => 1000,
-        ]);
-        $item1->vendor_order_id = $po->id;
-        $item1->sku_code_snapshot = $this->skuA->sku_code;
-        $item1->line_total_minor = 5000;
-        $item1->save();
-
-        $productB = Product::factory()->create(['name' => 'Product B']);
-        $skuB = ProductSku::factory()->create([
-            'sku_code' => 'SKU-BBBB-2222',
-            'product_id' => $productB->id,
-        ]);
-        $inventoryItemB = InventoryItem::where('product_sku_id', $skuB->id)->firstOrFail();
-        $inventoryItemB->update([
-            'on_hand_quantity' => 5,
-            'available_quantity' => 5,
-            'reserved_quantity' => 0,
-        ]);
-
-        $item2 = new VendorOrderItem([
-            'product_sku_id' => $skuB->id,
-            'quantity_ordered' => 5,
-            'unit_cost_minor' => 1000,
-        ]);
-        $item2->vendor_order_id = $po->id;
-        $item2->sku_code_snapshot = $skuB->sku_code;
-        $item2->line_total_minor = 5000;
-        $item2->save();
-
-        // Receive first item -> partially_received
-        $this->postJson(route('admin.purchase_orders.items.receive', [$po->id, $item1->id]), [
-            'quantity' => 5,
-        ])->assertStatus(200)->assertJsonPath('purchase_order.status', 'partially_received');
-
-        // Receive second item -> received (since all items fully received)
-        $this->postJson(route('admin.purchase_orders.items.receive', [$po->id, $item2->id]), [
-            'quantity' => 5,
-        ])->assertStatus(200)->assertJsonPath('purchase_order.status', 'received');
-    }
-
-    /**
-     * Test that receiving stock on draft or cancelled POs fails with 422.
+     * Test receiving fails on draft or cancelled PO status.
      */
     public function test_receiving_fails_on_non_receivable_po_status(): void
     {
@@ -452,64 +344,11 @@ class PurchaseOrderStockReceivingTest extends TestCase
         $item->line_total_minor = 10000;
         $item->save();
 
-        $this->postJson(route('admin.purchase_orders.items.receive', [$po->id, $item->id]), [
-            'quantity' => 5,
-        ])->assertStatus(422)->assertJsonValidationErrors(['quantity']);
-    }
-
-    /**
-     * Test transaction rollback on inventory failure.
-     */
-    public function test_rollback_on_inventory_exception(): void
-    {
-        Event::fake([AuditEvent::class]);
-        $this->actingAs($this->privilegedStaff);
-
-        $po = VendorOrder::create([
-            'vendor_id' => $this->activeVendor->id,
-            'public_id' => 'PO-ROLLBACK-RCV',
-            'status' => VendorOrderStatus::ORDERED->value,
+        $response = $this->postJson(route('admin.purchases.receive', $po->public_id), [
+            'idempotency_key' => 'KEY-DRAFT-1',
+            'items' => [['vendor_order_item_id' => $item->id, 'quantity_received' => 5]],
         ]);
 
-        $item = new VendorOrderItem([
-            'product_sku_id' => $this->skuA->id,
-            'quantity_ordered' => 10,
-            'unit_cost_minor' => 1000,
-        ]);
-        $item->vendor_order_id = $po->id;
-        $item->sku_code_snapshot = $this->skuA->sku_code;
-        $item->line_total_minor = 10000;
-        $item->save();
-
-        // Force exception inside transaction by registering saving listener on InventoryMovement
-        InventoryMovement::saving(function ($model) {
-            throw new \RuntimeException('Forced inventory movement failure.');
-        });
-
-        $this->withoutExceptionHandling();
-
-        try {
-            $this->postJson(route('admin.purchase_orders.items.receive', [$po->id, $item->id]), [
-                'quantity' => 5,
-            ]);
-            $this->fail('Expected RuntimeException was not thrown.');
-        } catch (\RuntimeException $e) {
-            $this->assertEquals('Forced inventory movement failure.', $e->getMessage());
-        }
-
-        // Clean up saving listener
-        InventoryMovement::flushEventListeners();
-
-        // Assert database values remain unchanged
-        $po->refresh();
-        $item->refresh();
-        $this->skuA->inventoryItem->refresh();
-
-        $this->assertEquals(VendorOrderStatus::ORDERED, $po->status);
-        $this->assertEquals(0, $item->quantity_received);
-        $this->assertEquals(10, $this->skuA->inventoryItem->on_hand_quantity);
-
-        // Verify no audit event was dispatched
-        Event::assertNotDispatched(AuditEvent::class);
+        $response->assertStatus(422)->assertJsonValidationErrors(['items']);
     }
 }

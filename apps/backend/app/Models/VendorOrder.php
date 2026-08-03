@@ -279,4 +279,9 @@ class VendorOrder extends Model
 
         return $query;
     }
+
+    public function receipts(): HasMany
+    {
+        return $this->hasMany(PurchaseReceipt::class, 'vendor_order_id');
+    }
 }

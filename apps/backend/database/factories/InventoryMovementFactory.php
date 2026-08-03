@@ -19,10 +19,8 @@ class InventoryMovementFactory extends Factory
 
     public function definition(): array
     {
-        $sku = ProductSku::factory();
-
         return [
-            'product_sku_id' => $sku,
+            'product_sku_id' => ProductSku::factory(),
             'inventory_item_id' => function (array $attributes) {
                 return InventoryItem::query()->firstOrCreate(
                     ['product_sku_id' => $attributes['product_sku_id']],

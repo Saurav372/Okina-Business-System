@@ -80,6 +80,11 @@ class InventoryMovement extends Model
         return $this->belongsTo(ProductSku::class, 'product_sku_id');
     }
 
+    public function sku(): BelongsTo
+    {
+        return $this->belongsTo(ProductSku::class, 'product_sku_id');
+    }
+
     public function inventoryItem(): BelongsTo
     {
         return $this->belongsTo(InventoryItem::class, 'inventory_item_id');

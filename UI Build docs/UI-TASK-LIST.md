@@ -118,11 +118,11 @@ Detailed validation for each subtask is maintained in `UI-SUBTASK-VALIDATION.md`
 | U4.1.2 | Lead 360 View | Admin | 4 | Lead detail, activity logging, and follow-ups. | U4.1.1 | Removed |
 | U4.1.3 | Quotation Builder | Admin | 4 | Quote creation and pricing engine. | U4.1.2, U3.2.4 | Removed |
 | U4.1.4 | Quotation Conversion | Admin | 4 | Conversion from Quote to Sales Order. | U4.1.3, U3.1.6 | Removed |
-| **U5.1** | **Inventory & Purchasing** | Admin | 5 | **Milestone** | U3.2.4 | Milestone |
-| U5.1.1 | Stock Balances | Admin | 5 | Real-time SKU stock levels. | U3.2.4 | Pending |
-| U5.1.2 | Stock Movements | Admin | 5 | Movement history and adjustment modal. | U5.1.1 | Pending |
-| U5.1.3 | Vendors Directory | Admin | 5 | Vendor management. | U2.1 | Pending |
-| U5.1.4 | Purchase Orders | Admin | 5 | PO creation and Stock Receiving flow. | U5.1.3, U5.1.1 | Pending |
+| **U5.1** | **Inventory & Purchasing** | Admin | 5 | **Milestone** | U3.2.4 | Completed |
+| U5.1.1 | Stock Balances | Admin | 5 | Real-time SKU stock levels. | U3.2.4 | Completed |
+| U5.1.2 | Stock Movements | Admin | 5 | Movement history and adjustment modal. | U5.1.1 | Completed |
+| U5.1.3 | Vendors Directory | Admin | 5 | Vendor management. | U2.1 | Completed |
+| U5.1.4 | Purchase Orders | Admin | 5 | PO creation and Stock Receiving flow. | U5.1.3, U5.1.1 | Completed |
 | **U6.1** | **Finance & Reports** | Admin | 6 | **Milestone** | U3.1.6 | Milestone |
 | U6.1.1 | Payments Ledger | Admin | 6 | History of all order payments. | U3.1.6 | Completed |
 | U6.1.2 | Refunds Workflow | Admin | 6 | Refund processing and status tracking. | U6.1.1 | Completed |

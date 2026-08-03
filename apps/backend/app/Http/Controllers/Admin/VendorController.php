@@ -9,10 +9,13 @@ use App\Http\Requests\Vendor\StoreVendorRequest;
 use App\Http\Requests\Vendor\UpdateVendorRequest;
 use App\Models\Vendor;
 use App\Support\Vendors\VendorCodeGenerator;
-use Illuminate\Database\QueryException;
+use App\Support\Vendors\VendorFilters;
+use App\Support\Vendors\VendorQueryBuilder;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
@@ -25,103 +28,113 @@ class VendorController extends Controller
     {
         Gate::authorize('viewAny', Vendor::class);
 
-        $search = $request->input('search');
-        $status = $request->input('status');
+        $filters = new VendorFilters($request->all());
+        $query = VendorQueryBuilder::buildQuery($filters);
+        $vendors = $query->paginate($filters->perPage)->withQueryString();
 
-        $query = Vendor::withCount('purchaseOrders');
-
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('vendor_code', 'like', "%{$search}%")
-                    ->orWhere('name', 'like', "%{$search}%")
-                    ->orWhere('contact_name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%")
-                    ->orWhere('gstin', 'like', "%{$search}%");
-            });
-        }
-
-        if ($status && $status !== 'all') {
-            $query->where('status', $status);
-        }
-
-        $vendors = $query->orderBy('name')->paginate($request->integer('per_page', 15))->withQueryString();
-
-        if ($request->wantsJson() || $request->is('api/*')) {
+        if ($request->expectsJson()) {
             return response()->json($vendors);
         }
 
-        // KPI metrics (global, ignoring current filter)
-        $totalVendors  = Vendor::count();
+        // Global KPI metrics
+        $totalVendors = Vendor::count();
         $activeVendors = Vendor::where('status', VendorStatus::ACTIVE)->count();
         $inactiveVendors = Vendor::where('status', VendorStatus::INACTIVE)->count();
-        $blockedVendors  = Vendor::where('status', VendorStatus::BLOCKED)->count();
+        $blockedVendors = Vendor::where('status', VendorStatus::BLOCKED)->count();
+
+        // Safely resolve editing vendor for validation recovery state
+        $editingVendorId = old('edit_vendor_id');
+        $editingVendor = null;
+        if ($editingVendorId && is_numeric($editingVendorId)) {
+            $candidate = Vendor::query()->find((int) $editingVendorId);
+            if ($candidate && Gate::allows('update', $candidate)) {
+                $editingVendor = $candidate;
+            }
+        }
+
+        $modalMode = old('modal_mode', $editingVendor ? 'edit' : 'create');
+        if ($modalMode === 'edit' && ! $editingVendor) {
+            $modalMode = 'create';
+        }
+
+        $formAction = $modalMode === 'edit' && $editingVendor
+            ? route('admin.vendors.update', $editingVendor)
+            : route('admin.vendors.store');
 
         return view('admin.vendors.index', [
-            'vendors'         => $vendors,
-            'statuses'        => VendorStatus::cases(),
-            'filters'         => (object) [
-                'search' => $search ?? '',
-                'status' => $status ?? '',
-            ],
-            'totalVendors'    => $totalVendors,
-            'activeVendors'   => $activeVendors,
+            'vendors' => $vendors,
+            'statuses' => VendorStatus::cases(),
+            'filters' => $filters,
+            'totalVendors' => $totalVendors,
+            'activeVendors' => $activeVendors,
             'inactiveVendors' => $inactiveVendors,
-            'blockedVendors'  => $blockedVendors,
+            'blockedVendors' => $blockedVendors,
+            'modalMode' => $modalMode,
+            'editingVendor' => $editingVendor,
+            'formAction' => $formAction,
         ]);
     }
 
-
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created vendor in storage.
      */
-    public function store(StoreVendorRequest $request): JsonResponse
+    public function store(StoreVendorRequest $request): JsonResponse|RedirectResponse
     {
         Gate::authorize('create', Vendor::class);
 
-        $attempts = 0;
-        $maxAttempts = 3;
-        $vendor = null;
+        $customCode = $request->input('vendor_code');
 
-        while ($attempts < $maxAttempts) {
-            try {
-                $attempts++;
-                $data = $request->validated();
-                if (empty($data['vendor_code'])) {
-                    $data['vendor_code'] = VendorCodeGenerator::generate();
-                }
+        if ($customCode) {
+            $vendor = DB::transaction(function () use ($request) {
+                $data = $request->safe()->except(['modal_mode', 'edit_vendor_id']);
                 $data['status'] ??= VendorStatus::ACTIVE->value;
                 $data['created_by_user_id'] = Auth::id();
 
                 $vendor = Vendor::create($data);
-                break;
-            } catch (QueryException $e) {
-                $isUniqueViolation = $e->getCode() === '23000'
-                    || str_contains($e->getMessage(), '1062 Duplicate entry')
-                    || str_contains($e->getMessage(), 'UNIQUE constraint failed: vendors.vendor_code');
 
-                if ($isUniqueViolation && empty($request->input('vendor_code')) && $attempts < $maxAttempts) {
-                    continue;
-                }
-                throw $e;
-            }
+                $auditPayload = [
+                    'vendor_id' => $vendor->id,
+                    'vendor_code' => $vendor->vendor_code,
+                    'name' => $vendor->name,
+                ];
+                DB::afterCommit(fn () => event(new AuditEvent('vendors.created', Auth::user(), $auditPayload)));
+
+                return $vendor;
+            });
+        } else {
+            $vendor = VendorCodeGenerator::executeWithRetry(function ($code) use ($request) {
+                return DB::transaction(function () use ($request, $code) {
+                    $data = $request->safe()->except(['modal_mode', 'edit_vendor_id']);
+                    $data['vendor_code'] = $code;
+                    $data['status'] ??= VendorStatus::ACTIVE->value;
+                    $data['created_by_user_id'] = Auth::id();
+
+                    $vendor = Vendor::create($data);
+
+                    $auditPayload = [
+                        'vendor_id' => $vendor->id,
+                        'vendor_code' => $vendor->vendor_code,
+                        'name' => $vendor->name,
+                    ];
+                    DB::afterCommit(fn () => event(new AuditEvent('vendors.created', Auth::user(), $auditPayload)));
+
+                    return $vendor;
+                });
+            });
         }
 
-        if (! $vendor) {
-            abort(500, 'Failed to create vendor.');
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Vendor created successfully.',
+                'data' => $vendor,
+            ], 201);
         }
 
-        event(new AuditEvent('vendors.created', Auth::user(), [
-            'vendor_id' => $vendor->id,
-            'vendor_code' => $vendor->vendor_code,
-            'name' => $vendor->name,
-        ]));
-
-        return response()->json($vendor, 201);
+        return redirect()->route('admin.vendors.index')->with('success', 'Vendor created successfully.');
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified vendor.
      */
     public function show(Vendor $vendor): JsonResponse
     {
@@ -131,41 +144,77 @@ class VendorController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified vendor in storage.
      */
-    public function update(UpdateVendorRequest $request, Vendor $vendor): JsonResponse
+    public function update(UpdateVendorRequest $request, Vendor $vendor): JsonResponse|RedirectResponse
     {
         Gate::authorize('update', $vendor);
 
-        $data = $request->validated();
-        $data['updated_by_user_id'] = Auth::id();
+        $beforeValues = $vendor->only([
+            'name', 'vendor_code', 'status', 'contact_name', 'email', 'phone',
+            'gstin', 'payment_terms', 'address_line1', 'address_line2', 'city',
+            'state', 'postal_code', 'country_code', 'notes',
+        ]);
 
-        $vendor->update($data);
+        DB::transaction(function () use ($request, $vendor, $beforeValues) {
+            $data = $request->safe()->except(['modal_mode', 'edit_vendor_id']);
+            if (array_key_exists('vendor_code', $data) && $data['vendor_code'] === null) {
+                unset($data['vendor_code']);
+            }
+            $data['updated_by_user_id'] = Auth::id();
 
-        event(new AuditEvent('vendors.updated', Auth::user(), [
-            'vendor_id' => $vendor->id,
-            'vendor_code' => $vendor->vendor_code,
-            'name' => $vendor->name,
-        ]));
+            $vendor->update($data);
 
-        return response()->json($vendor);
+            $afterValues = $vendor->only(array_keys($beforeValues));
+            $changedFields = [];
+            foreach ($beforeValues as $key => $before) {
+                $after = $afterValues[$key] ?? null;
+                if ($before !== $after) {
+                    $changedFields[$key] = ['before' => $before, 'after' => $after];
+                }
+            }
+
+            $auditPayload = [
+                'vendor_id' => $vendor->id,
+                'vendor_code' => $vendor->vendor_code,
+                'changed_fields' => $changedFields,
+            ];
+            DB::afterCommit(fn () => event(new AuditEvent('vendors.updated', Auth::user(), $auditPayload)));
+        });
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Vendor updated successfully.',
+                'data' => $vendor->fresh(),
+            ]);
+        }
+
+        return redirect()->route('admin.vendors.index')->with('success', 'Vendor updated successfully.');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Soft-delete the specified vendor from storage.
      */
-    public function destroy(Vendor $vendor): JsonResponse
+    public function destroy(Request $request, Vendor $vendor): JsonResponse|RedirectResponse
     {
         Gate::authorize('delete', $vendor);
 
-        $vendor->delete();
+        DB::transaction(function () use ($vendor) {
+            $auditPayload = [
+                'vendor_id' => $vendor->id,
+                'vendor_code' => $vendor->vendor_code,
+            ];
 
-        event(new AuditEvent('vendors.deleted', Auth::user(), [
-            'vendor_id' => $vendor->id,
-            'vendor_code' => $vendor->vendor_code,
-        ]));
+            $vendor->delete();
 
-        return response()->json(['message' => 'Vendor soft-deleted successfully.']);
+            DB::afterCommit(fn () => event(new AuditEvent('vendors.deleted', Auth::user(), $auditPayload)));
+        });
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Vendor deleted successfully.']);
+        }
+
+        return redirect()->route('admin.vendors.index')->with('success', 'Vendor deleted successfully.');
     }
 
     /**

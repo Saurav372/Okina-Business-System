@@ -15,10 +15,12 @@ use App\Http\Requests\PurchaseOrder\UpdateVendorOrderRequest;
 use App\Http\Requests\PurchaseOrder\UpdateVendorOrderStatusRequest;
 use App\Models\Vendor;
 use App\Models\VendorOrder;
+use App\Services\PurchaseOrderStatusService;
 use App\Support\Purchases\PurchaseOrderCodeGenerator;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -28,6 +30,10 @@ use Illuminate\View\View;
 
 class VendorOrderController extends Controller
 {
+    public function __construct(
+        protected PurchaseOrderStatusService $statusService
+    ) {}
+
     /**
      * Display a listing of purchase orders.
      */
@@ -35,7 +41,7 @@ class VendorOrderController extends Controller
     {
         Gate::authorize('viewAny', VendorOrder::class);
 
-        if (! $request->wantsJson() && ! $request->is('api/*')) {
+        if (! $request->expectsJson() && ! $request->is('api/*')) {
             return app(PurchaseOrderAdminController::class)->index($request);
         }
 
@@ -53,7 +59,7 @@ class VendorOrderController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreVendorOrderRequest $request): JsonResponse
+    public function store(StoreVendorOrderRequest $request): JsonResponse|RedirectResponse
     {
         Gate::authorize('create', VendorOrder::class);
 
@@ -120,6 +126,11 @@ class VendorOrderController extends Controller
             abort(500, 'Failed to create purchase order.');
         }
 
+        if (! $request->expectsJson() && ! $request->is('api/*')) {
+            return redirect()->route('admin.purchases.show', $purchaseOrder->public_id)
+                ->with('success', "Purchase order [{$purchaseOrder->public_id}] created successfully.");
+        }
+
         return response()->json($purchaseOrder, 201);
     }
 
@@ -130,7 +141,7 @@ class VendorOrderController extends Controller
     {
         Gate::authorize('view', $purchaseOrder);
 
-        if (! $request->wantsJson() && ! $request->is('api/*')) {
+        if (! $request->expectsJson() && ! $request->is('api/*')) {
             return app(PurchaseOrderAdminController::class)->show($purchaseOrder);
         }
 
@@ -142,14 +153,13 @@ class VendorOrderController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateVendorOrderRequest $request, VendorOrder $purchaseOrder): JsonResponse
+    public function update(UpdateVendorOrderRequest $request, VendorOrder $purchaseOrder): JsonResponse|RedirectResponse
     {
         Gate::authorize('update', $purchaseOrder);
 
         $isOrdered = $purchaseOrder->status !== VendorOrderStatus::DRAFT;
 
         if ($isOrdered) {
-            // Check for edits to immutable fields
             $immutableFields = [
                 'vendor_id',
                 'currency',
@@ -188,10 +198,6 @@ class VendorOrderController extends Controller
                 $purchaseOrder->transitionStatusTo(VendorOrderStatus::from($request->input('status')));
             }
 
-            if ($request->filled('payment_status')) {
-                $purchaseOrder->transitionPaymentStatusTo(VendorOrderPaymentStatus::from($request->input('payment_status')));
-            }
-
             if ($request->has('expected_at')) {
                 $expectedAt = $request->input('expected_at');
                 $purchaseOrder->changeExpectedAt($expectedAt ? Carbon::parse($expectedAt) : null);
@@ -219,13 +225,18 @@ class VendorOrderController extends Controller
             });
         });
 
+        if (! $request->expectsJson() && ! $request->is('api/*')) {
+            return redirect()->route('admin.purchases.show', $purchaseOrder->public_id)
+                ->with('success', "Purchase order [{$purchaseOrder->public_id}] updated successfully.");
+        }
+
         return response()->json($purchaseOrder);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(VendorOrder $purchaseOrder): JsonResponse
+    public function destroy(VendorOrder $purchaseOrder, Request $request): JsonResponse|RedirectResponse
     {
         Gate::authorize('delete', $purchaseOrder);
 
@@ -245,49 +256,41 @@ class VendorOrderController extends Controller
             });
         });
 
+        if (! $request->expectsJson() && ! $request->is('api/*')) {
+            return redirect()->route('admin.purchases.index')
+                ->with('success', 'Purchase order deleted successfully.');
+        }
+
         return response()->json(['message' => 'Purchase order deleted successfully.']);
     }
 
     /**
      * Update the status of the specified resource.
      */
-    public function updateStatus(UpdateVendorOrderStatusRequest $request, VendorOrder $purchaseOrder): JsonResponse
+    public function updateStatus(UpdateVendorOrderStatusRequest $request, VendorOrder $purchaseOrder): JsonResponse|RedirectResponse
     {
-        Gate::authorize('update', $purchaseOrder);
-
-        $user = Auth::user();
+        if ($request->input('status') === 'approved' || $request->input('status') === 'ordered') {
+            Gate::authorize('approve', $purchaseOrder);
+        } elseif ($request->input('status') === 'cancelled') {
+            Gate::authorize('cancel', $purchaseOrder);
+        } else {
+            Gate::authorize('update', $purchaseOrder);
+        }
 
         try {
-            DB::transaction(function () use ($request, $purchaseOrder, $user) {
-                $previousStatus = $purchaseOrder->status;
-                $previousPaymentStatus = $purchaseOrder->payment_status;
+            $updatedOrder = $this->statusService->transition(
+                order: $purchaseOrder,
+                targetStatus: $request->input('status'),
+                actor: $request->user(),
+                targetPaymentStatus: $request->input('payment_status')
+            );
 
-                // Apply status transition first
-                $purchaseOrder->transitionStatusTo($request->enum('status', VendorOrderStatus::class));
+            if (! $request->expectsJson() && ! $request->is('api/*')) {
+                return redirect()->route('admin.purchases.show', $updatedOrder->public_id)
+                    ->with('success', "Purchase order status updated to {$updatedOrder->status->value}.");
+            }
 
-                // Apply payment status transition if provided
-                if ($request->filled('payment_status')) {
-                    $purchaseOrder->transitionPaymentStatusTo($request->enum('payment_status', VendorOrderPaymentStatus::class));
-                }
-
-                $purchaseOrder->save();
-
-                // Synchronize persisted state before serializing the audit payload
-                $purchaseOrder->refresh();
-
-                DB::afterCommit(function () use ($purchaseOrder, $previousStatus, $previousPaymentStatus, $user) {
-                    event(new AuditEvent('purchase_orders.status_updated', $user, [
-                        'vendor_order_id' => $purchaseOrder->id,
-                        'previous_status' => $previousStatus->value,
-                        'status' => $purchaseOrder->status->value,
-                        'previous_payment_status' => $previousPaymentStatus->value,
-                        'payment_status' => $purchaseOrder->payment_status->value,
-                        'ordered_at' => $purchaseOrder->ordered_at?->toIso8601String(),
-                        'received_at' => $purchaseOrder->received_at?->toIso8601String(),
-                        'cancelled_at' => $purchaseOrder->cancelled_at?->toIso8601String(),
-                    ]));
-                });
-            });
+            return response()->json($updatedOrder);
         } catch (InvalidPurchaseOrderStatusTransitionException $e) {
             throw ValidationException::withMessages([
                 'status' => $e->getMessage(),
@@ -297,7 +300,5 @@ class VendorOrderController extends Controller
                 'payment_status' => $e->getMessage(),
             ]);
         }
-
-        return response()->json($purchaseOrder);
     }
 }

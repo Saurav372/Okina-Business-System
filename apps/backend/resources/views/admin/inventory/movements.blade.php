@@ -68,14 +68,35 @@
         </div>
 
         <!-- Filter Bar Form -->
-        <div class="bg-white border border-neutral-200 rounded-2xl p-4 sm:p-5 shadow-xs">
-            <form method="GET" action="{{ route('admin.inventory.movements.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+        <div class="bg-white border border-neutral-200 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3">
+            <div class="flex items-center justify-between text-xs text-neutral-500 pb-1 border-b border-neutral-100">
+                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-neutral-100 font-semibold text-neutral-700">
+                    <x-icons.lucide name="lucide-calendar" class="w-3.5 h-3.5 text-neutral-500" />
+                    <span>{{ $filters->dateRangeBadge }}</span>
+                </div>
+                <a href="{{ route('admin.inventory.movements.index', ['all_time' => 1]) }}" class="text-[11px] font-semibold text-[color:var(--color-brand-600)] hover:underline">View All-Time History</a>
+            </div>
+
+            <form method="GET" action="{{ route('admin.inventory.movements.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
                 <!-- Search Input -->
                 <div class="lg:col-span-2 relative">
+                    <label class="sr-only">Search</label>
                     <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-400">
                         <x-icons.lucide name="lucide-search" class="w-4 h-4" />
                     </div>
-                    <input type="text" name="search" value="{{ $filters->search ?? '' }}" placeholder="Search SKU, product, barcode, or idempotency key..." class="w-full pl-9 pr-4 py-2 border border-neutral-300 rounded-xl text-xs text-neutral-800 bg-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)] transition-colors">
+                    <input type="text" name="search" value="{{ $filters->search ?? '' }}" placeholder="Search SKU, product, barcode, or reference ID..." class="w-full pl-9 pr-4 py-2 border border-neutral-300 rounded-xl text-xs text-neutral-800 bg-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)] transition-colors">
+                </div>
+
+                <!-- Date From -->
+                <div>
+                    <label class="sr-only">Date From</label>
+                    <input type="date" name="date_from" value="{{ $filters->dateFrom ? \Carbon\Carbon::parse($filters->dateFrom)->toDateString() : '' }}" class="w-full px-3 py-2 border border-neutral-300 rounded-xl text-xs text-neutral-800 bg-white focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)] transition-colors">
+                </div>
+
+                <!-- Date To -->
+                <div>
+                    <label class="sr-only">Date To</label>
+                    <input type="date" name="date_to" value="{{ $filters->dateTo ? \Carbon\Carbon::parse($filters->dateTo)->toDateString() : '' }}" class="w-full px-3 py-2 border border-neutral-300 rounded-xl text-xs text-neutral-800 bg-white focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)] transition-colors">
                 </div>
 
                 <!-- Direction Selector -->
@@ -99,11 +120,14 @@
                 </div>
 
                 <!-- Submit & Export -->
-                <div class="flex items-center gap-2">
-                    <button type="submit" class="w-full py-2 bg-neutral-900 text-white rounded-xl text-xs font-bold hover:bg-neutral-800 transition-colors">Filter</button>
+                <div class="lg:col-span-6 flex items-center justify-end gap-2 pt-1 border-t border-neutral-100">
+                    @if ($filters->hasActiveUserFilters)
+                        <a href="{{ route('admin.inventory.movements.index') }}" class="px-3.5 py-2 text-xs font-semibold text-neutral-600 hover:text-neutral-900 border border-neutral-300 rounded-xl bg-white hover:bg-neutral-50 transition-colors">Clear All Filters</a>
+                    @endif
+                    <button type="submit" class="px-5 py-2 bg-neutral-900 text-white rounded-xl text-xs font-bold hover:bg-neutral-800 transition-colors">Apply Filters</button>
                     <a href="{{ route('admin.inventory.movements.export', $filters->toArray()) }}" class="px-3.5 py-2 border border-neutral-300 rounded-xl text-xs font-semibold text-neutral-700 bg-white hover:bg-neutral-50 transition-colors shrink-0 flex items-center gap-1.5">
                         <x-icons.lucide name="lucide-download" class="w-4 h-4 text-neutral-500" />
-                        <span>CSV</span>
+                        <span>Export CSV</span>
                     </a>
                 </div>
             </form>
@@ -129,7 +153,7 @@
                             <tr class="hover:bg-neutral-50/60 transition-colors">
                                 <!-- Timestamp -->
                                 <td class="py-3.5 px-4 font-mono text-neutral-600 whitespace-nowrap">
-                                    {{ $m->created_at ? $m->created_at->format('Y-m-d H:i:s') : 'N/A' }}
+                                    {{ $m->occurred_at ? $m->occurred_at->format('Y-m-d H:i:s') : 'N/A' }}
                                 </td>
 
                                 <!-- SKU & Product -->
@@ -147,14 +171,14 @@
 
                                 <!-- Quantity Delta -->
                                 <td class="py-3.5 px-4 text-right font-mono font-bold text-sm">
-                                    <span class="{{ $m->direction === \App\Enums\InventoryDirection::INBOUND ? 'text-emerald-600' : 'text-red-600' }}">
-                                        {{ $m->direction === \App\Enums\InventoryDirection::INBOUND ? '+'.number_format($m->quantity) : '-'.number_format($m->quantity) }}
+                                    <span class="{{ $m->direction === \App\Enums\InventoryDirection::IN ? 'text-emerald-600' : 'text-red-600' }}">
+                                        {{ $m->direction === \App\Enums\InventoryDirection::IN ? '+'.number_format($m->quantity) : '-'.number_format($m->quantity) }}
                                     </span>
                                 </td>
 
                                 <!-- Before -> After -->
                                 <td class="py-3.5 px-4 text-right font-mono text-xs text-neutral-500 whitespace-nowrap">
-                                    {{ number_format($m->quantity_before) }} <span class="text-neutral-300">→</span> <strong class="text-neutral-900">{{ number_format($m->quantity_after) }}</strong>
+                                    {{ number_format($m->before_on_hand_quantity) }} <span class="text-neutral-300">→</span> <strong class="text-neutral-900">{{ number_format($m->after_on_hand_quantity) }}</strong>
                                 </td>
 
                                 <!-- Performed By -->
@@ -174,8 +198,22 @@
                             <tr>
                                 <td colspan="7" class="py-12 text-center text-neutral-400">
                                     <x-icons.lucide name="lucide-activity" class="w-10 h-10 mx-auto text-neutral-300 mb-3" />
-                                    <p class="text-sm font-semibold text-neutral-700">No inventory movements recorded</p>
-                                    <p class="text-xs text-neutral-400 mt-1">Try adjusting filter parameters or search terms.</p>
+                                    @if ($totalMovementsCountInDb === 0)
+                                        <p class="text-sm font-semibold text-neutral-700">No inventory movements have been recorded yet</p>
+                                        <p class="text-xs text-neutral-400 mt-1">Audit log records will appear automatically as stock is updated.</p>
+                                    @elseif ($filters->isDefaultDateScope && ! $filters->hasActiveUserFilters)
+                                        <p class="text-sm font-semibold text-neutral-700">No movements occurred in the last 30 days</p>
+                                        <p class="text-xs text-neutral-400 mt-1">Older movement records exist in the system history.</p>
+                                        <div class="mt-3">
+                                            <a href="{{ route('admin.inventory.movements.index', ['all_time' => 1]) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-neutral-900 hover:bg-neutral-800 transition-colors">View All-Time History</a>
+                                        </div>
+                                    @else
+                                        <p class="text-sm font-semibold text-neutral-700">No inventory movements match the active filters</p>
+                                        <p class="text-xs text-neutral-400 mt-1">Try adjusting filter parameters or date ranges.</p>
+                                        <div class="mt-3">
+                                            <a href="{{ route('admin.inventory.movements.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-neutral-700 bg-white border border-neutral-300 hover:bg-neutral-50 transition-colors">Clear All Filters</a>
+                                        </div>
+                                    @endif
                                 </td>
                             </tr>
                         @endforelse
@@ -186,7 +224,7 @@
             <!-- Server-Side Pagination -->
             @if ($movements->hasPages())
                 <div class="p-4 border-t border-neutral-200">
-                    {{ $movements->links() }}
+                    {{ $movements->withQueryString()->links() }}
                 </div>
             @endif
         </div>

@@ -1,7 +1,7 @@
 <x-layouts.admin title="Purchase Order {{ $order->public_id }}">
     <div class="space-y-6 max-w-4xl mx-auto" x-data="{
-        receiveModalOpen: false,
-        payModalOpen: false,
+        receiveModalOpen: {{ $errors->receiving->any() ? 'true' : 'false' }},
+        payModalOpen: {{ $errors->payment->any() ? 'true' : 'false' }},
         activeItem: null,
         receiveQty: 1,
         payAmountRupees: 0,

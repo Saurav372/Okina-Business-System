@@ -125,7 +125,7 @@ class AdminInventoryMovementTest extends TestCase
 
         $response = $this->actingAs($this->adminUser)->get(route('admin.inventory.movements.index'));
         $response->assertOk();
-        $response->assertSee('Inventory Movement Audit Trail');
+        $response->assertSee('Audit Trail Movements');
         $response->assertSee('HOODIE-NAVY-L');
 
         $staffResponse = $this->actingAs($this->inventoryStaffUser)->get(route('admin.inventory.movements.index'));
@@ -235,7 +235,7 @@ class AdminInventoryMovementTest extends TestCase
             'movement_type' => InventoryMovementType::STOCK_IN->value,
         ]));
         $response->assertOk();
-        $response->assertSee('Purchase Order Receipt');
+        $response->assertSee('Purchase Receipt');
 
         $movements = $response->viewData('movements');
         $this->assertCount(1, $movements);
@@ -304,6 +304,12 @@ class AdminInventoryMovementTest extends TestCase
 
     public function test_empty_filter_result_shows_empty_state(): void
     {
+        InventoryMovement::factory()->create([
+            'product_sku_id' => $this->sku->id,
+            'inventory_item_id' => $this->inventoryItem->id,
+            'occurred_at' => now(),
+        ]);
+
         $response = $this->actingAs($this->adminUser)->get(route('admin.inventory.movements.index', ['search' => 'NON-EXISTENT-SKU-999']));
         $response->assertOk();
         $response->assertSee('No inventory movements match the active filters');
@@ -358,5 +364,65 @@ class AdminInventoryMovementTest extends TestCase
         $content = ob_get_clean();
 
         $this->assertGreaterThan(5000, strlen($content));
+    }
+
+    public function test_date_from_only_and_date_to_only_range_behavior(): void
+    {
+        InventoryMovement::factory()->create([
+            'product_sku_id' => $this->sku->id,
+            'inventory_item_id' => $this->inventoryItem->id,
+            'occurred_at' => Carbon::now()->subDays(60),
+            'notes' => 'Sixty days ago movement',
+        ]);
+
+        $resFrom = $this->actingAs($this->adminUser)->get(route('admin.inventory.movements.index', [
+            'date_from' => Carbon::now()->subDays(70)->toDateString(),
+        ]));
+        $resFrom->assertOk();
+        $resFrom->assertSee('Sixty days ago movement');
+
+        $resTo = $this->actingAs($this->adminUser)->get(route('admin.inventory.movements.index', [
+            'date_to' => Carbon::now()->subDays(40)->toDateString(),
+        ]));
+        $resTo->assertOk();
+        $resTo->assertSee('Sixty days ago movement');
+    }
+
+    public function test_default_range_empty_state_when_older_records_exist(): void
+    {
+        InventoryMovement::factory()->create([
+            'product_sku_id' => $this->sku->id,
+            'inventory_item_id' => $this->inventoryItem->id,
+            'occurred_at' => Carbon::now()->subDays(45),
+            'notes' => 'Old 45d record',
+        ]);
+
+        $response = $this->actingAs($this->adminUser)->get(route('admin.inventory.movements.index'));
+        $response->assertOk();
+        $response->assertSee('No movements occurred in the last 30 days');
+        $response->assertSee('View All-Time History');
+    }
+
+    public function test_csv_export_escapes_formula_injection_and_preserves_numeric_negative_deltas(): void
+    {
+        InventoryMovement::factory()->create([
+            'product_sku_id' => $this->sku->id,
+            'inventory_item_id' => $this->inventoryItem->id,
+            'quantity' => 15,
+            'before_on_hand_quantity' => 100,
+            'after_on_hand_quantity' => 85,
+            'occurred_at' => now(),
+            'notes' => '=SUM(A1:A10) malicious note',
+        ]);
+
+        $response = $this->actingAs($this->adminUser)->get(route('admin.inventory.movements.export'));
+        $response->assertOk();
+
+        ob_start();
+        $response->sendContent();
+        $content = ob_get_clean();
+
+        $this->assertStringContainsString("'=SUM(A1:A10) malicious note", $content);
+        $this->assertStringContainsString(',15,100,85,', $content);
     }
 }

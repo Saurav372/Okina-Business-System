@@ -62,7 +62,7 @@ class VendorPolicy
     public function delete(Authenticatable $actor, Vendor $vendor): bool
     {
         if ($actor instanceof User) {
-            return $actor->hasPermissionTo('vendors.manage');
+            return $actor->hasPermissionTo('vendors.delete') || $actor->hasPermissionTo('vendors.manage');
         }
 
         return false;

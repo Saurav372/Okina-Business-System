@@ -243,9 +243,9 @@ class PurchaseOrderPaymentTest extends TestCase
     }
 
     /**
-     * Test duplicate reference numbers are allowed by business rules.
+     * Test duplicate reference numbers for the same purchase order are rejected.
      */
-    public function test_duplicate_reference_numbers_are_accepted(): void
+    public function test_duplicate_reference_numbers_are_rejected(): void
     {
         $this->actingAs($this->privilegedStaff);
 
@@ -263,15 +263,15 @@ class PurchaseOrderPaymentTest extends TestCase
             'reference' => 'REF-ABC',
         ])->assertStatus(200);
 
-        // Second payment with same REF-ABC
+        // Second payment with same REF-ABC should be rejected with 422
         $this->postJson(route('admin.purchase_orders.payments.store', $po->id), [
             'amount_minor' => 2000,
             'payment_method' => VendorPaymentMethod::CASH->value,
             'reference' => 'REF-ABC',
-        ])->assertStatus(200);
+        ])->assertStatus(422)->assertJsonValidationErrors(['reference']);
 
-        // Verify database has 2 payments recorded
-        $this->assertEquals(2, VendorPayment::where('vendor_order_id', $po->id)->count());
+        // Verify database has only 1 payment recorded
+        $this->assertEquals(1, VendorPayment::where('vendor_order_id', $po->id)->count());
     }
 
     /**

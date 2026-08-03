@@ -29,6 +29,14 @@ class InventoryMovementFilters
 
     public string $sortOrder;
 
+    public bool $allTime = false;
+
+    public bool $isDefaultDateScope = false;
+
+    public bool $hasActiveUserFilters = false;
+
+    public string $dateRangeBadge = '';
+
     /**
      * @param  array<string, mixed>  $input
      */
@@ -36,17 +44,33 @@ class InventoryMovementFilters
     {
         $this->search = isset($input['search']) && trim((string) $input['search']) !== '' ? trim((string) $input['search']) : null;
 
-        // Default date range: Last 30 Days if empty
         $rawDateFrom = isset($input['date_from']) ? trim((string) $input['date_from']) : '';
         $rawDateTo = isset($input['date_to']) ? trim((string) $input['date_to']) : '';
-        $isAllTime = isset($input['all_time']) && filter_var($input['all_time'], FILTER_VALIDATE_BOOLEAN);
+        $this->allTime = isset($input['all_time']) && filter_var($input['all_time'], FILTER_VALIDATE_BOOLEAN);
 
-        if ($rawDateFrom === '' && $rawDateTo === '' && ! $isAllTime) {
+        if ($this->allTime) {
+            $this->dateFrom = null;
+            $this->dateTo = null;
+            $this->dateRangeBadge = 'Date Range: All Time';
+        } elseif ($rawDateFrom !== '' || $rawDateTo !== '') {
+            if ($rawDateFrom !== '' && $rawDateTo !== '') {
+                $this->dateFrom = Carbon::parse($rawDateFrom)->startOfDay()->toDateTimeString();
+                $this->dateTo = Carbon::parse($rawDateTo)->endOfDay()->toDateTimeString();
+                $this->dateRangeBadge = 'Date Range: '.Carbon::parse($rawDateFrom)->format('M d, Y').' – '.Carbon::parse($rawDateTo)->format('M d, Y');
+            } elseif ($rawDateFrom !== '') {
+                $this->dateFrom = Carbon::parse($rawDateFrom)->startOfDay()->toDateTimeString();
+                $this->dateTo = Carbon::now()->endOfDay()->toDateTimeString();
+                $this->dateRangeBadge = 'Date Range: From '.Carbon::parse($rawDateFrom)->format('M d, Y');
+            } else {
+                $this->dateFrom = null;
+                $this->dateTo = Carbon::parse($rawDateTo)->endOfDay()->toDateTimeString();
+                $this->dateRangeBadge = 'Date Range: Through '.Carbon::parse($rawDateTo)->format('M d, Y');
+            }
+        } else {
+            $this->isDefaultDateScope = true;
             $this->dateFrom = Carbon::now()->subDays(30)->startOfDay()->toDateTimeString();
             $this->dateTo = Carbon::now()->endOfDay()->toDateTimeString();
-        } else {
-            $this->dateFrom = $rawDateFrom !== '' ? Carbon::parse($rawDateFrom)->startOfDay()->toDateTimeString() : null;
-            $this->dateTo = $rawDateTo !== '' ? Carbon::parse($rawDateTo)->endOfDay()->toDateTimeString() : null;
+            $this->dateRangeBadge = 'Date Range: Last 30 Days (Default)';
         }
 
         $this->movementType = isset($input['movement_type']) && $input['movement_type'] !== 'all' && $input['movement_type'] !== ''
@@ -61,11 +85,11 @@ class InventoryMovementFilters
             ? InventoryMovementReason::tryFrom((string) $input['reason_code'])
             : null;
 
-        $this->createdByUserId = isset($input['created_by_user_id']) && ctype_digit((string) $input['created_by_user_id'])
+        $this->createdByUserId = isset($input['created_by_user_id']) && is_numeric($input['created_by_user_id'])
             ? (int) $input['created_by_user_id']
             : null;
 
-        $this->skuId = isset($input['sku_id']) && ctype_digit((string) $input['sku_id'])
+        $this->skuId = isset($input['sku_id']) && is_numeric($input['sku_id'])
             ? (int) $input['sku_id']
             : null;
 
@@ -76,6 +100,16 @@ class InventoryMovementFilters
         $this->sortOrder = isset($input['sort_order']) && strtolower((string) $input['sort_order']) === 'asc'
             ? 'asc'
             : 'desc';
+
+        $this->hasActiveUserFilters = $this->search !== null
+            || $this->movementType !== null
+            || $this->direction !== null
+            || $this->reasonCode !== null
+            || $this->createdByUserId !== null
+            || $this->skuId !== null
+            || $this->allTime
+            || $rawDateFrom !== ''
+            || $rawDateTo !== '';
     }
 
     /**

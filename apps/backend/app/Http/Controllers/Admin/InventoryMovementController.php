@@ -6,6 +6,7 @@ use App\Enums\InventoryDirection;
 use App\Enums\InventoryMovementReason;
 use App\Enums\InventoryMovementType;
 use App\Http\Controllers\Controller;
+use App\Models\InventoryMovement;
 use App\Models\ProductSku;
 use App\Services\InventoryMovementCsvExporter;
 use App\Support\Inventory\InventoryMovementCatalog;
@@ -32,12 +33,14 @@ class InventoryMovementController extends Controller
         $movements = $this->catalog->getPaginatedMovements($filters, 25);
 
         $selectedSku = $filters->skuId ? ProductSku::with('product')->find($filters->skuId) : null;
+        $totalMovementsCountInDb = InventoryMovement::query()->count();
 
         return view('admin.inventory.movements', [
             'filters' => $filters,
             'metrics' => $metrics,
             'movements' => $movements,
             'selectedSku' => $selectedSku,
+            'totalMovementsCountInDb' => $totalMovementsCountInDb,
             'movementTypes' => InventoryMovementType::cases(),
             'directions' => InventoryDirection::cases(),
             'reasons' => InventoryMovementReason::cases(),

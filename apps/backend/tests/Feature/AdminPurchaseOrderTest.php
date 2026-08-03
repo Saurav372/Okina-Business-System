@@ -396,8 +396,8 @@ class AdminPurchaseOrderTest extends TestCase
     public function test_purchase_order_index_displays_ordered_at_date(): void
     {
         $po = $this->createTestPo([
-            'public_id'  => 'PO-REG-DATE-001',
-            'status'     => VendorOrderStatus::ORDERED->value,
+            'public_id' => 'PO-REG-DATE-001',
+            'status' => VendorOrderStatus::ORDERED->value,
             'ordered_at' => '2026-06-15 10:00:00',
         ]);
 
@@ -415,10 +415,10 @@ class AdminPurchaseOrderTest extends TestCase
 
         VendorOrderItem::create([
             'vendor_order_id' => $po->id,
-            'product_sku_id'  => $this->sku->id,
+            'product_sku_id' => $this->sku->id,
             'quantity_ordered' => 75,
             'quantity_received' => 0,
-            'unit_cost_minor'  => 35000, // ₹350.00
+            'unit_cost_minor' => 35000, // ₹350.00
         ]);
 
         $response = $this->actingAs($this->adminUser)
@@ -434,11 +434,11 @@ class AdminPurchaseOrderTest extends TestCase
         $po = $this->createTestPo(['status' => VendorOrderStatus::ORDERED->value]);
 
         VendorOrderItem::create([
-            'vendor_order_id'  => $po->id,
-            'product_sku_id'   => $this->sku->id,
-            'quantity_ordered'  => 10,
+            'vendor_order_id' => $po->id,
+            'product_sku_id' => $this->sku->id,
+            'quantity_ordered' => 10,
             'quantity_received' => 0,
-            'unit_cost_minor'   => 1000,
+            'unit_cost_minor' => 1000,
         ]);
 
         $response = $this->actingAs($this->adminUser)
@@ -455,11 +455,11 @@ class AdminPurchaseOrderTest extends TestCase
         $po = $this->createTestPo(['status' => VendorOrderStatus::ORDERED->value]);
 
         $lineItem = VendorOrderItem::create([
-            'vendor_order_id'  => $po->id,
-            'product_sku_id'   => $this->sku->id,
-            'quantity_ordered'  => 10,
+            'vendor_order_id' => $po->id,
+            'product_sku_id' => $this->sku->id,
+            'quantity_ordered' => 10,
             'quantity_received' => 0,
-            'unit_cost_minor'   => 1000,
+            'unit_cost_minor' => 1000,
         ]);
 
         // Submit without idempotency_key — must fail validation
@@ -471,7 +471,7 @@ class AdminPurchaseOrderTest extends TestCase
                 // idempotency_key intentionally omitted
             ]);
 
-        $response->assertSessionHasErrors('idempotency_key');
+        $response->assertSessionHasErrors('idempotency_key', null, 'receiving');
     }
 
     public function test_vendor_order_item_remaining_quantity_and_fully_received_helpers(): void
@@ -481,23 +481,23 @@ class AdminPurchaseOrderTest extends TestCase
         // Second SKU needed: vendor_order_items has a unique(vendor_order_id, product_sku_id) constraint
         $sku2 = ProductSku::factory()->create([
             'product_id' => $this->product->id,
-            'sku_code'   => 'CANVAS-RAW-600GSM',
+            'sku_code' => 'CANVAS-RAW-600GSM',
         ]);
 
         $partial = VendorOrderItem::create([
-            'vendor_order_id'   => $po->id,
-            'product_sku_id'    => $this->sku->id,
-            'quantity_ordered'  => 50,
+            'vendor_order_id' => $po->id,
+            'product_sku_id' => $this->sku->id,
+            'quantity_ordered' => 50,
             'quantity_received' => 20,
-            'unit_cost_minor'   => 1000,
+            'unit_cost_minor' => 1000,
         ]);
 
         $full = VendorOrderItem::create([
-            'vendor_order_id'   => $po->id,
-            'product_sku_id'    => $sku2->id,
-            'quantity_ordered'  => 30,
+            'vendor_order_id' => $po->id,
+            'product_sku_id' => $sku2->id,
+            'quantity_ordered' => 30,
             'quantity_received' => 30,
-            'unit_cost_minor'   => 1000,
+            'unit_cost_minor' => 1000,
         ]);
 
         // remainingQuantity()

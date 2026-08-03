@@ -131,6 +131,18 @@ class AdminInventoryTest extends TestCase
         $staffResponse->assertOk();
     }
 
+    public function test_rendered_view_contains_adjustment_modal_form_fields(): void
+    {
+        $response = $this->actingAs($this->adminUser)->get(route('admin.inventory.index'));
+        $response->assertOk();
+        $response->assertSee('name="expected_on_hand"', false);
+        $response->assertSee('name="new_on_hand"', false);
+        $response->assertSee('name="new_reserved"', false);
+        $response->assertSee('name="reason_code"', false);
+        $response->assertSee('name="notes"', false);
+        $response->assertSee('name="sort_order"', false);
+    }
+
     public function test_unauthorized_users_cannot_access_inventory(): void
     {
         $response = $this->actingAs($this->unauthorizedUser)->get(route('admin.inventory.index'));
@@ -161,9 +173,26 @@ class AdminInventoryTest extends TestCase
             ]
         );
 
-        $response = $this->actingAs($this->adminUser)->get(route('admin.inventory.index', ['status' => 'low_stock']));
-        $response->assertOk();
-        $response->assertSee('LOW-STOCK-SKU');
+        $outSku = ProductSku::factory()->create(['sku_code' => 'OUT-OF-STOCK-SKU']);
+        InventoryItem::query()->updateOrCreate(
+            ['product_sku_id' => $outSku->id],
+            [
+                'on_hand_quantity' => 0,
+                'reserved_quantity' => 0,
+                'available_quantity' => 0,
+                'low_stock_threshold' => 15,
+            ]
+        );
+
+        $lowResponse = $this->actingAs($this->adminUser)->get(route('admin.inventory.index', ['status' => 'low_stock']));
+        $lowResponse->assertOk();
+        $lowResponse->assertSee('LOW-STOCK-SKU');
+        $lowResponse->assertDontSee('OUT-OF-STOCK-SKU');
+
+        $outResponse = $this->actingAs($this->adminUser)->get(route('admin.inventory.index', ['status' => 'out_of_stock']));
+        $outResponse->assertOk();
+        $outResponse->assertSee('OUT-OF-STOCK-SKU');
+        $outResponse->assertDontSee('LOW-STOCK-SKU');
     }
 
     public function test_admin_can_perform_manual_stock_adjustment(): void
@@ -236,11 +265,27 @@ class AdminInventoryTest extends TestCase
 
     public function test_inventory_sorting_by_available_quantity_and_product_name(): void
     {
-        $response = $this->actingAs($this->adminUser)->get(route('admin.inventory.index', [
+        $p1 = Product::factory()->create(['name' => 'AAA Product']);
+        $sku1 = ProductSku::factory()->create(['product_id' => $p1->id, 'sku_code' => 'AAA-SKU']);
+        InventoryItem::query()->updateOrCreate(['product_sku_id' => $sku1->id], ['on_hand_quantity' => 10, 'reserved_quantity' => 0, 'available_quantity' => 10]);
+
+        $p2 = Product::factory()->create(['name' => 'ZZZ Product']);
+        $sku2 = ProductSku::factory()->create(['product_id' => $p2->id, 'sku_code' => 'ZZZ-SKU']);
+        InventoryItem::query()->updateOrCreate(['product_sku_id' => $sku2->id], ['on_hand_quantity' => 10, 'reserved_quantity' => 0, 'available_quantity' => 10]);
+
+        $ascResponse = $this->actingAs($this->adminUser)->get(route('admin.inventory.index', [
             'sort_by' => 'product_name',
             'sort_order' => 'asc',
         ]));
-        $response->assertOk();
+        $ascResponse->assertOk();
+        $ascResponse->assertSeeInOrder(['AAA-SKU', 'ZZZ-SKU']);
+
+        $descResponse = $this->actingAs($this->adminUser)->get(route('admin.inventory.index', [
+            'sort_by' => 'product_name',
+            'sort_order' => 'desc',
+        ]));
+        $descResponse->assertOk();
+        $descResponse->assertSeeInOrder(['ZZZ-SKU', 'AAA-SKU']);
     }
 
     public function test_negative_stock_badge_is_displayed_correctly(): void
@@ -259,6 +304,12 @@ class AdminInventoryTest extends TestCase
         $status = InventoryStatusResolver::resolve(-5, -5, 10);
         $this->assertEquals(InventoryStatus::NEGATIVE, $status);
         $this->assertEquals('Negative Stock', $status->label());
+        $this->assertEquals('bg-red-50 text-red-700 border-red-200/60', $status->badgeClass());
+
+        $response = $this->actingAs($this->adminUser)->get(route('admin.inventory.index'));
+        $response->assertOk();
+        $response->assertSee('Negative Stock');
+        $response->assertSee('bg-red-50 text-red-700 border-red-200/60');
     }
 
     public function test_adjustment_updates_available_quantity(): void
@@ -389,9 +440,20 @@ class AdminInventoryTest extends TestCase
 
     public function test_location_filter_returns_only_matching_inventory(): void
     {
-        $response = $this->actingAs($this->adminUser)->get(route('admin.inventory.index', ['location' => InventoryLocation::MAIN_WAREHOUSE->value]));
+        $storeSku = ProductSku::factory()->create(['sku_code' => 'STORE-LOCATION-SKU']);
+        InventoryItem::query()->updateOrCreate(
+            ['product_sku_id' => $storeSku->id],
+            [
+                'location_id' => InventoryLocation::STORE->value,
+                'on_hand_quantity' => 50,
+                'reserved_quantity' => 0,
+                'available_quantity' => 50,
+            ]
+        );
+
+        $response = $this->actingAs($this->adminUser)->get(route('admin.inventory.index', ['location' => InventoryLocation::STORE->value]));
         $response->assertOk();
-        $response->assertSee('PREMIUM-POLO-BLACK-M');
+        $response->assertSee('STORE-LOCATION-SKU');
     }
 
     public function test_status_precedence_prefers_negative_over_out_of_stock(): void

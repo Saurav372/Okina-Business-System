@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\ProductSeoController;
 use App\Http\Controllers\Admin\ProductSkuController;
 use App\Http\Controllers\Admin\ProductVariantController;
 use App\Http\Controllers\Admin\PurchaseOrderAdminController;
+use App\Http\Controllers\Admin\PurchaseOrderReceivingController;
 use App\Http\Controllers\Admin\RefundController;
 use App\Http\Controllers\Admin\SalesOrderController;
 use App\Http\Controllers\Admin\SettingController;
@@ -91,7 +92,7 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     Route::get('/purchases', [PurchaseOrderAdminController::class, 'index'])->name('admin.purchases.index');
     Route::get('/purchases/create', [PurchaseOrderAdminController::class, 'create'])->name('admin.purchases.create');
     Route::get('/purchases/{vendorOrder:public_id}', [PurchaseOrderAdminController::class, 'show'])->name('admin.purchases.show');
-    Route::post('/purchases/{vendorOrder:public_id}/receive', [PurchaseOrderAdminController::class, 'receive'])->name('admin.purchases.receive');
+    Route::post('/purchases/{vendorOrder:public_id}/receive', [PurchaseOrderReceivingController::class, 'receive'])->name('admin.purchases.receive');
     // Inventory & Stock Balances
     Route::get('/inventory', [InventoryController::class, 'index'])->name('admin.inventory.index');
     Route::post('/inventory/{sku}/adjust', [InventoryController::class, 'adjust'])->name('admin.inventory.adjust');

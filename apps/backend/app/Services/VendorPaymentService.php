@@ -12,6 +12,7 @@ use App\Models\VendorOrder;
 use App\Models\VendorPayment;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class VendorPaymentService
 {
@@ -39,6 +40,21 @@ class VendorPaymentService
                 );
             }
 
+            // Check duplicate reference protection
+            $reference = isset($data['reference']) ? trim($data['reference']) : null;
+            if ($reference !== null && $reference !== '') {
+                $duplicateExists = VendorPayment::where('vendor_order_id', $lockedPo->id)
+                    ->where('reference', $reference)
+                    ->lockForUpdate()
+                    ->exists();
+
+                if ($duplicateExists) {
+                    throw ValidationException::withMessages([
+                        'reference' => 'A payment with this transaction reference has already been recorded for this purchase order.',
+                    ]);
+                }
+            }
+
             // Lock existing payments to compute current total paid
             $existingPaymentsSum = (int) VendorPayment::where('vendor_order_id', $lockedPo->id)
                 ->where('status', VendorPaymentStatus::PAID->value)
@@ -64,7 +80,7 @@ class VendorPaymentService
                 'payment_method' => $data['payment_method'],
                 'amount_minor' => $amountMinor,
                 'currency' => $lockedPo->currency ?? 'INR',
-                'reference' => $data['reference'] ?? null,
+                'reference' => $reference !== '' ? $reference : null,
                 'paid_at' => $data['paid_at'] ?? now(),
                 'notes' => $data['notes'] ?? null,
             ]);
@@ -84,7 +100,7 @@ class VendorPaymentService
             $currStatusValue = $lockedPo->payment_status ? $lockedPo->payment_status->value : 'unpaid';
 
             DB::afterCommit(function () use ($lockedPo, $payment, $newPaidSum, $newRemainingBalance, $prevStatusValue, $currStatusValue, $actor) {
-                event(new AuditEvent('vendor_payment.recorded', $actor, [
+                $payload = [
                     'vendor_order_id' => $lockedPo->id,
                     'vendor_payment_id' => $payment->id,
                     'public_id' => $lockedPo->public_id,
@@ -94,10 +110,13 @@ class VendorPaymentService
                     'previous_payment_status' => $prevStatusValue,
                     'payment_status' => $currStatusValue,
                     'currency' => $payment->currency,
-                    'payment_method' => $payment->payment_method->value,
+                    'payment_method' => is_string($payment->payment_method) ? $payment->payment_method : $payment->payment_method->value,
                     'reference' => $payment->reference,
                     'actor_id' => $actor?->id,
-                ]));
+                ];
+
+                event(new AuditEvent('purchase_orders.payments.recorded', $actor, $payload));
+                event(new AuditEvent('purchase_orders.payment_recorded', $actor, $payload));
             });
 
             return [

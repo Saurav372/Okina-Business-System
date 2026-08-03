@@ -6,6 +6,7 @@ use App\Enums\VendorOrderPaymentStatus;
 use App\Enums\VendorOrderStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PurchaseOrder\ReceivePurchaseOrderRequest;
+use App\Models\ProductSku;
 use App\Models\Vendor;
 use App\Models\VendorOrder;
 use App\Services\PurchaseReceivingService;
@@ -53,11 +54,13 @@ class PurchaseOrderAdminController extends Controller
             'updater',
             'items.productSku.product',
             'payments.recordedBy',
+            'receipts.lines.productSku',
+            'receipts.creator',
         ]);
 
         return view('admin.purchases.show', [
-            'order'          => $vendorOrder,
-            'statuses'       => VendorOrderStatus::cases(),
+            'order' => $vendorOrder,
+            'statuses' => VendorOrderStatus::cases(),
             'paymentStatuses' => VendorOrderPaymentStatus::cases(),
         ]);
     }
@@ -67,15 +70,17 @@ class PurchaseOrderAdminController extends Controller
         Gate::authorize('create', VendorOrder::class);
 
         $vendors = Vendor::where('status', 'active')->orderBy('name')->get();
+        $skus = ProductSku::with('product')->orderBy('sku_code')->get();
 
         return view('admin.purchases.create', [
             'vendors' => $vendors,
+            'skus' => $skus,
         ]);
     }
 
     public function receive(ReceivePurchaseOrderRequest $request, VendorOrder $vendorOrder): RedirectResponse
     {
-        Gate::authorize('update', $vendorOrder);
+        Gate::authorize('receive', $vendorOrder);
 
         $validated = $request->validated();
 
@@ -87,6 +92,10 @@ class PurchaseOrderAdminController extends Controller
             notes: $validated['notes'] ?? null
         );
 
-        return redirect()->back()->with('success', "Goods receipt batch [{$result['batch_code']}] successfully processed. Received {$result['received_count']} total stock units.");
+        $flashMessage = ($result['replayed'] ?? false)
+            ? "Goods receipt batch [{$result['batch_code']}] replayed successfully."
+            : "Goods receipt batch [{$result['batch_code']}] successfully processed. Received {$result['received_count']} total stock units.";
+
+        return redirect()->route('admin.purchases.show', $vendorOrder->public_id)->with('success', $flashMessage);
     }
 }

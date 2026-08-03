@@ -7,6 +7,11 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class ReceivePurchaseOrderRequest extends FormRequest
 {
+    /**
+     * Named error bag for stock receiving modal forms.
+     */
+    protected $errorBag = 'receiving';
+
     public function authorize(): bool
     {
         $user = $this->user();
@@ -15,7 +20,9 @@ class ReceivePurchaseOrderRequest extends FormRequest
             return false;
         }
 
-        return $user->hasPermissionTo('inventory.manage')
+        return $user->hasPermissionTo('purchases.receive')
+            || $user->hasPermissionTo('purchases.manage')
+            || $user->hasPermissionTo('inventory.manage')
             || $user->hasAnyRole([Role::SUPER_ADMIN, Role::ADMIN, Role::INVENTORY_STAFF]);
     }
 

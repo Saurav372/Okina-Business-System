@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\InventoryLocation;
 use App\Enums\InventoryMovementReason;
+use App\Enums\InventoryStatus;
 use App\Exceptions\StaleInventoryBalanceException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\AdjustStockRequest;
@@ -31,16 +33,16 @@ class InventoryController extends Controller
         $metrics = $this->metricsProvider->getMetrics($rawFilters['location'] ?? null);
         $items = $this->catalog->getPaginatedBalances($rawFilters);
         $reasons = InventoryMovementReason::cases();
-        $locations = \App\Enums\InventoryLocation::cases();
-        $statuses = \App\Enums\InventoryStatus::cases();
+        $locations = InventoryLocation::cases();
+        $statuses = InventoryStatus::cases();
 
         return view('admin.inventory.index', [
             'metrics' => $metrics,
             'items' => $items,
             'filters' => (object) [
                 'search' => $rawFilters['search'] ?? '',
-                'status' => isset($rawFilters['status']) && $rawFilters['status'] !== 'all' ? \App\Enums\InventoryStatus::tryFrom($rawFilters['status']) : null,
-                'location' => isset($rawFilters['location']) && $rawFilters['location'] !== 'all' ? \App\Enums\InventoryLocation::tryFrom($rawFilters['location']) : null,
+                'status' => isset($rawFilters['status']) && $rawFilters['status'] !== 'all' ? InventoryStatus::tryFrom($rawFilters['status']) : null,
+                'location' => isset($rawFilters['location']) && $rawFilters['location'] !== 'all' ? InventoryLocation::tryFrom($rawFilters['location']) : null,
                 'sortBy' => $rawFilters['sort_by'] ?? 'available_quantity',
                 'sortOrder' => $rawFilters['sort_order'] ?? 'desc',
             ],
@@ -72,9 +74,12 @@ class InventoryController extends Controller
 
             return redirect()->back()->with('success', $resultDto->getSummaryText());
         } catch (StaleInventoryBalanceException $e) {
-            return redirect()->back()->withErrors([
-                'expected_on_hand' => $e->getMessage(),
-            ]);
+            return redirect()->back()
+                ->withInput()
+                ->with('adjustment_sku_id', $sku->id)
+                ->withErrors([
+                    'expected_on_hand' => $e->getMessage(),
+                ]);
         }
     }
 }
