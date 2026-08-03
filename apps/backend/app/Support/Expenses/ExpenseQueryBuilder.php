@@ -3,6 +3,7 @@
 namespace App\Support\Expenses;
 
 use App\Models\Expense;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 
 class ExpenseQueryBuilder
@@ -17,6 +18,7 @@ class ExpenseQueryBuilder
         return Expense::query()->with([
             'expenseCategory',
             'recordedBy',
+            'attachment',
         ]);
     }
 
@@ -29,13 +31,13 @@ class ExpenseQueryBuilder
     public static function applyFilters(Builder $query, ExpenseFilters $filters): Builder
     {
         if (! empty($filters->search)) {
-            $search = $filters->search;
-            $query->where(function (Builder $q) use ($search) {
-                $q->where('public_id', 'like', "%{$search}%")
-                    ->orWhere('reference', 'like', "%{$search}%")
-                    ->orWhere('notes', 'like', "%{$search}%")
-                    ->orWhereHas('expenseCategory', fn (Builder $catQuery) => $catQuery->where('name', 'like', "%{$search}%")
-                        ->orWhere('code', 'like', "%{$search}%"));
+            $escaped = addcslashes($filters->search, '%_');
+            $query->where(function (Builder $q) use ($escaped) {
+                $q->where('public_id', 'like', "%{$escaped}%")
+                    ->orWhere('reference', 'like', "%{$escaped}%")
+                    ->orWhere('notes', 'like', "%{$escaped}%")
+                    ->orWhereHas('expenseCategory', fn (Builder $catQuery) => $catQuery->where('name', 'like', "%{$escaped}%")
+                        ->orWhere('code', 'like', "%{$escaped}%"));
             });
         }
 
@@ -47,13 +49,23 @@ class ExpenseQueryBuilder
             $query->where('expense_category_id', $filters->categoryId);
         }
 
+        if (! empty($filters->categoryPublicId)) {
+            $query->whereHas('expenseCategory', fn (Builder $catQuery) => $catQuery->where('public_id', $filters->categoryPublicId));
+        }
+
+        $tz = config('app.timezone', 'UTC');
+
         if ($filters->dateFrom) {
-            $query->whereDate('occurred_at', '>=', $filters->dateFrom);
+            $fromDate = Carbon::parse($filters->dateFrom, $tz)->startOfDay()->toDateString();
+            $query->whereDate('occurred_at', '>=', $fromDate);
         }
 
         if ($filters->dateTo) {
-            $query->whereDate('occurred_at', '<=', $filters->dateTo);
+            $toDate = Carbon::parse($filters->dateTo, $tz)->endOfDay()->toDateString();
+            $query->whereDate('occurred_at', '<=', $toDate);
         }
+
+        $query->orderBy($filters->sortBy, $filters->sortOrder);
 
         return $query;
     }

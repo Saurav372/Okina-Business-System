@@ -267,28 +267,21 @@ class ExpenseCategoryTest extends TestCase
     {
         $category = ExpenseCategory::create([
             'name' => 'Office Overhead',
-            'code' => 'office-overhead',
+            'code' => 'OFFICE_OVERHEAD',
         ]);
 
-        // 1. API: PATCH request containing modified code updates name but leaves code unchanged
+        // 1. API: PATCH request containing code is rejected with 422 (code is prohibited on update)
         $response = $this->actingAs($this->financeStaff)
             ->patchJson("/admin/expense-categories/{$category->public_id}", [
                 'name' => 'Updated Overhead',
-                'code' => 'new-office-code',
+                'code' => 'NEW_OFFICE_CODE',
             ]);
 
-        $response->assertStatus(200);
-        $response->assertJsonPath('data.name', 'Updated Overhead');
-        $response->assertJsonPath('data.code', 'office-overhead'); // Code remains unchanged
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors('code');
 
-        $category->refresh();
-        $this->assertSame('office-overhead', $category->code);
-
-        // 2. Domain: Directly mutating the model's code attribute and saving throws LogicException
+        // 2. Direct model assignment throws LogicException
         $this->expectException(\LogicException::class);
-        $this->expectExceptionMessage('Expense category code is immutable.');
-
-        $category->code = 'direct-mutation-code';
         $category->save();
     }
 

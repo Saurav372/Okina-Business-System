@@ -11,7 +11,7 @@ class ExpenseCatalog
      */
     public function getPaginatedExpenses(ExpenseFilters $filters, int $perPage = 15): LengthAwarePaginator
     {
-        $query = ExpenseQueryBuilder::baseQuery();
+        $query = ExpenseQueryBuilder::baseQuery()->with(['expenseCategory', 'recordedBy', 'attachment']);
         ExpenseQueryBuilder::applyFilters($query, $filters);
 
         return $query->orderByDesc('occurred_at')

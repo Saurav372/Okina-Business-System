@@ -2,41 +2,33 @@
 
 namespace App\Http\Requests\Admin;
 
-use App\Models\Expense;
-use Illuminate\Contracts\Validation\ValidationRule;
+use App\Rules\ValidMoneyAmount;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class UpdateExpenseRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
+    protected $errorBag = 'expense';
+
     public function authorize(): bool
     {
-        return $this->user()?->hasPermissionTo('finance.manage_expenses') ?? false;
+        return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
             'expense_category_public_id' => [
-                'nullable',
+                'sometimes',
                 'string',
-                Rule::exists('expense_categories', 'public_id')->whereNull('deleted_at'),
+                Rule::exists('expense_categories', 'public_id')->where('is_active', true)->whereNull('deleted_at'),
             ],
             'amount' => [
-                'nullable',
-                'decimal:0,2',
-                'gt:0',
+                'sometimes',
+                new ValidMoneyAmount(mustBeGreaterThanZero: true),
             ],
             'currency' => [
-                'nullable',
+                'sometimes',
                 'string',
                 Rule::in(['INR']),
             ],
@@ -50,20 +42,16 @@ class UpdateExpenseRequest extends FormRequest
                 'string',
                 'max:255',
             ],
-            'status' => [
-                'nullable',
-                'string',
-                Rule::in([
-                    Expense::STATUS_DRAFT,
-                    Expense::STATUS_PENDING_APPROVAL,
-                    Expense::STATUS_APPROVED,
-                    Expense::STATUS_REJECTED,
-                ]),
-            ],
             'occurred_at' => [
-                'nullable',
+                'sometimes',
                 'date',
                 'before_or_equal:today',
+            ],
+            'proof_file' => [
+                'nullable',
+                'file',
+                'mimes:pdf,jpeg,jpg,png,webp',
+                'max:10240',
             ],
         ];
     }

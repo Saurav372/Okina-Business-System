@@ -6,16 +6,13 @@ use Database\Factories\ExpenseFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
  * Class Expense
- *
- * Invariants:
- * - public_id: external identifier and is immutable once generated.
- * - recorded_by_user_id: immutable once recorded.
- * - TODO: Status transitions rules will be enforced in C5.3.3.
  *
  * @property int $id
  * @property string $public_id
@@ -27,13 +24,24 @@ use Illuminate\Support\Str;
  * @property string|null $reference
  * @property string $status
  * @property Carbon $occurred_at
+ * @property Carbon|null $submitted_at
+ * @property int|null $submitted_by_user_id
+ * @property Carbon|null $approved_at
+ * @property int|null $approved_by_user_id
+ * @property Carbon|null $rejected_at
+ * @property int|null $rejected_by_user_id
+ * @property string|null $rejection_reason
+ * @property Carbon|null $withdrawn_at
+ * @property int|null $withdrawn_by_user_id
+ * @property array|null $metadata
+ * @property Carbon|null $deleted_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
 class Expense extends Model
 {
     /** @use HasFactory<ExpenseFactory> */
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     public const STATUS_DRAFT = 'draft';
 
@@ -54,7 +62,15 @@ class Expense extends Model
         'reference',
         'status',
         'occurred_at',
+        'submitted_at',
+        'submitted_by_user_id',
         'approved_at',
+        'approved_by_user_id',
+        'rejected_at',
+        'rejected_by_user_id',
+        'rejection_reason',
+        'withdrawn_at',
+        'withdrawn_by_user_id',
         'metadata',
     ];
 
@@ -62,8 +78,15 @@ class Expense extends Model
         'amount_minor' => 'integer',
         'recorded_by_user_id' => 'integer',
         'expense_category_id' => 'integer',
+        'submitted_by_user_id' => 'integer',
+        'approved_by_user_id' => 'integer',
+        'rejected_by_user_id' => 'integer',
+        'withdrawn_by_user_id' => 'integer',
         'occurred_at' => 'date',
+        'submitted_at' => 'datetime',
         'approved_at' => 'datetime',
+        'rejected_at' => 'datetime',
+        'withdrawn_at' => 'datetime',
         'metadata' => 'array',
     ];
 
@@ -114,6 +137,16 @@ class Expense extends Model
         return $this->belongsTo(User::class, 'recorded_by_user_id');
     }
 
+    public function attachment(): HasOne
+    {
+        return $this->hasOne(ExpenseAttachment::class, 'expense_id');
+    }
+
+    public function attachments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ExpenseAttachment::class, 'expense_id');
+    }
+
     public function canTransitionTo(string $targetStatus): bool
     {
         $current = $this->status;
@@ -126,8 +159,12 @@ class Expense extends Model
             return in_array($current, [self::STATUS_DRAFT, self::STATUS_REJECTED], true);
         }
 
+        if ($targetStatus === self::STATUS_DRAFT) {
+            return in_array($current, [self::STATUS_PENDING_APPROVAL, self::STATUS_REJECTED], true);
+        }
+
         if ($current === self::STATUS_PENDING_APPROVAL) {
-            return in_array($targetStatus, [self::STATUS_APPROVED, self::STATUS_REJECTED], true);
+            return in_array($targetStatus, [self::STATUS_APPROVED, self::STATUS_REJECTED, self::STATUS_DRAFT], true);
         }
 
         return false;
@@ -144,8 +181,11 @@ class Expense extends Model
     {
         $this->ensureCanTransitionTo(self::STATUS_PENDING_APPROVAL);
         $oldStatus = $this->status;
+        $now = now();
         $this->status = self::STATUS_PENDING_APPROVAL;
-        $this->appendHistoryEntry('submit', $oldStatus, self::STATUS_PENDING_APPROVAL, $user->id, now());
+        $this->submitted_at = $now;
+        $this->submitted_by_user_id = $user->id;
+        $this->appendHistoryEntry('submit', $oldStatus, self::STATUS_PENDING_APPROVAL, $user->id, $now);
         $this->save();
     }
 
@@ -153,10 +193,11 @@ class Expense extends Model
     {
         $this->ensureCanTransitionTo(self::STATUS_APPROVED);
         $oldStatus = $this->status;
-        $transitionedAt = now();
+        $now = now();
         $this->status = self::STATUS_APPROVED;
-        $this->approved_at = $transitionedAt;
-        $this->appendHistoryEntry('approve', $oldStatus, self::STATUS_APPROVED, $user->id, $transitionedAt);
+        $this->approved_at = $now;
+        $this->approved_by_user_id = $user->id;
+        $this->appendHistoryEntry('approve', $oldStatus, self::STATUS_APPROVED, $user->id, $now);
         $this->save();
     }
 
@@ -164,12 +205,28 @@ class Expense extends Model
     {
         $this->ensureCanTransitionTo(self::STATUS_REJECTED);
         $oldStatus = $this->status;
+        $now = now();
         $this->status = self::STATUS_REJECTED;
-        $this->appendHistoryEntry('reject', $oldStatus, self::STATUS_REJECTED, $user->id, now(), $reason);
+        $this->rejected_at = $now;
+        $this->rejected_by_user_id = $user->id;
+        $this->rejection_reason = $reason;
+        $this->appendHistoryEntry('reject', $oldStatus, self::STATUS_REJECTED, $user->id, $now, $reason);
         $this->save();
     }
 
-    private function appendHistoryEntry(string $action, string $from, string $to, int $userId, \DateTimeInterface $transitionedAt, ?string $reason = null): void
+    public function withdraw(User $user): void
+    {
+        $this->ensureCanTransitionTo(self::STATUS_DRAFT);
+        $oldStatus = $this->status;
+        $now = now();
+        $this->status = self::STATUS_DRAFT;
+        $this->withdrawn_at = $now;
+        $this->withdrawn_by_user_id = $user->id;
+        $this->appendHistoryEntry('withdraw', $oldStatus, self::STATUS_DRAFT, $user->id, $now);
+        $this->save();
+    }
+
+    public function appendHistoryEntry(string $action, string $from, string $to, int $userId, \DateTimeInterface $transitionedAt, ?string $reason = null): void
     {
         $metadata = $this->metadata ?? [];
         $metadata['version'] ??= self::HISTORY_SCHEMA_VERSION;

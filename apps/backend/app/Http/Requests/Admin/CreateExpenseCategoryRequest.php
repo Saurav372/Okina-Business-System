@@ -2,44 +2,42 @@
 
 namespace App\Http\Requests\Admin;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class CreateExpenseCategoryRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
+    protected $errorBag = 'category';
+
     public function authorize(): bool
     {
-        return true; // Managed by policy Gate::authorize() in controller
+        return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
-    public function rules(): array
-    {
-        return [
-            'name' => 'required|string|max:255',
-            'code' => 'required|string|max:100|unique:expense_categories,code',
-            'description' => 'nullable|string|max:1000',
-            'is_active' => 'nullable|boolean',
-        ];
-    }
-
-    /**
-     * Prepare the inputs for validation.
-     */
     protected function prepareForValidation(): void
     {
         if ($this->has('code')) {
-            $this->merge([
-                'code' => Str::slug(Str::lower(trim($this->code))),
-            ]);
+            $raw = trim((string) $this->code);
+            // Normalize to slug (lowercase, replace non-alphanumeric with dash, trim dashes)
+            $normalized = preg_replace('/[^a-z0-9]+/', '-', strtolower($raw));
+            $normalized = trim($normalized, '-');
+            $this->merge(['code' => $normalized]);
         }
+    }
+
+    public function rules(): array
+    {
+        return [
+            'name' => ['required', 'string', 'max:255'],
+            'code' => [
+                'required',
+                'string',
+                'max:100',
+                'regex:/^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/',
+                Rule::unique('expense_categories', 'code'),
+            ],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'is_active' => ['sometimes', 'boolean'],
+        ];
     }
 }

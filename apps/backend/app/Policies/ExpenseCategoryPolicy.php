@@ -8,63 +8,48 @@ use Illuminate\Contracts\Auth\Authenticatable;
 
 class ExpenseCategoryPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
+    protected function hasAnyPermission(Authenticatable $actor, array $permissions): bool
+    {
+        if (! ($actor instanceof User)) {
+            return false;
+        }
+
+        foreach ($permissions as $permission) {
+            if ($actor->hasPermissionTo($permission)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function viewAny(Authenticatable $actor): bool
     {
-        if ($actor instanceof User) {
-            return $actor->hasPermissionTo('finance.manage_expenses');
-        }
-
-        return false;
+        return $this->hasAnyPermission($actor, ['expense_categories.view', 'expense_categories.manage', 'expenses.view', 'finance.manage_expenses']);
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
     public function view(Authenticatable $actor, ExpenseCategory $expenseCategory): bool
     {
-        if ($actor instanceof User) {
-            return $actor->hasPermissionTo('finance.manage_expenses');
-        }
-
-        return false;
+        return $this->hasAnyPermission($actor, ['expense_categories.view', 'expense_categories.manage', 'expenses.view', 'finance.manage_expenses']);
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
     public function create(Authenticatable $actor): bool
     {
-        if ($actor instanceof User) {
-            return $actor->hasPermissionTo('finance.manage_expenses');
-        }
-
-        return false;
+        return $this->hasAnyPermission($actor, ['expense_categories.manage', 'expenses.manage', 'finance.manage_expenses']);
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
     public function update(Authenticatable $actor, ExpenseCategory $expenseCategory): bool
     {
-        if ($actor instanceof User) {
-            return $actor->hasPermissionTo('finance.manage_expenses');
-        }
-
-        return false;
+        return $this->hasAnyPermission($actor, ['expense_categories.manage', 'expenses.manage', 'finance.manage_expenses']);
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
     public function delete(Authenticatable $actor, ExpenseCategory $expenseCategory): bool
     {
-        if ($actor instanceof User) {
-            return $actor->hasPermissionTo('finance.manage_expenses');
-        }
+        return $this->hasAnyPermission($actor, ['expense_categories.delete', 'expense_categories.manage', 'expenses.manage', 'finance.manage_expenses']);
+    }
 
-        return false;
+    public function toggleActive(Authenticatable $actor, ExpenseCategory $expenseCategory): bool
+    {
+        return $this->hasAnyPermission($actor, ['expense_categories.manage', 'expenses.manage', 'finance.manage_expenses']);
     }
 }

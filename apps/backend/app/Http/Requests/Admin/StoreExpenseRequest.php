@@ -3,25 +3,19 @@
 namespace App\Http\Requests\Admin;
 
 use App\Models\Expense;
-use Illuminate\Contracts\Validation\ValidationRule;
+use App\Rules\ValidMoneyAmount;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class StoreExpenseRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
+    protected $errorBag = 'expense';
+
     public function authorize(): bool
     {
-        return $this->user()?->hasPermissionTo('finance.manage_expenses') ?? false;
+        return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
@@ -32,11 +26,10 @@ class StoreExpenseRequest extends FormRequest
             ],
             'amount' => [
                 'required',
-                'decimal:0,2',
-                'gt:0',
+                new ValidMoneyAmount(mustBeGreaterThanZero: true),
             ],
             'currency' => [
-                'nullable',
+                'sometimes',
                 'string',
                 Rule::in(['INR']),
             ],
@@ -56,14 +49,18 @@ class StoreExpenseRequest extends FormRequest
                 Rule::in([
                     Expense::STATUS_DRAFT,
                     Expense::STATUS_PENDING_APPROVAL,
-                    Expense::STATUS_APPROVED,
-                    Expense::STATUS_REJECTED,
                 ]),
             ],
             'occurred_at' => [
                 'required',
                 'date',
                 'before_or_equal:today',
+            ],
+            'proof_file' => [
+                'nullable',
+                'file',
+                'mimes:pdf,jpeg,jpg,png,webp',
+                'max:10240', // 10MB limit
             ],
         ];
     }

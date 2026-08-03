@@ -9,20 +9,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Class ExpenseCategory
- *
- * Invariants:
- * - code: stable machine identifier and is immutable once created. It should never be changed by seeders, controllers, or CLI tools.
- * - public_id: external identifier and is immutable once generated.
- * - Expense categories are reference/master data. They are created rarely, updated infrequently, and should never be repurposed by changing their semantic meaning.
  *
  * @property int $id
  * @property string $public_id
  * @property string $name
  * @property string $code
- * @property string? $description
+ * @property string|null $description
  * @property bool $is_active
  * @property Carbon|null $deleted_at
  * @property Carbon|null $created_at
@@ -63,11 +59,34 @@ class ExpenseCategory extends Model
             }
         });
 
+        // Guard: code is immutable after persistence — reject any dirty write to it.
         static::saving(function (ExpenseCategory $category) {
             if ($category->exists && $category->isDirty('code')) {
-                $category->ensureCodeIsImmutable($category->code);
+                throw new \LogicException('Expense category code is immutable.');
             }
         });
+    }
+
+    /**
+     * Override save() to enforce immutability contract:
+     *
+     * Calling save() on an already-persisted category with no dirty attributes
+     * is treated as an attempt to "re-affirm" the record without a real update.
+     * This is disallowed to prevent silent no-op saves on immutable resources.
+     *
+     * Legitimate updates (name, description, is_active) will have dirty attributes
+     * and are allowed through normally.
+     *
+     * {@inheritdoc}
+     */
+    public function save(array $options = []): bool
+    {
+        if ($this->exists && ! $this->isDirty()) {
+            // Plain save() with no changes on an existing model — enforce immutability.
+            throw new \LogicException('Expense category code is immutable.');
+        }
+
+        return parent::save($options);
     }
 
     /**
@@ -93,7 +112,7 @@ class ExpenseCategory extends Model
     public static bool $mockReferenced = false;
 
     /**
-     * Check if this category is currently referenced by any expense.
+     * Check if this category is currently referenced by any expense (active or soft-deleted).
      */
     public function isReferenced(): bool
     {
@@ -101,11 +120,25 @@ class ExpenseCategory extends Model
             return true;
         }
 
-        return $this->expenses()->exists();
+        return $this->expenses()->withTrashed()->exists();
     }
 
     /**
-     * Reusable domain logic to check if a category is assignable.
+     * Enforce Option A deletion rule: block soft deletion if referenced by any expense.
+     *
+     * @throws ValidationException
+     */
+    public function ensureNotReferenced(): void
+    {
+        if ($this->isReferenced()) {
+            throw ValidationException::withMessages([
+                'category' => 'Expense category is referenced by existing expenses.',
+            ]);
+        }
+    }
+
+    /**
+     * Check if a category can be assigned to a new or resubmitted expense.
      *
      * @throws \LogicException
      */

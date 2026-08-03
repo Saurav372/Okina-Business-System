@@ -4,8 +4,11 @@ use App\Http\Controllers\Admin\AdminOrderActionController;
 use App\Http\Controllers\Admin\AdminOrderDesignFileController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\BulkOrderActionController;
+use App\Http\Controllers\Admin\ExpenseAttachmentController;
 use App\Http\Controllers\Admin\ExpenseCategoryController;
 use App\Http\Controllers\Admin\ExpenseController;
+use App\Http\Controllers\Admin\ExpenseReportController;
+use App\Http\Controllers\Admin\ExpenseWorkflowController;
 use App\Http\Controllers\Admin\FinanceLedgerController;
 use App\Http\Controllers\Admin\GoogleSheetsConnectionController;
 use App\Http\Controllers\Admin\GoogleSheetsSyncLogController;
@@ -139,7 +142,8 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     Route::get('/refunds/{refund}', [RefundController::class, 'show'])->name('admin.refunds.show');
 
     // Expense Categories admin routes
-    Route::apiResource('/expense-categories', ExpenseCategoryController::class)->names([
+    Route::post('/expense-categories/{expenseCategory:public_id}/toggle-active', [ExpenseCategoryController::class, 'toggleActive'])->name('admin.expense_categories.toggle_active');
+    Route::resource('/expense-categories', ExpenseCategoryController::class)->names([
         'index' => 'admin.expense_categories.index',
         'store' => 'admin.expense_categories.store',
         'show' => 'admin.expense_categories.show',
@@ -148,17 +152,22 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     ]);
 
     // Expenses admin routes
-    Route::get('/expenses/report', [ExpenseController::class, 'reportSummary'])->name('admin.expenses.report');
-    Route::apiResource('/expenses', ExpenseController::class)->names([
+    Route::get('/expenses/report', [ExpenseReportController::class, 'summary'])->name('admin.expenses.report');
+    Route::get('/expenses/report/summary', [ExpenseReportController::class, 'summary'])->name('admin.expenses.report.summary');
+    Route::get('/expenses/export', [ExpenseReportController::class, 'export'])->name('admin.expenses.export');
+    Route::resource('/expenses', ExpenseController::class)->names([
         'index' => 'admin.expenses.index',
         'store' => 'admin.expenses.store',
         'show' => 'admin.expenses.show',
         'update' => 'admin.expenses.update',
         'destroy' => 'admin.expenses.destroy',
     ]);
-    Route::post('/expenses/{expense:public_id}/submit', [ExpenseController::class, 'submit'])->name('admin.expenses.submit');
-    Route::post('/expenses/{expense:public_id}/approve', [ExpenseController::class, 'approve'])->name('admin.expenses.approve');
-    Route::post('/expenses/{expense:public_id}/reject', [ExpenseController::class, 'reject'])->name('admin.expenses.reject');
+    Route::post('/expenses/{expense:public_id}/submit', [ExpenseWorkflowController::class, 'submit'])->name('admin.expenses.submit');
+    Route::post('/expenses/{expense:public_id}/withdraw', [ExpenseWorkflowController::class, 'withdraw'])->name('admin.expenses.withdraw');
+    Route::post('/expenses/{expense:public_id}/approve', [ExpenseWorkflowController::class, 'approve'])->name('admin.expenses.approve');
+    Route::post('/expenses/{expense:public_id}/reject', [ExpenseWorkflowController::class, 'reject'])->name('admin.expenses.reject');
+    Route::get('/expenses/{expense:public_id}/attachments/{attachment:public_id}/download', [ExpenseAttachmentController::class, 'download'])->name('admin.expenses.attachments.download');
+    Route::delete('/expenses/{expense:public_id}/attachments/{attachment:public_id}', [ExpenseAttachmentController::class, 'destroy'])->name('admin.expenses.attachments.destroy');
 
     // Vendors admin routes
     Route::apiResource('/vendors', VendorController::class)->names([

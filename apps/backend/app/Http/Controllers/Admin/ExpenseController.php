@@ -4,11 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\ExpenseStatus;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Admin\ApproveExpenseRequest;
-use App\Http\Requests\Admin\ExpenseReportRequest;
-use App\Http\Requests\Admin\RejectExpenseRequest;
 use App\Http\Requests\Admin\StoreExpenseRequest;
-use App\Http\Requests\Admin\SubmitExpenseRequest;
 use App\Http\Requests\Admin\UpdateExpenseRequest;
 use App\Http\Resources\ExpenseResource;
 use App\Models\Expense;
@@ -17,14 +13,12 @@ use App\Services\ExpenseReportingService;
 use App\Services\ExpenseService;
 use App\Support\Expenses\ExpenseCatalog;
 use App\Support\Expenses\ExpenseFilters;
-use App\Support\Expenses\ExpenseMetrics;
+use App\Support\Money\MoneyParser;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Http\Response;
-use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class ExpenseController extends Controller
@@ -33,6 +27,7 @@ class ExpenseController extends Controller
 
     public function __construct(
         protected ExpenseService $expenseService,
+        protected ExpenseReportingService $reportingService,
         protected ExpenseCatalog $catalog
     ) {}
 
@@ -44,13 +39,23 @@ class ExpenseController extends Controller
         $this->authorize('viewAny', Expense::class);
 
         $filters = new ExpenseFilters($request->all());
-        $metrics = new ExpenseMetrics($filters);
-        $expenses = $this->catalog->getPaginatedExpenses($filters, 15);
-        $categories = ExpenseCategory::query()->where('is_active', true)->orderBy('name')->get();
+        $expenses = $this->catalog->getPaginatedExpenses($filters, $filters->perPage);
 
-        if ($request->wantsJson() || $request->is('api/*')) {
+        if ($request->expectsJson() || $request->is('api/*')) {
             return ExpenseResource::collection($expenses);
         }
+
+        // Blade view: compute metrics and category list for dashboard
+        $metrics = $this->reportingService->generateSummary($filters);
+        $categories = ExpenseCategory::query()->orderBy('name')->get();
+
+        // Server-side action resolution for modal recovery
+        $modalState = [
+            'expense_modal_mode' => old('expense_modal_mode', 'create'),
+            'edit_expense_id' => old('edit_expense_id', ''),
+            'category_modal_mode' => old('category_modal_mode', 'create'),
+            'edit_category_id' => old('edit_category_id', ''),
+        ];
 
         return view('admin.expenses.index', [
             'filters' => $filters,
@@ -58,34 +63,38 @@ class ExpenseController extends Controller
             'expenses' => $expenses,
             'categories' => $categories,
             'statuses' => ExpenseStatus::cases(),
+            'modalState' => $modalState,
         ]);
     }
 
     /**
      * Store a newly created expense in storage.
      */
-    public function store(StoreExpenseRequest $request): ExpenseResource|RedirectResponse
+    public function store(StoreExpenseRequest $request): JsonResponse|ExpenseResource|RedirectResponse
     {
         $this->authorize('create', Expense::class);
 
         $validated = $request->validated();
-        $amountMinor = $this->amountToMinorUnits((string) ($validated['amount'] ?? '0'));
+        $amountMinor = MoneyParser::toMinorUnits((string) $validated['amount']);
 
         $expense = $this->expenseService->createExpense([
-            'expense_category_public_id' => $validated['expense_category_public_id'] ?? null,
+            'expense_category_public_id' => $validated['expense_category_public_id'],
             'amount_minor' => $amountMinor,
             'currency' => $validated['currency'] ?? 'INR',
             'notes' => $validated['notes'] ?? null,
             'reference' => $validated['reference'] ?? null,
             'occurred_at' => $validated['occurred_at'],
             'status' => $validated['status'] ?? Expense::STATUS_DRAFT,
-        ], $request->user());
+        ], $request->user(), $request->file('proof_file'));
 
-        if ($request->wantsJson() || $request->is('api/*')) {
-            return new ExpenseResource($expense);
+        if ($request->expectsJson() || $request->is('api/*')) {
+            return (new ExpenseResource($expense))
+                ->response()
+                ->setStatusCode(201);
         }
 
-        return redirect()->back()->with('success', "Expense [{$expense->public_id}] created successfully.");
+        return redirect()->route('admin.expenses.index')
+            ->with('success', "Expense [{$expense->public_id}] created successfully.");
     }
 
     /**
@@ -95,9 +104,9 @@ class ExpenseController extends Controller
     {
         $this->authorize('view', $expense);
 
-        $expense->load(['expenseCategory', 'recordedBy']);
+        $expense->load(['expenseCategory', 'recordedBy', 'attachment']);
 
-        if ($request->wantsJson() || $request->is('api/*')) {
+        if ($request->expectsJson() || $request->is('api/*')) {
             return new ExpenseResource($expense);
         }
 
@@ -113,149 +122,62 @@ class ExpenseController extends Controller
     {
         $this->authorize('update', $expense);
 
-        if ($expense->status === Expense::STATUS_APPROVED) {
-            throw ValidationException::withMessages([
-                'status' => ['Approved expenses are immutable and cannot be updated.'],
-            ]);
+        $validated = $request->validated();
+        $attributes = [];
+
+        if (array_key_exists('expense_category_public_id', $validated)) {
+            $attributes['expense_category_public_id'] = $validated['expense_category_public_id'];
         }
 
-        $category = null;
-        if ($request->has('expense_category_public_id')) {
-            $category = ExpenseCategory::query()
-                ->where('public_id', $request->expense_category_public_id)
-                ->firstOrFail();
-
-            try {
-                $category->ensureCanAssignToExpense();
-            } catch (\LogicException $e) {
-                throw ValidationException::withMessages([
-                    'expense_category_public_id' => [$e->getMessage()],
-                ]);
-            }
+        if (array_key_exists('amount', $validated)) {
+            $attributes['amount_minor'] = MoneyParser::toMinorUnits((string) $validated['amount']);
         }
 
-        if ($category) {
-            $expense->expense_category_id = $category->id;
+        if (array_key_exists('currency', $validated)) {
+            $attributes['currency'] = $validated['currency'];
         }
 
-        if ($request->has('amount')) {
-            $expense->amount_minor = $this->amountToMinorUnits((string) $request->amount);
+        if (array_key_exists('notes', $validated)) {
+            $attributes['notes'] = $validated['notes'];
         }
 
-        if ($request->has('currency')) {
-            $expense->currency = $request->currency;
+        if (array_key_exists('reference', $validated)) {
+            $attributes['reference'] = $validated['reference'];
         }
 
-        if ($request->has('notes')) {
-            $expense->notes = $request->notes;
+        if (array_key_exists('occurred_at', $validated)) {
+            $attributes['occurred_at'] = $validated['occurred_at'];
         }
 
-        if ($request->has('reference')) {
-            $expense->reference = $request->reference;
+        $updatedExpense = $this->expenseService->updateExpense(
+            $expense,
+            $attributes,
+            $request->user(),
+            $request->file('proof_file')
+        );
+
+        if ($request->expectsJson() || $request->is('api/*')) {
+            return new ExpenseResource($updatedExpense);
         }
 
-        if ($request->has('occurred_at')) {
-            $expense->occurred_at = $request->occurred_at;
-        }
-
-        $expense->save();
-        $expense->load(['expenseCategory', 'recordedBy']);
-
-        if ($request->wantsJson() || $request->is('api/*')) {
-            return new ExpenseResource($expense);
-        }
-
-        return redirect()->back()->with('success', "Expense [{$expense->public_id}] updated successfully.");
+        return redirect()->route('admin.expenses.index')
+            ->with('success', "Expense [{$updatedExpense->public_id}] updated successfully.");
     }
 
     /**
-     * Remove the specified expense resource from storage.
+     * Remove the specified expense resource from storage (soft delete).
      */
-    public function destroy(Request $request, Expense $expense): Response|RedirectResponse
+    public function destroy(Request $request, Expense $expense): JsonResponse|RedirectResponse
     {
         $this->authorize('delete', $expense);
 
-        if ($expense->status === Expense::STATUS_APPROVED) {
-            throw ValidationException::withMessages([
-                'status' => ['Approved expenses are immutable and cannot be deleted.'],
-            ]);
+        $this->expenseService->deleteExpense($expense, $request->user());
+
+        if ($request->expectsJson() || $request->is('api/*')) {
+            return response()->json(['message' => 'Expense deleted successfully.']);
         }
 
-        $expense->delete();
-
-        if ($request->wantsJson() || $request->is('api/*')) {
-            return response()->noContent();
-        }
-
-        return redirect()->back()->with('success', "Expense [{$expense->public_id}] deleted successfully.");
-    }
-
-    /**
-     * Submit the expense for approval.
-     */
-    public function submit(SubmitExpenseRequest $request, Expense $expense): ExpenseResource|RedirectResponse
-    {
-        $this->authorize('submit', $expense);
-
-        $expense = $this->expenseService->submitExpense($expense, $request->user());
-
-        if ($request->wantsJson() || $request->is('api/*')) {
-            return new ExpenseResource($expense);
-        }
-
-        return redirect()->back()->with('success', "Expense [{$expense->public_id}] submitted for approval.");
-    }
-
-    /**
-     * Approve the expense.
-     */
-    public function approve(ApproveExpenseRequest $request, Expense $expense): ExpenseResource|RedirectResponse
-    {
-        $this->authorize('approve', $expense);
-
-        $expense = $this->expenseService->approveExpense($expense, $request->user());
-
-        if ($request->wantsJson() || $request->is('api/*')) {
-            return new ExpenseResource($expense);
-        }
-
-        return redirect()->back()->with('success', "Expense [{$expense->public_id}] approved successfully.");
-    }
-
-    /**
-     * Reject the expense with a reason.
-     */
-    public function reject(RejectExpenseRequest $request, Expense $expense): ExpenseResource|RedirectResponse
-    {
-        $this->authorize('reject', $expense);
-
-        $reason = (string) $request->input('rejection_reason', '');
-        $expense = $this->expenseService->rejectExpense($expense, $request->user(), $reason);
-
-        if ($request->wantsJson() || $request->is('api/*')) {
-            return new ExpenseResource($expense);
-        }
-
-        return redirect()->back()->with('success', "Expense [{$expense->public_id}] rejected.");
-    }
-
-    /**
-     * Display a summary report of expenses.
-     */
-    public function reportSummary(ExpenseReportRequest $request, ExpenseReportingService $reportingService): JsonResponse
-    {
-        $this->authorize('viewExpenseReports', Expense::class);
-
-        $summary = $reportingService->generateSummary($request->validated());
-
-        return response()->json($summary);
-    }
-
-    /**
-     * Centralized amount minor conversion helper.
-     */
-    protected function amountToMinorUnits(string $amount): int
-    {
-        return (int) round(((float) $amount) * 100);
+        return redirect()->route('admin.expenses.index')
+            ->with('success', "Expense [{$expense->public_id}] deleted successfully.");
     }
 }

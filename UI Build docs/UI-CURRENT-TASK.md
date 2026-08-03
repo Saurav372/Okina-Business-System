@@ -1,20 +1,19 @@
 # Current Task
 
 ## Current Parent Task
-Inventory & Purchasing Module (U5.1) — Completed ✅
+Finance & Reports Module (U6.1)
 
 ## Current Subtask
-U5.1.4 Purchase Orders — Completed ✅
+U6.1.3 Expenses Reporting — Completed ✅
 
 ## Goal
-Implement PO creation workflow, PO directory & filtering, PO detail page, PurchaseReceipt batch stock receiving flow, vendor payment recording, status transitions, and full test coverage.
+Implement operational expenses management (`/admin/expenses`), expense category reference data management (`ExpenseCategory`), multi-stage expense workflow state machine (`draft` -> `pending_approval` -> `approved` / `rejected`), proof attachment service (`ExpenseAttachmentService` & `ExpenseAttachmentController`), custom decimal money validation (`ValidMoneyAmount` & `MoneyParser`), CSV export (`ExpenseReportController`), financial summary reporting, and test coverage.
 
 ## Dependencies
 **Depends On:**
-- U5.1.1 (Stock Balances) — Completed ✅
-- U5.1.2 (Stock Movements) — Completed ✅
-- U5.1.3 (Vendors Directory) — Completed ✅
-- U5.1.4 (Purchase Orders) — Completed ✅
+- U5.1 (Inventory & Purchasing) — Completed ✅
+- U6.1.1 (Payments Ledger) — Completed ✅
+- U6.1.2 (Refunds Workflow) — Completed ✅
 
 ## Completed Milestones
 - **U5.1 Inventory & Purchasing — Completed ✅:**
@@ -22,10 +21,7 @@ Implement PO creation workflow, PO directory & filtering, PO detail page, Purcha
   - U5.1.2 Stock Movements — Completed ✅
   - U5.1.3 Vendors Directory — Completed ✅
   - U5.1.4 Purchase Orders — Completed ✅
-- **U3.2 Products Module — Completed ✅:**
-  - U3.2.1 Product Index — Completed ✅
-  - U3.2.2 Product Detail & Edit — Completed ✅
-  - U3.2.3 Categories & Attributes — Completed ✅
-  - U3.2.4 Variants & SKUs — Completed ✅
-  - U3.2.5 Product Media — Completed ✅
-  - U3.2.6 SEO Metadata Management — Completed ✅
+- **U6.1 Finance & Reports — Completed ✅:**
+  - U6.1.1 Payments Ledger — Completed ✅
+  - U6.1.2 Refunds Workflow — Completed ✅
+  - U6.1.3 Expenses Reporting — Completed ✅
