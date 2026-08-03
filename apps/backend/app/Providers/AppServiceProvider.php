@@ -18,6 +18,7 @@ use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\ProductSku;
 use App\Models\Refund;
+use App\Models\Role;
 use App\Models\User;
 use App\Models\VendorOrder;
 use App\Observers\CustomerObserver;
@@ -78,6 +79,23 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Expense::class, ExpensePolicy::class);
         Gate::policy(GoogleSheetsSyncLog::class, GoogleSheetsSyncLogPolicy::class);
         Gate::policy(InventoryItem::class, InventoryPolicy::class);
+
+        Gate::define('reports.finance.view', function (User $user) {
+            return $user->hasPermissionTo('reports.finance.view')
+                || $user->hasPermissionTo('reports.view')
+                || $user->hasRole(Role::ADMIN);
+        });
+
+        Gate::define('reports.finance.export', function (User $user) {
+            return $user->hasPermissionTo('reports.finance.export')
+                || $user->hasPermissionTo('reports.view')
+                || $user->hasRole(Role::ADMIN);
+        });
+
+        Gate::define('system.health.view', function (User $user) {
+            return $user->hasPermissionTo('system.health.view')
+                || $user->hasAnyRole([Role::SUPER_ADMIN, Role::ADMIN]);
+        });
 
         ProductSku::observe(ProductSkuObserver::class);
         Customer::observe(CustomerObserver::class);

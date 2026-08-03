@@ -3,107 +3,83 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\NotificationLogFilterRequest;
+use App\Http\Resources\Admin\NotificationLogResource;
 use App\Models\NotificationLog;
-use Illuminate\Http\JsonResponse;
+use App\Support\Notification\NotificationLogFilters;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Validator;
 
 class NotificationLogController extends Controller
 {
     /**
-     * Display a listing of the notification logs.
+     * Display listing of notification logs (HTML Blade or JSON API Resource).
      */
-    public function index(Request $request): JsonResponse
+    public function index(NotificationLogFilterRequest $request): mixed
     {
         Gate::authorize('viewAny', NotificationLog::class);
 
-        $validator = Validator::make($request->all(), [
-            'per_page' => 'integer|min:1|max:100',
-            'channel' => 'string|nullable',
-            'status' => 'string|nullable',
-            'recipient_address' => 'string|nullable',
-            'event_type' => 'string|nullable',
-            'recipient_user_id' => 'integer|nullable',
-            'recipient_customer_id' => 'integer|nullable',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'The given data was invalid.',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $validated = $validator->validated();
+        $filters = NotificationLogFilters::fromValidated($request->validated());
 
         $query = NotificationLog::query()
             ->with(['attempts' => function ($q): void {
-                $q->select(['id', 'notification_log_id', 'status', 'attempted_at', 'provider_reference']);
+                $q->orderBy('attempted_at', 'asc');
             }]);
 
-        if (! empty($validated['channel'])) {
-            $query->where('channel', $validated['channel']);
+        if ($filters->channel) {
+            $query->where('channel', $filters->channel);
         }
 
-        if (! empty($validated['status'])) {
-            $query->where('status', $validated['status']);
+        if ($filters->status) {
+            $query->where('status', $filters->status);
         }
 
-        if (! empty($validated['recipient_address'])) {
-            $query->where('recipient_address', $validated['recipient_address']);
+        if ($filters->eventType) {
+            $query->where('event_type', $filters->eventType);
         }
 
-        if (! empty($validated['event_type'])) {
-            $query->where('event_type', $validated['event_type']);
+        if ($filters->recipientAddress) {
+            $escaped = addcslashes($filters->recipientAddress, '%_');
+            $query->where('recipient_address', 'like', '%'.$escaped.'%');
         }
 
-        if (! empty($validated['recipient_user_id'])) {
-            $query->where('recipient_user_id', $validated['recipient_user_id']);
-        }
+        $query->whereBetween('created_at', [
+            $filters->startDate->setTimezone('UTC'),
+            $filters->endDate->setTimezone('UTC'),
+        ]);
 
-        if (! empty($validated['recipient_customer_id'])) {
-            $query->where('recipient_customer_id', $validated['recipient_customer_id']);
-        }
-
-        $perPage = $validated['per_page'] ?? 25;
         $logs = $query->orderBy('created_at', 'desc')
             ->orderBy('id', 'desc')
-            ->paginate($perPage);
+            ->paginate($filters->perPage)
+            ->withQueryString();
 
-        // Transform results to output lightweight index structure
-        $logs->getCollection()->transform(function ($log) {
-            return [
-                'id' => $log->id,
-                'event_type' => $log->event_type,
-                'template_key' => $log->template_key,
-                'channel' => $log->channel,
-                'status' => $log->status,
-                'recipient_type' => $log->recipient_type,
-                'recipient_address' => $log->recipient_address,
-                'created_at' => $log->created_at->toDateTimeString(),
-                'attempts' => $log->attempts->map(function ($attempt) {
-                    return [
-                        'status' => $attempt->status,
-                        'attempted_at' => $attempt->attempted_at?->toDateTimeString(),
-                        'provider_reference' => $attempt->provider_reference,
-                    ];
-                }),
-            ];
-        });
+        if ($request->wantsJson()) {
+            return NotificationLogResource::collection($logs);
+        }
 
-        return response()->json($logs);
+        return view('admin.notification-logs.index', [
+            'logs' => $logs,
+            'filters' => $filters,
+        ]);
     }
 
     /**
-     * Display the specified notification log.
+     * Display specified notification log.
      */
-    public function show(NotificationLog $notificationLog): JsonResponse
+    public function show(Request $request, NotificationLog $notificationLog): mixed
     {
         Gate::authorize('view', $notificationLog);
 
-        $notificationLog->load(['template', 'attempts']);
+        $notificationLog->load(['template', 'attempts' => function ($q): void {
+            $q->orderBy('attempted_at', 'asc');
+        }]);
 
-        return response()->json($notificationLog);
+        if ($request->wantsJson()) {
+            return new NotificationLogResource($notificationLog);
+        }
+
+        return view('admin.notification-logs.show', [
+            'notificationLog' => new NotificationLogResource($notificationLog),
+        ]);
     }
 }

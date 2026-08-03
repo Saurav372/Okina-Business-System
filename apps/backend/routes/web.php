@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\Admin\AdminOrderActionController;
 use App\Http\Controllers\Admin\AdminOrderDesignFileController;
+use App\Http\Controllers\Admin\AdminProfileController;
+use App\Http\Controllers\Admin\AdminSecurityController;
+use App\Http\Controllers\Admin\AdminSessionController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\BulkOrderActionController;
 use App\Http\Controllers\Admin\ExpenseAttachmentController;
@@ -10,6 +13,7 @@ use App\Http\Controllers\Admin\ExpenseController;
 use App\Http\Controllers\Admin\ExpenseReportController;
 use App\Http\Controllers\Admin\ExpenseWorkflowController;
 use App\Http\Controllers\Admin\FinanceLedgerController;
+use App\Http\Controllers\Admin\FinanceReportController;
 use App\Http\Controllers\Admin\GoogleSheetsConnectionController;
 use App\Http\Controllers\Admin\GoogleSheetsSyncLogController;
 use App\Http\Controllers\Admin\InventoryController;
@@ -27,6 +31,7 @@ use App\Http\Controllers\Admin\PurchaseOrderReceivingController;
 use App\Http\Controllers\Admin\RefundController;
 use App\Http\Controllers\Admin\SalesOrderController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\SystemHealthController;
 use App\Http\Controllers\Admin\VendorController;
 use App\Http\Controllers\Admin\VendorOrderController;
 use App\Http\Controllers\Admin\VendorOrderItemController;
@@ -71,8 +76,11 @@ Route::prefix('admin')->group(function () {
 
 Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
-    Route::get('/profile', [AdminAuthController::class, 'profile'])->name('admin.profile');
-    Route::get('/security', [AdminAuthController::class, 'security'])->name('admin.security');
+    Route::get('/profile', [AdminProfileController::class, 'edit'])->name('admin.profile');
+    Route::put('/profile', [AdminProfileController::class, 'update'])->name('admin.profile.update');
+    Route::get('/security', [AdminSecurityController::class, 'edit'])->name('admin.security');
+    Route::put('/security/password', [AdminSecurityController::class, 'updatePassword'])->name('admin.security.password.update')->middleware('throttle:6,1');
+    Route::post('/security/sessions/revoke-others', [AdminSessionController::class, 'revokeOthers'])->name('admin.security.sessions.revoke_others');
     Route::post('/logout', [AdminAuthController::class, 'destroy'])->name('admin.logout');
     Route::get('/orders', [OrderController::class, 'index'])->name('admin.orders.index');
     Route::get('/products', [ProductController::class, 'index'])->name('admin.products.index');
@@ -129,6 +137,11 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     Route::get('/payments', [PaymentController::class, 'index'])->name('admin.payments.index');
     Route::get('/payments/{payment}', [PaymentController::class, 'show'])->name('admin.payments.show');
     Route::get('/refunds', [RefundController::class, 'index'])->name('admin.refunds.index');
+
+    // Finance reports routes
+    Route::get('/reports/finance', [FinanceReportController::class, 'index'])->name('admin.reports.finance.index');
+    Route::get('/reports/finance/summary', [FinanceReportController::class, 'summary'])->name('admin.reports.finance.summary');
+    Route::get('/reports/finance/export', [FinanceReportController::class, 'export'])->name('admin.reports.finance.export');
 
     // Finance ledgers routes
     Route::get('/accounting/customer-ledger', [FinanceLedgerController::class, 'customerLedger'])->name('admin.accounting.customer_ledger');
@@ -216,6 +229,9 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     // Notification logs admin routes
     Route::get('/notification-logs', [NotificationLogController::class, 'index'])->name('admin.notification_logs.index');
     Route::get('/notification-logs/{notification_log}', [NotificationLogController::class, 'show'])->name('admin.notification_logs.show');
+
+    // System Health admin route
+    Route::get('/system-health', [SystemHealthController::class, 'index'])->name('admin.system_health.index');
 
     // Google Sheets admin routes
     Route::post('/google-sheets/test-connection', [GoogleSheetsConnectionController::class, 'testConnection'])->name('admin.google_sheets.test_connection');

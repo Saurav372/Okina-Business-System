@@ -3,64 +3,98 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\AuditLogFilterRequest;
+use App\Http\Resources\Admin\AuditLogResource;
 use App\Models\AuditLog;
-use Illuminate\Http\JsonResponse;
+use App\Support\Audit\AuditLogFilters;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
 class AuditLogController extends Controller
 {
     /**
-     * Display a listing of the audit logs.
+     * Display listing of audit logs (HTML Blade or JSON API Resource).
      */
-    public function index(Request $request): JsonResponse
+    public function index(AuditLogFilterRequest $request): mixed
     {
         Gate::authorize('viewAny', AuditLog::class);
 
-        $validated = $request->validate([
-            'per_page' => 'integer|min:1|max:100',
-            'action' => 'string|nullable',
-            'module' => 'string|nullable',
-            'subject_type' => 'string|nullable',
-            'subject_public_id' => 'string|nullable',
-        ]);
+        $filters = AuditLogFilters::fromValidated($request->validated());
 
         $query = AuditLog::query()
-            ->with(['actorUser', 'actorCustomer', 'relatedRecords']);
+            ->with(['actorUser', 'actorCustomer']);
 
-        if (! empty($validated['action'])) {
-            $query->where('action', $validated['action']);
+        if ($filters->action) {
+            if (str_contains($filters->action, '*')) {
+                $query->where('action', 'like', str_replace('*', '%', $filters->action));
+            } else {
+                $query->where('action', $filters->action);
+            }
         }
 
-        if (! empty($validated['module'])) {
-            $query->where('module', $validated['module']);
+        if ($filters->module) {
+            $query->where('module', $filters->module);
         }
 
-        if (! empty($validated['subject_type'])) {
-            $query->where('subject_type', $validated['subject_type']);
+        if ($filters->subjectTypeClass) {
+            $query->where('subject_type', $filters->subjectTypeClass);
         }
 
-        if (! empty($validated['subject_public_id'])) {
-            $query->where('subject_public_id', $validated['subject_public_id']);
+        if ($filters->subjectId) {
+            $query->where(function ($q) use ($filters): void {
+                $q->where('subject_id', $filters->subjectId)
+                    ->orWhere('subject_public_id', $filters->subjectId);
+            });
         }
 
-        $perPage = $validated['per_page'] ?? 20;
+        if ($filters->actorPublicId) {
+            if (strtolower($filters->actorPublicId) === 'system') {
+                $query->whereNull('actor_user_id');
+            } else {
+                $query->whereHas('actorUser', function ($q) use ($filters): void {
+                    $q->where('email', $filters->actorPublicId)
+                        ->orWhere('name', 'like', '%'.addcslashes($filters->actorPublicId, '%_').'%');
+                });
+            }
+        }
+
+        // Inclusive calendar date boundaries in UTC
+        $query->whereBetween('occurred_at', [
+            $filters->startDate->setTimezone('UTC'),
+            $filters->endDate->setTimezone('UTC'),
+        ]);
+
         $logs = $query->orderBy('occurred_at', 'desc')
             ->orderBy('id', 'desc')
-            ->paginate($perPage);
+            ->paginate($filters->perPage)
+            ->withQueryString();
 
-        return response()->json($logs);
+        if ($request->wantsJson()) {
+            return AuditLogResource::collection($logs);
+        }
+
+        return view('admin.audit-logs.index', [
+            'logs' => $logs,
+            'filters' => $filters,
+            'subjectOptions' => AuditLogFilters::SUBJECT_MAP,
+        ]);
     }
 
     /**
-     * Display the specified audit log.
+     * Display specified audit log.
      */
-    public function show(AuditLog $auditLog): JsonResponse
+    public function show(Request $request, AuditLog $auditLog): mixed
     {
         Gate::authorize('view', $auditLog);
 
-        $auditLog->load(['actorUser', 'actorCustomer', 'relatedRecords']);
+        $auditLog->load(['actorUser', 'actorCustomer']);
 
-        return response()->json($auditLog);
+        if ($request->wantsJson()) {
+            return new AuditLogResource($auditLog);
+        }
+
+        return view('admin.audit-logs.show', [
+            'auditLog' => new AuditLogResource($auditLog),
+        ]);
     }
 }

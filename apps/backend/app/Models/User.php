@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 #[Fillable([
     'name',
     'email',
+    'phone',
     'password',
     'user_type',
     'status',

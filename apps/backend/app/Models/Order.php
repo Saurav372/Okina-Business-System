@@ -232,4 +232,34 @@ class Order extends Model
     {
         return $this->hasMany(Refund::class);
     }
+
+    /**
+     * Scope query to active, non-cancelled orders eligible for Booked Sales Revenue recognition.
+     */
+    public function scopeRevenueRecognized(Builder $query): Builder
+    {
+        return $query->whereNull('orders.deleted_at')
+            ->whereIn('orders.status', [
+                OrderStatus::Confirmed->value(),
+                OrderStatus::InProduction->value(),
+                OrderStatus::ReadyToShip->value(),
+                OrderStatus::Shipped->value(),
+                OrderStatus::Delivered->value(),
+            ]);
+    }
+
+    /**
+     * Scope query to active orders eligible for As-Of Receivables calculation.
+     */
+    public function scopeReceivableEligible(Builder $query): Builder
+    {
+        return $query->whereNull('orders.deleted_at')
+            ->whereIn('orders.status', [
+                OrderStatus::Confirmed->value(),
+                OrderStatus::InProduction->value(),
+                OrderStatus::ReadyToShip->value(),
+                OrderStatus::Shipped->value(),
+                OrderStatus::Delivered->value(),
+            ]);
+    }
 }

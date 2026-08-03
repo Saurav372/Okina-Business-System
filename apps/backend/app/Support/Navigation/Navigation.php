@@ -3,6 +3,7 @@
 namespace App\Support\Navigation;
 
 use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 
 class Navigation
 {
@@ -19,8 +20,8 @@ class Navigation
         foreach ($rawStructure as $groupConfig) {
             $groupItems = [];
             foreach ($groupConfig['items'] as $itemConfig) {
-                // If item has a permission constraint, verify the user has it
-                if ($user && $itemConfig['permission'] && ! $user->hasPermissionTo($itemConfig['permission'])) {
+                // If item has a permission constraint, verify the user has access via Gate
+                if ($user && $itemConfig['permission'] && ! Gate::forUser($user)->allows($itemConfig['permission'])) {
                     continue;
                 }
 
@@ -28,7 +29,7 @@ class Navigation
                 $children = [];
                 if (! empty($itemConfig['children'])) {
                     foreach ($itemConfig['children'] as $childConfig) {
-                        if ($user && $childConfig['permission'] && ! $user->hasPermissionTo($childConfig['permission'])) {
+                        if ($user && $childConfig['permission'] && ! Gate::forUser($user)->allows($childConfig['permission'])) {
                             continue;
                         }
                         $children[] = new NavigationItem(
@@ -241,7 +242,17 @@ class Navigation
             [
                 'group' => 'Reports',
                 'order' => 90,
-                'items' => [],
+                'items' => [
+                    [
+                        'label' => 'Finance Reports',
+                        'route' => 'admin.reports.finance.index',
+                        'icon' => 'lucide-bar-chart-3',
+                        'order' => 10,
+                        'permission' => 'reports.finance.view',
+                        'active' => ['admin.reports.finance.*'],
+                        'children' => [],
+                    ],
+                ],
             ],
             [
                 'group' => 'Users',
@@ -268,6 +279,39 @@ class Navigation
                         'order' => 20,
                         'permission' => 'notifications.view',
                         'active' => ['admin.notification_logs.*'],
+                        'children' => [],
+                    ],
+                    [
+                        'label' => 'System Health',
+                        'route' => 'admin.system_health.index',
+                        'icon' => 'lucide-activity',
+                        'order' => 30,
+                        'permission' => 'system.health.view',
+                        'active' => ['admin.system_health.*'],
+                        'children' => [],
+                    ],
+                ],
+            ],
+            [
+                'group' => 'Account',
+                'order' => 115,
+                'items' => [
+                    [
+                        'label' => 'My Profile',
+                        'route' => 'admin.profile',
+                        'icon' => 'lucide-user',
+                        'order' => 10,
+                        'permission' => null,
+                        'active' => ['admin.profile'],
+                        'children' => [],
+                    ],
+                    [
+                        'label' => 'Security Settings',
+                        'route' => 'admin.security',
+                        'icon' => 'lucide-shield-check',
+                        'order' => 20,
+                        'permission' => null,
+                        'active' => ['admin.security'],
                         'children' => [],
                     ],
                 ],

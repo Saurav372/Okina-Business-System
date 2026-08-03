@@ -123,15 +123,15 @@ Detailed validation for each subtask is maintained in `UI-SUBTASK-VALIDATION.md`
 | U5.1.2 | Stock Movements | Admin | 5 | Movement history and adjustment modal. | U5.1.1 | Completed |
 | U5.1.3 | Vendors Directory | Admin | 5 | Vendor management. | U2.1 | Completed |
 | U5.1.4 | Purchase Orders | Admin | 5 | PO creation and Stock Receiving flow. | U5.1.3, U5.1.1 | Completed |
-| **U6.1** | **Finance & Reports** | Admin | 6 | **Milestone** | U3.1.6 | Completed |
-| U6.1.1 | Payments Ledger | Admin | 6 | History of all order payments. | U3.1.6 | Completed |
-| U6.1.2 | Refunds Workflow | Admin | 6 | Refund processing and status tracking. | U6.1.1 | Completed |
-| U6.1.3 | Expenses Reporting | Admin | 6 | Expense capture, category management, approval workflow, proof attachments, and reporting. | U2.1 | Completed |
-| U6.1.4 | Finance Reports | Admin | 6 | Sales, Revenue, and Outstanding Balance visualizations. | U6.1.1 | Pending |
-| **U7.1** | **System Administration** | Admin | 7 | **Milestone** | U2.1 | Milestone |
-| U7.1.1 | Administrator Account | Admin | 7 | Profile, password, security settings, and session management. | U2.1 | Pending |
+| **U6.1** | **Finance & Reports** | Admin | 6 | **Milestone** | U2.1 | Completed |
+| U6.1.1 | Payments Ledger | Admin | 6 | Transactions ledger, filters, manual recording, status flows. | U2.1 | Completed |
+| U6.1.2 | Refunds Workflow | Admin | 6 | Refund request, approval, processing, gateway integration. | U6.1.1 | Completed |
+| U6.1.3 | Expenses Reporting | Admin | 6 | Operational expenses recording, categories, attachments, approvals. | U6.1.2 | Completed |
+| U6.1.4 | Finance Reports | Admin | 6 | Booked Sales Revenue, Customer Payments, Refunds, Operating Income, Cash Flow, and Outstanding Receivables. | U6.1.1 | Completed |
+| **U7.1** | **System Administration** | Admin | 7 | **Milestone** | U2.1 | Completed |
+| U7.1.1 | Administrator Account | Admin | 7 | Profile, password, security settings, and session management. | U2.1 | Completed |
 | U7.1.2 | Business Settings | Admin | 7 | System settings and API keys. | U2.1 | Completed |
-| U7.1.3 | System Logs | Admin | 7 | Audit Logs, Notification Logs, System Health. | U2.1 | Pending |
+| U7.1.3 | System Logs | Admin | 7 | Audit Logs, Notification Logs, System Health. | U2.1 | Completed |
 
 ## Tier 3: Customer Experience
 

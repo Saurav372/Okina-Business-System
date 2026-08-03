@@ -2,344 +2,431 @@
 
 namespace App\Services;
 
-use App\Enums\OrderStatus;
+use App\Events\AuditEvent;
 use App\Models\Expense;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Refund;
+use App\Models\User;
+use App\Support\Finance\FinanceReportFilters;
+use App\Support\Finance\FinanceReportPresenter;
+use App\Support\Finance\FinanceReportSummary;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class FinanceReportService
 {
     /**
-     * Generate financial summary and groupings.
+     * Generate comprehensive Finance Report summary DTO.
      */
-    public function generateSummary(array $filters): array
+    public function generateSummary(FinanceReportFilters|array $filters): FinanceReportSummary
     {
-        $startDate = ! empty($filters['start_date']) ? Carbon::parse($filters['start_date'])->startOfDay() : null;
-        $endDate = ! empty($filters['end_date']) ? Carbon::parse($filters['end_date'])->endOfDay() : null;
-        $groupBy = $filters['group_by'] ?? null;
+        if (is_array($filters)) {
+            $filters = FinanceReportFilters::fromArray($filters);
+        }
+        $startDate = $filters->startDate;
+        $endDate = $filters->endDate;
 
-        // Base query builders with canonical date filters
+        // 1. Base Query Builders
         $ordersQuery = $this->baseOrderQuery($startDate, $endDate);
         $paymentsQuery = $this->basePaymentQuery($startDate, $endDate);
         $refundsQuery = $this->baseRefundQuery($startDate, $endDate);
         $expensesQuery = $this->baseExpenseQuery($startDate, $endDate);
 
-        // 1. Calculate overall stats
-        $totalSales = (clone $ordersQuery)->sum('total_amount_minor');
-        $totalOrdersCount = (clone $ordersQuery)->count();
+        // 2. Summary Metrics (Raw minor units)
+        $totalSales = (int) (clone $ordersQuery)->sum('orders.total_amount_minor');
+        $totalOrdersCount = (int) (clone $ordersQuery)->count();
 
-        $totalPayments = (clone $paymentsQuery)->sum('amount_minor');
-        $totalPaymentsCount = (clone $paymentsQuery)->count();
+        $totalPayments = (int) (clone $paymentsQuery)->sum('payments.amount_minor');
+        $totalPaymentsCount = (int) (clone $paymentsQuery)->count();
 
-        $totalRefunds = (clone $refundsQuery)->sum('amount_minor');
-        $totalRefundsCount = (clone $refundsQuery)->count();
+        $totalRefunds = (int) (clone $refundsQuery)->sum('refunds.amount_minor');
+        $totalRefundsCount = (int) (clone $refundsQuery)->count();
 
-        $totalExpenses = (clone $expensesQuery)->sum('amount_minor');
-        $totalExpensesCount = (clone $expensesQuery)->count();
+        $totalExpenses = (int) (clone $expensesQuery)->sum('expenses.amount_minor');
+        $totalExpensesCount = (int) (clone $expensesQuery)->count();
 
-        // Outstanding balance calculation
-        // total order values (active orders) minus succeeded payments (from those active orders)
-        $activeOrderIds = (clone $ordersQuery)->pluck('orders.id');
-        $paymentsForActiveOrders = Payment::query()
-            ->whereIn('order_id', $activeOrderIds)
-            ->where('status', Payment::STATUS_SUCCEEDED)
-            ->sum('amount_minor');
+        // 3. Per-Order As-Of Outstanding Receivables Accounting
+        // Evaluated on eligible orders placed on or before end_date
+        $totalOutstanding = $this->calculatePerOrderOutstandingReceivables($endDate);
 
-        $outstandingBalance = max(0, $totalSales - $paymentsForActiveOrders);
+        // Net Metrics
+        $netCashFlow = $totalPayments - $totalRefunds - $totalExpenses;
+        $netOperatingIncome = $totalSales - $totalRefunds - $totalExpenses;
 
-        $summary = [
-            'total_sales_minor' => (int) $totalSales,
-            'total_payments_minor' => (int) $totalPayments,
-            'total_refunds_minor' => (int) $totalRefunds,
-            'total_expenses_minor' => (int) $totalExpenses,
-            'total_outstanding_minor' => (int) $outstandingBalance,
+        $metrics = [
+            'total_sales_minor' => (string) $totalSales,
+            'total_payments_minor' => (string) $totalPayments,
+            'total_refunds_minor' => (string) $totalRefunds,
+            'total_expenses_minor' => (string) $totalExpenses,
+            'total_outstanding_minor' => (string) $totalOutstanding,
+            'net_cash_flow_minor' => (string) $netCashFlow,
+            'net_operating_income_minor' => (string) $netOperatingIncome,
             'total_orders_count' => (int) $totalOrdersCount,
             'total_payments_count' => (int) $totalPaymentsCount,
             'total_refunds_count' => (int) $totalRefundsCount,
             'total_expenses_count' => (int) $totalExpensesCount,
         ];
 
-        $response = [
-            'currency' => 'INR',
-            'summary' => $summary,
-        ];
+        // 4. Monthly Trend (Zero-filled across date range)
+        $monthlyTrend = $this->getZeroFilledMonthlyTrend($startDate, $endDate);
 
-        // 2. Perform Grouping
-        if ($groupBy === 'month') {
-            $response['monthly'] = $this->getMonthlyGrouping($startDate, $endDate);
-        } elseif ($groupBy === 'category') {
-            $response['sales_by_category'] = $this->getSalesByCategoryGrouping($startDate, $endDate);
-            $response['expenses_by_category'] = $this->getExpensesByCategoryGrouping($startDate, $endDate);
-        }
+        // 5. Expense Category Breakdown (With basis points & historical soft-deleted categories preserved)
+        $categoryBreakdown = $this->getExpenseCategoryBreakdown($startDate, $endDate, $totalExpenses);
 
-        return $response;
+        return new FinanceReportSummary(
+            filters: $filters,
+            metrics: $metrics,
+            monthlyTrend: $monthlyTrend,
+            categoryBreakdown: $categoryBreakdown,
+            currency: 'INR'
+        );
     }
 
     /**
-     * Get base query for active, non-cancelled orders.
+     * Stream CSV export download directly from FinanceReportSummary DTO.
      */
-    protected function baseOrderQuery(?Carbon $startDate, ?Carbon $endDate): Builder
+    public function streamCsvExport(FinanceReportFilters $filters, ?User $actor = null): StreamedResponse
     {
-        $query = Order::query()
-            ->where('orders.status', '!=', OrderStatus::PendingPayment->value())
-            ->where('orders.status', '!=', OrderStatus::Cancelled->value());
+        $actor = $actor ?: Auth::user();
+        $summary = $this->generateSummary($filters);
+        $presented = FinanceReportPresenter::present($summary);
+
+        $nowIso = now()->toIso8601String();
+        $filename = 'finance-report-'.$summary->filters->endDate?->format('Y-m-d').'.csv';
+
+        // Dispatch audit event before response streaming
+        event(new AuditEvent('finance_reports.exported', $actor, [
+            'actor_id' => $actor?->id,
+            'start_date' => $summary->filters->startDate?->toDateString(),
+            'end_date' => $summary->filters->endDate?->toDateString(),
+            'preset' => $summary->filters->preset,
+            'group_by' => $summary->filters->groupBy,
+            'currency' => $summary->currency,
+            'filename' => $filename,
+            'generated_at' => $nowIso,
+        ]));
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
+        ];
+
+        $callback = function () use ($presented, $summary) {
+            $file = fopen('php://output', 'w');
+            // Write UTF-8 BOM
+            fwrite($file, "\xEF\xBB\xBF");
+
+            $sanitize = function (?string $value): string {
+                if ($value === null) {
+                    return '';
+                }
+                $str = (string) $value;
+                if (preg_match('/^[=\+\-@\t\r]/', $str)) {
+                    return "'".$str;
+                }
+
+                return $str;
+            };
+
+            // Section 1: Metadata
+            fputcsv($file, [$sanitize('Section'), $sanitize('Key/Code'), $sanitize('Name/Period'), $sanitize('Amount Minor'), $sanitize('Formatted Amount'), $sanitize('Currency'), $sanitize('Count'), $sanitize('Share BPS')]);
+            fputcsv($file, [$sanitize('Metadata'), $sanitize('Start Date'), $sanitize($summary->filters->startDate?->toDateString()), '', '', $sanitize($summary->currency), '', '']);
+            fputcsv($file, [$sanitize('Metadata'), $sanitize('End Date'), $sanitize($summary->filters->endDate?->toDateString()), '', '', $sanitize($summary->currency), '', '']);
+            fputcsv($file, [$sanitize('Metadata'), $sanitize('Preset'), $sanitize($summary->filters->preset), '', '', $sanitize($summary->currency), '', '']);
+            fputcsv($file, [$sanitize('Metadata'), $sanitize('Timezone'), $sanitize($summary->filters->timezone), '', '', $sanitize($summary->currency), '', '']);
+
+            // Section 2: Executive Summary KPIs
+            $metrics = $presented['metrics'];
+            fputcsv($file, [$sanitize('Executive Summary'), $sanitize('total_sales'), $sanitize('Booked Sales Revenue'), $sanitize($metrics['total_sales_minor']), $sanitize($metrics['total_sales_formatted']), $sanitize($summary->currency), $metrics['total_orders_count'], '']);
+            fputcsv($file, [$sanitize('Executive Summary'), $sanitize('total_payments'), $sanitize('Succeeded Payments'), $sanitize($metrics['total_payments_minor']), $sanitize($metrics['total_payments_formatted']), $sanitize($summary->currency), $metrics['total_payments_count'], '']);
+            fputcsv($file, [$sanitize('Executive Summary'), $sanitize('total_refunds'), $sanitize('Succeeded Refunds'), $sanitize($metrics['total_refunds_minor']), $sanitize($metrics['total_refunds_formatted']), $sanitize($summary->currency), $metrics['total_refunds_count'], '']);
+            fputcsv($file, [$sanitize('Executive Summary'), $sanitize('total_expenses'), $sanitize('Approved Expenses'), $sanitize($metrics['total_expenses_minor']), $sanitize($metrics['total_expenses_formatted']), $sanitize($summary->currency), $metrics['total_expenses_count'], '']);
+            fputcsv($file, [$sanitize('Executive Summary'), $sanitize('total_outstanding'), $sanitize('As-Of Outstanding Receivables'), $sanitize($metrics['total_outstanding_minor']), $sanitize($metrics['total_outstanding_formatted']), $sanitize($summary->currency), '', '']);
+            fputcsv($file, [$sanitize('Executive Summary'), $sanitize('net_cash_flow'), $sanitize('Net Cash Flow'), $sanitize($metrics['net_cash_flow_minor']), $sanitize($metrics['net_cash_flow_formatted']), $sanitize($summary->currency), '', '']);
+            fputcsv($file, [$sanitize('Executive Summary'), $sanitize('net_operating_income'), $sanitize('Net Operating Income'), $sanitize($metrics['net_operating_income_minor']), $sanitize($metrics['net_operating_income_formatted']), $sanitize($summary->currency), '', '']);
+
+            // Section 3: Monthly Trends
+            foreach ($presented['monthly_trend'] as $row) {
+                fputcsv($file, [
+                    $sanitize('Monthly Trend'),
+                    $sanitize('period'),
+                    $sanitize($row['period']),
+                    $sanitize((string) $row['net_operating_income_minor']),
+                    $sanitize($row['net_operating_income_formatted']),
+                    $sanitize($summary->currency),
+                    '',
+                    '',
+                ]);
+            }
+
+            // Section 4: Expense Categories
+            foreach ($presented['expense_categories'] as $cat) {
+                fputcsv($file, [
+                    $sanitize('Expense Category'),
+                    $sanitize($cat['category_code']),
+                    $sanitize($cat['category_name']),
+                    $sanitize((string) $cat['total_minor']),
+                    $sanitize($cat['total_formatted']),
+                    $sanitize($summary->currency),
+                    $cat['expense_count'],
+                    $cat['share_basis_points'],
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Base query for active, non-cancelled orders recognized for Booked Sales Revenue.
+     */
+    protected function baseOrderQuery(?CarbonImmutable $startDate, ?CarbonImmutable $endDate): Builder
+    {
+        $query = Order::query()->revenueRecognized();
 
         $dateCol = 'COALESCE(orders.placed_at, orders.created_at)';
 
         if ($startDate) {
-            $query->whereRaw("{$dateCol} >= ?", [$startDate]);
+            $query->whereRaw("{$dateCol} >= ?", [$startDate->toDateTimeString()]);
         }
         if ($endDate) {
-            $query->whereRaw("{$dateCol} <= ?", [$endDate]);
+            $query->whereRaw("{$dateCol} <= ?", [$endDate->toDateTimeString()]);
         }
 
         return $query;
     }
 
     /**
-     * Get base query for succeeded payments.
+     * Base query for succeeded customer payments.
      */
-    protected function basePaymentQuery(?Carbon $startDate, ?Carbon $endDate): Builder
+    protected function basePaymentQuery(?CarbonImmutable $startDate, ?CarbonImmutable $endDate): Builder
     {
         $query = Payment::query()->where('payments.status', Payment::STATUS_SUCCEEDED);
 
+        $dateCol = 'COALESCE(payments.paid_at, payments.created_at)';
+
         if ($startDate) {
-            $query->where('payments.created_at', '>=', $startDate);
+            $query->whereRaw("{$dateCol} >= ?", [$startDate->toDateTimeString()]);
         }
         if ($endDate) {
-            $query->where('payments.created_at', '<=', $endDate);
+            $query->whereRaw("{$dateCol} <= ?", [$endDate->toDateTimeString()]);
         }
 
         return $query;
     }
 
     /**
-     * Get base query for succeeded refunds.
+     * Base query for succeeded refunds.
      */
-    protected function baseRefundQuery(?Carbon $startDate, ?Carbon $endDate): Builder
+    protected function baseRefundQuery(?CarbonImmutable $startDate, ?CarbonImmutable $endDate): Builder
     {
         $query = Refund::query()->where('refunds.status', Refund::STATUS_SUCCEEDED);
 
+        $dateCol = 'COALESCE(refunds.processed_at, refunds.created_at)';
+
         if ($startDate) {
-            $query->where('refunds.created_at', '>=', $startDate);
+            $query->whereRaw("{$dateCol} >= ?", [$startDate->toDateTimeString()]);
         }
         if ($endDate) {
-            $query->where('refunds.created_at', '<=', $endDate);
+            $query->whereRaw("{$dateCol} <= ?", [$endDate->toDateTimeString()]);
         }
 
         return $query;
     }
 
     /**
-     * Get base query for approved expenses.
+     * Base query for approved expenses filtered by occurred_at (date column).
      */
-    protected function baseExpenseQuery(?Carbon $startDate, ?Carbon $endDate): Builder
+    protected function baseExpenseQuery(?CarbonImmutable $startDate, ?CarbonImmutable $endDate): Builder
     {
         $query = Expense::query()->where('expenses.status', Expense::STATUS_APPROVED);
 
         if ($startDate) {
-            $query->where('expenses.occurred_at', '>=', $startDate);
+            $query->where('expenses.occurred_at', '>=', $startDate->toDateString());
         }
         if ($endDate) {
-            $query->where('expenses.occurred_at', '<=', $endDate);
+            $query->where('expenses.occurred_at', '<=', $endDate->toDateString());
         }
 
         return $query;
     }
 
     /**
-     * Monthly Grouping engine (SQLite vs MySQL).
+     * Calculate per-order as-of outstanding receivables clamped to >= 0 per order.
      */
-    protected function getMonthlyGrouping(?Carbon $startDate, ?Carbon $endDate): array
+    protected function calculatePerOrderOutstandingReceivables(?CarbonImmutable $endDate): int
+    {
+        $cutoffStr = $endDate ? $endDate->toDateTimeString() : CarbonImmutable::now()->toDateTimeString();
+
+        // 1. Get eligible orders placed on or before cutoff
+        $eligibleOrders = Order::query()
+            ->receivableEligible()
+            ->whereRaw('COALESCE(orders.placed_at, orders.created_at) <= ?', [$cutoffStr])
+            ->select('orders.id', 'orders.total_amount_minor')
+            ->get();
+
+        if ($eligibleOrders->isEmpty()) {
+            return 0;
+        }
+
+        $orderIds = $eligibleOrders->pluck('id')->all();
+
+        // 2. Fetch payments per order through cutoff
+        $paymentsByOrder = Payment::query()
+            ->whereIn('order_id', $orderIds)
+            ->where('status', Payment::STATUS_SUCCEEDED)
+            ->whereRaw('COALESCE(paid_at, created_at) <= ?', [$cutoffStr])
+            ->groupBy('order_id')
+            ->selectRaw('order_id, SUM(amount_minor) as total_paid')
+            ->pluck('total_paid', 'order_id')
+            ->all();
+
+        // 3. Fetch refunds per order through cutoff
+        $refundsByOrder = Refund::query()
+            ->whereIn('order_id', $orderIds)
+            ->where('status', Refund::STATUS_SUCCEEDED)
+            ->whereRaw('COALESCE(processed_at, created_at) <= ?', [$cutoffStr])
+            ->groupBy('order_id')
+            ->selectRaw('order_id, SUM(amount_minor) as total_refunded')
+            ->pluck('total_refunded', 'order_id')
+            ->all();
+
+        $totalReceivable = 0;
+
+        foreach ($eligibleOrders as $order) {
+            $orderTotal = (int) $order->total_amount_minor;
+            $paid = (int) ($paymentsByOrder[$order->id] ?? 0);
+            $refunded = (int) ($refundsByOrder[$order->id] ?? 0);
+
+            $netPaid = $paid - $refunded;
+            $orderReceivable = max(0, $orderTotal - $netPaid);
+
+            $totalReceivable += $orderReceivable;
+        }
+
+        return $totalReceivable;
+    }
+
+    /**
+     * Zero-fill monthly trends across full date range.
+     */
+    protected function getZeroFilledMonthlyTrend(?CarbonImmutable $startDate, ?CarbonImmutable $endDate): array
     {
         $driver = DB::connection()->getDriverName();
         $isSqlite = $driver === 'sqlite';
 
-        // 1. Get monthly sales
-        $salesDateExpr = $isSqlite
-            ? "strftime('%Y-%m', COALESCE(orders.placed_at, orders.created_at))"
-            : "DATE_FORMAT(COALESCE(orders.placed_at, orders.created_at), '%Y-%m')";
-
+        // Monthly sales
+        $salesExpr = $isSqlite ? "strftime('%Y-%m', COALESCE(orders.placed_at, orders.created_at))" : "DATE_FORMAT(COALESCE(orders.placed_at, orders.created_at), '%Y-%m')";
         $salesMonthly = $this->baseOrderQuery($startDate, $endDate)
-            ->selectRaw("{$salesDateExpr} as month_str, SUM(orders.total_amount_minor) as total_minor, COUNT(*) as count")
-            ->groupBy('month_str')
-            ->pluck('total_minor', 'month_str')
+            ->selectRaw("{$salesExpr} as period, SUM(orders.total_amount_minor) as total_minor")
+            ->groupBy('period')
+            ->pluck('total_minor', 'period')
             ->all();
 
-        $salesCountMonthly = $this->baseOrderQuery($startDate, $endDate)
-            ->selectRaw("{$salesDateExpr} as month_str, COUNT(*) as count")
-            ->groupBy('month_str')
-            ->pluck('count', 'month_str')
-            ->all();
-
-        // 2. Get monthly payments
-        $pmDateExpr = $isSqlite ? "strftime('%Y-%m', payments.created_at)" : "DATE_FORMAT(payments.created_at, '%Y-%m')";
+        // Monthly payments
+        $pmExpr = $isSqlite ? "strftime('%Y-%m', COALESCE(payments.paid_at, payments.created_at))" : "DATE_FORMAT(COALESCE(payments.paid_at, payments.created_at), '%Y-%m')";
         $paymentsMonthly = $this->basePaymentQuery($startDate, $endDate)
-            ->selectRaw("{$pmDateExpr} as month_str, SUM(payments.amount_minor) as total_minor")
-            ->groupBy('month_str')
-            ->pluck('total_minor', 'month_str')
+            ->selectRaw("{$pmExpr} as period, SUM(payments.amount_minor) as total_minor")
+            ->groupBy('period')
+            ->pluck('total_minor', 'period')
             ->all();
 
-        $paymentsCountMonthly = $this->basePaymentQuery($startDate, $endDate)
-            ->selectRaw("{$pmDateExpr} as month_str, COUNT(*) as count")
-            ->groupBy('month_str')
-            ->pluck('count', 'month_str')
-            ->all();
-
-        // 3. Get monthly refunds
-        $rfDateExpr = $isSqlite ? "strftime('%Y-%m', refunds.created_at)" : "DATE_FORMAT(refunds.created_at, '%Y-%m')";
+        // Monthly refunds
+        $rfExpr = $isSqlite ? "strftime('%Y-%m', COALESCE(refunds.processed_at, refunds.created_at))" : "DATE_FORMAT(COALESCE(refunds.processed_at, refunds.created_at), '%Y-%m')";
         $refundsMonthly = $this->baseRefundQuery($startDate, $endDate)
-            ->selectRaw("{$rfDateExpr} as month_str, SUM(refunds.amount_minor) as total_minor")
-            ->groupBy('month_str')
-            ->pluck('total_minor', 'month_str')
+            ->selectRaw("{$rfExpr} as period, SUM(refunds.amount_minor) as total_minor")
+            ->groupBy('period')
+            ->pluck('total_minor', 'period')
             ->all();
 
-        $refundsCountMonthly = $this->baseRefundQuery($startDate, $endDate)
-            ->selectRaw("{$rfDateExpr} as month_str, COUNT(*) as count")
-            ->groupBy('month_str')
-            ->pluck('count', 'month_str')
-            ->all();
-
-        // 4. Get monthly expenses
-        $expenseDateExpr = $isSqlite ? "strftime('%Y-%m', expenses.occurred_at)" : "DATE_FORMAT(expenses.occurred_at, '%Y-%m')";
+        // Monthly expenses
+        $expExpr = $isSqlite ? "strftime('%Y-%m', expenses.occurred_at)" : "DATE_FORMAT(expenses.occurred_at, '%Y-%m')";
         $expensesMonthly = $this->baseExpenseQuery($startDate, $endDate)
-            ->selectRaw("{$expenseDateExpr} as month_str, SUM(expenses.amount_minor) as total_minor")
-            ->groupBy('month_str')
-            ->pluck('total_minor', 'month_str')
+            ->selectRaw("{$expExpr} as period, SUM(expenses.amount_minor) as total_minor")
+            ->groupBy('period')
+            ->pluck('total_minor', 'period')
             ->all();
 
-        $expensesCountMonthly = $this->baseExpenseQuery($startDate, $endDate)
-            ->selectRaw("{$expenseDateExpr} as month_str, COUNT(*) as count")
-            ->groupBy('month_str')
-            ->pluck('count', 'month_str')
-            ->all();
+        // Determine all periods between startDate and endDate
+        $startMonth = $startDate ? $startDate->startOfMonth() : CarbonImmutable::now()->startOfMonth();
+        $endMonth = $endDate ? $endDate->startOfMonth() : CarbonImmutable::now()->startOfMonth();
 
-        // Collect all distinct months
-        $allMonths = array_unique(array_merge(
-            array_keys($salesMonthly),
-            array_keys($paymentsMonthly),
-            array_keys($refundsMonthly),
-            array_keys($expensesMonthly)
-        ));
+        $periods = [];
+        $curr = $startMonth;
+        while ($curr->lte($endMonth)) {
+            $periods[] = $curr->format('Y-m');
+            $curr = $curr->addMonth();
+        }
 
-        // Sort chronologically
-        sort($allMonths);
+        $trend = [];
+        foreach ($periods as $p) {
+            $sales = (int) ($salesMonthly[$p] ?? 0);
+            $pm = (int) ($paymentsMonthly[$p] ?? 0);
+            $rf = (int) ($refundsMonthly[$p] ?? 0);
+            $exp = (int) ($expensesMonthly[$p] ?? 0);
 
-        $monthlyData = [];
-        foreach ($allMonths as $month) {
-            if (empty($month)) {
-                continue;
-            }
+            $netCash = $pm - $rf - $exp;
+            $netIncome = $sales - $rf - $exp;
 
-            // Group-level outstanding balance calculation:
-            // Group active orders for this month, sum their total values, and subtract succeeded payments for those orders
-            $salesVal = (int) ($salesMonthly[$month] ?? 0);
-
-            // To calculate outstanding balance for this month's orders correctly:
-            $orderIdsThisMonth = Order::query()
-                ->where('orders.status', '!=', OrderStatus::PendingPayment->value())
-                ->where('orders.status', '!=', OrderStatus::Cancelled->value())
-                ->whereRaw("{$salesDateExpr} = ?", [$month])
-                ->pluck('orders.id');
-
-            $paymentsForThisMonthOrders = Payment::query()
-                ->whereIn('order_id', $orderIdsThisMonth)
-                ->where('status', Payment::STATUS_SUCCEEDED)
-                ->sum('amount_minor');
-
-            $outstandingVal = max(0, $salesVal - $paymentsForThisMonthOrders);
-
-            $monthlyData[] = [
-                'month' => $month,
-                'totals' => [
-                    'sales_minor' => $salesVal,
-                    'payments_minor' => (int) ($paymentsMonthly[$month] ?? 0),
-                    'refunds_minor' => (int) ($refundsMonthly[$month] ?? 0),
-                    'expenses_minor' => (int) ($expensesMonthly[$month] ?? 0),
-                    'outstanding_minor' => (int) $outstandingVal,
-                ],
-                'counts' => [
-                    'sales_count' => (int) ($salesCountMonthly[$month] ?? 0),
-                    'payments_count' => (int) ($paymentsCountMonthly[$month] ?? 0),
-                    'refunds_count' => (int) ($refundsCountMonthly[$month] ?? 0),
-                    'expenses_count' => (int) ($expensesCountMonthly[$month] ?? 0),
-                ],
+            $trend[] = [
+                'period' => $p,
+                'sales_minor' => (string) $sales,
+                'payments_minor' => (string) $pm,
+                'refunds_minor' => (string) $rf,
+                'expenses_minor' => (string) $exp,
+                'net_cash_flow_minor' => (string) $netCash,
+                'net_operating_income_minor' => (string) $netIncome,
             ];
         }
 
-        return $monthlyData;
+        return $trend;
     }
 
     /**
-     * Group sales by Product Category.
+     * Group expenses by category with share basis points and soft-deleted category support.
      */
-    protected function getSalesByCategoryGrouping(?Carbon $startDate, ?Carbon $endDate): array
+    protected function getExpenseCategoryBreakdown(?CarbonImmutable $startDate, ?CarbonImmutable $endDate, int $totalApprovedExpenses): array
     {
-        $salesQuery = $this->baseOrderQuery($startDate, $endDate)
-            ->join('order_items', 'orders.id', '=', 'order_items.order_id')
-            ->join('products', 'order_items.product_id', '=', 'products.id')
-            ->join('product_categories', 'products.primary_category_id', '=', 'product_categories.id')
-            ->selectRaw('
-                product_categories.id as category_id,
-                product_categories.name as category_name,
-                product_categories.slug as category_slug,
-                SUM(order_items.line_total_minor) as total_minor,
-                COUNT(order_items.id) as item_count
-            ')
-            ->groupBy('product_categories.id', 'product_categories.name', 'product_categories.slug')
-            ->orderBy('product_categories.id', 'asc')
-            ->get();
-
-        $data = [];
-        foreach ($salesQuery as $row) {
-            $data[] = [
-                'category' => [
-                    'id' => (int) $row->category_id,
-                    'name' => $row->category_name,
-                    'slug' => $row->category_slug,
-                ],
-                'total_sales_minor' => (int) $row->total_minor,
-                'order_items_count' => (int) $row->item_count,
-            ];
-        }
-
-        return $data;
-    }
-
-    /**
-     * Group expenses by Expense Category.
-     */
-    protected function getExpensesByCategoryGrouping(?Carbon $startDate, ?Carbon $endDate): array
-    {
-        $expenseQuery = $this->baseExpenseQuery($startDate, $endDate)
+        $query = $this->baseExpenseQuery($startDate, $endDate)
             ->join('expense_categories', 'expenses.expense_category_id', '=', 'expense_categories.id')
             ->selectRaw('
                 expense_categories.id as category_id,
-                expense_categories.public_id as category_public_id,
+                expense_categories.code as category_code,
                 expense_categories.name as category_name,
+                expense_categories.deleted_at as deleted_at,
                 SUM(expenses.amount_minor) as total_minor,
                 COUNT(expenses.id) as expense_count
             ')
-            ->groupBy('expense_categories.id', 'expense_categories.public_id', 'expense_categories.name')
+            ->groupBy('expense_categories.id', 'expense_categories.code', 'expense_categories.name', 'expense_categories.deleted_at')
             ->orderBy('expense_categories.id', 'asc')
             ->get();
 
-        $data = [];
-        foreach ($expenseQuery as $row) {
-            $data[] = [
-                'category' => [
-                    'public_id' => $row->category_public_id,
-                    'name' => $row->category_name,
-                ],
-                'total_expenses_minor' => (int) $row->total_minor,
-                'expenses_count' => (int) $row->expense_count,
+        $breakdown = [];
+        foreach ($query as $row) {
+            $catTotal = (int) $row->total_minor;
+            $shareBps = $totalApprovedExpenses > 0
+                ? (int) round(($catTotal * 10000) / $totalApprovedExpenses, 0, PHP_ROUND_HALF_UP)
+                : 0;
+
+            $breakdown[] = [
+                'category_code' => $row->category_code,
+                'category_name' => $row->category_name.($row->deleted_at !== null ? ' (Soft Deleted)' : ''),
+                'total_minor' => (string) $catTotal,
+                'expense_count' => (int) $row->expense_count,
+                'share_basis_points' => $shareBps,
+                'is_deleted' => $row->deleted_at !== null,
             ];
         }
 
-        return $data;
+        return $breakdown;
     }
 }

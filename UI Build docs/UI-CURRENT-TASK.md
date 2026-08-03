@@ -1,19 +1,17 @@
 # Current Task
 
 ## Current Parent Task
-Finance & Reports Module (U6.1)
+System Administration (U7.1)
 
 ## Current Subtask
-U6.1.3 Expenses Reporting — Completed ✅
+U7.1.3 System Logs — Completed ✅
 
 ## Goal
-Implement operational expenses management (`/admin/expenses`), expense category reference data management (`ExpenseCategory`), multi-stage expense workflow state machine (`draft` -> `pending_approval` -> `approved` / `rejected`), proof attachment service (`ExpenseAttachmentService` & `ExpenseAttachmentController`), custom decimal money validation (`ValidMoneyAmount` & `MoneyParser`), CSV export (`ExpenseReportController`), financial summary reporting, and test coverage.
+Implement Audit Log tracking UI (`/admin/audit-logs`), Notification Log inspection (`/admin/notification-logs`), and System Health telemetry dashboard (`/admin/system-health`), with policy authorization, key-normalized sensitive payload redaction, recipient address masking, URL secret stripping, API Resources, and telemetry diagnostic probes.
 
 ## Dependencies
 **Depends On:**
-- U5.1 (Inventory & Purchasing) — Completed ✅
-- U6.1.1 (Payments Ledger) — Completed ✅
-- U6.1.2 (Refunds Workflow) — Completed ✅
+- U2.1 (Role & Permission Middleware) — Completed ✅
 
 ## Completed Milestones
 - **U5.1 Inventory & Purchasing — Completed ✅:**
@@ -25,3 +23,8 @@ Implement operational expenses management (`/admin/expenses`), expense category 
   - U6.1.1 Payments Ledger — Completed ✅
   - U6.1.2 Refunds Workflow — Completed ✅
   - U6.1.3 Expenses Reporting — Completed ✅
+  - U6.1.4 Finance Reports — Completed ✅
+- **U7.1 System Administration — Completed ✅:**
+  - U7.1.1 Administrator Account — Completed ✅
+  - U7.1.2 Business Settings — Completed ✅
+  - U7.1.3 System Logs — Completed ✅

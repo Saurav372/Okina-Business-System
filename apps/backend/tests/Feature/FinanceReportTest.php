@@ -7,13 +7,10 @@ use App\Models\Customer;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
 use App\Models\Order;
-use App\Models\OrderItem;
 use App\Models\Payment;
-use App\Models\Product;
-use App\Models\ProductCategory;
-use App\Models\ProductSku;
 use App\Models\Refund;
 use App\Services\FinanceReportService;
+use App\Support\Finance\FinanceReportFilters;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;
@@ -35,18 +32,18 @@ class FinanceReportTest extends TestCase
      */
     public function test_report_empty_dataset(): void
     {
-        $report = $this->reportService->generateSummary([]);
+        $report = $this->reportService->generateSummary([])->toArray();
 
         $this->assertEquals('INR', $report['currency']);
-        $this->assertEquals(0, $report['summary']['total_sales_minor']);
-        $this->assertEquals(0, $report['summary']['total_payments_minor']);
-        $this->assertEquals(0, $report['summary']['total_refunds_minor']);
-        $this->assertEquals(0, $report['summary']['total_expenses_minor']);
-        $this->assertEquals(0, $report['summary']['total_outstanding_minor']);
-        $this->assertEquals(0, $report['summary']['total_orders_count']);
-        $this->assertEquals(0, $report['summary']['total_payments_count']);
-        $this->assertEquals(0, $report['summary']['total_refunds_count']);
-        $this->assertEquals(0, $report['summary']['total_expenses_count']);
+        $this->assertEquals('0', $report['metrics']['total_sales_minor']);
+        $this->assertEquals('0', $report['metrics']['total_payments_minor']);
+        $this->assertEquals('0', $report['metrics']['total_refunds_minor']);
+        $this->assertEquals('0', $report['metrics']['total_expenses_minor']);
+        $this->assertEquals('0', $report['metrics']['total_outstanding_minor']);
+        $this->assertEquals(0, $report['metrics']['total_orders_count']);
+        $this->assertEquals(0, $report['metrics']['total_payments_count']);
+        $this->assertEquals(0, $report['metrics']['total_refunds_count']);
+        $this->assertEquals(0, $report['metrics']['total_expenses_count']);
     }
 
     /**
@@ -103,10 +100,10 @@ class FinanceReportTest extends TestCase
         $p3->save();
 
         // Outstanding balance should be 100000 - 50000 = 50000 minor
-        $report1 = $this->reportService->generateSummary([]);
-        $this->assertEquals(100000, $report1['summary']['total_sales_minor']);
-        $this->assertEquals(50000, $report1['summary']['total_payments_minor']);
-        $this->assertEquals(50000, $report1['summary']['total_outstanding_minor']);
+        $report1 = $this->reportService->generateSummary(['start_date' => '2026-06-01', 'end_date' => '2026-06-30'])->toArray();
+        $this->assertEquals('100000', $report1['metrics']['total_sales_minor']);
+        $this->assertEquals('50000', $report1['metrics']['total_payments_minor']);
+        $this->assertEquals('50000', $report1['metrics']['total_outstanding_minor']);
 
         // 2. Overpayment scenario (Outstanding clamped to 0)
         // Add another succeeded payment of 600 INR (60000 minor) -> total payments = 1100 INR
@@ -121,9 +118,9 @@ class FinanceReportTest extends TestCase
         $p4->created_at = Carbon::parse('2026-06-15 10:20:00');
         $p4->save();
 
-        $report2 = $this->reportService->generateSummary([]);
-        $this->assertEquals(110000, $report2['summary']['total_payments_minor']);
-        $this->assertEquals(0, $report2['summary']['total_outstanding_minor']); // Clamped to zero
+        $report2 = $this->reportService->generateSummary(['start_date' => '2026-06-01', 'end_date' => '2026-06-30'])->toArray();
+        $this->assertEquals('110000', $report2['metrics']['total_payments_minor']);
+        $this->assertEquals('0', $report2['metrics']['total_outstanding_minor']); // Clamped to zero
     }
 
     /**
@@ -160,9 +157,9 @@ class FinanceReportTest extends TestCase
             'created_at' => Carbon::parse('2026-06-15 10:00:00'),
         ]);
 
-        $report = $this->reportService->generateSummary([]);
-        $this->assertEquals(50000, $report['summary']['total_sales_minor']);
-        $this->assertEquals(1, $report['summary']['total_orders_count']);
+        $report = $this->reportService->generateSummary(['start_date' => '2026-06-01', 'end_date' => '2026-06-30'])->toArray();
+        $this->assertEquals('50000', $report['metrics']['total_sales_minor']);
+        $this->assertEquals(1, $report['metrics']['total_orders_count']);
     }
 
     /**
@@ -202,10 +199,10 @@ class FinanceReportTest extends TestCase
         $report = $this->reportService->generateSummary([
             'start_date' => '2026-06-01',
             'end_date' => '2026-06-10',
-        ]);
+        ])->toArray();
 
-        $this->assertEquals(30000, $report['summary']['total_sales_minor']);
-        $this->assertEquals(2, $report['summary']['total_orders_count']);
+        $this->assertEquals('30000', $report['metrics']['total_sales_minor']);
+        $this->assertEquals(2, $report['metrics']['total_orders_count']);
     }
 
     /**
@@ -254,101 +251,26 @@ class FinanceReportTest extends TestCase
             'occurred_at' => Carbon::parse('2026-01-10'),
         ]);
 
-        $report = $this->reportService->generateSummary(['group_by' => 'month']);
+        $filters = FinanceReportFilters::fromArray([
+            'start_date' => '2025-12-01',
+            'end_date' => '2026-01-31',
+        ]);
 
-        $this->assertCount(2, $report['monthly']);
+        $report = $this->reportService->generateSummary($filters)->toArray();
+
+        $this->assertCount(2, $report['monthly_trend']);
 
         // First month must be 2025-12 (chronological order check)
-        $this->assertEquals('2025-12', $report['monthly'][0]['month']);
-        $this->assertEquals(10000, $report['monthly'][0]['totals']['sales_minor']);
-        $this->assertEquals(5000, $report['monthly'][0]['totals']['payments_minor']);
-        $this->assertEquals(0, $report['monthly'][0]['totals']['expenses_minor']);
+        $this->assertEquals('2025-12', $report['monthly_trend'][0]['period']);
+        $this->assertEquals('10000', $report['monthly_trend'][0]['sales_minor']);
+        $this->assertEquals('5000', $report['monthly_trend'][0]['payments_minor']);
+        $this->assertEquals('0', $report['monthly_trend'][0]['expenses_minor']);
 
         // Second month must be 2026-01
-        $this->assertEquals('2026-01', $report['monthly'][1]['month']);
-        $this->assertEquals(20000, $report['monthly'][1]['totals']['sales_minor']);
-        $this->assertEquals(0, $report['monthly'][1]['totals']['payments_minor']);
-        $this->assertEquals(3000, $report['monthly'][1]['totals']['expenses_minor']);
-    }
-
-    /**
-     * Test sales and expenses grouped by categories.
-     */
-    public function test_category_grouping(): void
-    {
-        $customer = Customer::factory()->create();
-
-        // Create categories
-        $cat1 = ProductCategory::factory()->create(['name' => 'Apparel', 'slug' => 'apparel']);
-        $cat2 = ProductCategory::factory()->create(['name' => 'Signage', 'slug' => 'signage']);
-
-        $prod1 = Product::factory()->create(['primary_category_id' => $cat1->id]);
-        $prod2 = Product::factory()->create(['primary_category_id' => $cat2->id]);
-
-        $sku1 = ProductSku::factory()->create(['product_id' => $prod1->id]);
-        $sku2 = ProductSku::factory()->create(['product_id' => $prod2->id]);
-
-        // Order 1 with Apparel item
-        $order1 = Order::factory()->create([
-            'customer_id' => $customer->id,
-            'status' => OrderStatus::Confirmed->value(),
-            'placed_at' => now(),
-        ]);
-        OrderItem::create([
-            'order_id' => $order1->id,
-            'product_id' => $prod1->id,
-            'sku_id' => $sku1->id,
-            'quantity' => 1,
-            'line_total_minor' => 15000,
-            'product_name_snapshot' => 'Apparel',
-            'product_slug_snapshot' => 'apparel',
-            'sku_code_snapshot' => 'APP-1',
-            'customization_fingerprint' => 'fingerprint-1',
-            'customization_snapshot' => [],
-        ]);
-
-        // Order 2 with Signage item
-        $order2 = Order::factory()->create([
-            'customer_id' => $customer->id,
-            'status' => OrderStatus::Confirmed->value(),
-            'placed_at' => now(),
-        ]);
-        OrderItem::create([
-            'order_id' => $order2->id,
-            'product_id' => $prod2->id,
-            'sku_id' => $sku2->id,
-            'quantity' => 1,
-            'line_total_minor' => 25000,
-            'product_name_snapshot' => 'Signage',
-            'product_slug_snapshot' => 'signage',
-            'sku_code_snapshot' => 'SIG-1',
-            'customization_fingerprint' => 'fingerprint-2',
-            'customization_snapshot' => [],
-        ]);
-
-        // Expense Category
-        $expCat = ExpenseCategory::factory()->create(['name' => 'Marketing', 'public_id' => 'EXPCAT-1']);
-        Expense::factory()->create([
-            'expense_category_id' => $expCat->id,
-            'status' => Expense::STATUS_APPROVED,
-            'amount_minor' => 4500,
-            'occurred_at' => now(),
-        ]);
-
-        $report = $this->reportService->generateSummary(['group_by' => 'category']);
-
-        // Check Sales By Category
-        $this->assertCount(2, $report['sales_by_category']);
-        $this->assertEquals('apparel', $report['sales_by_category'][0]['category']['slug']);
-        $this->assertEquals(15000, $report['sales_by_category'][0]['total_sales_minor']);
-
-        $this->assertEquals('signage', $report['sales_by_category'][1]['category']['slug']);
-        $this->assertEquals(25000, $report['sales_by_category'][1]['total_sales_minor']);
-
-        // Check Expenses By Category
-        $this->assertCount(1, $report['expenses_by_category']);
-        $this->assertEquals('EXPCAT-1', $report['expenses_by_category'][0]['category']['public_id']);
-        $this->assertEquals(4500, $report['expenses_by_category'][0]['total_expenses_minor']);
+        $this->assertEquals('2026-01', $report['monthly_trend'][1]['period']);
+        $this->assertEquals('20000', $report['monthly_trend'][1]['sales_minor']);
+        $this->assertEquals('0', $report['monthly_trend'][1]['payments_minor']);
+        $this->assertEquals('3000', $report['monthly_trend'][1]['expenses_minor']);
     }
 
     /**
@@ -395,8 +317,8 @@ class FinanceReportTest extends TestCase
             'currency' => 'INR',
         ]);
 
-        $report = $this->reportService->generateSummary([]);
-        $this->assertEquals(15000, $report['summary']['total_refunds_minor']);
-        $this->assertEquals(1, $report['summary']['total_refunds_count']);
+        $report = $this->reportService->generateSummary([])->toArray();
+        $this->assertEquals('15000', $report['metrics']['total_refunds_minor']);
+        $this->assertEquals(1, $report['metrics']['total_refunds_count']);
     }
 }

@@ -2,9 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Events\AuditEvent;
 use App\Models\Expense;
-use App\Models\ExpenseAttachment;
 use App\Models\ExpenseCategory;
 use App\Models\Permission;
 use App\Models\Role;
@@ -16,7 +14,6 @@ use App\Services\ExpenseWorkflowService;
 use App\Support\Money\MoneyParser;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
