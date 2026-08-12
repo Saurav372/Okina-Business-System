@@ -1,0 +1,37 @@
+---
+import type { CatalogProduct } from '../lib/catalog';
+import { formatMoney } from '../lib/catalog';
+import ProductVisual from './ProductVisual.astro';
+
+const { product, index = 0 } = Astro.props as { product: CatalogProduct; index?: number };
+const tones = ['red', 'ink', 'sage', 'blue'] as const;
+const availableSkus = product.skus.filter((sku) => sku.availability.available_for_checkout);
+const startingPrice = product.skus.length ? Math.min(...product.skus.map((sku) => sku.price_minor)) : product.base_price_minor;
+---
+
+<article class="product-card" data-product-card data-name={product.name.toLowerCase()} data-category={(product.category?.name ?? '').toLowerCase()} data-price={startingPrice}>
+  <a class="visual-link" href={`/products/${product.slug}`} aria-label={`View ${product.name}`} data-analytics-event="select_item" data-analytics-label={product.slug}>
+    <ProductVisual name={product.name} tone={tones[index % tones.length]} image={product.cover_image} compact />
+    {product.bulk_threshold_quantity && <span class="product-flag">Bulk pricing</span>}
+  </a>
+  <div class="product-card-body">
+    <div class="cluster product-meta"><span>{product.category?.name ?? 'Custom apparel'}</span><span aria-hidden="true">·</span><span>{availableSkus.length ? 'Ready to order' : 'Enquire'}</span></div>
+    <h3><a href={`/products/${product.slug}`}>{product.name}</a></h3>
+    <p>{product.short_description ?? 'Made to carry your idea, identity, or team mark.'}</p>
+    <div class="product-card-foot"><span>From <strong>{formatMoney(startingPrice, product.currency)}</strong></span><a class="arrow-link" href={`/products/${product.slug}`} aria-label={`Customize ${product.name}`} data-analytics-event="select_item" data-analytics-label={product.slug}>Customize <span aria-hidden="true">→</span></a></div>
+  </div>
+</article>
+
+<style>
+  .product-card { min-width: 0; }
+  .visual-link { position: relative; display: block; overflow: hidden; border: 1px solid var(--color-border); border-radius: var(--radius-md); text-decoration: none; }
+  .product-flag { position: absolute; top: .75rem; left: .75rem; padding: .35rem .55rem; background: var(--color-surface-strong); color: white; font-size: .68rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
+  .product-card-body { padding: 1rem .15rem 0; }
+  .product-meta { color: var(--color-ink-faint); font-size: .72rem; font-weight: 750; letter-spacing: .055em; text-transform: uppercase; }
+  h3 { margin: .55rem 0 .45rem; font-size: 1.12rem; }
+  h3 a { text-decoration: none; }
+  h3 a:hover { color: var(--color-brand); }
+  p { min-height: 3em; margin-bottom: .85rem; color: var(--color-ink-soft); font-size: .88rem; }
+  .product-card-foot { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding-top: .8rem; border-top: 1px solid var(--color-border); font-size: .86rem; }
+  .arrow-link { color: var(--color-brand); font-weight: 800; text-decoration: none; white-space: nowrap; }
+</style>

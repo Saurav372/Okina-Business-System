@@ -4,13 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use App\Models\CustomerAccount;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\Rules\Password as PasswordRule;
 use Illuminate\Validation\ValidationException;
 
 class CustomerAuthController extends Controller
@@ -27,7 +29,7 @@ class CustomerAuthController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:190'],
-            'password' => ['required', 'confirmed', Password::min(8)],
+            'password' => ['required', 'confirmed', PasswordRule::min(8)],
         ]);
 
         $normalizedEmail = CustomerAccount::normalizeEmail($validated['email']);
@@ -100,6 +102,73 @@ class CustomerAuthController extends Controller
         $request->session()->regenerate();
 
         return redirect()->intended(route('customer.account'));
+    }
+
+    public function forgotPassword()
+    {
+        return view('customer.forgot-password');
+    }
+
+    public function sendResetLink(Request $request)
+    {
+        $validated = $request->validate(['email' => ['required', 'email']]);
+        $normalizedEmail = CustomerAccount::normalizeEmail($validated['email']);
+        $account = CustomerAccount::query()->where('normalized_email', $normalizedEmail)->first();
+
+        if ($account) {
+            Password::broker('customer_accounts')->sendResetLink(['email' => $account->email]);
+        }
+
+        return back()->with('status', 'If an eligible account exists, a password reset link has been sent.');
+    }
+
+    public function resetPassword(Request $request, string $token)
+    {
+        return view('customer.reset-password', [
+            'token' => $token,
+            'email' => $request->string('email')->toString(),
+        ]);
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $validated = $request->validate([
+            'token' => ['required', 'string'],
+            'email' => ['required', 'email'],
+            'password' => ['required', 'confirmed', PasswordRule::min(8)],
+            'password_confirmation' => ['required', 'string'],
+        ]);
+
+        $normalizedEmail = CustomerAccount::normalizeEmail($validated['email']);
+        $account = CustomerAccount::query()->where('normalized_email', $normalizedEmail)->first();
+
+        if (! $account) {
+            throw ValidationException::withMessages(['email' => 'This password reset link is invalid or has expired.']);
+        }
+
+        $status = Password::broker('customer_accounts')->reset(
+            [
+                'email' => $account->email,
+                'password' => $validated['password'],
+                'password_confirmation' => $validated['password_confirmation'],
+                'token' => $validated['token'],
+            ],
+            function (CustomerAccount $customerAccount, string $password): void {
+                $customerAccount->forceFill([
+                    'password' => Hash::make($password),
+                    'password_changed_at' => now(),
+                    'failed_login_attempts' => 0,
+                    'locked_until' => null,
+                ])->save();
+                event(new PasswordReset($customerAccount));
+            }
+        );
+
+        if ($status !== Password::PASSWORD_RESET) {
+            throw ValidationException::withMessages(['email' => 'This password reset link is invalid or has expired.']);
+        }
+
+        return redirect()->route('customer.login')->with('status', 'Your password has been reset. You can now sign in.');
     }
 
     public function account()

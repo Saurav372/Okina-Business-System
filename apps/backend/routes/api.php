@@ -13,13 +13,20 @@ Route::get('/health', function () {
 });
 
 Route::prefix('catalog')->group(function () {
+    Route::get('/storefront', [PublicCatalogController::class, 'storefront']);
     Route::get('/categories', [PublicCatalogController::class, 'categories']);
     Route::get('/categories/{category:slug}/products', [PublicCatalogController::class, 'categoryProducts']);
     Route::get('/products', [PublicCatalogController::class, 'products']);
     Route::get('/products/{product:slug}', [PublicCatalogController::class, 'product']);
+    Route::get('/media/{file:public_id}', [PublicCatalogController::class, 'media'])
+        ->name('catalog.media.preview');
     Route::get('/products/{product:slug}/customization-options', [ProductCustomizationController::class, 'show']);
     Route::post('/products/{product:slug}/design-upload', [ProductCustomizationController::class, 'store'])
         ->middleware('auth:customer');
+    Route::post('/products/{product:slug}/protected-mockup/{preview_file:public_id}', [ProductCustomizationController::class, 'protectedMockup'])
+        ->middleware(['auth:customer', 'throttle:10,1'])
+        ->withoutScopedBindings()
+        ->name('catalog.products.protected-mockup');
     Route::get('/products/{product:slug}/design-preview/{preview_file}', [ProductCustomizationController::class, 'preview'])
         ->middleware('signed')
         ->name('catalog.products.mockup-preview');

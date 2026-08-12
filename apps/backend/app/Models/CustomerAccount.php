@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Database\Factories\CustomerAccountFactory;
+use Illuminate\Auth\Passwords\CanResetPassword as CanResetPasswordTrait;
+use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -25,10 +27,10 @@ use Illuminate\Notifications\Notifiable;
     'disabled_at',
 ])]
 #[Hidden(['password', 'remember_token'])]
-class CustomerAccount extends Authenticatable
+class CustomerAccount extends Authenticatable implements CanResetPassword
 {
     /** @use HasFactory<CustomerAccountFactory> */
-    use HasFactory, Notifiable;
+    use CanResetPasswordTrait, HasFactory, Notifiable;
 
     public const STATUS_PENDING_VERIFICATION = 'pending_verification';
 
@@ -58,6 +60,11 @@ class CustomerAccount extends Authenticatable
     public static function normalizeEmail(string $email): string
     {
         return str($email)->trim()->lower()->toString();
+    }
+
+    public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
+    {
+        $this->notify(new \App\Notifications\CustomerResetPasswordNotification($token));
     }
 
     /**

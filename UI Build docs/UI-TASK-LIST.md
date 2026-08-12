@@ -137,21 +137,21 @@ Detailed validation for each subtask is maintained in `UI-SUBTASK-VALIDATION.md`
 
 | Task ID | Task Name | Tier | Phase | Description & Acceptance | Depends On | Status |
 |---|---|---|---|---|---|---|
-| **U8.1** | **Core Storefront** | Customer | 8 | **Milestone** | U3.2.4 | Milestone |
-| U8.1.1 | Homepage | Customer | 8 | Landing page with featured products. <br> **Acceptance:** Responsive, Accessibility, Title, Description, Organization Schema, Website Schema, Open Graph, Canonical, Breadcrumb, Performance, Analytics Ready, Internal Links (Featured Categories, Related). | U3.2.4 | Pending |
-| U8.1.2 | Categories | Customer | 8 | Category listing. <br> **Acceptance:** Responsive, Accessibility, Category Title, Category Description, Collection Schema, Canonical, Breadcrumb, Pagination SEO, Performance, Analytics Ready. | U3.2.4 | Pending |
-| U8.1.3 | Product List | Customer | 8 | Listing with filters/pagination. <br> **Acceptance:** Responsive, Accessibility, Title, Meta Description, Canonical, Breadcrumb, Pagination SEO, Collection Schema, Open Graph, Performance, Analytics Ready. | U3.2.4 | Pending |
-| U8.1.4 | Product Detail | Customer | 8 | Individual product view and selection. <br> **Acceptance:** Responsive, Accessible, Product Schema, Breadcrumb Schema, Canonical, Open Graph, Twitter Card, Image Alt, Internal Links (Related), Reviews, Availability, Analytics Ready. | U3.2.4 | Pending |
-| U8.1.5 | Cart | Customer | 8 | Shopping cart review. <br> **Acceptance:** Responsive, Accessible, Noindex, Nofollow, Analytics Ready. | U8.1.4 | Pending |
-| U8.1.6 | Checkout | Customer | 8 | Order placement and payment flow. <br> **Acceptance:** Responsive, Accessible, Noindex, Robots, Canonical, Analytics Ready. | U8.1.5 | Pending |
-| **U8.2** | **Customization Workflow** | Customer | 8 | **Milestone** | U8.1.6 | Milestone |
-| U8.2.1 | Product Options | Customer | 8 | Customization selections (color, size, etc). | U8.1.6 | Pending |
-| U8.2.2 | Design Upload | Customer | 8 | Customer design upload UI. | U8.2.1 | Pending |
-| U8.2.3 | Preview | Customer | 8 | Real-time mockup preview. | U8.2.2 | Pending |
+| **U8.1** | **Core Storefront** | Customer | 8 | **Milestone** | U3.2.4 | Implemented (Launch QA) |
+| U8.1.1 | Homepage | Customer | 8 | Landing page with featured products. <br> **Acceptance:** Responsive, Accessibility, Title, Description, Organization Schema, Website Schema, Open Graph, Canonical, Breadcrumb, Performance, Analytics Ready, Internal Links (Featured Categories, Related). | U3.2.4 | Implemented (Launch QA) |
+| U8.1.2 | Categories | Customer | 8 | Category listing. <br> **Acceptance:** Responsive, Accessibility, Category Title, Category Description, Collection Schema, Canonical, Breadcrumb, Pagination SEO, Performance, Analytics Ready. | U3.2.4 | Implemented (Launch QA) |
+| U8.1.3 | Product List | Customer | 8 | Listing with filters/pagination. <br> **Acceptance:** Responsive, Accessibility, Title, Meta Description, Canonical, Breadcrumb, Pagination SEO, Collection Schema, Open Graph, Performance, Analytics Ready. | U3.2.4 | Implemented (Launch QA) |
+| U8.1.4 | Product Detail | Customer | 8 | Individual product view and selection. <br> **Acceptance:** Responsive, Accessible, Product Schema, Breadcrumb Schema, Canonical, Open Graph, Twitter Card, Image Alt, Internal Links (Related), Reviews, Availability, Analytics Ready. | U3.2.4 | Implemented (Dashboard Media Connected/Reviews Pending) |
+| U8.1.5 | Cart | Customer | 8 | Shopping cart review. <br> **Acceptance:** Responsive, Accessible, Noindex, Nofollow, Analytics Ready. | U8.1.4 | Completed |
+| U8.1.6 | Checkout | Customer | 8 | Order placement and payment flow. <br> **Acceptance:** Responsive, Accessible, Noindex, Robots, Canonical, Analytics Ready. | U8.1.5 | Implemented (Gateway QA) |
+| **U8.2** | **Customization Workflow** | Customer | 8 | **Milestone** | U8.1.6 | Implemented (Proof API Pending) |
+| U8.2.1 | Product Options | Customer | 8 | Customization selections (color, size, etc). | U8.1.6 | Completed |
+| U8.2.2 | Design Upload | Customer | 8 | Customer design upload UI. | U8.2.1 | Completed |
+| U8.2.3 | Preview | Customer | 8 | Real-time mockup preview. | U8.2.2 | Completed |
 | U8.2.4 | Approval | Customer | 8 | Customer proof approval. | U8.2.3 | Pending |
-| U8.2.5 | Cart Integration | Customer | 8 | Adding customized item to cart. | U8.2.4 | Pending |
-| U8.3 | Customer Authentication | Customer | 8 | Branded Login, Register, Forgot Password. (Astro consuming Laravel APIs). <br> **Acceptance:** Responsive, Accessible, Noindex, Canonical, Analytics Ready. | None | Pending |
-| U8.4 | Customer Portal | Customer | 8 | Customer dashboard, tracking, addresses. <br> **Acceptance:** Responsive, Accessible, Noindex, Nofollow (if appropriate), Private routes, Robots. | U8.1.6, U8.3 | Pending |
+| U8.2.5 | Cart Integration | Customer | 8 | Adding customized item to cart. | U8.2.4 | Completed |
+| U8.3 | Customer Authentication | Customer | 8 | Branded Login, Register, Forgot Password. Laravel session authentication with storefront handoff. <br> **Acceptance:** Responsive, Accessible, Noindex, Canonical, Analytics Ready. | None | Completed |
+| U8.4 | Customer Portal | Customer | 8 | Customer dashboard, tracking, addresses. <br> **Acceptance:** Responsive, Accessible, Noindex, Nofollow (if appropriate), Private routes, Robots. | U8.1.6, U8.3 | Completed |
 
 ## Tier 4: Release
 

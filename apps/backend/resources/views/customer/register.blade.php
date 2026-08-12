@@ -1,49 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Create Customer Account</title>
-</head>
-<body>
-    <main>
-        <h1>Create Customer Account</h1>
+@extends('customer.auth-layout')
 
-        @if ($errors->any())
-            <div>
-                @foreach ($errors->all() as $error)
-                    <p>{{ $error }}</p>
-                @endforeach
-            </div>
-        @endif
+@section('title', 'Create account')
 
-        <form method="POST" action="{{ route('customer.register.store') }}">
-            @csrf
+@section('content')
+    <p class="eyebrow">Create your private workspace</p>
+    <h1>Make an account.</h1>
+    <p class="intro">Save artwork securely, reuse delivery details, and follow every order.</p>
 
-            <label>
-                Name
-                <input type="text" name="name" value="{{ old('name') }}" required autofocus>
-            </label>
+    @if ($errors->any())
+        <div class="error-summary" role="alert" aria-live="polite">
+            @foreach ($errors->all() as $error)<p>{{ $error }}</p>@endforeach
+        </div>
+    @endif
 
-            <label>
-                Email address
-                <input type="email" name="email" value="{{ old('email') }}" required>
-            </label>
-
-            <label>
-                Password
-                <input type="password" name="password" required>
-            </label>
-
-            <label>
-                Confirm password
-                <input type="password" name="password_confirmation" required>
-            </label>
-
-            <button type="submit">Create account</button>
-        </form>
-
-        <p><a href="{{ route('customer.login') }}">Already have an account?</a></p>
-    </main>
-</body>
-</html>
+    <form class="auth-form" method="POST" action="{{ route('customer.register.store') }}">
+        @csrf
+        <label class="field"><span>Your name</span><input type="text" name="name" value="{{ old('name') }}" required autofocus autocomplete="name"></label>
+        <label class="field"><span>Email address</span><input type="email" name="email" value="{{ old('email') }}" required autocomplete="email"></label>
+        <label class="field"><span>Password</span><input type="password" name="password" required autocomplete="new-password"><small>Use at least 8 characters.</small></label>
+        <label class="field"><span>Confirm password</span><input type="password" name="password_confirmation" required autocomplete="new-password"></label>
+        <button class="submit" type="submit">Create my account →</button>
+    </form>
+    <p class="switch">Already have an account? <a href="{{ route('customer.login') }}">Sign in</a></p>
+@endsection

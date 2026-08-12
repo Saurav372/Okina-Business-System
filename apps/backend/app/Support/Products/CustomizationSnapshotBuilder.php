@@ -38,14 +38,6 @@ class CustomizationSnapshotBuilder
             'files' => [
                 $this->fileReference($file, 'original_upload'),
             ],
-            'mockup_preview' => [
-                'role' => 'mockup_preview',
-                'render_type' => 'signed_svg_mockup',
-                'source_file_public_id' => $file->public_id,
-                'route_name' => 'catalog.products.mockup-preview',
-                'expires_in_minutes' => 15,
-                'placement' => $normalizedPlacement,
-            ],
             'customer_note' => $this->cleanNote($customerNote),
         ], static fn (mixed $value): bool => $value !== null && $value !== []);
     }
@@ -247,7 +239,7 @@ class CustomizationSnapshotBuilder
 
     private function publicMockupPreview(mixed $preview): ?array
     {
-        if (! is_array($preview)) {
+        if (! is_array($preview) || $preview === []) {
             return null;
         }
 

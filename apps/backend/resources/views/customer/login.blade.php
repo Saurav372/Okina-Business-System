@@ -1,39 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Customer Login</title>
-</head>
-<body>
-    <main>
-        <h1>Customer Login</h1>
+@extends('customer.auth-layout')
 
-        @if ($errors->any())
-            <div>
-                @foreach ($errors->all() as $error)
-                    <p>{{ $error }}</p>
-                @endforeach
-            </div>
-        @endif
+@section('title', 'Sign in')
 
-        <form method="POST" action="{{ route('customer.login.store') }}">
-            @csrf
+@section('content')
+    <p class="eyebrow">Welcome back</p>
+    <h1>Sign in.</h1>
+    <p class="intro">Continue to your artwork, addresses, and order progress.</p>
 
-            <label>
-                Email address
-                <input type="email" name="email" value="{{ old('email') }}" required autofocus>
-            </label>
+    @if ($errors->any())
+        <div class="error-summary" role="alert" aria-live="polite">
+            @foreach ($errors->all() as $error)<p>{{ $error }}</p>@endforeach
+        </div>
+    @endif
+    @if (session('status'))<div class="success-summary" role="status">{{ session('status') }}</div>@endif
 
-            <label>
-                Password
-                <input type="password" name="password" required>
-            </label>
-
-            <button type="submit">Login</button>
-        </form>
-
-        <p><a href="{{ route('customer.register') }}">Create customer account</a></p>
-    </main>
-</body>
-</html>
+    <form class="auth-form" method="POST" action="{{ route('customer.login.store') }}">
+        @csrf
+        <label class="field"><span>Email address</span><input type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="email"></label>
+        <label class="field"><span class="field-line">Password <a href="{{ route('customer.password.request') }}">Forgot password?</a></span><input type="password" name="password" required autocomplete="current-password"></label>
+        <button class="submit" type="submit">Sign in securely →</button>
+    </form>
+    <p class="switch">New to Okina Craft? <a href="{{ route('customer.register') }}">Create an account</a></p>
+@endsection

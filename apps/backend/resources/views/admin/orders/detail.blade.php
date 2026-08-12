@@ -1,4 +1,20 @@
 <x-layouts.admin :title="'Order Detail - ' . $order->public_id . ' | Okina Craft'" :hideTitle="true">
+    @if (session('success'))
+        <div role="status" class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if ($errors->any())
+        <div role="alert" class="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+            <p class="font-bold">The proof could not be uploaded.</p>
+            <ul class="mt-1 list-disc space-y-1 pl-5">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
     
     <!-- Breadcrumbs -->
     <div class="mb-4">
@@ -71,7 +87,7 @@
     </div>
  
     <!-- Tabbed Layout Container -->
-    <div x-data="{ activeTab: 'items' }" class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+    <div x-data="{ activeTab: @js(session('proof_uploaded') || $errors->any() ? 'mockups' : 'items') }" class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         
         <!-- Tab content & detail panels (Left / 2 Columns) -->
         <div class="lg:col-span-2 space-y-6">
@@ -103,7 +119,7 @@
                     :class="activeTab === 'mockups' ? 'bg-neutral-900 text-white shadow-xs' : 'text-neutral-500 hover:bg-neutral-50 hover:text-neutral-800'"
                     class="px-4 py-2 rounded-xl text-xs font-bold transition-all duration-150 focus:outline-none shrink-0"
                 >
-                    Mockups ({{ $order->mockups->count() }})
+                    Artwork & Proofs ({{ $artworkUploads->count() + $order->mockups->count() }})
                 </button>
                 <button 
                     @click="activeTab = 'timeline'" 
@@ -120,13 +136,10 @@
                 <div class="space-y-4">
                     @foreach ($summary['items'] as $item)
                         <div class="border border-neutral-100 rounded-xl p-4 bg-neutral-50/50 hover:bg-neutral-50 transition-colors flex items-start gap-4">
-                            <!-- Image (exactly 60px as recommended) -->
                             @php $cs = $item['customization_snapshot'] ?? null; @endphp
-                            @if (is_array($cs) && isset($cs['mockup_preview_url']) && $cs['mockup_preview_url'])
-                                <img class="w-[60px] h-[60px] object-cover rounded-lg border border-neutral-200 shrink-0" src="{{ $cs['mockup_preview_url'] }}" alt="Preview">
-                            @else
-                                <div class="w-[60px] h-[60px] bg-neutral-100 rounded-lg border border-neutral-200 flex items-center justify-center text-[10px] text-neutral-400 font-bold uppercase shrink-0">No Preview</div>
-                            @endif
+                            <div class="w-[60px] h-[60px] bg-neutral-100 rounded-lg border border-neutral-200 flex items-center justify-center text-neutral-400 shrink-0" aria-hidden="true">
+                                <x-icons.lucide name="lucide-package" class="w-6 h-6" />
+                            </div>
                             
                             <!-- Details -->
                             <div class="flex-1 min-w-0">
@@ -277,15 +290,110 @@
                 @endif
             </div>
  
-            <!-- 4. Mockups Panel -->
+            <!-- 4. Customer Artwork & Staff Proofs Panel -->
             <div x-show="activeTab === 'mockups'" class="bg-white border border-[color:var(--color-border)] rounded-2xl p-6 shadow-xs space-y-6">
-                <h3 class="text-sm font-bold text-neutral-800 uppercase tracking-wider border-b border-neutral-100 pb-3">Featured & Production Mockups</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="border-b border-neutral-100 pb-4">
+                    <h3 class="text-sm font-bold text-neutral-800 uppercase tracking-wider">Artwork & Customer Proofs</h3>
+                    <p class="mt-1 text-xs leading-5 text-neutral-500">Download the customer's original artwork, prepare the mockup in Photoshop or another editor, then upload the finished proof here. Uploaded proofs are immediately available in the customer's order page.</p>
+                </div>
+
+                <section aria-labelledby="customer-artwork-heading" class="space-y-3">
+                    <div class="flex items-center justify-between gap-3">
+                        <h4 id="customer-artwork-heading" class="text-xs font-bold uppercase tracking-wider text-neutral-500">Customer artwork & protected previews</h4>
+                        <span class="text-[10px] font-bold text-neutral-400">ORDER FILES</span>
+                    </div>
+
+                    <div class="space-y-3">
+                        @forelse($artworkUploads as $upload)
+                            @php
+                                $file = $upload['file'];
+                                $displayFilename = $file->original_filename . ($file->extension ? '.' . $file->extension : '');
+                                $isProtectedPreview = ($upload['reference']['role'] ?? null) === 'protected_mockup';
+                            @endphp
+                            <article class="flex flex-col gap-4 rounded-xl border border-neutral-200 bg-neutral-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+                                <div class="flex min-w-0 items-start gap-3">
+                                    <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-500" aria-hidden="true">
+                                        <x-icons.lucide name="lucide-file-image" class="w-5 h-5" />
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p class="truncate text-sm font-bold text-neutral-800">{{ $displayFilename }}</p>
+                                        <p class="mt-0.5 text-xs text-neutral-500">{{ $upload['item']->product_name_snapshot }} · {{ strtoupper((string) ($upload['print_position'] ?? 'position not set')) }} · {{ strtoupper((string) ($upload['print_method'] ?? 'method not set')) }}</p>
+                                        <p class="mt-1 text-[11px] text-neutral-400">{{ number_format($file->size_bytes / 1024, 0) }} KB · {{ $isProtectedPreview ? 'System-generated protected preview' : 'Original artwork uploaded by customer' }}</p>
+                                        @if($upload['customer_note'])
+                                            <p class="mt-2 text-xs text-neutral-600"><span class="font-semibold">Customer note:</span> {{ $upload['customer_note'] }}</p>
+                                        @endif
+                                    </div>
+                                </div>
+                                @can('download', $file)
+                                    <div class="flex shrink-0 gap-2">
+                                        <a href="{{ route('admin.orders.files.preview', ['order' => $order->public_id, 'file' => $file->public_id]) }}" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-bold text-neutral-700 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-neutral-400">
+                                            <x-icons.lucide name="lucide-eye" class="w-4 h-4" /> View
+                                        </a>
+                                        <a href="{{ route('admin.orders.files.download', ['order' => $order->public_id, 'file' => $file->public_id]) }}" class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-neutral-900 px-3 py-2 text-xs font-bold text-white hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-500">
+                                            <x-icons.lucide name="lucide-download" class="w-4 h-4" /> {{ $isProtectedPreview ? 'Download preview' : 'Download original' }}
+                                        </a>
+                                    </div>
+                                @endcan
+                            </article>
+                        @empty
+                            <div class="rounded-xl border border-dashed border-neutral-300 px-4 py-8 text-center">
+                                <p class="text-sm font-semibold text-neutral-700">No customer artwork on this order</p>
+                                <p class="mt-1 text-xs text-neutral-500">Artwork uploaded during product customization will appear here.</p>
+                            </div>
+                        @endforelse
+                    </div>
+                </section>
+
+                @can('update', $order)
+                    <section aria-labelledby="upload-proof-heading" class="rounded-xl border border-neutral-200 bg-neutral-50 p-4 sm:p-5">
+                        <h4 id="upload-proof-heading" class="text-sm font-bold text-neutral-800">Upload finished customer proof</h4>
+                        <p class="mt-1 text-xs leading-5 text-neutral-500">Use a JPG, PNG, WebP, GIF, or PDF up to 5 MB. This file becomes visible to the customer immediately.</p>
+
+                        <form action="{{ route('admin.orders.proofs.store', ['order' => $order->public_id]) }}" method="POST" enctype="multipart/form-data" class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            @csrf
+                            <div class="sm:col-span-2">
+                                <label for="proof_file" class="mb-1.5 block text-xs font-bold text-neutral-700">Finished proof file <span class="text-rose-600">*</span></label>
+                                <input id="proof_file" name="proof_file" type="file" accept=".jpg,.jpeg,.png,.gif,.webp,.pdf" required class="block w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-700 file:mr-3 file:rounded-md file:border-0 file:bg-neutral-900 file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-white focus:border-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-300">
+                            </div>
+                            <div>
+                                <label for="display_name" class="mb-1.5 block text-xs font-bold text-neutral-700">Proof name</label>
+                                <input id="display_name" name="display_name" type="text" maxlength="180" value="{{ old('display_name') }}" placeholder="Example: Front print proof v1" class="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-800 placeholder:text-neutral-400 focus:border-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-300">
+                            </div>
+                            <div class="flex items-end">
+                                <label class="flex min-h-10 w-full cursor-pointer items-center gap-2 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm font-semibold text-neutral-700">
+                                    <input name="is_featured" type="hidden" value="0">
+                                    <input name="is_featured" type="checkbox" value="1" {{ old('is_featured', '1') ? 'checked' : '' }} class="h-4 w-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-500">
+                                    Mark as current proof
+                                </label>
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label for="proof_notes" class="mb-1.5 block text-xs font-bold text-neutral-700">Message for customer <span class="font-normal text-neutral-400">(optional)</span></label>
+                                <textarea id="proof_notes" name="notes" rows="3" maxlength="1000" placeholder="Example: Please check the logo size and placement." class="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-800 placeholder:text-neutral-400 focus:border-neutral-500 focus:outline-none focus:ring-2 focus:ring-neutral-300">{{ old('notes') }}</textarea>
+                            </div>
+                            <div class="sm:col-span-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                <p class="text-[11px] text-neutral-500">Uploading a new current proof moves the order back to design review.</p>
+                                <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2.5 text-xs font-bold text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2">
+                                    <x-icons.lucide name="lucide-upload" class="w-4 h-4" /> Upload & share with customer
+                                </button>
+                            </div>
+                        </form>
+                    </section>
+                @endcan
+
+                <section aria-labelledby="shared-proofs-heading" class="space-y-3">
+                    <h4 id="shared-proofs-heading" class="text-xs font-bold uppercase tracking-wider text-neutral-500">Proofs shared with customer</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     @forelse($order->mockups as $mockup)
                         <div class="border border-neutral-100 rounded-xl p-4 bg-neutral-50 flex flex-col justify-between">
                             <div>
                                 @if($mockup->file)
-                                    <img class="w-full h-44 object-cover rounded-lg border border-neutral-200 mb-3" src="{{ route('admin.orders.files.preview', ['order' => $order->public_id, 'file' => $mockup->file->public_id]) }}" alt="{{ $mockup->display_name }}">
+                                    @if($mockup->file->isImage())
+                                        <img class="w-full h-44 object-contain bg-white rounded-lg border border-neutral-200 mb-3" src="{{ route('admin.orders.files.preview', ['order' => $order->public_id, 'file' => $mockup->file->public_id]) }}" alt="{{ $mockup->display_name }}">
+                                    @else
+                                        <div class="w-full h-44 bg-white rounded-lg border border-neutral-200 flex flex-col gap-2 items-center justify-center text-xs text-neutral-500 font-bold mb-3">
+                                            <x-icons.lucide name="lucide-file-text" class="w-8 h-8" /> PDF proof
+                                        </div>
+                                    @endif
                                 @else
                                     <div class="w-full h-44 bg-neutral-200 rounded-lg flex items-center justify-center text-xs text-neutral-400 uppercase font-bold mb-3">No Image</div>
                                 @endif
@@ -296,19 +404,23 @@
                                     </span>
                                 @endif
                                 @if($mockup->notes)
-                                    <p class="text-xs text-neutral-500 mt-2 italic">Notes: {{ $mockup->notes }}</p>
+                                    <p class="text-xs text-neutral-500 mt-2">{{ $mockup->notes }}</p>
                                 @endif
                             </div>
-                            <div class="text-xs text-neutral-400 mt-4 border-t border-neutral-200/50 pt-2 font-mono">
-                                Sort Order: {{ $mockup->sort_order }}
-                            </div>
+                            @if($mockup->file)
+                                <div class="mt-4 flex gap-2 border-t border-neutral-200/50 pt-3">
+                                    <a href="{{ route('admin.orders.files.preview', ['order' => $order->public_id, 'file' => $mockup->file->public_id]) }}" target="_blank" rel="noopener" class="flex-1 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-center text-xs font-bold text-neutral-700 hover:bg-neutral-100">View</a>
+                                    <a href="{{ route('admin.orders.files.download', ['order' => $order->public_id, 'file' => $mockup->file->public_id]) }}" class="flex-1 rounded-lg bg-neutral-900 px-3 py-2 text-center text-xs font-bold text-white hover:bg-neutral-800">Download</a>
+                                </div>
+                            @endif
                         </div>
                     @empty
                         <div class="col-span-2 text-center text-xs text-neutral-400 py-8">
-                            No mockups attached to this order.
+                            No finished proofs have been shared yet.
                         </div>
                     @endforelse
-                </div>
+                    </div>
+                </section>
             </div>
  
             <!-- 5. History Log Panel -->

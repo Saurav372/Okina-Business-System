@@ -5,7 +5,9 @@ namespace App\Support\Products;
 use App\Contracts\PublicCatalogContract;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\ProductMedia;
 use App\Models\ProductSku;
+use App\Models\StoredFile;
 use Illuminate\Support\Carbon;
 
 readonly class PublicCatalogRules implements PublicCatalogContract
@@ -42,6 +44,9 @@ readonly class PublicCatalogRules implements PublicCatalogContract
                 'category',
                 'variants' => fn ($query) => $query->orderBy('sort_order')->orderBy('id'),
                 'skus' => fn ($query) => $query->orderBy('sort_order')->orderBy('id'),
+                'media.file',
+                'seo.ogImage',
+                'seo.twitterImage',
             ])
             ->orderBy('sort_order')
             ->orderBy('id')
@@ -58,6 +63,9 @@ readonly class PublicCatalogRules implements PublicCatalogContract
                 'category',
                 'variants' => fn ($query) => $query->orderBy('sort_order')->orderBy('id'),
                 'skus' => fn ($query) => $query->orderBy('sort_order')->orderBy('id'),
+                'media.file',
+                'seo.ogImage',
+                'seo.twitterImage',
             ])
             ->orderBy('sort_order')
             ->orderBy('id')
@@ -74,6 +82,9 @@ readonly class PublicCatalogRules implements PublicCatalogContract
                 'category',
                 'variants' => fn ($query) => $query->orderBy('sort_order')->orderBy('id'),
                 'skus' => fn ($query) => $query->orderBy('sort_order')->orderBy('id'),
+                'media.file',
+                'seo.ogImage',
+                'seo.twitterImage',
             ])
             ->where('slug', $slug)
             ->first();
@@ -114,6 +125,13 @@ readonly class PublicCatalogRules implements PublicCatalogContract
 
     private function productPayload(Product $product): array
     {
+        $media = $product->media
+            ->map(fn (ProductMedia $item): ?array => $this->mediaPayload($item))
+            ->filter()
+            ->values();
+        $coverImage = $media->firstWhere('role', ProductMedia::ROLE_COVER) ?? $media->first();
+        $seo = $product->seoPresenter();
+
         return [
             'slug' => $product->slug,
             'name' => $product->name,
@@ -131,8 +149,29 @@ readonly class PublicCatalogRules implements PublicCatalogContract
             'bulk_threshold_quantity' => $product->bulk_threshold_quantity,
             'base_price_minor' => $product->base_price_minor,
             'currency' => $product->currency,
-            'seo_title' => $product->seo_title,
-            'seo_description' => $product->seo_description,
+            'seo_title' => $seo->metaTitle(),
+            'seo_description' => $seo->metaDescription(),
+            'seo' => [
+                'title' => $seo->metaTitle(),
+                'description' => $seo->metaDescription(),
+                'canonical_url' => $product->seo?->canonical_url,
+                'robots' => [
+                    'index' => $seo->robotsIndex(),
+                    'follow' => $seo->robotsFollow(),
+                ],
+                'open_graph' => [
+                    'title' => $seo->ogTitle(),
+                    'description' => $seo->ogDescription(),
+                    'image' => $this->seoImagePayload($product->seo?->ogImage, $media),
+                ],
+                'twitter' => [
+                    'title' => $seo->twitterTitle(),
+                    'description' => $seo->twitterDescription(),
+                    'image' => $this->seoImagePayload($product->seo?->twitterImage, $media),
+                ],
+            ],
+            'cover_image' => $coverImage,
+            'media' => $media->all(),
             'sort_order' => $product->sort_order,
             'published_at' => $this->formatTimestamp($product->published_at),
             'category' => $product->category === null ? null : [
@@ -156,6 +195,60 @@ readonly class PublicCatalogRules implements PublicCatalogContract
                 ->values()
                 ->all(),
         ];
+    }
+
+    private function mediaPayload(ProductMedia $media): ?array
+    {
+        $file = $media->file;
+
+        if (! $this->isPublicProductFile($file)) {
+            return null;
+        }
+
+        $preview = $file->previewMetadata() ?? [];
+
+        return [
+            'public_id' => $file->public_id,
+            'role' => $media->role,
+            'alt_text' => filled($media->alt_text) ? $media->alt_text : $file->original_filename,
+            'sort_order' => $media->sort_order,
+            'url' => route('catalog.media.preview', ['file' => $file->public_id]),
+            'mime_type' => $file->previewMimeType() ?? $file->mime_type,
+            'width' => isset($preview['width']) ? (int) $preview['width'] : null,
+            'height' => isset($preview['height']) ? (int) $preview['height'] : null,
+        ];
+    }
+
+    private function seoImagePayload(?StoredFile $file, $media): ?array
+    {
+        if ($this->isPublicProductFile($file)) {
+            $matched = $media->firstWhere('public_id', $file->public_id);
+
+            if ($matched !== null) {
+                return $matched;
+            }
+
+            return [
+                'public_id' => $file->public_id,
+                'role' => 'social',
+                'alt_text' => null,
+                'sort_order' => 0,
+                'url' => route('catalog.media.preview', ['file' => $file->public_id]),
+                'mime_type' => $file->previewMimeType() ?? $file->mime_type,
+                'width' => data_get($file->previewMetadata(), 'width'),
+                'height' => data_get($file->previewMetadata(), 'height'),
+            ];
+        }
+
+        return $media->firstWhere('role', ProductMedia::ROLE_COVER) ?? $media->first();
+    }
+
+    private function isPublicProductFile(?StoredFile $file): bool
+    {
+        return $file !== null
+            && $file->visibility === StoredFile::VISIBILITY_PUBLIC_SAFE_PREVIEW
+            && $file->status === StoredFile::STATUS_ACTIVE
+            && $file->isImage();
     }
 
     private function skuPayload(ProductSku $sku): array
@@ -216,6 +309,9 @@ readonly class PublicCatalogRules implements PublicCatalogContract
             'description',
             'seo_title',
             'seo_description',
+            'seo',
+            'cover_image',
+            'media',
             'sort_order',
             'published_at',
             'products_count',

@@ -1,16 +1,9 @@
 ---
 import CatalogLayout from '../../../layouts/CatalogLayout.astro';
 
-// Since this is a client-side rendered page in a static Astro build,
-// we output static paths for compilation and render contents client-side.
-export function getStaticPaths() {
-  return [
-    { params: { public_id: 'placeholder' } }
-  ];
-}
 ---
 
-<CatalogLayout title="Order Details - Okina Craft" description="Track your order status, payments, and view custom mockups">
+<CatalogLayout title="Order Details - Okina Craft" description="Track your order status, payments, and artwork proofs">
   <div class="back-link-container">
     <a href="/account" class="back-link">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
@@ -112,6 +105,19 @@ export function getStaticPaths() {
     <div class="detail-layout">
       <!-- Left Column: Items and Transactions -->
       <div class="stack animate-slide-in">
+        <!-- Staff-prepared artwork proofs -->
+        <section class="card proof-card hidden" id="proofs-card" aria-labelledby="proofs-heading">
+          <div class="proof-card-heading">
+            <div>
+              <p class="proof-eyebrow">Prepared by our artwork team</p>
+              <h2 id="proofs-heading">Your artwork proofs</h2>
+            </div>
+            <span class="proof-status">Ready to review</span>
+          </div>
+          <p class="proof-intro">These are finished proofs prepared from your uploaded artwork. Open or download the latest proof to check the design.</p>
+          <div class="proof-list" id="proofs-list"></div>
+        </section>
+
         <!-- Order Items -->
         <div class="card">
           <h2>Items Ordered</h2>
@@ -609,6 +615,142 @@ export function getStaticPaths() {
     background: var(--surface-muted);
   }
 
+  .proof-card {
+    border-top: 3px solid var(--accent);
+  }
+
+  .proof-card-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 0.75rem;
+  }
+
+  .proof-card-heading h2 {
+    margin: 0;
+    border: 0;
+    padding: 0;
+  }
+
+  .proof-eyebrow {
+    margin: 0 0 0.25rem;
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .proof-status {
+    flex-shrink: 0;
+    border: 1px solid #bbf7d0;
+    border-radius: 999px;
+    background: #f0fdf4;
+    color: #166534;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.72rem;
+    font-weight: 750;
+  }
+
+  .proof-intro {
+    margin: 0.9rem 0 1rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.55;
+  }
+
+  .proof-list {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .proof-item {
+    display: grid;
+    grid-template-columns: 132px 1fr;
+    gap: 1rem;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface-muted);
+    padding: 0.9rem;
+  }
+
+  .proof-preview {
+    width: 132px;
+    height: 112px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: #fff;
+    object-fit: contain;
+  }
+
+  .proof-file-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    color: var(--muted);
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .proof-file-placeholder svg {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .proof-copy {
+    min-width: 0;
+  }
+
+  .proof-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .proof-title-row h3 {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  .proof-current {
+    border-radius: 999px;
+    background: var(--text);
+    color: var(--surface);
+    padding: 0.2rem 0.45rem;
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .proof-meta,
+  .proof-note {
+    margin: 0.35rem 0 0;
+    color: var(--muted);
+    font-size: 0.8rem;
+    line-height: 1.45;
+  }
+
+  .proof-note {
+    color: var(--text);
+  }
+
+  .proof-actions {
+    display: flex;
+    gap: 0.6rem;
+    margin-top: 0.8rem;
+  }
+
+  .proof-actions .btn {
+    min-height: 38px;
+    padding: 0.55rem 0.8rem;
+    font-size: 0.82rem;
+  }
+
   /* Order Item rows */
   .items-list {
     display: flex;
@@ -628,7 +770,7 @@ export function getStaticPaths() {
     padding-bottom: 0;
   }
 
-  .item-mockup {
+  .item-thumb-placeholder {
     width: 90px;
     height: 90px;
     border-radius: 6px;
@@ -641,12 +783,10 @@ export function getStaticPaths() {
     flex-shrink: 0;
   }
 
-  .item-mockup img,
-  .item-mockup iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-    object-fit: contain;
+  .item-thumb-placeholder svg {
+    width: 2rem;
+    height: 2rem;
+    color: var(--line);
   }
 
   .item-info {
@@ -887,6 +1027,19 @@ export function getStaticPaths() {
       flex: 1;
       justify-content: center;
     }
+    .proof-item {
+      grid-template-columns: 1fr;
+    }
+    .proof-preview {
+      width: 100%;
+      height: 220px;
+    }
+    .proof-actions {
+      flex-direction: column;
+    }
+    .proof-actions .btn {
+      justify-content: center;
+    }
   }
 </style>
 
@@ -923,6 +1076,8 @@ export function getStaticPaths() {
 
   // Items
   const itemsList = document.getElementById('items-list');
+  const proofsCard = document.getElementById('proofs-card');
+  const proofsList = document.getElementById('proofs-list');
 
   // Ledgers
   const paymentsList = document.getElementById('payments-list');
@@ -972,6 +1127,7 @@ export function getStaticPaths() {
       renderShippingTracking();
       renderPricingSummary();
       renderAddresses();
+      renderProofs();
       renderItems();
       renderPayments();
       renderRefunds();
@@ -1139,7 +1295,7 @@ export function getStaticPaths() {
       
       const custom = item.customization_snapshot;
       let customizationHtml = '';
-      let mockupHtml = '<div class="item-mockup"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:2rem;height:2rem;color:var(--line);"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>';
+      const itemIcon = '<div class="item-thumb-placeholder" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" y1="22" x2="12" y2="12"/></svg></div>';
 
       if (custom) {
         let optionsList = '';
@@ -1157,19 +1313,11 @@ export function getStaticPaths() {
             ${custom.notes ? `<p><strong>Notes:</strong> <em>${escapeHtml(custom.notes)}</em></p>` : ''}
           </div>
         `;
-
-        if (custom.mockup_preview_url) {
-          mockupHtml = `
-            <div class="item-mockup">
-              <iframe src="${custom.mockup_preview_url}" scrolling="no"></iframe>
-            </div>
-          `;
-        }
       }
 
       return `
         <div class="item-row">
-          ${mockupHtml}
+          ${itemIcon}
           <div class="item-info">
             <div class="item-info-top">
               <h4>${escapeHtml(item.product_name)}</h4>
@@ -1182,6 +1330,45 @@ export function getStaticPaths() {
             </div>
           </div>
         </div>
+      `;
+    }).join('');
+  }
+
+  function renderProofs() {
+    const proofs = orderData.proofs || [];
+
+    if (!proofsCard || !proofsList || proofs.length === 0) {
+      proofsCard?.classList.add('hidden');
+      return;
+    }
+
+    proofsCard.classList.remove('hidden');
+    proofsList.innerHTML = proofs.map((proof: any) => {
+      const isImage = String(proof.mime_type || '').startsWith('image/');
+      const preview = isImage
+        ? `<img class="proof-preview" src="${escapeHtml(proof.preview_url)}" alt="${escapeHtml(proof.display_name)}">`
+        : `<div class="proof-preview proof-file-placeholder" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>PDF proof</div>`;
+      const sharedDate = proof.shared_at
+        ? new Intl.DateTimeFormat('en-IN', { dateStyle: 'medium' }).format(new Date(proof.shared_at))
+        : '';
+      const size = proof.size_bytes ? `${Math.max(1, Math.round(proof.size_bytes / 1024))} KB` : '';
+
+      return `
+        <article class="proof-item">
+          ${preview}
+          <div class="proof-copy">
+            <div class="proof-title-row">
+              <h3>${escapeHtml(proof.display_name)}</h3>
+              ${proof.is_featured ? '<span class="proof-current">Current proof</span>' : ''}
+            </div>
+            <p class="proof-meta">${[sharedDate, size].filter(Boolean).join(' · ')}</p>
+            ${proof.notes ? `<p class="proof-note">${escapeHtml(proof.notes)}</p>` : ''}
+            <div class="proof-actions">
+              <a class="btn btn-secondary" href="${escapeHtml(proof.preview_url)}" target="_blank" rel="noopener">Open proof</a>
+              <a class="btn btn-primary" href="${escapeHtml(proof.download_url)}">Download</a>
+            </div>
+          </div>
+        </article>
       `;
     }).join('');
   }
@@ -1201,7 +1388,7 @@ export function getStaticPaths() {
 
       return `
         <tr>
-          <td><span class="capitalize">${escapeHtml(pay.provider)} (${escapeHtml(pay.payment_type)})</span></td>
+          <td><span class="capitalize">${escapeHtml(pay.provider)} (${escapeHtml(pay.method ?? 'online')})</span></td>
           <td><code>${escapeHtml(pay.provider_payment_id || pay.receipt_number || '-')}</code></td>
           <td><span class="badge badge-${pay.status}">${pay.status}</span></td>
           <td>${paidDate}</td>
@@ -1293,10 +1480,11 @@ export function getStaticPaths() {
       }
     });
 
-    // Support WhatsApp link
+    // Keep support contextual without shipping a placeholder contact destination.
     if (supportLink) {
-      const message = encodeURIComponent(`Hi, I need support with my order ${orderData.public_id}.`);
-      supportLink.href = `https://wa.me/919999999999?text=${message}`; // Configure target phone number later
+      supportLink.href = `/track-order?order=${encodeURIComponent(orderData.public_id)}`;
+      supportLink.removeAttribute('target');
+      supportLink.textContent = 'Track this order';
     }
   }
 

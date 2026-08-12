@@ -8,6 +8,7 @@ use App\Models\CustomerAccount;
 use App\Models\Product;
 use App\Models\StoredFile;
 use App\Services\FileUploadService;
+use App\Services\ProtectedMockupService;
 use App\Support\Products\CustomizationSnapshotBuilder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -17,6 +18,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class ProductCustomizationController extends Controller
@@ -110,11 +112,6 @@ class ProductCustomizationController extends Controller
                     'customer_note' => $request->string('customer_note')->trim()->toString() ?: null,
                 ],
                 'file' => $this->filePayload($file, $files),
-                'mockup_preview_url' => URL::temporarySignedRoute(
-                    'catalog.products.mockup-preview',
-                    now()->addMinutes(15),
-                    $this->mockupPreviewRouteParameters($product, $file, $selection, $request->input('placement', []))
-                ),
                 'customization_snapshot' => $customizationSnapshot,
             ],
             'guidance' => $this->rules->guidance(),
@@ -188,6 +185,69 @@ class ProductCustomizationController extends Controller
             now()->addMinutes(15),
             $this->mockupPreviewRouteParameters($product, $file, $selection, $placement)
         ));
+    }
+
+    public function protectedMockup(
+        Request $request,
+        Product $product,
+        StoredFile $preview_file,
+        FileUploadService $files,
+        ProtectedMockupService $mockups,
+    ): JsonResponse {
+        if (! $product->isPubliclyVisible()) {
+            abort(404);
+        }
+
+        $actor = Auth::guard('customer')->user();
+        abort_unless($actor instanceof CustomerAccount, 403);
+        Gate::forUser($actor)->authorize('preview', $preview_file);
+
+        abort_unless(
+            $preview_file->file_kind === StoredFile::KIND_ORIGINAL_UPLOAD
+                && $preview_file->status === StoredFile::STATUS_ACTIVE,
+            422,
+            'Only an active original artwork upload can be used.'
+        );
+
+        $productOptions = $this->rules->product($product->slug);
+        $allowedPositions = collect($productOptions['print_positions'] ?? [])
+            ->pluck('code')
+            ->filter()
+            ->values()
+            ->all();
+
+        $validated = $request->validate([
+            'color_code' => ['required', 'string', 'max:50'],
+            'print_position' => ['required', 'string', Rule::in($allowedPositions)],
+            'placement' => ['nullable', 'array'],
+            'placement.x' => ['nullable', 'numeric', 'between:0,100'],
+            'placement.y' => ['nullable', 'numeric', 'between:0,100'],
+            'placement.scale' => ['nullable', 'numeric', 'between:0.6,1.2'],
+        ]);
+
+        $placement = $this->snapshots->normalizePlacement($validated['placement'] ?? []);
+        $preview_file = $files->ensurePreview($preview_file);
+        $mockup = $mockups->create(
+            product: $product,
+            source: $preview_file,
+            actor: $actor,
+            colorCode: $validated['color_code'],
+            printPosition: $validated['print_position'],
+            placement: $placement,
+        );
+
+        return response()->json([
+            'data' => [
+                'file' => $this->snapshots->fileReference($mockup, 'protected_mockup'),
+                'preview_url' => $files->temporaryPreviewUrl($mockup, 60),
+                'download_url' => $files->temporaryDownloadUrl($mockup, 60),
+                'watermark' => [
+                    'applied' => true,
+                    'version' => ProtectedMockupService::WATERMARK_VERSION,
+                    'label' => 'Protected preview — not for production',
+                ],
+            ],
+        ], 201);
     }
 
     private function selectionPayload(Request $request): array

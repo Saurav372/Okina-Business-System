@@ -3,9 +3,12 @@
 namespace Tests\Feature;
 
 use App\Models\CustomerAccount;
+use App\Notifications\CustomerResetPasswordNotification;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Password;
 use Tests\TestCase;
 
 class CustomerAuthenticationTest extends TestCase
@@ -129,5 +132,44 @@ class CustomerAuthenticationTest extends TestCase
 
         $this->get(route('customer.account'))
             ->assertRedirect(route('customer.login'));
+    }
+
+    public function test_customer_can_request_a_password_reset_without_account_enumeration(): void
+    {
+        Notification::fake();
+        $account = CustomerAccount::factory()->create([
+            'email' => 'Customer@Example.com',
+            'normalized_email' => 'customer@example.com',
+        ]);
+
+        $this->post(route('customer.password.email'), ['email' => 'CUSTOMER@example.com'])
+            ->assertSessionHas('status', 'If an eligible account exists, a password reset link has been sent.');
+        $this->post(route('customer.password.email'), ['email' => 'missing@example.com'])
+            ->assertSessionHas('status', 'If an eligible account exists, a password reset link has been sent.');
+
+        Notification::assertSentTo($account, CustomerResetPasswordNotification::class);
+    }
+
+    public function test_customer_can_reset_their_password_with_a_valid_token(): void
+    {
+        $account = CustomerAccount::factory()->create([
+            'password' => Hash::make('old-password'),
+            'failed_login_attempts' => 4,
+            'locked_until' => now()->addMinute(),
+        ]);
+        $token = Password::broker('customer_accounts')->createToken($account);
+
+        $this->post(route('customer.password.update'), [
+            'token' => $token,
+            'email' => strtoupper($account->email),
+            'password' => 'new-password-123',
+            'password_confirmation' => 'new-password-123',
+        ])->assertRedirect(route('customer.login'));
+
+        $account->refresh();
+        $this->assertTrue(Hash::check('new-password-123', $account->password));
+        $this->assertSame(0, $account->failed_login_attempts);
+        $this->assertNull($account->locked_until);
+        $this->assertNotNull($account->password_changed_at);
     }
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\OrderIndexResource;
 use App\Models\AuditLog;
 use App\Models\Order;
+use App\Models\StoredFile;
 use App\Support\Admin\OrderDetailCatalog;
 use App\Support\Admin\OrderIndexCatalog;
 use Illuminate\Http\Request;
@@ -66,6 +67,38 @@ class OrderController extends Controller
 
         $summary = app(OrderDetailCatalog::class)->summarize($order);
 
+        $artworkReferences = $order->items
+            ->flatMap(function ($item): array {
+                $snapshot = $item->customization_snapshot ?? [];
+                $files = is_array($snapshot['files'] ?? null) ? $snapshot['files'] : [];
+
+                return collect($files)
+                    ->filter(fn ($file): bool => is_array($file) && filled($file['public_id'] ?? null))
+                    ->map(fn (array $file): array => [
+                        'item' => $item,
+                        'reference' => $file,
+                        'print_position' => $snapshot['print_position'] ?? null,
+                        'print_method' => $snapshot['print_method'] ?? null,
+                        'customer_note' => $snapshot['customer_note'] ?? null,
+                    ])
+                    ->all();
+            })
+            ->values();
+
+        $storedFiles = StoredFile::query()
+            ->whereIn('public_id', $artworkReferences->pluck('reference.public_id')->filter()->unique()->all())
+            ->get()
+            ->keyBy('public_id');
+
+        $artworkUploads = $artworkReferences
+            ->map(function (array $entry) use ($storedFiles): array {
+                $entry['file'] = $storedFiles->get($entry['reference']['public_id']);
+
+                return $entry;
+            })
+            ->filter(fn (array $entry): bool => $entry['file'] instanceof StoredFile)
+            ->values();
+
         $timelineLogs = AuditLog::query()
             ->where('subject_type', 'order')
             ->where(function ($query) use ($order) {
@@ -79,6 +112,7 @@ class OrderController extends Controller
             'order' => $order,
             'summary' => $summary,
             'timelineLogs' => $timelineLogs,
+            'artworkUploads' => $artworkUploads,
         ]);
     }
 }

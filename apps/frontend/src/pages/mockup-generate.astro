@@ -1,0 +1,213 @@
+---
+import CatalogLayout from '../layouts/CatalogLayout.astro';
+import { getProducts, type CatalogProduct } from '../lib/catalog';
+
+let products: CatalogProduct[] = [];
+let loadError = false;
+try {
+  products = (await getProducts()).filter((product) => product.customization_mode !== 'none' && product.skus.length > 0);
+} catch {
+  loadError = true;
+}
+const apiBaseUrl = (import.meta.env.PUBLIC_API_BASE_URL ?? 'http://127.0.0.1:8000/api').replace(/\/+$/, '');
+const productJson = JSON.stringify(products).replace(/</g, '\\u003c');
+---
+
+<CatalogLayout
+  title="Mockup generator"
+  description="Create a protected, watermarked T-shirt preview before adding your customized item to cart."
+  noindex={true}
+>
+  <section class="studio-shell" data-mockup-studio data-api-base={apiBaseUrl}>
+    <div class="container studio-intro">
+      <div>
+        <p class="eyebrow">Protected preview studio</p>
+        <h1>Place your artwork.<br /><em>Keep the source private.</em></h1>
+      </div>
+      <p class="lede">Upload a transparent PNG, position it on a T-shirt, then generate a watermarked preview. Your clean artwork stays private for our production team.</p>
+    </div>
+
+    {loadError ? (
+      <div class="container"><div class="studio-alert" role="alert">The product list is unavailable right now. Refresh the page to try again.</div></div>
+    ) : products.length === 0 ? (
+      <div class="container"><div class="studio-alert" role="status">No customizable products are available right now.</div></div>
+    ) : (
+      <div class="container studio-grid">
+        <section class="preview-panel" aria-labelledby="preview-heading">
+          <div class="panel-heading">
+            <div>
+              <p class="step-label">Live placement</p>
+              <h2 id="preview-heading">Your protected preview</h2>
+            </div>
+            <span class="preview-badge" data-preview-badge>Editing</span>
+          </div>
+
+          <div class="canvas-frame" data-canvas-frame>
+            <canvas data-mockup-canvas width="900" height="900" aria-label="T-shirt artwork placement preview. Use the position controls to make precise changes."></canvas>
+            <img data-generated-preview class="generated-preview" alt="Generated watermarked T-shirt mockup" hidden />
+          </div>
+
+          <div class="canvas-caption">
+            <span><span class="status-dot" aria-hidden="true"></span> Watermark shown in every preview</span>
+            <span>Production checks final placement</span>
+          </div>
+        </section>
+
+        <form class="control-panel" data-studio-form novalidate>
+          <div class="control-heading">
+            <p class="step-label">Mockup settings</p>
+            <h2>Build your preview</h2>
+            <p>Changes appear instantly on the left. Generate only when the placement looks right.</p>
+          </div>
+
+          <div class="form-block">
+            <label for="mockup-product"><span class="field-number">01</span> Product</label>
+            <select id="mockup-product" name="product" data-product-select>
+              {products.map((product) => <option value={product.slug}>{product.name}</option>)}
+            </select>
+          </div>
+
+          <fieldset class="form-block" data-color-fieldset>
+            <legend><span class="field-number">02</span> T-shirt colour</legend>
+            <div class="choice-grid" data-color-options></div>
+          </fieldset>
+
+          <div class="form-block">
+            <label for="mockup-size"><span class="field-number">03</span> Size</label>
+            <select id="mockup-size" name="size" data-size-select></select>
+          </div>
+
+          <div class="form-block">
+            <label for="mockup-artwork"><span class="field-number">04</span> Artwork</label>
+            <label class="upload-zone" for="mockup-artwork" data-upload-zone>
+              <span class="upload-icon" aria-hidden="true">↑</span>
+              <span><strong data-file-name>Choose a transparent PNG</strong><small>Maximum 5 MB · at least 400 × 400 px</small></span>
+            </label>
+            <input class="sr-only" id="mockup-artwork" name="artwork" type="file" accept="image/png" data-file-input />
+          </div>
+
+          <fieldset class="form-block">
+            <legend><span class="field-number">05</span> Print position</legend>
+            <div class="segmented" data-position-options></div>
+          </fieldset>
+
+          <div class="form-block placement-controls">
+            <div class="range-heading">
+              <label for="mockup-scale">Artwork size</label>
+              <output for="mockup-scale" data-scale-output>100%</output>
+            </div>
+            <input id="mockup-scale" type="range" min="60" max="120" value="100" step="2" data-scale-input />
+            <div class="position-row">
+              <span class="position-label">Position</span>
+              <div class="nudge-controls" aria-label="Move artwork">
+                <button type="button" data-nudge="up" aria-label="Move artwork up">↑</button>
+                <button type="button" data-nudge="left" aria-label="Move artwork left">←</button>
+                <button type="button" data-nudge="down" aria-label="Move artwork down">↓</button>
+                <button type="button" data-nudge="right" aria-label="Move artwork right">→</button>
+              </div>
+              <button class="text-control" type="button" data-reset>Reset</button>
+              <button class="text-control text-control--danger" type="button" data-remove>Remove</button>
+            </div>
+          </div>
+
+          <div class="form-status hidden" data-form-error role="alert"></div>
+          <p class="live-status" data-live-status role="status" aria-live="polite">Choose your options and upload artwork.</p>
+
+          <button class="button button--brand button--wide generate-button" type="submit" data-generate-button>
+            <span data-generate-label>Generate protected preview</span><span aria-hidden="true">→</span>
+          </button>
+
+          <div class="generated-actions" data-generated-actions hidden>
+            <p><strong>Protected preview ready.</strong> The watermarked PNG and your original artwork will be saved with the order.</p>
+            <button class="button button--wide" type="button" data-add-cart>Add customized item to cart</button>
+          </div>
+
+          <p class="privacy-note"><span aria-hidden="true">✓</span> Clean artwork is never shown publicly and remains available to the dashboard team.</p>
+        </form>
+      </div>
+    )}
+    <script id="mockup-products-data" type="application/json" set:html={productJson}></script>
+  </section>
+</CatalogLayout>
+
+<script>
+  import '../scripts/mockup-studio';
+</script>
+
+<style>
+  .studio-shell { padding-block: clamp(2.5rem, 5vw, 5rem) 0; background: #fff; }
+  .studio-intro { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(19rem, .65fr); gap: clamp(2rem, 7vw, 7rem); align-items: end; padding-bottom: clamp(2.25rem, 5vw, 4.5rem); }
+  .studio-intro h1 { max-width: 54rem; margin: 0; font-size: clamp(3rem, 7vw, 6.2rem); }
+  .studio-intro h1 em { color: var(--color-brand); font-weight: 500; }
+  .studio-intro .lede { margin: 0; padding-bottom: .35rem; }
+  .studio-grid { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(22rem, .8fr); border: 1px solid var(--color-border); }
+  .preview-panel { min-width: 0; padding: clamp(1rem, 2.8vw, 2rem); background: #f4f1eb; }
+  .panel-heading, .control-heading { margin-bottom: 1.5rem; }
+  .panel-heading { display: flex; justify-content: space-between; gap: 1rem; align-items: start; }
+  .panel-heading h2, .control-heading h2 { margin: 0; font-family: var(--font-body); font-size: clamp(1.35rem, 2vw, 1.75rem); font-weight: 800; letter-spacing: -.025em; line-height: 1.1; }
+  .step-label { margin-bottom: .45rem; color: var(--color-brand); font-size: .7rem; font-weight: 900; letter-spacing: .15em; text-transform: uppercase; }
+  .preview-badge { display: inline-flex; min-height: 2rem; align-items: center; padding: .3rem .75rem; border: 1px solid #c9c2b8; border-radius: 999px; background: rgba(255,255,255,.75); font-size: .72rem; font-weight: 800; }
+  .canvas-frame { position: relative; overflow: hidden; aspect-ratio: 1; border: 1px solid #d7d0c5; background: #ebe7df; cursor: grab; touch-action: none; }
+  .canvas-frame:active { cursor: grabbing; }
+  canvas, .generated-preview { width: 100%; height: 100%; object-fit: cover; }
+  .generated-preview { position: absolute; inset: 0; background: #f4f1eb; }
+  .canvas-caption { display: flex; justify-content: space-between; gap: 1rem; padding-top: 1rem; color: var(--color-ink-soft); font-size: .76rem; font-weight: 650; }
+  .status-dot { display: inline-block; width: .5rem; height: .5rem; margin-right: .35rem; border-radius: 50%; background: var(--color-success); }
+  .control-panel { padding: clamp(1.25rem, 3vw, 2.2rem); background: #fff; }
+  .control-heading p:last-child { max-width: 32rem; margin: .7rem 0 0; color: var(--color-ink-soft); font-size: .9rem; }
+  .form-block { padding-block: 1.15rem; border-top: 1px solid var(--color-border); }
+  .form-block > label:first-child, legend { display: flex; align-items: center; gap: .65rem; margin-bottom: .7rem; font-size: .86rem; font-weight: 850; }
+  fieldset { min-width: 0; margin: 0; padding-inline: 0; border: 0; }
+  .field-number { display: inline-grid; width: 1.65rem; height: 1.65rem; place-items: center; border: 1px solid var(--color-border-strong); border-radius: 50%; color: var(--color-brand); font-size: .62rem; }
+  select { width: 100%; min-height: 3rem; padding: .65rem .75rem; border: 1px solid var(--color-border-strong); border-radius: var(--radius-sm); background: #fff; color: var(--color-ink); font-weight: 700; }
+  .choice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem; }
+  :global(.colour-choice) { position: relative; }
+  :global(.colour-choice input) { position: absolute; opacity: 0; pointer-events: none; }
+  :global(.colour-choice label) { display: flex; min-height: 3rem; align-items: center; gap: .65rem; padding: .55rem .7rem; border: 1px solid var(--color-border); border-radius: var(--radius-sm); cursor: pointer; font-size: .78rem; font-weight: 800; }
+  :global(.colour-choice input:checked + label) { border-color: var(--color-ink); box-shadow: inset 0 0 0 1px var(--color-ink); }
+  :global(.colour-choice input:focus-visible + label) { outline: 2px solid var(--color-brand); outline-offset: 2px; }
+  :global(.colour-swatch) { width: 1.25rem; height: 1.25rem; flex: 0 0 auto; border: 1px solid rgba(0,0,0,.22); border-radius: 50%; background: var(--swatch); }
+  .upload-zone { display: flex !important; min-height: 5.5rem; align-items: center !important; gap: .8rem !important; margin: 0 !important; padding: .9rem; border: 1px dashed var(--color-border-strong); border-radius: var(--radius-sm); cursor: pointer; }
+  .upload-zone:hover { border-color: var(--color-brand); background: var(--color-brand-soft); }
+  .upload-zone strong, .upload-zone small { display: block; }
+  .upload-zone small { margin-top: .2rem; color: var(--color-ink-faint); font-size: .72rem; font-weight: 600; }
+  .upload-icon { display: grid; width: 2.4rem; height: 2.4rem; flex: 0 0 auto; place-items: center; border-radius: 50%; background: var(--color-surface-strong); color: white; font-size: 1.25rem; }
+  .segmented { display: flex; flex-wrap: wrap; gap: .45rem; }
+  :global(.position-choice) { position: relative; }
+  :global(.position-choice input) { position: absolute; opacity: 0; }
+  :global(.position-choice label) { display: grid; min-height: 2.75rem; padding: .55rem .8rem; place-items: center; border: 1px solid var(--color-border); border-radius: var(--radius-sm); cursor: pointer; font-size: .75rem; font-weight: 800; }
+  :global(.position-choice input:checked + label) { border-color: var(--color-brand); background: var(--color-brand); color: white; }
+  :global(.position-choice input:focus-visible + label) { outline: 2px solid var(--color-brand); outline-offset: 2px; }
+  .range-heading, .position-row { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+  .range-heading label, .position-label { font-size: .8rem; font-weight: 800; }
+  .range-heading output { color: var(--color-brand); font-size: .78rem; font-weight: 900; }
+  .position-row { margin-top: 1rem; }
+  .nudge-controls { display: grid; grid-template-columns: repeat(4, 2.75rem); gap: .35rem; }
+  .nudge-controls button, .text-control { min-width: 2.75rem; min-height: 2.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: #fff; cursor: pointer; font-weight: 900; }
+  .nudge-controls button:hover, .text-control:hover { border-color: var(--color-ink); }
+  .text-control { padding-inline: .65rem; font-size: .72rem; }
+  .text-control--danger { color: var(--color-danger); }
+  .form-status { margin-top: 1rem; padding: .75rem; border: 1px solid #efb6af; background: var(--color-danger-soft); color: var(--color-danger); font-size: .82rem; font-weight: 700; }
+  .live-status { min-height: 1.45rem; margin: .85rem 0; color: var(--color-ink-soft); font-size: .78rem; }
+  .hidden { display: none !important; }
+  .generate-button { justify-content: space-between; }
+  .generated-actions { margin-top: 1rem; padding: 1rem; border: 1px solid #b9d8c6; background: var(--color-success-soft); }
+  .generated-actions p { margin-bottom: .8rem; color: #195e3b; font-size: .78rem; }
+  .privacy-note { display: flex; gap: .5rem; margin: 1rem 0 0; color: var(--color-ink-faint); font-size: .72rem; }
+  .privacy-note span { color: var(--color-success); font-weight: 900; }
+  .studio-alert { padding: 2rem; border: 1px solid var(--color-border); background: var(--color-danger-soft); }
+  .control-panel input.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); clip-path: inset(50%); white-space: nowrap; border: 0; }
+  @media (max-width: 62rem) {
+    .studio-intro, .studio-grid { grid-template-columns: 1fr; }
+    .studio-intro { gap: 1.25rem; }
+    .preview-panel { position: relative; }
+  }
+  @media (max-width: 36rem) {
+    .studio-shell { padding-top: 2rem; }
+    .studio-intro h1 { font-size: clamp(2.75rem, 15vw, 4rem); }
+    .canvas-caption, .position-row { align-items: flex-start; flex-direction: column; }
+    .choice-grid { grid-template-columns: 1fr; }
+    .nudge-controls { width: 100%; grid-template-columns: repeat(4, 1fr); }
+    .text-control { width: 100%; }
+  }
+</style>

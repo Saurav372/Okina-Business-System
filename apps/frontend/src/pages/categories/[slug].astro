@@ -1,50 +1,22 @@
-﻿---
-import CatalogLayout from '../../layouts/CatalogLayout.astro';
-import { formatDate, formatMoney, getCategoryPageData, getCategorySlugs, titleCase } from '../../lib/catalog';
-
-export async function getStaticPaths() {
-  const slugs = await getCategorySlugs();
-
-  return slugs.map((slug) => ({
-    params: { slug },
-  }));
-}
-
-const { slug } = Astro.params;
-const { category, products } = await getCategoryPageData(slug ?? '');
-
-if (!category) {
-  throw new Error(`Category not found for slug: ${slug ?? ''}`);
-}
 ---
-
-<CatalogLayout title={`${category.name} | Okina Craft`} description={category.seo_description ?? category.description ?? category.name}>
-  <section class="hero">
-    <p class="summary"><a href="/categories">Categories</a> / {category.name}</p>
-    <h1>{category.name}</h1>
-    <p>{category.description ?? 'No public description provided.'}</p>
-    <div class="meta-row">
-      <span class="pill">{category.products_count} products</span>
-      <span class="pill">Published {formatDate(category.published_at) ?? 'not set'}</span>
-      <span class="pill">Slug {category.slug}</span>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="section-head">
-      <h2>Products in this category</h2>
-      <a href="/">Back to all products</a>
-    </div>
-    <div class="grid products">
-      {products.map((product) => (
-        <article class="card">
-          <p class="summary">{titleCase(product.status)} · {product.skus.length} SKUs</p>
-          <h3>{product.name}</h3>
-          <p>{product.short_description ?? product.description ?? 'No public description provided.'}</p>
-          <p class="summary">Starting from {formatMoney(product.base_price_minor, product.currency)}</p>
-          <a class="card-link" href={`/products/${product.slug}`}>Open product</a>
-        </article>
-      ))}
-    </div>
-  </section>
+import ProductCard from '../../components/ProductCard.astro';
+import CatalogLayout from '../../layouts/CatalogLayout.astro';
+import { CatalogRequestError, getCategoryPageData, type CatalogCategory, type CatalogProduct } from '../../lib/catalog';
+const { slug } = Astro.params;
+let category: CatalogCategory | null = null; let products: CatalogProduct[] = [];
+try { ({ category, products } = await getCategoryPageData(slug ?? '')); } catch (error) { if (error instanceof CatalogRequestError && error.status === 404) Astro.response.status = 404; else throw error; }
+if (!category) Astro.response.status = 404;
+const collectionSchema=category?[
+  {'@context':'https://schema.org','@type':'CollectionPage',name:category.name,description:category.seo_description??category.description,url:Astro.url.toString(),mainEntity:{'@type':'ItemList',numberOfItems:products.length,itemListElement:products.map((product,index)=>({'@type':'ListItem',position:index+1,name:product.name,url:new URL(`/products/${product.slug}`,Astro.url.origin).toString()}))}},
+  {'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:[{'@type':'ListItem',position:1,name:'Home',item:new URL('/',Astro.url.origin).toString()},{'@type':'ListItem',position:2,name:'Collections',item:new URL('/categories',Astro.url.origin).toString()},{'@type':'ListItem',position:3,name:category.name,item:Astro.url.toString()}]},
+]:undefined;
+---
+<CatalogLayout title={category?.seo_title ?? category?.name ?? 'Collection not found'} description={category?.seo_description ?? category?.description ?? 'This collection could not be found.'} noindex={!category} structuredData={collectionSchema}>
+  <div class="container"><nav class="breadcrumbs" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><a href="/categories">Collections</a>{category&&<><span aria-hidden="true">/</span><span aria-current="page">{category.name}</span></>}</nav>
+    {category ? <><header class="category-hero"><div><p class="eyebrow">Custom collection</p><h1>{category.name}</h1></div><p class="lede">{category.description??'Choose a style and make it unmistakably yours with colour, placement, and artwork choices.'}</p></header><section class="section-space"><div class="catalog-toolbar"><div><strong>{products.length}</strong> {products.length===1?'style':'styles'}</div><div class="toolbar-controls"><label class="search-field"><span class="sr-only">Filter products</span><input type="search" id="product-filter" placeholder="Filter this collection"/></label><label><span class="sr-only">Sort products</span><select id="product-sort"><option value="featured">Featured</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="name">Name</option></select></label></div></div>{products.length?<><div class="product-grid" id="product-grid">{products.map((product,index)=><ProductCard product={product} index={index}/>)}</div><div class="panel empty-state hidden" id="filter-empty"><h3>No styles match that search</h3><p class="muted">Try a shorter or different word.</p></div></>:<div class="panel empty-state"><h3>This collection is getting ready</h3><p class="muted">There are no published products here yet. Explore another collection in the meantime.</p><a class="button button--ghost" href="/categories">Browse collections</a></div>}</section></>:<section class="section-space"><div class="panel empty-state"><h1>Collection not found</h1><p class="muted">It may have moved or is no longer available.</p><a class="button button--brand" href="/categories">Browse all collections</a></div></section>}
+  </div>
+  <script>
+    const filter=document.getElementById('product-filter');const sort=document.getElementById('product-sort');const grid=document.getElementById('product-grid');const empty=document.getElementById('filter-empty');const update=()=>{if(!grid)return;const term=String(filter?.value??'').trim().toLowerCase();const cards=Array.from(grid.querySelectorAll('[data-product-card]'));cards.forEach(card=>card.classList.toggle('hidden',Boolean(term)&&!`${card.dataset.name} ${card.dataset.category}`.includes(term)));const visible=cards.filter(card=>!card.classList.contains('hidden'));const mode=sort?.value??'featured';visible.sort((a,b)=>mode==='price-low'?Number(a.dataset.price)-Number(b.dataset.price):mode==='price-high'?Number(b.dataset.price)-Number(a.dataset.price):mode==='name'?String(a.dataset.name).localeCompare(String(b.dataset.name)):0).forEach(card=>grid.appendChild(card));empty?.classList.toggle('hidden',visible.length>0)};filter?.addEventListener('input',update);sort?.addEventListener('change',update);
+  </script>
 </CatalogLayout>
+<style>.category-hero{display:grid;grid-template-columns:1fr .8fr;gap:4rem;align-items:end;padding-block:clamp(2rem,6vw,5rem);border-bottom:1px solid var(--color-border)}.category-hero h1{max-width:10ch;margin:0}.catalog-toolbar{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:2rem}.toolbar-controls{display:flex;gap:.65rem}.search-field{min-width:min(22rem,45vw)}@media(max-width:42rem){.category-hero{grid-template-columns:1fr;gap:1rem}.catalog-toolbar,.toolbar-controls{align-items:stretch;flex-direction:column}.search-field{min-width:0}}</style>

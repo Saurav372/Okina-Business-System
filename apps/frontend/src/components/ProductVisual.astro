@@ -1,0 +1,46 @@
+---
+import type { CatalogMedia } from '../lib/catalog';
+
+const { name, tone = 'red', compact = false, image, priority = false } = Astro.props as {
+  name: string;
+  tone?: 'red' | 'ink' | 'sage' | 'blue';
+  compact?: boolean;
+  image?: CatalogMedia | null;
+  priority?: boolean;
+};
+const palette = {
+  red: ['#c82c2c', '#8f1717'],
+  ink: ['#302d2a', '#161514'],
+  sage: ['#72806a', '#4b5846'],
+  blue: ['#455d78', '#26394e'],
+}[tone];
+const initials = name.split(/\s+/).slice(0, 2).map((part) => part[0]).join('').toUpperCase();
+---
+
+<div class:list={['product-visual', { 'product-visual--compact': compact, 'product-visual--photo': image }]} style={`--visual-a:${palette[0]};--visual-b:${palette[1]};`} aria-label={image ? undefined : `${name} product illustration`} role={image ? undefined : 'img'}>
+  <span class="visual-grid" aria-hidden="true"></span>
+  {image ? <img class="product-photo" data-product-media-main src={image.url} alt={image.alt_text ?? name} width={image.width ?? undefined} height={image.height ?? undefined} loading={priority ? 'eager' : 'lazy'} fetchpriority={priority ? 'high' : 'auto'} decoding="async" /> : <svg class="garment" aria-hidden="true" viewBox="0 0 420 480" fill="none">
+    <path d="M142 57 83 91 34 184l63 34 27-47v247h172V171l27 47 63-34-49-93-59-34c-12 29-34 44-68 44s-56-15-68-44Z" fill="url(#shirt)" stroke="rgba(255,255,255,.26)" stroke-width="2"/>
+    <path d="M155 53c7 27 25 40 55 40s48-13 55-40" stroke="rgba(255,255,255,.38)" stroke-width="9"/>
+    <path d="M124 173v245M296 173v245" stroke="rgba(255,255,255,.08)"/>
+    <rect x="165" y="160" width="90" height="106" rx="4" fill="rgba(255,255,255,.92)" stroke="rgba(26,24,22,.18)" stroke-dasharray="5 5"/>
+    <text x="210" y="219" text-anchor="middle" dominant-baseline="middle" fill="#1a1816" font-size="25" font-family="Georgia,serif" font-weight="700">{initials}</text>
+    <defs><linearGradient id="shirt" x1="95" y1="70" x2="326" y2="420" gradientUnits="userSpaceOnUse"><stop stop-color="var(--visual-a)"/><stop offset="1" stop-color="var(--visual-b)"/></linearGradient></defs>
+  </svg>}
+  {!image && <span class="visual-note" aria-hidden="true">Your artwork here</span>}
+</div>
+
+<style>
+  .product-visual { position: relative; display: grid; min-height: 31rem; overflow: hidden; place-items: center; background: var(--color-surface); isolation: isolate; }
+  .product-visual::after { position: absolute; inset: auto 9% 6%; height: 9%; border-radius: 50%; background: rgba(26,24,22,.18); filter: blur(20px); content: ""; z-index: -1; }
+  .visual-grid { position: absolute; inset: 0; z-index: -2; background-image: linear-gradient(rgba(26,24,22,.055) 1px, transparent 1px), linear-gradient(90deg, rgba(26,24,22,.055) 1px, transparent 1px); background-size: 32px 32px; mask-image: linear-gradient(to bottom, black, transparent 82%); }
+  .garment { width: min(80%, 25rem); filter: drop-shadow(0 30px 26px rgba(26,24,22,.2)); transform: rotate(-1.5deg); transition: transform 400ms var(--ease-out); }
+  .product-visual:hover .garment { transform: rotate(0) scale(1.015); }
+  .product-photo { width: 100%; height: 100%; min-height: inherit; object-fit: contain; background: var(--color-surface); transition: transform 400ms var(--ease-out); }
+  .product-visual:hover .product-photo { transform: scale(1.015); }
+  .product-visual--photo .visual-grid { display: none; }
+  .visual-note { position: absolute; right: 1rem; bottom: 1rem; padding: .32rem .55rem; background: rgba(255,255,255,.9); color: var(--color-ink-soft); font-size: .67rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+  .product-visual--compact { min-height: 20rem; }
+  .product-visual--compact .visual-note { display: none; }
+  @media (max-width: 34rem) { .product-visual { min-height: 25rem; } .product-visual--compact { min-height: 21rem; } }
+</style>

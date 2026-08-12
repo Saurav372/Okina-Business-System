@@ -8,7 +8,9 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\Refund;
+use App\Models\StoredFile;
 use App\Services\CartService;
+use App\Services\FileUploadService;
 use App\Services\OrderTimelineService;
 use App\Support\Payments\PaymentStateRecalculationRules;
 use App\Support\Products\CustomizationSnapshotBuilder;
@@ -16,7 +18,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -26,7 +27,8 @@ class CustomerApiController extends Controller
         private readonly PaymentStateRecalculationRules $stateRules,
         private readonly CustomizationSnapshotBuilder $snapshots,
         private readonly CartService $cartService,
-        private readonly OrderTimelineService $timelineService
+        private readonly OrderTimelineService $timelineService,
+        private readonly FileUploadService $files,
     ) {}
 
     private function getCustomer()
@@ -246,6 +248,7 @@ class CustomerApiController extends Controller
                 'paymentAttempts',
                 'payments',
                 'refunds',
+                'mockups.file',
             ])
             ->firstOrFail();
 
@@ -388,6 +391,28 @@ class CustomerApiController extends Controller
             'shipping_address_snapshot' => $order->shipping_address_snapshot,
             'billing_address_snapshot' => $order->billing_address_snapshot,
             'items' => $order->items->map(fn (OrderItem $item) => $this->formatOrderItem($item))->all(),
+            'proofs' => $order->mockups
+                ->filter(function ($proof) use ($order): bool {
+                    $file = $proof->file;
+
+                    return $file instanceof StoredFile
+                        && $file->status === StoredFile::STATUS_ACTIVE
+                        && $file->visibility === StoredFile::VISIBILITY_CUSTOMER_VISIBLE
+                        && $file->customer_id === $order->customer_id;
+                })
+                ->map(fn ($proof): array => [
+                    'public_id' => $proof->file->public_id,
+                    'display_name' => $proof->display_name,
+                    'notes' => $proof->notes,
+                    'is_featured' => (bool) $proof->is_featured,
+                    'mime_type' => $proof->file->mime_type,
+                    'size_bytes' => (int) $proof->file->size_bytes,
+                    'preview_url' => $this->files->temporaryPreviewUrl($proof->file, 60),
+                    'download_url' => $this->files->temporaryDownloadUrl($proof->file, 60),
+                    'shared_at' => $proof->created_at?->toIso8601String(),
+                ])
+                ->values()
+                ->all(),
             'payments' => $order->payments->map(fn (Payment $payment) => [
                 'provider' => $payment->provider,
                 'method' => $payment->method,
@@ -431,29 +456,7 @@ class CustomerApiController extends Controller
         }
 
         $public = $this->snapshots->publicCartSnapshot($snapshot);
-
-        if (isset($public['mockup_preview']) && is_array($public['mockup_preview'])) {
-            $routeName = $public['mockup_preview']['route_name'] ?? null;
-            $expires = (int) ($public['mockup_preview']['expires_in_minutes'] ?? 15);
-
-            if ($routeName !== null && isset($public['product']['slug'], $public['files'][0]['public_id'])) {
-                try {
-                    $public['mockup_preview_url'] = URL::temporarySignedRoute(
-                        $routeName,
-                        now()->addMinutes($expires),
-                        [
-                            'product' => $public['product']['slug'],
-                            'preview_file' => $public['files'][0]['public_id'],
-                            'print_position' => $public['print_position'] ?? null,
-                            'print_method' => $public['print_method'] ?? null,
-                            'placement' => $public['placement'] ?? [],
-                        ]
-                    );
-                } catch (\Throwable $e) {
-                    // ignore URL signature failures
-                }
-            }
-        }
+        unset($public['mockup_preview'], $public['mockup_preview_url']);
 
         return $public;
     }

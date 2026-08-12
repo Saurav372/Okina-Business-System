@@ -1,27 +1,11 @@
-﻿---
-import CatalogLayout from '../../layouts/CatalogLayout.astro';
-import { formatDate, getCategories } from '../../lib/catalog';
-
-const categories = await getCategories();
 ---
-
-<CatalogLayout title="Okina Craft Categories" description="Public category listing">
-  <section class="hero">
-    <h1>Categories</h1>
-    <p>Public category groups are listed here in the same order the backend exposes them.</p>
-  </section>
-
-  <section class="section">
-    <div class="grid categories">
-      {categories.map((category) => (
-        <article class="card">
-          <h3>{category.name}</h3>
-          <p>{category.description ?? 'No public description available.'}</p>
-          <p class="summary">{category.products_count} products</p>
-          <p class="summary">{formatDate(category.published_at) ?? 'Publishing date not set'}</p>
-          <a class="card-link" href={`/categories/${category.slug}`}>Open category</a>
-        </article>
-      ))}
-    </div>
-  </section>
+import CategoryCard from '../../components/CategoryCard.astro';
+import CatalogLayout from '../../layouts/CatalogLayout.astro';
+import { getCategories, type CatalogCategory } from '../../lib/catalog';
+let categories: CatalogCategory[] = []; let available = true;
+try { categories = await getCategories(); } catch { available = false; }
+---
+<CatalogLayout title="Shop Custom Apparel Collections" description="Browse custom apparel collections for teams, events, businesses, creators, and gifts.">
+  <div class="container"><nav class="breadcrumbs" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><span aria-current="page">Collections</span></nav><header class="collection-hero"><p class="eyebrow">Shop by collection</p><h1>Find your starting point.</h1><p class="lede">Every good custom piece begins with the right base. Pick a collection, then shape it around your artwork, colours, sizes, and quantity.</p></header><section class="section-space" aria-labelledby="collection-heading"><div class="section-head"><h2 id="collection-heading">All collections</h2><span class="pill">{categories.length} available</span></div>{available && categories.length ? <div class="category-grid">{categories.map((category,index)=><CategoryCard category={category} index={index}/>)}</div> : <div class="panel empty-state"><h3>{available?'New collections are being prepared':'Collections are temporarily unavailable'}</h3><p class="muted">{available?'Please check back soon.':'Refresh this page in a moment to try again.'}</p>{!available&&<button class="button button--ghost" onclick="window.location.reload()">Try again</button>}</div>}</section></div>
 </CatalogLayout>
+<style>.collection-hero{display:grid;grid-template-columns:.7fr 1fr;column-gap:4rem;padding-block:clamp(2rem,6vw,5rem);border-bottom:1px solid var(--color-border)}.collection-hero .eyebrow{grid-column:1/-1}.collection-hero h1{max-width:8ch;margin-bottom:0}@media(max-width:42rem){.collection-hero{grid-template-columns:1fr;gap:1rem}}</style>

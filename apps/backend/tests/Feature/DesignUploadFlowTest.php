@@ -100,7 +100,7 @@ class DesignUploadFlowTest extends TestCase
             ->assertJsonPath('data.customization_snapshot.files.0.role', 'original_upload')
             ->assertJsonPath('data.customization_snapshot.print_method', 'dtf')
             ->assertJsonPath('data.customization_snapshot.placement.scale', 0.72)
-            ->assertJsonPath('data.mockup_preview_url', fn (string $url): bool => str_contains($url, '/api/catalog/products/custom-tee/design-preview/'))
+            ->assertJsonMissingPath('data.mockup_preview_url')
             ->assertJsonMissingPath('data.file.storage_path')
             ->assertJsonMissingPath('data.file.preview.path');
 
@@ -108,13 +108,6 @@ class DesignUploadFlowTest extends TestCase
         Storage::disk('private')->assertExists($storedFile->storage_path);
         Storage::disk('private')->assertExists($storedFile->previewPath());
 
-        $this->get($response->json('data.mockup_preview_url'))
-            ->assertOk()
-            ->assertHeader('Content-Type', 'image/svg+xml; charset=UTF-8')
-            ->assertSee('custom-tee', false)
-            ->assertSee('front', false)
-            ->assertSee('dtf', false)
-            ->assertSee('logo-design', false);
     }
 
     public function test_customization_snapshot_is_public_safe_and_normalized_for_cart_and_order_steps(): void
@@ -186,8 +179,7 @@ class DesignUploadFlowTest extends TestCase
             ->assertJsonPath('data.customization_snapshot.files.0.public_id', $fileId)
             ->assertJsonPath('data.customization_snapshot.files.0.role', 'original_upload')
             ->assertJsonPath('data.customization_snapshot.files.0.has_preview', true)
-            ->assertJsonPath('data.customization_snapshot.mockup_preview.role', 'mockup_preview')
-            ->assertJsonPath('data.customization_snapshot.mockup_preview.source_file_public_id', $fileId)
+            ->assertJsonMissingPath('data.customization_snapshot.mockup_preview')
             ->assertJsonMissingPath('data.customization_snapshot.files.0.storage_path')
             ->assertJsonMissingPath('data.customization_snapshot.files.0.preview.path');
 
@@ -282,7 +274,7 @@ class DesignUploadFlowTest extends TestCase
             ->assertJsonPath('data.items.0.customization.files.0.public_id', $fileId)
             ->assertJsonPath('data.items.0.customization.files.0.role', 'original_upload')
             ->assertJsonPath('data.items.0.customization.files.0.has_preview', true)
-            ->assertJsonPath('data.items.0.customization.mockup_preview.source_file_public_id', $fileId)
+            ->assertJsonMissingPath('data.items.0.customization.mockup_preview')
             ->assertJsonMissingPath('data.items.0.product_id')
             ->assertJsonMissingPath('data.items.0.sku_id')
             ->assertJsonMissingPath('data.items.0.cart_id')
@@ -420,7 +412,18 @@ class DesignUploadFlowTest extends TestCase
 
         $response->assertOk();
 
-        $signedUrl = $response->json('data.mockup_preview_url');
+        $signedUrl = URL::temporarySignedRoute('catalog.products.mockup-preview', now()->addMinutes(15), [
+            'product' => $product->slug,
+            'preview_file' => $response->json('data.file.public_id'),
+            'print_position' => 'front',
+            'print_method' => 'dtf',
+            'placement' => [
+                'x' => 50,
+                'y' => 50,
+                'scale' => 1,
+                'rotation' => 0,
+            ],
+        ]);
 
         $this->get($signedUrl)
             ->assertOk()

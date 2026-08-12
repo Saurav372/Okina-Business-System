@@ -1,0 +1,23 @@
+---
+import type { CatalogCategory } from '../lib/catalog';
+const { category, index = 0 } = Astro.props as { category: CatalogCategory; index?: number };
+const marks = ['01', '02', '03', '04', '05', '06'];
+---
+
+<a class="category-card" href={`/categories/${category.slug}`}>
+  <span class="category-index" aria-hidden="true">{marks[index % marks.length]}</span>
+  <span class="category-copy"><strong>{category.name}</strong><span>{category.description ?? 'Custom pieces prepared for your group, event, or brand.'}</span></span>
+  <span class="category-count">{category.products_count} {category.products_count === 1 ? 'style' : 'styles'} <span aria-hidden="true">↗</span></span>
+</a>
+
+<style>
+  .category-card { position: relative; display: grid; min-height: 15rem; padding: 1.25rem; overflow: hidden; align-content: space-between; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); text-decoration: none; transition: transform var(--duration-base) var(--ease-out), border-color var(--duration-base), box-shadow var(--duration-base); }
+  .category-card::after { position: absolute; right: -3rem; bottom: -5rem; width: 12rem; aspect-ratio: 1; border: 1.4rem solid var(--color-brand-soft); border-radius: 50%; content: ""; transition: transform 500ms var(--ease-out); }
+  .category-card:hover { z-index: 1; border-color: var(--color-brand); box-shadow: var(--shadow-2); transform: translateY(-4px); }
+  .category-card:hover::after { transform: scale(1.18); }
+  .category-index { color: var(--color-brand); font-family: var(--font-display); font-size: .95rem; }
+  .category-copy { position: relative; z-index: 1; display: grid; gap: .55rem; max-width: 19rem; }
+  .category-copy strong { font-family: var(--font-display); font-size: 1.8rem; line-height: 1; }
+  .category-copy > span { color: var(--color-ink-soft); font-size: .88rem; }
+  .category-count { position: relative; z-index: 1; font-size: .75rem; font-weight: 800; letter-spacing: .065em; text-transform: uppercase; }
+</style>

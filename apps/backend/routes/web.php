@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminOrderActionController;
 use App\Http\Controllers\Admin\AdminOrderDesignFileController;
+use App\Http\Controllers\Admin\AdminOrderProofController;
 use App\Http\Controllers\Admin\AdminProfileController;
 use App\Http\Controllers\Admin\AdminSecurityController;
 use App\Http\Controllers\Admin\AdminSessionController;
@@ -57,6 +58,10 @@ Route::middleware('guest:customer')->group(function () {
     Route::post('/register', [CustomerAuthController::class, 'storeRegistration'])->name('customer.register.store');
     Route::get('/login', [CustomerAuthController::class, 'login'])->name('customer.login');
     Route::post('/login', [CustomerAuthController::class, 'storeLogin'])->name('customer.login.store');
+    Route::get('/forgot-password', [CustomerAuthController::class, 'forgotPassword'])->name('customer.password.request');
+    Route::post('/forgot-password', [CustomerAuthController::class, 'sendResetLink'])->middleware('throttle:3,1')->name('customer.password.email');
+    Route::get('/reset-password/{token}', [CustomerAuthController::class, 'resetPassword'])->name('customer.password.reset');
+    Route::post('/reset-password', [CustomerAuthController::class, 'updatePassword'])->name('customer.password.update');
 });
 
 Route::middleware('customer.access')->group(function () {
@@ -132,6 +137,7 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     // B2.2.8 — Admin design-file access bridge (order-scoped, policy-gated)
     Route::get('/orders/{order:public_id}/files/{file:public_id}/preview', [AdminOrderDesignFileController::class, 'preview'])->name('admin.orders.files.preview')->withoutScopedBindings();
     Route::get('/orders/{order:public_id}/files/{file:public_id}/download', [AdminOrderDesignFileController::class, 'download'])->name('admin.orders.files.download')->withoutScopedBindings();
+    Route::post('/orders/{order:public_id}/proofs', [AdminOrderProofController::class, 'store'])->name('admin.orders.proofs.store');
 
     // Finance payment & refund boundary routes
     Route::get('/payments', [PaymentController::class, 'index'])->name('admin.payments.index');

@@ -1,58 +1,55 @@
-﻿---
+---
+import CategoryCard from '../components/CategoryCard.astro';
+import ProductCard from '../components/ProductCard.astro';
+import ProductVisual from '../components/ProductVisual.astro';
 import CatalogLayout from '../layouts/CatalogLayout.astro';
-import { formatDate, formatMoney, getCatalogHomeData, titleCase } from '../lib/catalog';
+import { defaultStorefrontConfig, getCatalogHomeData, getStorefrontConfig, type CatalogCategory, type CatalogProduct } from '../lib/catalog';
 
-const { categories, products } = await getCatalogHomeData();
-
+let categories: CatalogCategory[] = [];
+let products: CatalogProduct[] = [];
+let catalogAvailable = true;
+try { ({ categories, products } = await getCatalogHomeData()); } catch { catalogAvailable = false; }
+let storefrontConfig = defaultStorefrontConfig;
+try { storefrontConfig = await getStorefrontConfig(); } catch { /* The page keeps its safe branding fallback. */ }
 const featuredCategories = categories.slice(0, 6);
 const featuredProducts = products.slice(0, 8);
+const heroProduct = products[0];
+const siteUrl = new URL('/', Astro.site ?? Astro.url.origin).toString();
+const organizationContact = [storefrontConfig.business.support_email && { '@type': 'ContactPoint', email: storefrontConfig.business.support_email, contactType: 'customer support' }, storefrontConfig.business.support_phone && { '@type': 'ContactPoint', telephone: storefrontConfig.business.support_phone, contactType: 'customer support' }].filter(Boolean);
+const organizationSchema = [
+  { '@context': 'https://schema.org', '@type': 'Organization', name: storefrontConfig.business.company_name, url: siteUrl, description: storefrontConfig.seo.meta_description ?? 'Custom apparel for teams, events, businesses, and creators.', contactPoint: organizationContact },
+  { '@context': 'https://schema.org', '@type': 'WebSite', name: storefrontConfig.seo.site_title, url: siteUrl, potentialAction: { '@type': 'SearchAction', target: `${siteUrl}search?q={search_term_string}`, 'query-input': 'required name=search_term_string' } },
+];
 ---
 
-<CatalogLayout title="Okina Craft Catalog" description="Public catalog of products and categories">
-  <section class="hero">
-    <h1>Okina Craft Catalog</h1>
-    <p>Browse public product collections, compare category groups, and inspect public SKU details that are safe for the customer website.</p>
-    <div class="meta-row">
-      <span class="pill">{categories.length} categories</span>
-      <span class="pill">{products.length} products</span>
-      <span class="pill">Live backend API</span>
+<CatalogLayout title="Custom Apparel, Made Personal" description="Create custom apparel for teams, events, businesses, and ideas. Clear pricing, artwork review, and careful production." structuredData={organizationSchema}>
+  <section class="home-hero">
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow">Your mark, made wearable</p>
+        <h1>Custom apparel without the guesswork.</h1>
+        <p class="lede">Choose a style, add your artwork, and review the details before we make it. Built for one clear idea—or a whole team.</p>
+        <div class="cluster hero-actions"><a class="button button--brand" href="#featured">Start customizing <span aria-hidden="true">→</span></a><a class="button button--ghost" href="#how-it-works">See how it works</a></div>
+        <div class="hero-proof" aria-label="Service highlights"><span><strong>Artwork checked</strong> before production</span><span><strong>Bulk-ready</strong> for groups and teams</span><span><strong>Clear progress</strong> after ordering</span></div>
+      </div>
+      <div class="hero-art"><span class="hero-label hero-label--top">Made for your people</span><ProductVisual name={heroProduct?.name ?? 'Okina Original'} image={heroProduct?.cover_image} tone="red" priority /><span class="hero-label hero-label--bottom">Print · pack · deliver</span></div>
     </div>
   </section>
 
-  <section class="section">
-    <div class="section-head">
-      <h2>Categories</h2>
-      <a href="/categories">View all categories</a>
-    </div>
-    <div class="grid categories">
-      {featuredCategories.map((category) => (
-        <article class="card">
-          <h3>{category.name}</h3>
-          <p>{category.description ?? 'No description provided.'}</p>
-          <p class="summary">{category.products_count} public products</p>
-          <p class="summary">{formatDate(category.published_at) ?? 'Publishing date not set'}</p>
-          <a class="card-link" href={`/categories/${category.slug}`}>Open category</a>
-        </article>
-      ))}
-    </div>
+  <section class="use-strip" aria-label="Popular reasons to order"><div class="container use-strip-inner"><span>Team uniforms</span><span>College events</span><span>Company merchandise</span><span>Creator drops</span><span>Personal gifts</span></div></section>
+
+  <section class="container section-space" id="featured">
+    <div class="section-head"><div><p class="eyebrow">Start with a favourite</p><h2>Popular blanks, ready for your idea.</h2></div><a class="text-link" href="/categories">Browse all collections →</a></div>
+    {catalogAvailable && featuredProducts.length > 0 ? <div class="product-grid">{featuredProducts.map((product, index) => <ProductCard product={product} index={index} />)}</div> : catalogAvailable ? <div class="panel empty-state"><h3>Fresh styles are on the way</h3><p class="muted">We’re preparing the first collection. Please check back soon.</p></div> : <div class="panel empty-state"><h3>Our catalog is taking a short pause</h3><p class="muted">The products could not be loaded just now. Refresh the page in a moment.</p><button class="button button--ghost" onclick="window.location.reload()">Try again</button></div>}
   </section>
 
-  <section class="section">
-    <div class="section-head">
-      <h2>Products</h2>
-      <a href="/categories">Browse by category</a>
-    </div>
-    <div class="grid products">
-      {featuredProducts.map((product) => (
-        <article class="card">
-          <p class="summary">{product.category?.name ?? 'Uncategorized'} · {titleCase(product.status)}</p>
-          <h3>{product.name}</h3>
-          <p>{product.short_description ?? product.description ?? 'No public description provided.'}</p>
-          <p class="summary">{product.skus.length} public SKUs</p>
-          <p class="summary">Starting from {formatMoney(product.base_price_minor, product.currency)}</p>
-          <a class="card-link" href={`/products/${product.slug}`}>Open product</a>
-        </article>
-      ))}
-    </div>
-  </section>
+  {featuredCategories.length > 0 && <section class="section-rule"><div class="container section-space"><div class="section-head"><div><p class="eyebrow">Shop by collection</p><h2>Find the right canvas.</h2></div><p class="lede">From everyday tees to team layers, begin with the piece that fits the moment.</p></div><div class="category-grid">{featuredCategories.map((category, index) => <CategoryCard category={category} index={index} />)}</div></div></section>}
+
+  <section class="process section-rule" id="how-it-works"><div class="container section-space"><div class="process-intro"><p class="eyebrow">A clearer custom process</p><h2>From upload to unboxing, in five calm steps.</h2><p class="lede">Every choice stays visible, validation happens before payment, and your order remains trackable.</p></div><ol class="process-list"><li><span>01</span><div><strong>Choose your product</strong><p>Pick a style, colour, size, and quantity.</p></div></li><li><span>02</span><div><strong>Add your artwork</strong><p>Upload your logo or design and choose placement.</p></div></li><li><span>03</span><div><strong>Review the proof</strong><p>We check the setup before production begins.</p></div></li><li><span>04</span><div><strong>Made with care</strong><p>Your order is printed, checked, and packed.</p></div></li><li><span>05</span><div><strong>Track delivery</strong><p>Follow progress through your account.</p></div></li></ol></div></section>
+
+  <section class="container section-space"><div class="promise"><div><p class="eyebrow">The Okina promise</p><h2>Proof before production.</h2></div><div class="promise-copy"><p>Custom orders deserve more certainty than a normal add-to-cart. We keep selections, artwork, quantities, and approval status together so the result matches the plan.</p><div class="cluster"><span class="badge badge--success">Secure file handling</span><span class="badge badge--success">Customer approval step</span><span class="badge badge--success">Order history retained</span></div></div></div></section>
 </CatalogLayout>
+
+<style>
+  .home-hero{padding-block:clamp(2rem,5vw,5rem);overflow:hidden}.hero-grid{display:grid;grid-template-columns:minmax(0,.95fr) minmax(24rem,.75fr);gap:clamp(2rem,7vw,7rem);align-items:center}.hero-copy h1{max-width:12ch;margin-bottom:1.5rem}.hero-actions{margin-block:2rem}.hero-proof{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;padding-top:1.5rem;border-top:1px solid var(--color-border);color:var(--color-ink-soft);font-size:.76rem}.hero-proof strong{display:block;color:var(--color-ink);font-size:.82rem}.hero-art{position:relative;border:1px solid var(--color-border);border-radius:var(--radius-lg);box-shadow:var(--shadow-2);transform:rotate(1.1deg)}.hero-label{position:absolute;z-index:2;padding:.5rem .65rem;border:1px solid var(--color-ink);background:var(--color-surface);font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase}.hero-label--top{top:1rem;left:-1.5rem;transform:rotate(-4deg)}.hero-label--bottom{right:-1.5rem;bottom:2rem;transform:rotate(3deg)}.use-strip{border-block:1px solid var(--color-border);background:var(--color-surface)}.use-strip-inner{display:flex;justify-content:space-between;gap:1.5rem;padding-block:1rem;overflow-x:auto;color:var(--color-ink-soft);font-size:.72rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;scrollbar-width:none}.use-strip-inner span{white-space:nowrap}.process{background:var(--color-surface)}.process-intro{display:grid;grid-template-columns:.6fr 1fr;column-gap:3rem;align-items:end}.process-intro .eyebrow{grid-column:1/-1}.process-list{display:grid;grid-template-columns:repeat(5,1fr);padding:0;margin:3.5rem 0 0;list-style:none}.process-list li{position:relative;display:grid;gap:2.5rem;padding-right:1.2rem}.process-list li::before{position:absolute;top:1rem;left:2.5rem;right:0;height:1px;background:var(--color-border-strong);content:""}.process-list li:last-child::before{display:none}.process-list li>span{z-index:1;display:grid;width:2rem;height:2rem;place-items:center;border:1px solid var(--color-ink);border-radius:50%;background:var(--color-surface);font-size:.68rem;font-weight:800}.process-list strong{font-size:.9rem}.process-list p{margin:.35rem 0 0;color:var(--color-ink-soft);font-size:.8rem}.promise{display:grid;grid-template-columns:.85fr 1fr;gap:4rem;padding:clamp(2rem,5vw,4rem);border-radius:var(--radius-lg);background:var(--color-surface-strong);color:white}.promise .eyebrow{color:#ff7770}.promise h2{margin:0}.promise-copy>p{color:#c8c0b9;font-size:1.1rem}@media(max-width:58rem){.hero-grid{grid-template-columns:1fr}.hero-art{max-width:34rem;margin-inline:auto}.process-list{grid-template-columns:1fr;gap:1.3rem}.process-list li{grid-template-columns:auto 1fr;gap:1rem}.process-list li::before{top:2rem;bottom:-1.3rem;left:1rem;width:1px;height:auto}}@media(max-width:42rem){.hero-proof,.process-intro,.promise{grid-template-columns:1fr}.process-intro{align-items:start}.promise{gap:1.5rem}.hero-label--top{left:.5rem}.hero-label--bottom{right:.5rem}}
+</style>

@@ -47,3 +47,8 @@ Build docs/
 *.7z
 *.zip
 *.rar
+
+# Temporary directories
+tmp/
+.playwright-cli/
+
