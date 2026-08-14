@@ -54,6 +54,9 @@ const allowIndex = !noindex && robotsIndex && storefrontConfig.seo.robots.index;
 const allowFollow = !noindex && robotsFollow && storefrontConfig.seo.robots.follow;
 const robotsContent = `${allowIndex ? 'index' : 'noindex'},${allowFollow ? 'follow' : 'nofollow'}`;
 const publicApiBaseUrl = (import.meta.env.PUBLIC_API_BASE_URL ?? 'http://127.0.0.1:8000/api').replace(/\/+$/, '');
+const bulkQuoteUrl = storefrontConfig.business.support_email
+  ? `mailto:${storefrontConfig.business.support_email}?subject=${encodeURIComponent('Bulk order quote request')}`
+  : '/search?q=bulk';
 ---
 
 <!doctype html>
@@ -82,7 +85,16 @@ const publicApiBaseUrl = (import.meta.env.PUBLIC_API_BASE_URL ?? 'http://127.0.0
   </head>
   <body data-api-base={publicApiBaseUrl} data-tax-inclusive={String(storefrontConfig.business.tax_inclusive_pricing)} data-online-payments={String(storefrontConfig.checkout.online_payments_enabled)}>
     <a class="skip-link" href="#main-content">Skip to content</a>
-    <div class="announcement">Free artwork check before production · Clear bulk pricing · India-wide delivery</div>
+    <aside class="announcement" aria-label="Okina Craft order benefits">
+      <span class="sr-only">Proof approved before production. Better pricing for bulk orders. Delivery across India. Customize front, back and sleeves. Your design, your placement, your apparel.</span>
+      <span class="announcement__inner" aria-hidden="true">
+        <span class="announcement__proof"><span class="announcement__check">✓</span> Proof approved before production</span>
+        <span class="announcement__divider"></span>
+        <span class="announcement__slider">
+          <span class="announcement__message" data-announcement-message>Better pricing for bulk orders</span>
+        </span>
+      </span>
+    </aside>
     <header class="site-header">
       <div class="container header-row">
         <a class="brand" href="/" aria-label={`${siteName} home`}>
@@ -91,35 +103,80 @@ const publicApiBaseUrl = (import.meta.env.PUBLIC_API_BASE_URL ?? 'http://127.0.0
         </a>
 
         <nav class="desktop-nav" aria-label="Primary navigation">
-          <a href="/" aria-current={currentPath === '/' ? 'page' : undefined}>Shop</a>
-          <a href="/categories" aria-current={currentPath.startsWith('/categories') ? 'page' : undefined}>Collections</a>
-          <a href="/mockup-generate" aria-current={currentPath === '/mockup-generate' ? 'page' : undefined}>Mockup generator</a>
-          <a href="/#how-it-works">How it works</a>
-          <a href="/track-order">Track order</a>
+          <details class="nav-dropdown" data-nav-dropdown>
+            <summary class:list={{ 'is-current': currentPath.startsWith('/products') || currentPath === '/search' }}>
+              Products
+              <svg class="nav-chevron" aria-hidden="true" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="m3 4.5 3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </summary>
+            <div class="nav-dropdown__panel nav-dropdown__panel--products">
+              <div class="nav-dropdown__heading"><strong>Shop by product</strong><span>Choose the garment you want to customize.</span></div>
+              <div class="nav-dropdown__grid">
+                <a href="/categories/custom-t-shirts">Custom T-Shirts</a><a href="/search?q=polo">Polo T-Shirts</a>
+                <a href="/search?q=oversized">Oversized T-Shirts</a><a href="/search?q=shirt">Shirts</a>
+                <a href="/search?q=hoodie">Hoodies / Sweatshirts</a><a href="/search?q=jacket">Jackets</a>
+                <a href="/search?q=cap">Caps</a><a href="/search">All Products</a>
+              </div>
+              <a class="nav-dropdown__secondary" href="/mockup-generate">Create your design <span aria-hidden="true">→</span></a>
+            </div>
+          </details>
+
+          <details class="nav-dropdown" data-nav-dropdown>
+            <summary class:list={{ 'is-current': currentPath === '/bulk-orders' }}>
+              Bulk &amp; Teams
+              <svg class="nav-chevron" aria-hidden="true" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="m3 4.5 3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </summary>
+            <div class="nav-dropdown__panel nav-dropdown__panel--single">
+              <div class="nav-dropdown__heading"><strong>Made for groups</strong><span>Find the closest starting point for your order.</span></div>
+              <div class="nav-dropdown__list">
+                <a href="/search?q=corporate">Corporate Uniforms</a><a href="/search?q=staff">Staff Uniforms</a>
+                <a href="/search?q=college">College &amp; Event T-Shirts</a><a href="/search?q=company">Company Merchandise</a>
+                <a href="/search?q=bulk+t-shirt">Bulk T-Shirt Printing</a>
+              </div>
+              <a class="nav-dropdown__cta" href={bulkQuoteUrl}>Request Bulk Quote <span aria-hidden="true">→</span></a>
+            </div>
+          </details>
+
+          <details class="nav-dropdown" data-nav-dropdown>
+            <summary class:list={{ 'is-current': currentPath.startsWith('/categories') }}>
+              Collections
+              <svg class="nav-chevron" aria-hidden="true" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="m3 4.5 3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </summary>
+            <div class="nav-dropdown__panel nav-dropdown__panel--single">
+              <div class="nav-dropdown__heading"><strong>Shop by purpose</strong><span>Start with who the apparel is for.</span></div>
+              <div class="nav-dropdown__list">
+                <a href="/categories/team-layers">Team Uniforms</a><a href="/categories/event-kits">College Events</a>
+                <a href="/categories/workwear">Company Merchandise</a><a href="/search?q=creator">Creator Merch</a>
+                <a href="/search?q=gift">Personal Gifts</a><a href="/categories">View All Collections</a>
+              </div>
+            </div>
+          </details>
+
+          <a class="desktop-nav__link" href="/how-it-works" aria-current={currentPath === '/how-it-works' ? 'page' : undefined}>How It Works</a>
         </nav>
 
-        <nav class="utility-nav" aria-label="Account and cart">
+        <nav class="utility-nav" aria-label="Store navigation and tools">
           <a class="icon-link" href="/search" aria-label="Search products" title="Search products">
             <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
           </a>
-          <span class="auth-slot" id="nav-auth-links"><a href="/account">Account</a></span>
+          <a class="track-order-link" href="/track-order" aria-current={currentPath === '/track-order' ? 'page' : undefined}>Track Order</a>
+          <span class="auth-slot" data-auth-slot><a href="/account">Account</a></span>
           <a class="icon-link" href="/cart" aria-label="Shopping cart" title="Shopping cart">
             <svg aria-hidden="true" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3h2l2.4 11.4a2 2 0 0 0 2 1.6h8.8a2 2 0 0 0 2-1.6L22 7H7"/><circle cx="10" cy="20" r="1"/><circle cx="19" cy="20" r="1"/></svg>
             <span class="cart-count hidden" id="nav-cart-count" aria-live="polite">0</span>
           </a>
-          <details class="mobile-menu">
-            <summary aria-label="Open navigation menu">
+          <details class="mobile-menu" data-mobile-menu>
+            <summary aria-label="Navigation menu">
               <svg aria-hidden="true" width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
             </summary>
-            <nav aria-label="Mobile navigation">
-              <a href="/">Shop</a>
-              <a href="/categories">Collections</a>
-              <a href="/mockup-generate">Mockup generator</a>
-              <a href="/#how-it-works">How it works</a>
-              <a href="/track-order">Track order</a>
-              <a href="/account">Account</a>
-              <a href="/cart">Cart</a>
-            </nav>
+            <div class="mobile-nav">
+              <details class="mobile-nav__group"><summary>Products <span aria-hidden="true">+</span></summary><div><a href="/categories/custom-t-shirts">Custom T-Shirts</a><a href="/search?q=polo">Polo T-Shirts</a><a href="/search?q=oversized">Oversized T-Shirts</a><a href="/search?q=hoodie">Hoodies / Sweatshirts</a><a href="/search">All Products</a></div></details>
+              <details class="mobile-nav__group"><summary>Bulk &amp; Teams <span aria-hidden="true">+</span></summary><div><a href="/search?q=corporate">Corporate Uniforms</a><a href="/search?q=staff">Staff Uniforms</a><a href="/search?q=college">College &amp; Event T-Shirts</a><a href="/search?q=company">Company Merchandise</a><a class="mobile-nav__cta" href={bulkQuoteUrl}>Request Bulk Quote</a></div></details>
+              <details class="mobile-nav__group"><summary>Collections <span aria-hidden="true">+</span></summary><div><a href="/categories/team-layers">Team Uniforms</a><a href="/categories/event-kits">College Events</a><a href="/categories/workwear">Company Merchandise</a><a href="/search?q=creator">Creator Merch</a><a href="/categories">All Collections</a></div></details>
+              <a href="/how-it-works">How It Works</a>
+              <a href="/mockup-generate">Create your design</a>
+              <a href="/track-order">Track Order</a>
+              <span class="mobile-auth-slot" data-auth-slot><a href="/account">Account</a></span>
+            </div>
           </details>
         </nav>
       </div>
@@ -135,11 +192,11 @@ const publicApiBaseUrl = (import.meta.env.PUBLIC_API_BASE_URL ?? 'http://127.0.0
         </div>
         <div>
           <p class="footer-title">Shop</p>
-          <nav class="footer-links" aria-label="Footer shop links"><a href="/categories">All collections</a><a href="/mockup-generate">Mockup generator</a><a href="/search">Search products</a><a href="/cart">Your cart</a></nav>
+          <nav class="footer-links" aria-label="Footer shop links"><a href="/categories">All collections</a><a href="/mockup-generate">Create your design</a><a href="/search">Search products</a><a href="/cart">Your cart</a></nav>
         </div>
         <div>
           <p class="footer-title">Orders</p>
-          <nav class="footer-links" aria-label="Footer order links"><a href="/account">My account</a><a href="/track-order">Track an order</a><a href="/#how-it-works">Our process</a></nav>
+          <nav class="footer-links" aria-label="Footer order links"><a href="/account">My account</a><a href="/track-order">Track an order</a><a href="/how-it-works">Our process</a></nav>
         </div>
         <div>
           <p class="footer-title">Good to know</p>
@@ -193,8 +250,54 @@ const publicApiBaseUrl = (import.meta.env.PUBLIC_API_BASE_URL ?? 'http://127.0.0
         window.setTimeout(() => trackingForm.requestSubmit(), 0);
       }
 
+      const announcementMessage = document.querySelector('[data-announcement-message]');
+      if (announcementMessage) {
+        const messages = [
+          'Better pricing for bulk orders',
+          'Delivery across India',
+          'Customize front, back & sleeves',
+          'Your design. Your placement. Your apparel.',
+        ];
+        const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+        let messageIndex = 0;
+        let rotationTimer;
+        let transitionTimer;
+
+        const stopAnnouncement = () => {
+          window.clearInterval(rotationTimer);
+          window.clearTimeout(transitionTimer);
+          rotationTimer = undefined;
+          transitionTimer = undefined;
+          announcementMessage.classList.remove('is-leaving', 'is-entering');
+        };
+
+        const rotateAnnouncement = () => {
+          announcementMessage.classList.add('is-leaving');
+          transitionTimer = window.setTimeout(() => {
+            messageIndex = (messageIndex + 1) % messages.length;
+            announcementMessage.textContent = messages[messageIndex];
+            announcementMessage.classList.remove('is-leaving');
+            announcementMessage.classList.add('is-entering');
+            window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
+              announcementMessage.classList.remove('is-entering');
+            }));
+          }, 300);
+        };
+
+        const startAnnouncement = () => {
+          stopAnnouncement();
+          if (!motionPreference.matches && !document.hidden) {
+            rotationTimer = window.setInterval(rotateAnnouncement, 4500);
+          }
+        };
+
+        motionPreference.addEventListener('change', startAnnouncement);
+        document.addEventListener('visibilitychange', startAnnouncement);
+        startAnnouncement();
+      }
+
       const apiBaseUrl = (document.body.dataset.apiBase || 'http://127.0.0.1:8000/api').replace(/\/+$/, '');
-      const authSlot = document.getElementById('nav-auth-links');
+      const authSlots = document.querySelectorAll('[data-auth-slot]');
       const cartCount = document.getElementById('nav-cart-count');
       const loginUrl = apiBaseUrl.replace(/\/api$/, '/login');
 
@@ -204,12 +307,11 @@ const publicApiBaseUrl = (import.meta.env.PUBLIC_API_BASE_URL ?? 'http://127.0.0
         fetch(`${apiBaseUrl}/customer/session`, { credentials: 'include', headers: { Accept: 'application/json' } }),
         fetch(`${apiBaseUrl}/cart`, { credentials: 'include', headers: { Accept: 'application/json' } }),
       ]).then(async ([sessionResult, cartResult]) => {
-        if (authSlot && sessionResult.status === 'fulfilled') {
+        if (authSlots.length && sessionResult.status === 'fulfilled') {
           if (sessionResult.value.ok) {
             const session = await sessionResult.value.json();
-            if (session?.authenticated) authSlot.innerHTML = '<a href="/account">My account</a>';
-            else authSlot.innerHTML = `<a href="${escapeAttribute(loginUrl)}">Sign in</a>`;
-          } else authSlot.innerHTML = `<a href="${escapeAttribute(loginUrl)}">Sign in</a>`;
+            authSlots.forEach((slot) => { slot.innerHTML = session?.authenticated ? '<a href="/account">My account</a>' : `<a href="${escapeAttribute(loginUrl)}">Sign in</a>`; });
+          } else authSlots.forEach((slot) => { slot.innerHTML = `<a href="${escapeAttribute(loginUrl)}">Sign in</a>`; });
         }
 
         if (cartCount && cartResult.status === 'fulfilled' && cartResult.value.ok) {
@@ -219,6 +321,30 @@ const publicApiBaseUrl = (import.meta.env.PUBLIC_API_BASE_URL ?? 'http://127.0.0
             cartCount.textContent = count > 99 ? '99+' : String(count);
             cartCount.classList.remove('hidden');
           }
+        }
+      });
+
+      const desktopDropdowns = Array.from(document.querySelectorAll('[data-nav-dropdown]'));
+      const mobileMenu = document.querySelector('[data-mobile-menu]');
+      desktopDropdowns.forEach((dropdown) => dropdown.addEventListener('toggle', () => {
+        if (dropdown.open) desktopDropdowns.forEach((other) => { if (other !== dropdown) other.open = false; });
+      }));
+      document.addEventListener('click', (event) => {
+        if (!(event.target instanceof Node)) return;
+        if (!desktopDropdowns.some((dropdown) => dropdown.contains(event.target))) desktopDropdowns.forEach((dropdown) => { dropdown.open = false; });
+        if (mobileMenu?.open && !mobileMenu.contains(event.target)) mobileMenu.open = false;
+      });
+      document.addEventListener('keydown', (event) => {
+        if (event.key !== 'Escape') return;
+        const openDropdown = desktopDropdowns.find((dropdown) => dropdown.open);
+        if (openDropdown) {
+          openDropdown.open = false;
+          openDropdown.querySelector('summary')?.focus();
+          return;
+        }
+        if (mobileMenu?.open) {
+          mobileMenu.open = false;
+          mobileMenu.querySelector(':scope > summary')?.focus();
         }
       });
     </script>
