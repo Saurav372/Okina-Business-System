@@ -7,9 +7,23 @@ const { product, index = 0 } = Astro.props as { product: CatalogProduct; index?:
 const tones = ['red', 'ink', 'sage', 'blue'] as const;
 const availableSkus = product.skus.filter((sku) => sku.availability.available_for_checkout);
 const startingPrice = product.skus.length ? Math.min(...product.skus.map((sku) => sku.price_minor)) : product.base_price_minor;
+const categoryKeywords: Record<string, string> = {
+  'custom-t-shirts': 'college event company merchandise creator merch personal gift bulk t-shirt printing',
+  'team-layers': 'team uniform staff uniform college event hoodie sweatshirt',
+  workwear: 'corporate uniform staff uniform company merchandise polo shirt',
+  'event-kits': 'college event team group',
+};
+const searchText = [
+  product.name,
+  product.category?.name,
+  product.short_description,
+  product.description,
+  product.bulk_threshold_quantity ? 'bulk pricing bulk order' : '',
+  categoryKeywords[product.category?.slug ?? ''] ?? '',
+].filter(Boolean).join(' ').toLowerCase();
 ---
 
-<article class="product-card" data-product-card data-name={product.name.toLowerCase()} data-category={(product.category?.name ?? '').toLowerCase()} data-price={startingPrice}>
+<article class="product-card" data-product-card data-name={product.name.toLowerCase()} data-category={(product.category?.name ?? '').toLowerCase()} data-search={searchText} data-price={startingPrice}>
   <a class="visual-link" href={`/products/${product.slug}`} aria-label={`View ${product.name}`} data-analytics-event="select_item" data-analytics-label={product.slug}>
     <ProductVisual name={product.name} tone={tones[index % tones.length]} image={product.cover_image} compact />
     {product.bulk_threshold_quantity && <span class="product-flag">Bulk pricing</span>}

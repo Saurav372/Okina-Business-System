@@ -1,0 +1,87 @@
+---
+import CatalogLayout from '../layouts/CatalogLayout.astro';
+
+const steps = [
+  { number: '01', title: 'Choose your product', copy: 'Pick the garment, colour, sizes, quantity, and the people you are ordering for.' },
+  { number: '02', title: 'Upload your artwork', copy: 'Add your logo or design, then choose front, back, sleeve, or another available print position.' },
+  { number: '03', title: 'Approve the proof', copy: 'We check the artwork and placement before production. Nothing is printed until the setup is clear.' },
+  { number: '04', title: 'Production begins', copy: 'Your approved order is printed, quality checked, and packed with its size and quantity details intact.' },
+  { number: '05', title: 'Track delivery', copy: 'Follow the order as it moves from production to shipping and delivery across India.' },
+];
+
+const details = [
+  { title: 'Artwork requirements', copy: 'Clear PNG, PDF, SVG, AI, or other high-resolution files usually produce the best result. If a file needs attention, the artwork check catches it before production.' },
+  { title: 'Print placement', copy: 'Choose the available position for each design—front, back, or sleeve—and use Create your design to preview the visual balance before ordering.' },
+  { title: 'Proof approval', copy: 'The proof confirms the garment, artwork, size, position, and production setup. Review every detail because production follows the approved proof.' },
+  { title: 'Production', copy: 'Production time depends on the product, quantity, print method, artwork readiness, and current workshop schedule. Larger or mixed-size orders may need extra preparation.' },
+  { title: 'Shipping', copy: 'Delivery timing is confirmed from the final order and destination. Once shipped, the tracking reference stays available from Track Order.' },
+];
+---
+
+<CatalogLayout title="How Custom Apparel Printing Works" description="Learn how Okina Craft handles artwork, print placement, proof approval, production, pricing, and delivery for custom apparel orders in India.">
+  <div class="container process-page">
+    <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><span aria-current="page">How It Works</span></nav>
+
+    <header class="process-hero">
+      <div><p class="eyebrow">A clear custom process</p><h1>From your idea to finished apparel.</h1></div>
+      <div class="process-hero__copy"><p class="lede">Choose the product, place your artwork, approve the proof, and follow production through delivery.</p><div class="process-actions"><a class="button" href="/categories">Choose a product</a><a class="button button--ghost" href="/mockup-generate">Create your design</a></div></div>
+    </header>
+
+    <section class="process-steps" aria-labelledby="steps-heading">
+      <div class="section-head"><div><p class="eyebrow">Five calm steps</p><h2 id="steps-heading">You always know what happens next.</h2></div></div>
+      <ol>{steps.map((step) => <li><span class="process-step__number">{step.number}</span><div><h3>{step.title}</h3><p>{step.copy}</p></div></li>)}</ol>
+    </section>
+
+    <section class="process-details section-rule" aria-labelledby="details-heading">
+      <div class="process-details__intro"><p class="eyebrow">Before production</p><h2 id="details-heading">The details that protect your order.</h2><p class="lede">Custom printing works best when the artwork, placement, and expectations are agreed before anything reaches the press.</p></div>
+      <div class="process-details__list">{details.map((item, index) => <article><span>{String(index + 1).padStart(2, '0')}</span><div><h3>{item.title}</h3><p>{item.copy}</p></div></article>)}</div>
+    </section>
+
+    <section class="pricing-factors section-rule" aria-labelledby="pricing-heading">
+      <div><p class="eyebrow">Custom apparel pricing</p><h2 id="pricing-heading">What affects your price?</h2></div>
+      <div class="pricing-grid">
+        <article><strong>Garment</strong><p>T-shirt, polo, hoodie, workwear, fabric weight, and finish set the starting cost.</p></article>
+        <article><strong>Quantity</strong><p>Larger orders can unlock better per-piece pricing because setup is shared across more garments.</p></article>
+        <article><strong>Print setup</strong><p>Print method, artwork size, number of colours, and front, back, or sleeve placements affect production.</p></article>
+        <article><strong>Delivery</strong><p>Destination, package size, and required delivery speed affect the final shipping amount.</p></article>
+      </div>
+      <div class="pricing-cta"><div><strong>Ordering for a team, event, or company?</strong><span>Start with a bulk-ready product and the closest use case.</span></div><a class="button" href="/search?q=bulk">Explore bulk pricing</a></div>
+    </section>
+  </div>
+</CatalogLayout>
+
+<style>
+  .process-page { padding-bottom: clamp(2rem, 5vw, 5rem); }
+  .process-hero { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(20rem, .8fr); gap: clamp(2rem, 7vw, 7rem); align-items: end; padding-block: clamp(3rem, 8vw, 7rem); border-bottom: 1px solid var(--color-border); }
+  .process-hero h1 { max-width: 11ch; margin-bottom: 0; }
+  .process-hero__copy { padding-bottom: .4rem; }
+  .process-actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.75rem; }
+  .process-steps { padding-block: var(--space-section); }
+  .process-steps .section-head { max-width: 50rem; }
+  .process-steps h2 { max-width: 14ch; }
+  .process-steps ol { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); margin: 3rem 0 0; padding: 0; border-top: 1px solid var(--color-border); list-style: none; }
+  .process-steps li { position: relative; padding: 1.25rem 1rem 0 0; }
+  .process-steps li::before { position: absolute; top: -.3rem; left: 0; width: .6rem; height: .6rem; border-radius: 50%; background: var(--color-brand); content: ''; }
+  .process-step__number { color: var(--color-brand); font-family: var(--font-display); font-size: .82rem; }
+  .process-steps h3 { margin: 1.5rem 0 .65rem; font-size: 1rem; }
+  .process-steps p, .process-details p, .pricing-grid p { margin-bottom: 0; color: var(--color-ink-soft); font-size: .88rem; }
+  .process-details { display: grid; grid-template-columns: .75fr 1.25fr; gap: clamp(2rem, 8vw, 8rem); padding-block: var(--space-section); }
+  .process-details__intro { position: sticky; top: 7rem; align-self: start; }
+  .process-details__intro h2 { max-width: 10ch; }
+  .process-details__list { display: grid; }
+  .process-details article { display: grid; grid-template-columns: 2.5rem 1fr; gap: 1rem; padding-block: 1.35rem; border-bottom: 1px solid var(--color-border); }
+  .process-details article:first-child { padding-top: 0; }
+  .process-details article > span { color: var(--color-brand); font-family: var(--font-display); font-size: .82rem; }
+  .process-details h3 { margin: 0 0 .5rem; font-size: 1.05rem; }
+  .pricing-factors { padding-block: var(--space-section); }
+  .pricing-factors > div:first-child { display: grid; grid-template-columns: .8fr 1.2fr; align-items: end; }
+  .pricing-factors h2 { max-width: 11ch; margin-bottom: 0; }
+  .pricing-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; margin-top: 3rem; border: 1px solid var(--color-border); background: var(--color-border); }
+  .pricing-grid article { min-height: 12rem; padding: 1.25rem; background: var(--color-surface); }
+  .pricing-grid strong { display: block; margin-bottom: 2rem; font-family: var(--font-display); font-size: 1.25rem; }
+  .pricing-cta { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 1rem; padding: 1.25rem; background: var(--color-surface-strong); color: white; }
+  .pricing-cta > div { display: grid; gap: .2rem; }
+  .pricing-cta span { color: #beb6af; font-size: .85rem; }
+  @media (max-width: 64rem) { .process-steps ol, .pricing-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .process-steps ol { gap: 2rem 0; } }
+  @media (max-width: 48rem) { .process-hero, .process-details { grid-template-columns: 1fr; } .process-details__intro { position: static; } .process-steps ol, .pricing-grid { grid-template-columns: 1fr; } .pricing-factors > div:first-child { grid-template-columns: 1fr; gap: 1rem; } .pricing-cta { align-items: stretch; flex-direction: column; } }
+</style>
