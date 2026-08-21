@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Browse custom apparel from Okina Craft." />
+    <title>Shop — Okina Craft Design 02</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="shop-page">
+    <a class="skip-link" href="#main">Skip to products</a>
+    <div class="promo-bar"><span>Bulk pricing from 10 pieces</span><strong>Free artwork check on every order</strong><span>Delivery across India</span></div>
+    <header class="site-header site-header-light">
+      <a class="brand" href="index.html" aria-label="Okina Craft home"><span>O</span><strong>OKINA CRAFT</strong></a>
+      <nav class="primary-nav" aria-label="Main navigation"><a class="is-current" href="shop.html">T-shirts</a><a href="shop.html">Teams</a><a href="shop.html">Events</a><a href="shop.html">Workwear</a><a class="nav-accent" href="shop.html">New drop</a></nav>
+      <div class="header-tools"><button type="button" data-search-toggle aria-expanded="false" aria-controls="search-panel">Search</button><a href="#account" aria-label="Account"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 20c.8-4 3.1-6 7-6s6.2 2 7 6"></path></svg></a><a href="#bag" aria-label="Shopping bag with 0 items"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1 12H6L5 8Z"></path><path d="M9 9V6a3 3 0 0 1 6 0v3"></path></svg><span>0</span></a><button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu">Menu</button></div>
+      <div class="search-panel" id="search-panel" hidden><form role="search" data-catalog-search><label for="site-search">Search this collection</label><input id="site-search" type="search" placeholder="Search T-shirts…" /><button>Search</button></form></div>
+      <nav class="mobile-menu" id="mobile-menu" aria-label="Mobile navigation" hidden><a href="shop.html">T-shirts</a><a href="shop.html">Teams</a><a href="shop.html">Events</a><a href="shop.html">Workwear</a></nav>
+    </header>
+
+    <main id="main">
+      <section class="collection-intro">
+        <p>Custom T-shirts / 24 styles</p>
+        <h1>Find your fit.</h1>
+        <p class="collection-copy">From easy everyday cotton to heavyweight streetwear blanks. Every style can carry your artwork on the front, back, or sleeve.</p>
+        <div class="fit-chips" aria-label="Filter by fit"><button class="is-active" data-filter="all" aria-pressed="true">All styles</button><button data-filter="heavy" aria-pressed="false">Heavyweight</button><button data-filter="everyday" aria-pressed="false">Everyday</button><button data-filter="team" aria-pressed="false">Team-ready</button></div>
+      </section>
+
+      <section class="collection-toolbar" aria-label="Collection controls"><p data-result-count>4 products</p><div><button type="button" data-filter-panel>Filter <span>+</span></button><label>Sort <select><option>Featured</option><option>Price: low to high</option><option>Price: high to low</option></select></label></div></section>
+      <aside class="filter-panel" data-filter-drawer hidden><strong>More filters</strong><label><input type="checkbox" /> In stock</label><label><input type="checkbox" /> Ready for bulk</label><label><input type="checkbox" /> Front + back print</label><button type="button" data-close-filter>Done</button></aside>
+
+      <section class="shop-grid" aria-label="Products">
+        <article class="shop-card" data-category="heavy"><a href="product.html"><div class="shop-image bg-stone"><img src="assets/tshirt-black.png" alt="Black Studio Heavy T-shirt" /><span class="image-note">240 GSM</span><button class="quick-add" type="button" aria-label="Quick add Studio Heavy Tee">Quick add</button></div><div class="shop-meta"><div><h2>Studio Heavy Tee</h2><p>Heavyweight cotton · 4 colours</p></div><strong>₹499</strong></div></a></article>
+        <article class="shop-card" data-category="everyday"><a href="product.html"><div class="shop-image bg-clay"><img src="assets/tshirt-white.png" alt="White Everyday Crew T-shirt" /><span class="image-note">180 GSM</span><button class="quick-add" type="button" aria-label="Quick add Everyday Crew">Quick add</button></div><div class="shop-meta"><div><h2>Everyday Crew</h2><p>Soft cotton · 8 colours</p></div><strong>₹349</strong></div></a></article>
+        <article class="shop-card" data-category="team"><a href="product.html"><div class="shop-image bg-blue"><img src="assets/tshirt-navy.png" alt="Navy Team Active T-shirt" /><span class="image-note">Team-ready</span><button class="quick-add" type="button" aria-label="Quick add Team Active Tee">Quick add</button></div><div class="shop-meta"><div><h2>Team Active Tee</h2><p>Moisture control · 6 colours</p></div><strong>₹429</strong></div></a></article>
+        <article class="shop-card" data-category="heavy"><a href="product.html"><div class="shop-image bg-sage"><img src="assets/tshirt-paper.png" alt="Natural Oversized T-shirt" /><span class="image-note">Oversized</span><button class="quick-add" type="button" aria-label="Quick add Oversized Canvas">Quick add</button></div><div class="shop-meta"><div><h2>Oversized Canvas</h2><p>Drop shoulder · 5 colours</p></div><strong>₹549</strong></div></a></article>
+      </section>
+      <div class="catalog-empty" data-catalog-empty hidden><strong>No styles in this filter.</strong><button type="button" data-show-all>Show all products</button></div>
+    </main>
+    <div class="toast" role="status" aria-live="polite" data-toast hidden>Added to your bag.</div>
+    <script src="script.js"></script>
+  </body>
+</html>
+

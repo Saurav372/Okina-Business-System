@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Okina Craft storefront UI experiment 01." />
+    <title>Okina Craft — Design 01</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to products</a>
+
+    <div class="announcement" role="note">
+      <span>Free artwork review with every order</span>
+      <span aria-hidden="true">✦</span>
+      <span>Ships across India</span>
+      <span class="announcement-extra" aria-hidden="true">✦</span>
+      <span class="announcement-extra">Proof approved before we print</span>
+    </div>
+
+    <header class="site-header">
+      <a class="wordmark" href="#" aria-label="Okina Craft home">
+        <span class="wordmark-mark" aria-hidden="true">O</span>
+        <span>OKINA<br />CRAFT</span>
+      </a>
+
+      <nav class="desktop-nav" aria-label="Main navigation">
+        <a href="#products">Shop</a>
+        <a href="#purposes">For teams</a>
+        <a href="#process">How it works</a>
+      </nav>
+
+      <div class="header-actions">
+        <button class="icon-button search-trigger" type="button" aria-label="Focus product search">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.7"></circle><path d="m16 16 5 5"></path></svg>
+        </button>
+        <a class="bag-link" href="#bag" aria-label="Shopping bag with 0 items">Bag <span>0</span></a>
+        <button class="menu-button" type="button" aria-expanded="false" aria-controls="mobile-nav">Menu</button>
+      </div>
+
+      <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation" hidden>
+        <a href="#products">Shop all</a>
+        <a href="#purposes">For teams & events</a>
+        <a href="#process">How it works</a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="discovery" aria-labelledby="discovery-title">
+        <div class="discovery-copy">
+          <p class="kicker">Custom apparel / Bengaluru / Est. 2020</p>
+          <h1 id="discovery-title">Made for your <em>people.</em></h1>
+          <p class="intro">Choose the garment. Bring the idea. We turn it into carefully printed apparel for one person or the whole crew.</p>
+
+          <form class="search-box" role="search" data-search-form>
+            <label for="product-search">What do you want to make?</label>
+            <div class="search-control">
+              <input id="product-search" name="query" type="search" placeholder="Try “oversized tee”" autocomplete="off" />
+              <button type="submit" aria-label="Search products">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M14 6l6 6-6 6"></path></svg>
+              </button>
+            </div>
+            <p class="search-status" aria-live="polite" data-search-status></p>
+          </form>
+
+          <div class="quick-links" aria-label="Popular searches">
+            <span>Popular:</span>
+            <button type="button" data-query="T-shirts">T-shirts</button>
+            <button type="button" data-query="Team kits">Team kits</button>
+            <button type="button" data-query="Hoodies">Hoodies</button>
+          </div>
+        </div>
+
+        <div class="hero-product" aria-label="Featured heavyweight T-shirt">
+          <div class="product-index" aria-hidden="true">01 / 04</div>
+          <div class="proof-stamp" aria-hidden="true"><span>PROOF</span><strong>READY</strong></div>
+          <img src="assets/tshirt-white.png" alt="White heavyweight cotton T-shirt" width="1024" height="1024" data-hero-image />
+          <div class="floating-label label-fabric"><span>240 GSM</span><strong>Heavy cotton</strong></div>
+          <div class="floating-label label-price"><span>From</span><strong>₹499</strong></div>
+          <div class="product-picker">
+            <div>
+              <p>Studio Heavy Tee</p>
+              <span>Unisex · XS–3XL</span>
+            </div>
+            <fieldset>
+              <legend class="sr-only">Choose garment colour</legend>
+              <button class="swatch swatch-white is-active" type="button" data-image="assets/tshirt-white.png" aria-label="White" aria-pressed="true"></button>
+              <button class="swatch swatch-paper" type="button" data-image="assets/tshirt-paper.png" aria-label="Natural" aria-pressed="false"></button>
+              <button class="swatch swatch-navy" type="button" data-image="assets/tshirt-navy.png" aria-label="Navy" aria-pressed="false"></button>
+              <button class="swatch swatch-black" type="button" data-image="assets/tshirt-black.png" aria-label="Black" aria-pressed="false"></button>
+            </fieldset>
+            <a href="#products" aria-label="View Studio Heavy Tee">View tee <span aria-hidden="true">↗</span></a>
+          </div>
+        </div>
+      </section>
+
+      <section class="purpose-strip" id="purposes" aria-label="Shop by purpose">
+        <p>Start with your people</p>
+        <div class="purpose-links">
+          <a href="#products"><span>01</span>Startup teams</a>
+          <a href="#products"><span>02</span>College clubs</a>
+          <a href="#products"><span>03</span>Events</a>
+          <a href="#products"><span>04</span>Creator merch</a>
+          <a href="#products"><span>05</span>One-offs</a>
+        </div>
+      </section>
+
+      <section class="product-section" id="products" aria-labelledby="products-title">
+        <header class="section-heading">
+          <div>
+            <p class="kicker">Blank canvases / Ready to customise</p>
+            <h2 id="products-title">Pick your base.</h2>
+          </div>
+          <a href="#products">View all 24 products <span aria-hidden="true">→</span></a>
+        </header>
+
+        <div class="product-grid">
+          <article class="product-card" data-product="t-shirts studio heavy tee cotton">
+            <a href="#product-studio">
+              <div class="card-image card-cobalt"><span class="card-badge">Bestseller</span><img src="assets/tshirt-white.png" alt="White Studio Heavy Tee" loading="lazy" /></div>
+              <div class="card-copy"><div><h3>Studio Heavy Tee</h3><p>240 GSM cotton · 4 colours</p></div><strong>₹499</strong></div>
+            </a>
+          </article>
+          <article class="product-card" data-product="t-shirts everyday classic black">
+            <a href="#product-classic">
+              <div class="card-image card-orange"><span class="card-badge">Quick ship</span><img src="assets/tshirt-black.png" alt="Black Everyday Classic T-shirt" loading="lazy" /></div>
+              <div class="card-copy"><div><h3>Everyday Classic</h3><p>180 GSM cotton · 8 colours</p></div><strong>₹349</strong></div>
+            </a>
+          </article>
+          <article class="product-card" data-product="team kits navy uniforms active">
+            <a href="#product-team">
+              <div class="card-image card-mint"><span class="card-badge">Team-ready</span><img src="assets/tshirt-navy.png" alt="Navy Team Essential T-shirt" loading="lazy" /></div>
+              <div class="card-copy"><div><h3>Team Essential</h3><p>Moisture control · 6 colours</p></div><strong>₹429</strong></div>
+            </a>
+          </article>
+        </div>
+
+        <div class="empty-results" data-empty-results hidden>
+          <strong>No exact match yet.</strong>
+          <p>Try T-shirts, team kits, or browse every blank canvas.</p>
+          <button type="button" data-clear-search>Show all products</button>
+        </div>
+      </section>
+
+      <section class="process" id="process" aria-labelledby="process-title">
+        <div class="process-title">
+          <p class="kicker">A calmer custom process</p>
+          <h2 id="process-title">Nothing prints until you say yes.</h2>
+        </div>
+        <ol>
+          <li><span>01</span><strong>Choose a blank</strong><p>Pick the fit, colour and sizes your group needs.</p></li>
+          <li><span>02</span><strong>Place the artwork</strong><p>Upload your design and choose front, back or sleeve.</p></li>
+          <li><span>03</span><strong>Approve the proof</strong><p>Check the final placement before production starts.</p></li>
+        </ol>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Customize the Okina Studio Heavy Tee." />
+    <title>Studio Heavy Tee — Okina Craft Design 02</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="product-page">
+    <a class="skip-link" href="#main">Skip to product details</a>
+    <div class="promo-bar"><span>Bulk pricing from 10 pieces</span><strong>Free artwork check on every order</strong><span>Delivery across India</span></div>
+    <header class="site-header site-header-light">
+      <a class="brand" href="index.html" aria-label="Okina Craft home"><span>O</span><strong>OKINA CRAFT</strong></a>
+      <nav class="primary-nav" aria-label="Main navigation"><a href="shop.html">T-shirts</a><a href="shop.html">Teams</a><a href="shop.html">Events</a><a href="shop.html">Workwear</a><a class="nav-accent" href="shop.html">New drop</a></nav>
+      <div class="header-tools"><button type="button" data-search-toggle aria-expanded="false" aria-controls="search-panel">Search</button><a href="#account" aria-label="Account"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 20c.8-4 3.1-6 7-6s6.2 2 7 6"></path></svg></a><a href="#bag" aria-label="Shopping bag with 0 items" data-bag-link><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1 12H6L5 8Z"></path><path d="M9 9V6a3 3 0 0 1 6 0v3"></path></svg><span data-bag-count>0</span></a><button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu">Menu</button></div>
+      <div class="search-panel" id="search-panel" hidden><form action="shop.html" role="search"><label for="site-search">Search products</label><input id="site-search" type="search" placeholder="T-shirts, hoodies, team kits…" /><button>Search</button></form></div>
+      <nav class="mobile-menu" id="mobile-menu" aria-label="Mobile navigation" hidden><a href="shop.html">T-shirts</a><a href="shop.html">Teams</a><a href="shop.html">Events</a><a href="shop.html">Workwear</a></nav>
+    </header>
+
+    <main id="main" class="product-layout">
+      <section class="product-gallery" aria-label="Product images">
+        <figure class="gallery-main"><img src="assets/tshirt-black.png" alt="Black Studio Heavy Tee, front view" data-product-image /><figcaption><span>Front view</span><span>240 GSM combed cotton</span></figcaption></figure>
+        <figure class="gallery-detail"><img src="assets/tshirt-black.png" alt="Black Studio Heavy Tee fabric and collar detail" data-detail-image /><figcaption>Ribbed collar / reinforced shoulder</figcaption></figure>
+        <aside class="look-card"><button type="button" aria-label="Close styling suggestion">×</button><img src="assets/tshirt-black.png" alt="Black Studio Heavy Tee thumbnail" data-look-image /><div><span>Current canvas</span><strong>Studio Heavy Tee</strong><small data-look-colour>Black / ₹499</small></div></aside>
+      </section>
+
+      <section class="product-config" aria-labelledby="product-title">
+        <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="shop.html">T-shirts</a><span>/</span><span>Heavyweight</span></nav>
+        <p class="product-kicker">Bestseller / Custom-ready</p>
+        <h1 id="product-title">Studio Heavy Tee</h1>
+        <div class="price-row"><strong>₹499</strong><span>Base price · printing calculated from artwork</span></div>
+        <p class="product-summary">A structured 240 GSM blank with a relaxed unisex fit. Built for bold front prints, detailed back artwork, and repeat wear.</p>
+
+        <fieldset class="choice-group colour-choice">
+          <legend>Colour: <strong data-colour-name>Black</strong></legend>
+          <button class="colour black is-selected" type="button" data-colour="Black" data-image="assets/tshirt-black.png" aria-label="Black" aria-pressed="true"></button>
+          <button class="colour white" type="button" data-colour="White" data-image="assets/tshirt-white.png" aria-label="White" aria-pressed="false"></button>
+          <button class="colour navy" type="button" data-colour="Navy" data-image="assets/tshirt-navy.png" aria-label="Navy" aria-pressed="false"></button>
+          <button class="colour natural" type="button" data-colour="Natural" data-image="assets/tshirt-paper.png" aria-label="Natural" aria-pressed="false"></button>
+        </fieldset>
+
+        <fieldset class="choice-group size-choice">
+          <legend>Choose size <a href="#size-guide">Size guide</a></legend>
+          <button type="button" aria-pressed="false">XS</button><button type="button" aria-pressed="false">S</button><button type="button" aria-pressed="false">M</button><button type="button" aria-pressed="false">L</button><button type="button" aria-pressed="false">XL</button><button type="button" disabled>2XL</button>
+          <p class="choice-error" data-size-error aria-live="polite"></p>
+        </fieldset>
+
+        <button class="customize-button" type="button" data-add-to-bag>Choose size to continue</button>
+        <p class="proof-note"><span>✓</span><strong>Proof before production</strong> We check your artwork and send a clear placement proof before anything is printed.</p>
+
+        <div class="product-details">
+          <details open><summary>Fit & fabric <span>+</span></summary><p>Relaxed unisex fit, 240 GSM combed cotton, pre-shrunk fabric, reinforced neck and shoulders.</p></details>
+          <details><summary>Print options <span>+</span></summary><p>Front, back, and sleeve placement with screen print, DTF, or embroidery based on the artwork.</p></details>
+          <details><summary>Delivery & returns <span>+</span></summary><p>Production starts after proof approval. Personalized pieces can only be remade when the confirmed specification is not met.</p></details>
+        </div>
+      </section>
+    </main>
+    <div class="toast" role="status" aria-live="polite" data-toast hidden>Studio Heavy Tee added to your bag.</div>
+    <script src="script.js"></script>
+  </body>
+</html>
