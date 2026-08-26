@@ -27,25 +27,27 @@ const searchText = [
   <a class="visual-link" href={`/products/${product.slug}`} aria-label={`View ${product.name}`} data-analytics-event="select_item" data-analytics-label={product.slug}>
     <ProductVisual name={product.name} tone={tones[index % tones.length]} image={product.cover_image} compact />
     {product.bulk_threshold_quantity && <span class="product-flag">Bulk pricing</span>}
+    <span class="visual-action" aria-hidden="true">Customize ↗</span>
   </a>
   <div class="product-card-body">
-    <div class="cluster product-meta"><span>{product.category?.name ?? 'Custom apparel'}</span><span aria-hidden="true">·</span><span>{availableSkus.length ? 'Ready to order' : 'Enquire'}</span></div>
-    <h3><a href={`/products/${product.slug}`}>{product.name}</a></h3>
+    <div class="product-card-title"><h3><a href={`/products/${product.slug}`}>{product.name}</a></h3><span>From <strong>{formatMoney(startingPrice, product.currency)}</strong></span></div>
+    <div class="cluster product-meta"><span>{product.category?.name ?? 'Custom apparel'}</span><span aria-hidden="true">·</span><span>{availableSkus.length ? 'Ready to customize' : 'Enquire to order'}</span></div>
     <p>{product.short_description ?? 'Made to carry your idea, identity, or team mark.'}</p>
-    <div class="product-card-foot"><span>From <strong>{formatMoney(startingPrice, product.currency)}</strong></span><a class="arrow-link" href={`/products/${product.slug}`} aria-label={`Customize ${product.name}`} data-analytics-event="select_item" data-analytics-label={product.slug}>Customize <span aria-hidden="true">→</span></a></div>
   </div>
 </article>
 
 <style>
-  .product-card { min-width: 0; }
-  .visual-link { position: relative; display: block; overflow: hidden; border: 1px solid var(--color-border); border-radius: var(--radius-md); text-decoration: none; }
-  .product-flag { position: absolute; top: .75rem; left: .75rem; padding: .35rem .55rem; background: var(--color-surface-strong); color: white; font-size: .68rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
-  .product-card-body { padding: 1rem .15rem 0; }
-  .product-meta { color: var(--color-ink-faint); font-size: .72rem; font-weight: 750; letter-spacing: .055em; text-transform: uppercase; }
-  h3 { margin: .55rem 0 .45rem; font-size: 1.12rem; }
+  .product-card { min-width:0; }
+  .visual-link { position:relative; display:block; overflow:hidden; border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-surface); text-decoration:none; }
+  .product-flag { position:absolute; z-index:2; top:.65rem; left:.65rem; padding:.35rem .5rem; background:var(--color-surface-strong); color:white; font-size:.62rem; font-weight:850; letter-spacing:.08em; text-transform:uppercase; }
+  .visual-action{position:absolute;right:.65rem;bottom:.65rem;padding:.45rem .6rem;background:var(--color-surface-strong);color:white;font-size:.65rem;font-weight:850;letter-spacing:.06em;text-transform:uppercase;opacity:0;transform:translateY(.35rem);transition:opacity var(--duration-fast),transform var(--duration-fast) var(--ease-out)}
+  .visual-link:hover .visual-action,.visual-link:focus-visible .visual-action{opacity:1;transform:none}
+  .product-card-body { padding:.85rem .1rem 0; }
+  .product-card-title{display:flex;align-items:start;justify-content:space-between;gap:.75rem}.product-card-title>span{flex:0 0 auto;padding-top:.15rem;font-size:.78rem}.product-card-title strong{font-weight:850}
+  .product-meta { margin-top:.45rem;color:var(--color-ink-faint); font-size:.65rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; }
+  h3 { margin:0; font-family:var(--font-body);font-size:.96rem;letter-spacing:0;line-height:1.25; }
   h3 a { text-decoration: none; }
   h3 a:hover { color: var(--color-brand); }
-  p { min-height: 3em; margin-bottom: .85rem; color: var(--color-ink-soft); font-size: .88rem; }
-  .product-card-foot { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding-top: .8rem; border-top: 1px solid var(--color-border); font-size: .86rem; }
-  .arrow-link { color: var(--color-brand); font-weight: 800; text-decoration: none; white-space: nowrap; }
+  p { display:-webkit-box;min-height:2.6em;margin:.55rem 0 0;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;color:var(--color-ink-soft);font-size:.78rem; }
+  @media(max-width:34rem){.visual-action{opacity:1;transform:none}.product-card-title{gap:.5rem}}
 </style>

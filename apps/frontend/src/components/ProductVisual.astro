@@ -31,16 +31,17 @@ const initials = name.split(/\s+/).slice(0, 2).map((part) => part[0]).join('').t
 </div>
 
 <style>
-  .product-visual { position: relative; display: grid; min-height: 31rem; overflow: hidden; place-items: center; background: var(--color-surface); isolation: isolate; }
+  .product-visual { position: relative; display: grid; min-height: 34rem; overflow: hidden; place-items: center; background: #e8e0d3; isolation: isolate; }
   .product-visual::after { position: absolute; inset: auto 9% 6%; height: 9%; border-radius: 50%; background: rgba(26,24,22,.18); filter: blur(20px); content: ""; z-index: -1; }
   .visual-grid { position: absolute; inset: 0; z-index: -2; background-image: linear-gradient(rgba(26,24,22,.055) 1px, transparent 1px), linear-gradient(90deg, rgba(26,24,22,.055) 1px, transparent 1px); background-size: 32px 32px; mask-image: linear-gradient(to bottom, black, transparent 82%); }
   .garment { width: min(80%, 25rem); filter: drop-shadow(0 30px 26px rgba(26,24,22,.2)); transform: rotate(-1.5deg); transition: transform 400ms var(--ease-out); }
   .product-visual:hover .garment { transform: rotate(0) scale(1.015); }
-  .product-photo { width: 100%; height: 100%; min-height: inherit; object-fit: contain; background: var(--color-surface); transition: transform 400ms var(--ease-out); }
+  .product-photo { width: 100%; height: 100%; min-height: inherit; object-fit: contain; background: #e8e0d3; transition: transform 400ms var(--ease-out); }
   .product-visual:hover .product-photo { transform: scale(1.015); }
   .product-visual--photo .visual-grid { display: none; }
   .visual-note { position: absolute; right: 1rem; bottom: 1rem; padding: .32rem .55rem; background: rgba(255,255,255,.9); color: var(--color-ink-soft); font-size: .67rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
-  .product-visual--compact { min-height: 20rem; }
+  .product-visual--compact { min-height: 0; aspect-ratio: .82; }
+  .product-visual--compact .garment { width: min(76%, 20rem); }
   .product-visual--compact .visual-note { display: none; }
   @media (max-width: 34rem) { .product-visual { min-height: 25rem; } .product-visual--compact { min-height: 21rem; } }
 </style>

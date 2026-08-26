@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Secure Okina checkout."><title>Checkout — Okina Design 03</title><link rel="stylesheet" href="styles.css"></head>
+<body><a class="skip-link" href="#checkout">Skip to checkout</a>
+  <header class="site-shell"><div class="benefit-bar"><span>Secure checkout</span><b>Proof approved before production</b><span>Your inputs are saved if payment fails</span></div><div class="builder-top"><a class="brand" href="index.html"><span class="brand-mark">O</span>OKINA</a><span class="builder-title">Checkout</span><a class="text-link" href="cart.html">Back to bag</a></div></header>
+  <main class="checkout-shell" id="checkout">
+    <section class="checkout-main"><div class="checkout-steps"><strong>1 Delivery</strong><span>2 Review & pay</span><span>3 Proof</span></div><p class="eyebrow">Almost yours</p><h1>Delivery details</h1><div class="form-alert" data-form-alert role="alert" hidden>Please check the highlighted details. Nothing you entered has been removed.</div>
+      <form class="checkout-form" data-checkout-form novalidate>
+        <div class="field full"><label for="checkout-name">Full name</label><input id="checkout-name" name="name" autocomplete="name" placeholder="Your full name"><small class="field-error" data-field-error data-error-for="name" hidden></small></div>
+        <div class="field"><label for="checkout-phone">Phone</label><input id="checkout-phone" name="phone" inputmode="tel" autocomplete="tel" placeholder="10-digit number"><small class="field-error" data-field-error data-error-for="phone" hidden></small></div>
+        <div class="field"><label for="checkout-email">Email</label><input id="checkout-email" name="email" type="email" autocomplete="email" value="hello@example.com"><small>Proof and updates arrive here.</small></div>
+        <div class="field full"><label for="checkout-address">Street address</label><input id="checkout-address" name="address" autocomplete="street-address" placeholder="House, street, area"><small class="field-error" data-field-error data-error-for="address" hidden></small></div>
+        <div class="field"><label for="checkout-city">City</label><input id="checkout-city" name="city" autocomplete="address-level2" placeholder="City"><small class="field-error" data-field-error data-error-for="city" hidden></small></div>
+        <div class="field"><label for="checkout-postal">PIN code</label><input id="checkout-postal" name="postal" inputmode="numeric" autocomplete="postal-code" placeholder="6 digits"><small class="field-error" data-field-error data-error-for="postal" hidden></small></div>
+        <label class="check-row full"><input type="checkbox" checked> Save this address to my account</label>
+        <fieldset class="payment-options full"><legend>Payment method</legend><label><input type="radio" name="payment" value="upi" checked><span><strong>UPI</strong><small>Pay securely with any UPI app.</small></span></label><label><input type="radio" name="payment" value="card"><span><strong>Debit or credit card</strong><small>Card details are entered on the secure payment screen.</small></span></label></fieldset>
+        <div class="proof-callout full"><span>✓</span><strong>Your payment reserves the order—it does not start printing.</strong><small>We prepare a production proof. Printing begins only after your approval.</small></div>
+        <button class="button button-lime button-wide full" type="submit">Review and pay ₹3,173 <span>→</span></button>
+      </form>
+    </section>
+    <aside class="checkout-side"><p class="eyebrow">Your order</p><div class="checkout-review-item"><img src="assets/tshirt-black.png" alt="Black Studio Heavy Tee"><div><strong>Studio Heavy Tee × 6</strong><span>Black · DTF · Front centre</span></div><b>₹2,994</b></div><div class="summary-card"><dl><div><dt>Subtotal</dt><dd>₹2,994</dd></div><div><dt>Delivery</dt><dd>₹179</dd></div><div><dt>GST</dt><dd>Included</dd></div><div class="summary-total"><dt>Total</dt><dd>₹3,173</dd></div></dl></div><p class="microcopy">Encrypted payment · Secure design-file handling · Order inputs stay saved if payment needs another attempt.</p></aside>
+  </main><div class="toast" data-toast role="status" aria-live="polite" hidden></div><script src="script.js"></script>
+</body></html>

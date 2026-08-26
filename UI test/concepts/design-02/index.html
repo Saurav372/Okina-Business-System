@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Okina Craft Design 02 campaign storefront." />
+    <title>Okina Craft — Design 02</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="home-page">
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <div class="promo-bar"><span>Bulk pricing from 10 pieces</span><strong>Free artwork check on every order</strong><span>Delivery across India</span></div>
+
+    <header class="site-header">
+      <a class="brand" href="index.html" aria-label="Okina Craft home"><span>O</span><strong>OKINA CRAFT</strong></a>
+      <nav class="primary-nav" aria-label="Main navigation">
+        <a href="shop.html">T-shirts</a><a href="shop.html">Teams</a><a href="shop.html">Events</a><a href="shop.html">Workwear</a><a class="nav-accent" href="shop.html">New drop</a>
+      </nav>
+      <div class="header-tools">
+        <button type="button" data-search-toggle aria-expanded="false" aria-controls="search-panel">Search</button>
+        <a href="#account" aria-label="Account"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 20c.8-4 3.1-6 7-6s6.2 2 7 6"></path></svg></a>
+        <a href="#bag" aria-label="Shopping bag with 0 items"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1 12H6L5 8Z"></path><path d="M9 9V6a3 3 0 0 1 6 0v3"></path></svg><span>0</span></a>
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu">Menu</button>
+      </div>
+      <div class="search-panel" id="search-panel" hidden>
+        <form action="shop.html" role="search"><label for="site-search">Search products</label><input id="site-search" type="search" placeholder="T-shirts, hoodies, team kits…" /><button>Search</button></form>
+      </div>
+      <nav class="mobile-menu" id="mobile-menu" aria-label="Mobile navigation" hidden><a href="shop.html">T-shirts</a><a href="shop.html">Teams</a><a href="shop.html">Events</a><a href="shop.html">Workwear</a></nav>
+    </header>
+
+    <main id="main">
+      <section class="campaign-hero" aria-labelledby="campaign-title">
+        <img src="assets/okina-campaign-hero.png" alt="Young Indian creators wearing black, white, and red Okina apparel" width="2736" height="912" />
+        <div class="campaign-overlay">
+          <p>Drop 02 / Built together</p>
+          <h1 id="campaign-title">Wear the<br />same energy.</h1>
+          <div class="hero-actions"><a href="shop.html">Shop T-shirts <span>→</span></a><a href="product.html">Build a team kit <span>→</span></a></div>
+        </div>
+        <div class="campaign-index" aria-hidden="true">OK / 02</div>
+      </section>
+
+      <section class="campaign-tabs" aria-label="Campaign categories">
+        <a class="is-active" href="shop.html">New drop</a><a href="shop.html">Team uniforms</a><a href="shop.html">Event merch</a>
+        <a class="view-all" href="shop.html">View all products →</a>
+      </section>
+
+      <section class="home-products" aria-labelledby="home-products-title">
+        <header><p>Choose the blank. Add your mark.</p><h2 id="home-products-title">Ready for your design.</h2></header>
+        <div class="editorial-grid">
+          <a class="editorial-card card-wide" href="product.html"><img src="assets/tshirt-black.png" alt="Black heavyweight cotton T-shirt" /><span class="tag">01 / Heavyweight</span><div><strong>Studio Heavy Tee</strong><span>From ₹499</span></div></a>
+          <a class="editorial-card card-tall" href="product.html"><img src="assets/tshirt-white.png" alt="White classic cotton T-shirt" /><span class="tag">02 / Everyday</span><div><strong>Classic Crew</strong><span>From ₹349</span></div></a>
+          <aside class="proof-block"><p>Proof before production</p><strong>See the exact placement before we print a single piece.</strong><a href="product.html">Try the product builder →</a></aside>
+        </div>
+      </section>
+
+      <section class="team-banner" aria-labelledby="team-title">
+        <span class="team-number">10+</span>
+        <div><p>Ordering for a group?</p><h2 id="team-title">One design.<br />Every size.</h2></div>
+        <div class="team-copy"><p>Upload once, choose the size split, approve one clear proof, and track the whole production run together.</p><a href="product.html">Start a team order <span>→</span></a></div>
+      </section>
+    </main>
+    <script src="script.js"></script>
+  </body>
+</html>
+

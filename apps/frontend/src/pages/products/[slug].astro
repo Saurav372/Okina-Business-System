@@ -63,3 +63,15 @@ if(taxNote)taxNote.textContent=document.body.dataset.taxInclusive==='true'?'Incl
 .product-photo-empty span{max-width:24rem;font-size:.86rem}
 @media(max-width:34rem){.product-photo-empty{min-height:25rem}}
 </style>
+<style>
+.product-layout{grid-template-columns:minmax(0,1.28fr) minmax(24rem,.72fr);gap:clamp(1.5rem,4vw,4rem)}
+.product-gallery{border-color:var(--color-ink);border-radius:0}
+.product-buybox{padding:1rem 0 4rem}.product-buybox h1{max-width:10ch;font-size:clamp(2.8rem,5vw,4.8rem)}
+.customizer-form{gap:0;padding-top:1rem}.option-group{padding:1.35rem 0;border-bottom:1px solid var(--color-border)}
+.choice span{min-height:2.75rem;padding:.55rem .8rem;border-radius:0}
+.custom-section{padding:1.4rem 0;border-top:0;border-bottom:1px solid var(--color-border)}
+.upload-zone{min-height:7rem;border-color:var(--color-ink);border-radius:0}
+.order-controls{padding-top:1.4rem}
+.product-details{background:#dfd6c8}.detail-columns{border-color:var(--color-ink)}.detail-columns article{border-color:var(--color-ink)}
+@media(max-width:58rem){.product-layout{grid-template-columns:1fr}.product-buybox{padding-top:2rem}}
+</style>
