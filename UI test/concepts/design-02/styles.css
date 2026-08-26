@@ -169,3 +169,19 @@ a { color:inherit; }
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important}}
 
+/* Okina logo palette — clean white retail canvas with restrained red. */
+:root {
+  --ink: #151515;
+  --paper: #ffffff;
+  --white: #ffffff;
+  --red: #c8202a;
+  --line: #e6dada;
+  --muted: #686263;
+}
+.promo-bar { background: var(--red); }
+.promo-bar strong { color: #fff; }
+.site-header { border-color: var(--line); background: #fff; }
+.primary-nav a::after { background: var(--red); }
+.campaign-tabs { background: #fff1f1; }
+.proof-block { background: #fff1f1; color: var(--ink); }
+.proof-block .proof-number { color: var(--red); }

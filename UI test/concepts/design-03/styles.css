@@ -408,3 +408,24 @@ a { color: inherit; }
   html { scroll-behavior: auto; }
   *,*::before,*::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
+
+/* Okina logo palette — white and ink first, blush for alternate sections. */
+:root {
+  --ink: #151515;
+  --paper: #ffffff;
+  --white: #ffffff;
+  --lime: #fff1f1;
+  --violet: #c8202a;
+  --coral: #ef3038;
+  --soft: #fff1f1;
+  --line: #e6dada;
+  --muted: #686263;
+}
+.benefit-bar b { color: #ffb3b6; }
+.value-strip { background: #fff1f1; }
+.persona-copy span { color: var(--ink); }
+.process-band { background: #fff1f1; color: var(--ink); border-block: 1px solid var(--line); }
+.process-band ol, .process-band li { border-color: var(--line); }
+.process-band li > span { color: var(--violet); }
+.process-band li p { color: var(--muted); }
+.footer-links strong { color: #ff777d; }

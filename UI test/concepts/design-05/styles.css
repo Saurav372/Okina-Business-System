@@ -277,3 +277,19 @@ input[type=checkbox],input[type=radio]{accent-color:var(--brand-strong)}
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition-duration:.01ms!important}
 }
+
+/* Premium Okina balance: white canvas, ink structure, blush alternates, red accents. */
+:root {
+  --ink: #151515;
+  --muted: #686263;
+  --line: #e6dada;
+  --snow: #fff1f1;
+  --white: #fff;
+  --brand: #ef3038;
+  --brand-strong: #c8202a;
+  --brand-soft: #fff1f1;
+}
+.promo-marquee { background: var(--brand-strong); }
+.promo-track b { color: #fff; }
+.site-header { background: #fff; }
+.hot-band, .collection-hero { background: #fff1f1; }

@@ -157,3 +157,20 @@ img { display: block; max-width: 100%; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
+
+/* Okina logo palette — 70% white, 20% ink/gray, 10% red. */
+:root {
+  --paper: #ffffff;
+  --ink: #151515;
+  --cobalt: #c8202a;
+  --orange: #ef3038;
+  --mint: #fff1f1;
+  --line: #c7babb;
+}
+.site-header { background: #fff; }
+.mobile-nav { background: #fff; }
+.card-cobalt, .card-orange, .card-mint { background: #fff1f1; }
+.process { background: #fff1f1; color: var(--ink); border-block: 1px solid var(--line); }
+.process ol, .process li { border-color: var(--line); }
+.process li > span { color: var(--cobalt); }
+.process li p { color: #575253; }
