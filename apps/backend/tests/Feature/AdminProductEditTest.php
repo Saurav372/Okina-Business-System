@@ -110,6 +110,73 @@ class AdminProductEditTest extends TestCase
         $response->assertSee('Original Mug');
     }
 
+    public function test_administrator_can_open_create_page_from_product_index(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole('admin');
+
+        $indexResponse = $this->actingAs($user)->get(route('admin.products.index'));
+
+        $indexResponse->assertStatus(200);
+        $indexResponse->assertSee(route('admin.products.create'));
+
+        $createResponse = $this->actingAs($user)->get(route('admin.products.create'));
+
+        $createResponse->assertStatus(200);
+        $createResponse->assertSee('Create Product');
+    }
+
+    public function test_inventory_staff_cannot_create_products(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole('inventory_staff');
+
+        $this->actingAs($user)
+            ->get(route('admin.products.create'))
+            ->assertStatus(403);
+
+        $this->actingAs($user)
+            ->post(route('admin.products.store'), [])
+            ->assertStatus(403);
+    }
+
+    public function test_administrator_can_create_product(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole('admin');
+
+        $category = ProductCategory::factory()->create();
+
+        $response = $this->actingAs($user)->post(route('admin.products.store'), [
+            'name' => 'Launch Hoodie',
+            'primary_category_id' => $category->id,
+            'product_type' => Product::TYPE_SIMPLE,
+            'customization_mode' => Product::CUSTOMIZATION_OPTIONAL,
+            'fulfillment_type' => Product::FULFILLMENT_MADE_TO_ORDER,
+            'status' => Product::STATUS_DRAFT,
+            'visibility' => Product::VISIBILITY_PRIVATE,
+            'quote_enabled' => '1',
+            'min_order_quantity' => 1,
+            'base_price_minor' => 250000,
+            'currency' => 'INR',
+            'sort_order' => 10,
+        ]);
+
+        $product = Product::where('slug', 'launch-hoodie')->firstOrFail();
+
+        $response->assertRedirect(route('admin.products.edit', $product));
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->id,
+            'name' => 'Launch Hoodie',
+            'slug' => 'launch-hoodie',
+            'primary_category_id' => $category->id,
+            'quote_enabled' => true,
+            'direct_checkout_enabled' => false,
+        ]);
+    }
+
     public function test_uniqueness_checks_fail_for_duplicate_slugs(): void
     {
         $user = User::factory()->create();

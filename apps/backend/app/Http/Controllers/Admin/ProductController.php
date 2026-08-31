@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreProductRequest;
 use App\Http\Requests\Admin\UpdateProductRequest;
 use App\Models\Product;
 use App\Models\ProductCategory;
@@ -66,6 +67,25 @@ class ProductController extends Controller
             ->get();
 
         return view('admin.products.edit', compact('product', 'categories'));
+    }
+
+    public function create()
+    {
+        Gate::authorize('create', Product::class);
+
+        $categories = ProductCategory::where('status', 'active')
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.products.create', compact('categories'));
+    }
+
+    public function store(StoreProductRequest $request)
+    {
+        $product = $this->productService->create($request->validated(), $request->user());
+
+        return redirect()->route('admin.products.edit', $product)
+            ->with('success', 'Product created successfully.');
     }
 
     public function update(UpdateProductRequest $request, Product $product)
