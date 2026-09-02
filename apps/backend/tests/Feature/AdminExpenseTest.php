@@ -114,6 +114,28 @@ class AdminExpenseTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('REF-DASH-100');
+        $response->assertSee('data-overlay-id="record-expense-modal"', false);
+        $response->assertSee('id="record-expense-form"', false);
+        $response->assertSee('aria-haspopup="dialog"', false);
+        $response->assertSee('id="expense_category_public_id"', false);
+        $response->assertSee('New expenses are saved as drafts.');
+    }
+
+    public function test_invalid_expense_submission_reopens_accessible_modal_with_errors(): void
+    {
+        $response = $this->actingAs($this->adminUser)
+            ->followingRedirects()
+            ->from(route('admin.expenses.index'))
+            ->post(route('admin.expenses.store'), [
+                'expense_modal_mode' => 'create',
+                'amount' => '',
+                'occurred_at' => '',
+            ]);
+
+        $response->assertOk();
+        $response->assertSee('Check the highlighted fields');
+        $response->assertSee('aria-invalid="true"', false);
+        $response->assertSee("open-overlay', 'record-expense-modal", false);
     }
 
     public function test_user_can_create_expense_with_active_category(): void

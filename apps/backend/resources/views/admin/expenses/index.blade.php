@@ -1,6 +1,5 @@
 <x-layouts.admin title="Operational Expenses">
     <div class="space-y-6" x-data="{
-        recordModalOpen: {{ $errors->expense->any() || ($modalState['expense_modal_mode'] ?? '') === 'edit' ? 'true' : 'false' }},
         categoryModalOpen: {{ $errors->category->any() ? 'true' : 'false' }},
         rejectModalOpen: {{ $errors->rejection->any() ? 'true' : 'false' }},
         activeExpense: null,
@@ -39,7 +38,8 @@
 
                 @can('create', \App\Models\Expense::class)
                     <button type="button"
-                            @click="recordModalOpen = true"
+                            @click="$dispatch('open-overlay', 'record-expense-modal')"
+                            aria-haspopup="dialog"
                             class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold bg-[color:var(--color-brand-600)] text-white rounded-xl hover:bg-[color:var(--color-brand-700)] transition-colors shadow-xs">
                         <x-icons.lucide name="lucide-plus" class="w-4 h-4" />
                         <span>Record Expense</span>
@@ -311,65 +311,218 @@
         </div>
 
         <!-- Record Expense Modal -->
-        <div x-show="recordModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-900/60 backdrop-blur-xs" x-cloak>
-            <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-neutral-200" @click.away="recordModalOpen = false">
-                <div class="flex items-center justify-between border-b border-neutral-200 pb-3 mb-4">
-                    <h3 class="text-lg font-bold text-neutral-900">Record Operational Expense</h3>
-                    <button type="button" @click="recordModalOpen = false" class="text-neutral-400 hover:text-neutral-600">
-                        <x-icons.lucide name="lucide-x" class="w-5 h-5" />
-                    </button>
+        <x-modal
+            id="record-expense-modal"
+            title="Record operational expense"
+            size="2xl"
+            initial-focus="expense_category_public_id"
+        >
+            <form
+                id="record-expense-form"
+                method="POST"
+                action="{{ route('admin.expenses.store') }}"
+                enctype="multipart/form-data"
+                class="space-y-5"
+                novalidate
+            >
+                @csrf
+                <input type="hidden" name="expense_modal_mode" value="create">
+
+                <div>
+                    <p class="text-sm font-semibold text-neutral-900">Expense details</p>
+                    <p class="mt-1 text-xs leading-5 text-neutral-500">Record the amount, date, and supporting information. New expenses are saved as drafts.</p>
                 </div>
 
-                <form method="POST" action="{{ route('admin.expenses.store') }}" enctype="multipart/form-data" class="space-y-4">
-                    @csrf
-
-                    <div>
-                        <label class="block text-xs font-semibold text-neutral-700 uppercase mb-1">Expense Category *</label>
-                        <select name="expense_category_public_id" required class="w-full text-xs rounded-xl border-neutral-300">
-                            <option value="">Select Category</option>
-                            @foreach ($categories->where('is_active', true) as $cat)
-                                <option value="{{ $cat->public_id }}">{{ $cat->name }} ({{ $cat->code }})</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-semibold text-neutral-700 uppercase mb-1">Amount (INR ₹) *</label>
-                            <input type="text" name="amount" placeholder="e.g. 250.50" required class="w-full text-xs rounded-xl border-neutral-300" />
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-neutral-700 uppercase mb-1">Date *</label>
-                            <input type="date" name="occurred_at" value="{{ date('Y-m-d') }}" required class="w-full text-xs rounded-xl border-neutral-300" />
+                @if ($errors->expense->any())
+                    <div role="alert" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-rose-900">
+                        <div class="flex items-start gap-3">
+                            <svg class="mt-0.5 h-4 w-4 shrink-0 text-rose-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <circle cx="12" cy="12" r="10" />
+                                <path d="M12 8v4" />
+                                <path d="M12 16h.01" />
+                            </svg>
+                            <div>
+                                <p class="text-xs font-bold">Check the highlighted fields</p>
+                                <ul class="mt-1 list-disc space-y-0.5 pl-4 text-xs text-rose-800">
+                                    @foreach ($errors->expense->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
                         </div>
                     </div>
+                @endif
+
+                <div>
+                    <label for="expense_category_public_id" class="mb-1.5 block text-xs font-semibold text-neutral-700">
+                        Expense category <span class="text-rose-600" aria-hidden="true">*</span><span class="sr-only"> (required)</span>
+                    </label>
+                    <select
+                        id="expense_category_public_id"
+                        name="expense_category_public_id"
+                        required
+                        aria-invalid="{{ $errors->expense->has('expense_category_public_id') ? 'true' : 'false' }}"
+                        aria-describedby="expense-category-help{{ $errors->expense->has('expense_category_public_id') ? ' expense-category-error' : '' }}"
+                        @class([
+                            'min-h-11 w-full rounded-xl border bg-white px-3.5 py-2.5 text-base text-neutral-900 transition-colors focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)] sm:text-sm',
+                            'border-rose-400' => $errors->expense->has('expense_category_public_id'),
+                            'border-neutral-300' => ! $errors->expense->has('expense_category_public_id'),
+                        ])
+                    >
+                        <option value="">Select a category</option>
+                        @foreach ($categories->where('is_active', true) as $cat)
+                            <option value="{{ $cat->public_id }}" @selected(old('expense_category_public_id') === $cat->public_id)>{{ $cat->name }} ({{ $cat->code }})</option>
+                        @endforeach
+                    </select>
+                    <p id="expense-category-help" class="mt-1.5 text-[11px] text-neutral-500">Only active categories are available.</p>
+                    @error('expense_category_public_id', 'expense')
+                        <p id="expense-category-error" class="mt-1.5 text-xs font-medium text-rose-700">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                        <label for="expense_amount" class="mb-1.5 block text-xs font-semibold text-neutral-700">
+                            Amount <span class="font-normal text-neutral-400">(INR)</span> <span class="text-rose-600" aria-hidden="true">*</span><span class="sr-only"> (required)</span>
+                        </label>
+                        <div class="relative">
+                            <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-neutral-500" aria-hidden="true">₹</span>
+                            <input
+                                id="expense_amount"
+                                type="text"
+                                name="amount"
+                                value="{{ old('amount') }}"
+                                inputmode="decimal"
+                                autocomplete="off"
+                                placeholder="250.50"
+                                required
+                                aria-invalid="{{ $errors->expense->has('amount') ? 'true' : 'false' }}"
+                                aria-describedby="expense-amount-help{{ $errors->expense->has('amount') ? ' expense-amount-error' : '' }}"
+                                @class([
+                                    'min-h-11 w-full rounded-xl border bg-white py-2.5 pl-8 pr-3.5 text-base text-neutral-900 placeholder-neutral-400 transition-colors focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)] sm:text-sm',
+                                    'border-rose-400' => $errors->expense->has('amount'),
+                                    'border-neutral-300' => ! $errors->expense->has('amount'),
+                                ])
+                            >
+                        </div>
+                        <p id="expense-amount-help" class="mt-1.5 text-[11px] text-neutral-500">Enter rupees and paise, for example 250.50.</p>
+                        @error('amount', 'expense')
+                            <p id="expense-amount-error" class="mt-1.5 text-xs font-medium text-rose-700">{{ $message }}</p>
+                        @enderror
+                    </div>
 
                     <div>
-                        <label class="block text-xs font-semibold text-neutral-700 uppercase mb-1">Reference Number</label>
-                        <input type="text" name="reference" placeholder="Invoice / Receipt / Voucher ID" class="w-full text-xs rounded-xl border-neutral-300" />
+                        <label for="expense_occurred_at" class="mb-1.5 block text-xs font-semibold text-neutral-700">
+                            Expense date <span class="text-rose-600" aria-hidden="true">*</span><span class="sr-only"> (required)</span>
+                        </label>
+                        <input
+                            id="expense_occurred_at"
+                            type="date"
+                            name="occurred_at"
+                            value="{{ old('occurred_at', now()->toDateString()) }}"
+                            max="{{ now()->toDateString() }}"
+                            required
+                            aria-invalid="{{ $errors->expense->has('occurred_at') ? 'true' : 'false' }}"
+                            aria-describedby="expense-date-help{{ $errors->expense->has('occurred_at') ? ' expense-date-error' : '' }}"
+                            @class([
+                                'min-h-11 w-full rounded-xl border bg-white px-3.5 py-2.5 text-base text-neutral-900 transition-colors focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)] sm:text-sm',
+                                'border-rose-400' => $errors->expense->has('occurred_at'),
+                                'border-neutral-300' => ! $errors->expense->has('occurred_at'),
+                            ])
+                        >
+                        <p id="expense-date-help" class="mt-1.5 text-[11px] text-neutral-500">The date cannot be in the future.</p>
+                        @error('occurred_at', 'expense')
+                            <p id="expense-date-error" class="mt-1.5 text-xs font-medium text-rose-700">{{ $message }}</p>
+                        @enderror
                     </div>
+                </div>
 
-                    <div>
-                        <label class="block text-xs font-semibold text-neutral-700 uppercase mb-1">Notes / Description</label>
-                        <textarea name="notes" rows="3" placeholder="Purpose or context..." class="w-full text-xs rounded-xl border-neutral-300"></textarea>
-                    </div>
+                <div>
+                    <label for="expense_reference" class="mb-1.5 block text-xs font-semibold text-neutral-700">Reference number <span class="font-normal text-neutral-400">(optional)</span></label>
+                    <input
+                        id="expense_reference"
+                        type="text"
+                        name="reference"
+                        value="{{ old('reference') }}"
+                        autocomplete="off"
+                        placeholder="Invoice, receipt, or voucher number"
+                        aria-invalid="{{ $errors->expense->has('reference') ? 'true' : 'false' }}"
+                        @class([
+                            'min-h-11 w-full rounded-xl border bg-white px-3.5 py-2.5 text-base text-neutral-900 placeholder-neutral-400 transition-colors focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)] sm:text-sm',
+                            'border-rose-400' => $errors->expense->has('reference'),
+                            'border-neutral-300' => ! $errors->expense->has('reference'),
+                        ])
+                    >
+                    @error('reference', 'expense')
+                        <p class="mt-1.5 text-xs font-medium text-rose-700">{{ $message }}</p>
+                    @enderror
+                </div>
 
-                    <div>
-                        <label class="block text-xs font-semibold text-neutral-700 uppercase mb-1">Proof Attachment (Max 10MB PDF/Image)</label>
-                        <input type="file" name="proof_file" accept=".pdf,.jpg,.jpeg,.png,.webp" class="w-full text-xs rounded-xl border-neutral-300" />
-                    </div>
+                <div>
+                    <label for="expense_notes" class="mb-1.5 block text-xs font-semibold text-neutral-700">Notes or description <span class="font-normal text-neutral-400">(optional)</span></label>
+                    <textarea
+                        id="expense_notes"
+                        name="notes"
+                        rows="3"
+                        placeholder="What was this expense for?"
+                        aria-invalid="{{ $errors->expense->has('notes') ? 'true' : 'false' }}"
+                        @class([
+                            'w-full resize-y rounded-xl border bg-white px-3.5 py-2.5 text-base text-neutral-900 placeholder-neutral-400 transition-colors focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)] sm:text-sm',
+                            'border-rose-400' => $errors->expense->has('notes'),
+                            'border-neutral-300' => ! $errors->expense->has('notes'),
+                        ])
+                    >{{ old('notes') }}</textarea>
+                    @error('notes', 'expense')
+                        <p class="mt-1.5 text-xs font-medium text-rose-700">{{ $message }}</p>
+                    @enderror
+                </div>
 
-                    <div class="flex items-center justify-end gap-2 pt-3 border-t border-neutral-200">
-                        <button type="button" @click="recordModalOpen = false" class="px-4 py-2 text-xs font-semibold text-neutral-700 bg-neutral-100 rounded-xl hover:bg-neutral-200">
-                            Cancel
-                        </button>
-                        <button type="submit" class="px-4 py-2 text-xs font-bold text-white bg-[color:var(--color-brand-600)] rounded-xl hover:bg-[color:var(--color-brand-700)] shadow-xs">
-                            Save Expense
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                <div>
+                    <label for="expense_proof_file" class="mb-1.5 block text-xs font-semibold text-neutral-700">Proof attachment <span class="font-normal text-neutral-400">(optional)</span></label>
+                    <input
+                        id="expense_proof_file"
+                        type="file"
+                        name="proof_file"
+                        accept=".pdf,.jpg,.jpeg,.png,.webp"
+                        aria-describedby="expense-proof-help{{ $errors->expense->has('proof_file') ? ' expense-proof-error' : '' }}"
+                        aria-invalid="{{ $errors->expense->has('proof_file') ? 'true' : 'false' }}"
+                        @class([
+                            'min-h-11 w-full cursor-pointer rounded-xl border bg-white text-sm text-neutral-600 file:mr-3 file:min-h-11 file:border-0 file:border-r file:border-neutral-200 file:bg-neutral-50 file:px-4 file:text-xs file:font-semibold file:text-neutral-700 hover:file:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)]',
+                            'border-rose-400' => $errors->expense->has('proof_file'),
+                            'border-neutral-300' => ! $errors->expense->has('proof_file'),
+                        ])
+                    >
+                    <p id="expense-proof-help" class="mt-1.5 text-[11px] text-neutral-500">PDF, JPG, PNG, or WebP up to 10 MB.</p>
+                    @error('proof_file', 'expense')
+                        <p id="expense-proof-error" class="mt-1.5 text-xs font-medium text-rose-700">{{ $message }}</p>
+                    @enderror
+                </div>
+            </form>
+
+            <x-slot:footer>
+                <button
+                    type="button"
+                    @click="closeModal()"
+                    class="inline-flex min-h-11 items-center justify-center rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-xs font-semibold text-neutral-700 transition-colors hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--focus-ring-color)]"
+                >
+                    Cancel
+                </button>
+                <button
+                    type="submit"
+                    form="record-expense-form"
+                    class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[color:var(--color-brand-600)] px-5 py-2.5 text-xs font-bold text-white shadow-xs transition-colors hover:bg-[color:var(--color-brand-700)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--focus-ring-color)] focus-visible:ring-offset-2"
+                >
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="m5 12 4 4L19 6" />
+                    </svg>
+                    Save expense
+                </button>
+            </x-slot:footer>
+        </x-modal>
+
+        @if ($errors->expense->any())
+            <div x-init="$nextTick(() => $dispatch('open-overlay', 'record-expense-modal'))"></div>
+        @endif
 
         <!-- Rejection Reason Modal -->
         <div x-show="rejectModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-900/60 backdrop-blur-xs" x-cloak>

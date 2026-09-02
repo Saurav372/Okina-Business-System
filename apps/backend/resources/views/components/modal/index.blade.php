@@ -41,8 +41,7 @@
             x-show="open"
             x-cloak
             class="fixed inset-0 z-modal flex {{ $isFull ? '' : 'items-center justify-center p-4 sm:p-6' }} overflow-y-auto"
-            @keydown.tab.prevent="focusTrap($event)"
-            aria-live="assertive"
+            @keydown.tab="focusTrap($event)"
         >
             {{-- Backdrop --}}
             <div
