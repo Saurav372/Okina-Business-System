@@ -15,6 +15,60 @@ class AdminSalesOrderCreationTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_authorized_staff_can_view_the_styled_sales_order_form(): void
+    {
+        $this->withoutVite();
+
+        Permission::query()->updateOrCreate(
+            ['slug' => 'orders.manage'],
+            [
+                'name' => 'Manage Orders',
+                'group' => 'orders',
+                'guard_name' => 'web',
+                'description' => 'Manage orders',
+                'is_sensitive' => false,
+            ],
+        );
+        $creatorRole = Role::query()->updateOrCreate(
+            ['slug' => 'order_creator'],
+            [
+                'name' => 'Order Creator',
+                'guard_name' => 'web',
+                'description' => 'Can create sales orders',
+                'is_system' => true,
+                'sort_order' => 0,
+            ],
+        );
+        $creatorRole->permissions()->sync(Permission::query()->where('slug', 'orders.manage')->pluck('id'));
+        $salesRole = Role::query()->updateOrCreate(
+            ['slug' => Role::SALES_STAFF],
+            [
+                'name' => 'Sales Staff',
+                'guard_name' => 'web',
+                'description' => 'Sales staff role',
+                'is_system' => true,
+                'sort_order' => 0,
+            ],
+        );
+        $user = User::factory()->create();
+        $user->assignRole($creatorRole);
+        $user->assignRole($salesRole);
+        Customer::factory()->create(['display_name' => 'Studio Customer']);
+        $sku = ProductSku::factory()->create(['sku_code' => 'SKU-STYLED-001']);
+
+        $this->actingAs($user)
+            ->get(route('admin.sales_orders.create'))
+            ->assertOk()
+            ->assertViewIs('admin.orders.create')
+            ->assertSee('layout-sidebar', false)
+            ->assertSee('x-data="salesOrderForm"', false)
+            ->assertSee('Studio Customer')
+            ->assertSee('SKU-STYLED-001')
+            ->assertSee($sku->product->name)
+            ->assertSee('Order checklist')
+            ->assertSee('Create sales order');
+    }
+
     public function test_authorized_staff_can_create_sales_order(): void
     {
         Permission::query()->updateOrCreate(

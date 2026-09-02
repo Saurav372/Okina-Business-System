@@ -41,12 +41,23 @@ use App\Http\Controllers\Admin\WarehouseTransferController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\CustomerAuthController;
+use App\Http\Controllers\Storefront\CartController as StorefrontCartController;
+use App\Http\Controllers\Storefront\CatalogController as StorefrontCatalogController;
 use App\Http\Controllers\StoredFileAccessController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [StorefrontCatalogController::class, 'home'])->name('storefront.home');
+Route::get('/categories', [StorefrontCatalogController::class, 'categories'])->name('storefront.categories.index');
+Route::get('/categories/{category}', [StorefrontCatalogController::class, 'category'])
+    ->where('category', '[A-Za-z0-9-]+')
+    ->name('storefront.categories.show');
+Route::get('/search', [StorefrontCatalogController::class, 'search'])->name('storefront.search');
+Route::get('/products/{product}', [StorefrontCatalogController::class, 'product'])
+    ->where('product', '[A-Za-z0-9-]+')
+    ->name('storefront.products.show');
+Route::post('/products/{product}/cart', [StorefrontCartController::class, 'store'])
+    ->where('product', '[A-Za-z0-9-]+')
+    ->name('storefront.products.cart.store');
 
 Route::middleware('signed')->prefix('files')->group(function (): void {
     Route::get('/{file:public_id}/preview', [StoredFileAccessController::class, 'preview'])->name('files.preview');

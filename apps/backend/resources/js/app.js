@@ -1,4 +1,5 @@
 import Alpine from 'alpinejs';
+import registerSalesOrderForm from './admin/sales-order-form';
 
 window.Alpine = Alpine;
 
@@ -347,6 +348,8 @@ Alpine.data('pageNavigator', () => ({
     }
 }));
 
+registerSalesOrderForm(Alpine);
+
 Alpine.start();
 
 /**
@@ -372,4 +375,3 @@ window.toast = payload => {
 };
 window.toast.dismiss = id => window.dispatchEvent(new CustomEvent('dismiss-toast', { detail: id }));
 window.toast.clear = () => window.dispatchEvent(new CustomEvent('clear-toasts'));
-

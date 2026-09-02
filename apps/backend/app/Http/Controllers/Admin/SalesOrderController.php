@@ -39,8 +39,9 @@ class SalesOrderController extends Controller
 
         $skus = ProductSku::query()
             ->with('product')
+            ->orderBy('sku_code')
             ->limit(500)
-            ->get(['id', 'sku_code']);
+            ->get(['id', 'sku_code', 'product_id']);
 
         return view('admin.orders.create', [
             'customers' => $customers,
