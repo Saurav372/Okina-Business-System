@@ -4,7 +4,7 @@
 !.env.example
 
 # Dependencies
-vendor/
+/vendor/
 node_modules/
 apps/backend/vendor/
 apps/backend/node_modules/

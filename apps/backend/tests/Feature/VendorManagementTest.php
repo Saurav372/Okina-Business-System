@@ -212,14 +212,14 @@ class VendorManagementTest extends TestCase
         $this->actingAs($this->privilegedStaff);
 
         // Submit form validation failure from index page with invalid edit_vendor_id
-        $response = $this->post(route('admin.vendors.store'), [
+        $response = $this->from(route('admin.vendors.index'))->post(route('admin.vendors.store'), [
             'name' => '', // trigger validation error
             'modal_mode' => 'edit',
             'edit_vendor_id' => 999999,
         ]);
 
-        $response->assertStatus(422);
-        $response->assertJsonValidationErrors(['name']);
+        $response->assertRedirect(route('admin.vendors.index'));
+        $response->assertSessionHasErrors(['name']);
 
         $this->get(route('admin.vendors.index'))
             ->assertStatus(200)
