@@ -4,7 +4,8 @@
     @add-toast.window="add($event.detail)"
     @dismiss-toast.window="dismiss($event.detail)"
     @clear-toasts.window="clear()"
-    class="fixed top-6 right-6 z-toast flex flex-col gap-3 w-full max-w-sm pointer-events-none p-4 max-sm:bottom-6 max-sm:top-auto max-sm:right-4 max-sm:left-4 max-sm:max-w-none"
+    class="fixed top-20 right-6 z-[9999] flex flex-col gap-3 w-full max-w-sm pointer-events-none p-4 max-sm:bottom-6 max-sm:top-auto max-sm:right-4 max-sm:left-4 max-sm:max-w-none"
+    style="z-index: 9999;"
     aria-live="polite"
 >
     <template x-for="toast in toasts" :key="toast.id">

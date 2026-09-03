@@ -339,13 +339,47 @@
                     </div>
 
                     <!-- Notification Bell Widget -->
-                    <button 
-                        @click="window.toast({ message: 'No new notifications.', type: 'info' })"
-                        class="p-2 text-neutral-500 hover:text-neutral-800 hover:bg-neutral-50 rounded-xl transition-colors relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--focus-ring-color)]"
-                        aria-label="View system notifications"
-                    >
-                        <x-icons.lucide name="lucide-bell" class="w-5 h-5" />
-                    </button>
+                    <div class="relative" x-data="{ open: false }" @click.away="open = false">
+                        <button 
+                            @click="open = !open"
+                            class="p-2 text-neutral-500 hover:text-neutral-800 hover:bg-neutral-50 rounded-xl transition-colors relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--focus-ring-color)] cursor-pointer"
+                            aria-label="View system notifications"
+                            :aria-expanded="open ? 'true' : 'false'"
+                        >
+                            <x-icons.lucide name="lucide-bell" class="w-5 h-5" />
+                        </button>
+
+                        <div 
+                            x-show="open"
+                            x-transition:enter="transition ease-out duration-100"
+                            x-transition:enter-start="opacity-0 scale-95"
+                            x-transition:enter-end="opacity-100 scale-100"
+                            x-transition:leave="transition ease-in duration-75"
+                            x-transition:leave-start="opacity-100 scale-100"
+                            x-transition:leave-end="opacity-0 scale-95"
+                            class="absolute right-0 mt-2 w-80 bg-white border border-[color:var(--color-border)] rounded-2xl shadow-lg py-2 z-50"
+                            style="z-index: 60;"
+                        >
+                            <div class="px-4 py-2 border-b border-[color:var(--color-border)] flex items-center justify-between">
+                                <span class="text-xs font-bold uppercase tracking-wider text-neutral-700">Notifications</span>
+                                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600">0 unread</span>
+                            </div>
+                            
+                            <div class="py-8 px-4 text-center">
+                                <div class="w-10 h-10 mx-auto rounded-full bg-neutral-100 flex items-center justify-center text-neutral-400 mb-2.5">
+                                    <x-icons.lucide name="lucide-bell-off" class="w-5 h-5" />
+                                </div>
+                                <p class="text-xs font-semibold text-neutral-800">All caught up!</p>
+                                <p class="text-[11px] text-neutral-400 mt-0.5">No unread notifications at the moment.</p>
+                            </div>
+
+                            <div class="border-t border-[color:var(--color-border)] pt-1 px-2">
+                                <a href="{{ route('admin.notification_logs.index') }}" class="block text-center py-1.5 text-xs font-semibold text-[color:var(--color-brand-600)] hover:text-[color:var(--color-brand-700)] rounded-lg hover:bg-neutral-50 transition-colors">
+                                    View notification logs &rarr;
+                                </a>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Help Trigger Placeholder -->
                     <button 
