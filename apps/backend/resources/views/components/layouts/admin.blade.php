@@ -429,7 +429,7 @@
                                 @if(auth()->user() && auth()->user()->roles)
                                     @foreach(auth()->user()->roles as $role)
                                         <span class="inline-flex items-center px-2 py-0.5 text-[9px] font-bold bg-neutral-100 text-neutral-700 rounded-md uppercase tracking-wider">
-                                            {{ $role->slug }}
+                                            {{ str_replace('_', ' ', $role->slug) }}
                                         </span>
                                     @endforeach
                                 @endif
@@ -437,15 +437,40 @@
 
                             <hr class="border-[color:var(--color-border)] my-2">
 
-                            <a href="{{ route('admin.profile') }}" class="flex items-center gap-2 px-4 py-2.5 text-xs text-neutral-700 hover:bg-neutral-50 font-medium">My Profile</a>
-                            <a href="{{ route('admin.security') }}" class="flex items-center gap-2 px-4 py-2.5 text-xs text-neutral-700 hover:bg-neutral-50 font-medium">Security Settings</a>
+                            <!-- Storefront link -->
+                            <a href="{{ route('storefront.home') }}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between px-4 py-2 text-xs text-neutral-700 hover:bg-neutral-50 font-medium transition-colors">
+                                <span class="flex items-center gap-2.5">
+                                    <x-icons.lucide name="lucide-store" class="w-4 h-4 text-neutral-400" />
+                                    Visit Storefront
+                                </span>
+                                <x-icons.lucide name="lucide-arrow-up-right" class="w-3.5 h-3.5 text-neutral-400" />
+                            </a>
+
+                            <hr class="border-[color:var(--color-border)] my-1.5">
+
+                            <!-- Account & Security links -->
+                            <a href="{{ route('admin.profile') }}" class="flex items-center gap-2.5 px-4 py-2 text-xs text-neutral-700 hover:bg-neutral-50 font-medium transition-colors">
+                                <x-icons.lucide name="lucide-user" class="w-4 h-4 text-neutral-400" />
+                                My Profile
+                            </a>
+                            <a href="{{ route('admin.security') }}" class="flex items-center gap-2.5 px-4 py-2 text-xs text-neutral-700 hover:bg-neutral-50 font-medium transition-colors">
+                                <x-icons.lucide name="lucide-shield-check" class="w-4 h-4 text-neutral-400" />
+                                Security Settings
+                            </a>
+                            @if(Route::has('admin.settings.index'))
+                                <a href="{{ route('admin.settings.index') }}" class="flex items-center gap-2.5 px-4 py-2 text-xs text-neutral-700 hover:bg-neutral-50 font-medium transition-colors">
+                                    <x-icons.lucide name="lucide-settings" class="w-4 h-4 text-neutral-400" />
+                                    System Settings
+                                </a>
+                            @endif
                             
-                            <hr class="border-[color:var(--color-border)] my-2">
+                            <hr class="border-[color:var(--color-border)] my-1.5">
 
                             <!-- Logout trigger form -->
                             <form method="POST" action="{{ route('admin.logout') }}" class="w-full">
                                 @csrf
-                                <button type="submit" class="w-full text-left flex items-center gap-2 px-4 py-2.5 text-xs text-rose-600 hover:bg-rose-50 font-semibold cursor-pointer">
+                                <button type="submit" class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-xs text-rose-600 hover:bg-rose-50 font-semibold cursor-pointer transition-colors">
+                                    <x-icons.lucide name="lucide-log-out" class="w-4 h-4 text-rose-500" />
                                     Sign Out
                                 </button>
                             </form>
