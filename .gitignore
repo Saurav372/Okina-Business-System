@@ -38,6 +38,7 @@ Thumbs.db
 .zed/
 .cursor/
 .codex/
+.codex-run-logs/
 
 # Internal build and planning documentation (AI-assisted development records)
 # Not part of the public repository — use docs/ for publishable documentation

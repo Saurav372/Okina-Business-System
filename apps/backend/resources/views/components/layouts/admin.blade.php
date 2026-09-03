@@ -55,8 +55,14 @@
             <!-- Sidebar Header -->
             <div class="h-16 flex items-center justify-between px-6 border-b border-[color:var(--color-ink-800)] shrink-0">
                 <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2.5 font-bold tracking-tight text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--focus-ring-color)] rounded-lg">
-                    <span class="p-1.5 bg-[color:var(--color-brand-500)] text-white rounded-lg">
-                        <x-icons.lucide name="lucide-building" class="w-5 h-5" />
+                    <span class="relative block h-8 w-8 shrink-0 overflow-hidden rounded-lg bg-[color:var(--color-surface-sidebar)] ring-1 ring-white/10">
+                        <img
+                            src="{{ asset(ltrim(config('branding.logo.light', '/brand/logo-light.png'), '/')) }}"
+                            alt=""
+                            width="3375"
+                            height="4219"
+                            class="absolute left-[-9px] top-[-8px] w-[50px] max-w-none"
+                        >
                     </span>
                     <span x-show="!sidebarCollapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" class="text-sm font-bold uppercase tracking-wider text-[color:var(--color-text-inverse)]">{{ config('branding.short_name', 'Okina') }}</span>
                 </a>
@@ -146,8 +152,14 @@
             <!-- Sidebar Footer (Organization details / switch placeholder) -->
             <div class="p-4 border-t border-[color:var(--color-ink-800)] bg-[color:var(--color-ink-950)]/50 shrink-0">
                 <div class="flex items-center gap-3">
-                    <span class="p-2 bg-[color:var(--color-ink-800)] text-neutral-300 rounded-xl">
-                        <x-icons.lucide name="lucide-building" class="w-4 h-4" />
+                    <span class="relative block h-8 w-8 shrink-0 overflow-hidden rounded-lg bg-[color:var(--color-surface-sidebar)] ring-1 ring-white/10">
+                        <img
+                            src="{{ asset(ltrim(config('branding.logo.light', '/brand/logo-light.png'), '/')) }}"
+                            alt=""
+                            width="3375"
+                            height="4219"
+                            class="absolute left-[-9px] top-[-8px] w-[50px] max-w-none"
+                        >
                     </span>
                     <div x-show="!sidebarCollapsed" class="min-w-0">
                         <p class="text-xs font-bold text-white truncate">Okina Craft Admin</p>
@@ -160,7 +172,7 @@
         <!-- Main Workspace Area -->
         <div class="flex-1 flex flex-col min-w-0 relative">
             <!-- Top Header Navbar -->
-            <header class="h-16 bg-white border-b border-[color:var(--color-border)] flex items-center justify-between px-4 md:px-6 layout-header shrink-0">
+            <header class="relative z-[var(--z-sticky)] h-16 bg-white border-b border-[color:var(--color-border)] flex items-center justify-between px-4 md:px-6 layout-header shrink-0 overflow-visible">
                 <!-- Left Header Actions -->
                 <div class="flex items-center gap-4">
                     <!-- Collapse Button (Desktop) / Hamburger Trigger (Mobile) -->
@@ -173,20 +185,99 @@
                         <x-icons.lucide name="lucide-menu" class="w-5 h-5" />
                     </button>
 
+                    <a href="{{ route('admin.dashboard') }}" class="md:hidden flex items-center gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--focus-ring-color)]">
+                        <span class="relative block h-8 w-8 shrink-0 overflow-hidden rounded-lg bg-white ring-1 ring-[color:var(--color-border)]">
+                            <img
+                                src="{{ asset(ltrim(config('branding.logo.primary', '/brand/logo.svg'), '/')) }}"
+                                alt=""
+                                width="1080"
+                                height="1350"
+                                class="absolute left-[-25%] top-[-23.5%] h-auto w-[150%] max-w-none"
+                            >
+                        </span>
+                        <span class="text-xs font-bold uppercase tracking-wider text-[color:var(--color-text-heading)]">{{ config('branding.short_name', 'Okina') }}</span>
+                    </a>
+
+                    @php
+                        $adminSearchItems = collect($navigation)
+                            ->flatMap(fn ($group) => collect($group->items)->map(fn ($item) => [
+                                'label' => $item->label,
+                                'group' => $group->group,
+                                'href' => Route::has($item->route) ? route($item->route) : '#',
+                                'icon' => $item->icon,
+                            ]))
+                            ->values()
+                            ->all();
+                    @endphp
+
                     <!-- Search / Command Palette Box -->
-                    <div class="hidden sm:block relative w-64 md:w-80">
-                        <button 
-                            @click="window.toast({ message: 'Command Palette is not implemented in sandbox.', type: 'info' })"
-                            class="w-full flex items-center justify-between px-3 py-1.5 text-xs text-neutral-400 border border-[color:var(--color-border)] rounded-xl bg-neutral-50 hover:bg-neutral-100 transition-colors cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--focus-ring-color)]"
+                    <div
+                        x-data="{
+                            open: false,
+                            query: '',
+                            items: @js($adminSearchItems),
+                            get filteredItems() {
+                                const needle = this.query.trim().toLowerCase();
+
+                                if (!needle) {
+                                    return this.items.slice(0, 6);
+                                }
+
+                                return this.items
+                                    .filter((item) => `${item.label} ${item.group}`.toLowerCase().includes(needle))
+                                    .slice(0, 8);
+                            }
+                        }"
+                        @keydown.window.meta.k.prevent="$refs.adminSearch.focus(); open = true"
+                        @keydown.window.ctrl.k.prevent="$refs.adminSearch.focus(); open = true"
+                        @click.away="open = false"
+                        class="hidden sm:block relative w-64 md:w-80"
+                    >
+                        <label
+                            class="w-full flex items-center px-3 py-1.5 text-xs text-neutral-400 border border-[color:var(--color-border)] rounded-xl bg-neutral-50 hover:bg-neutral-100 transition-colors focus-within:outline-none focus-within:ring-2 focus-within:ring-[color:var(--focus-ring-color)]"
                         >
                             <span class="flex items-center gap-2">
                                 <x-icons.lucide name="lucide-search" class="w-4 h-4" />
-                                Search modules & resources...
+                                <input
+                                    x-ref="adminSearch"
+                                    x-model="query"
+                                    @focus="open = true"
+                                    @keydown.escape.prevent="open = false; $refs.adminSearch.blur()"
+                                    type="search"
+                                    placeholder="Search modules & resources..."
+                                    class="w-44 md:w-56 bg-transparent text-xs font-medium text-neutral-700 placeholder:text-neutral-400 outline-none"
+                                    autocomplete="off"
+                                    aria-label="Search admin modules"
+                                >
                             </span>
-                            <kbd class="hidden md:inline-flex items-center gap-0.5 px-1.5 py-0.5 border border-neutral-300 bg-white rounded font-mono text-[9px] text-neutral-500 shadow-xs">
-                                <span class="text-[10px]">⌘</span>K
-                            </kbd>
-                        </button>
+                        </label>
+
+                        <div
+                            x-show="open"
+                            x-transition:enter="transition ease-out duration-100"
+                            x-transition:enter-start="opacity-0 scale-95"
+                            x-transition:enter-end="opacity-100 scale-100"
+                            x-transition:leave="transition ease-in duration-75"
+                            x-transition:leave-start="opacity-100 scale-100"
+                            x-transition:leave-end="opacity-0 scale-95"
+                            class="absolute left-0 mt-2 w-full overflow-hidden rounded-2xl border border-[color:var(--color-border)] bg-white py-2 shadow-lg z-[var(--z-tooltip)]"
+                        >
+                            <template x-for="item in filteredItems" :key="item.href">
+                                <a
+                                    :href="item.href"
+                                    class="flex items-center justify-between gap-3 px-3 py-2 text-xs text-neutral-700 hover:bg-neutral-50 hover:text-[color:var(--color-brand-600)]"
+                                >
+                                    <span class="min-w-0">
+                                        <span class="block truncate font-bold" x-text="item.label"></span>
+                                        <span class="block truncate text-[10px] font-semibold uppercase tracking-wider text-neutral-400" x-text="item.group"></span>
+                                    </span>
+                                    <x-icons.lucide name="lucide-arrow-up-right" class="w-3.5 h-3.5 shrink-0 text-neutral-300" />
+                                </a>
+                            </template>
+                            <div x-show="filteredItems.length === 0" class="px-3 py-3 text-xs font-semibold text-neutral-400">
+                                No modules found
+                            </div>
+                        </div>
                     </div>
                 </div>
 

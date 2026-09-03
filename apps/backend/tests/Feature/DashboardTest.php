@@ -71,6 +71,9 @@ class DashboardTest extends TestCase
 
         $response = $this->actingAs($user)->get(route('admin.dashboard'));
         $response->assertStatus(200);
+        $response->assertSee('brand/Okina Logo Dark.png', false);
+        $response->assertSee('Search admin modules', false);
+        $response->assertDontSee('Command Palette is not implemented in sandbox.');
         $response->assertSee('Live System Status');
         $response->assertSee('Welcome to your new dashboard!'); // empty state onboarding should display
     }
