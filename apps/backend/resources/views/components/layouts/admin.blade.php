@@ -310,13 +310,30 @@
                             <div class="px-4 py-1.5 border-b border-[color:var(--color-border)] mb-1">
                                 <span class="text-[10px] font-bold uppercase tracking-wider text-neutral-400">Quick Actions</span>
                             </div>
-                            <a href="{{ route('admin.sales_orders.create') }}" class="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 hover:text-[color:var(--color-brand-600)]">
+                            <!-- Sales & Catalog -->
+                            <a href="{{ route('admin.sales_orders.create') }}" class="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 hover:text-[color:var(--color-brand-600)]">
                                 <span class="w-2 h-2 rounded-full bg-[color:var(--color-brand-500)]"></span>
                                 New Sales Order
                             </a>
-                            <a href="{{ route('admin.expenses.index') }}" class="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900 border-t border-[color:var(--color-border)] mt-1 pt-2">
+                            <a href="{{ route('admin.products.create') }}" class="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 hover:text-emerald-600">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                Add New Product
+                            </a>
+                            <a href="{{ route('admin.purchases.create') }}" class="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 hover:text-sky-600">
+                                <span class="w-2 h-2 rounded-full bg-sky-500"></span>
+                                Create Purchase Order
+                            </a>
+
+                            <div class="my-1 border-t border-[color:var(--color-border)]"></div>
+
+                            <!-- Finance -->
+                            <a href="{{ route('admin.expenses.index') }}" class="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900">
                                 <span class="w-2 h-2 rounded-full bg-neutral-400"></span>
                                 Add Expense Record
+                            </a>
+                            <a href="{{ route('admin.refunds.index') }}" class="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 hover:text-rose-600">
+                                <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                                Request Refund
                             </a>
                         </div>
                     </div>
