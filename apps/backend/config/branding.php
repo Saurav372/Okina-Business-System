@@ -26,8 +26,8 @@ return [
     'logo' => [
         'primary' => '/brand/logo.svg',
         'icon' => '/brand/icon.svg',
-        'light' => '/brand/Okina Logo Dark.png',
-        'dark' => '/brand/logo-dark.svg',
+        'light' => '/brand/logo-light.png',
+        'dark' => '/brand/logo-dark.png',
     ],
 
     'seo' => [

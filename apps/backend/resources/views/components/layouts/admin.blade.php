@@ -172,7 +172,7 @@
         <!-- Main Workspace Area -->
         <div class="flex-1 flex flex-col min-w-0 relative">
             <!-- Top Header Navbar -->
-            <header class="relative z-[var(--z-sticky)] h-16 bg-white border-b border-[color:var(--color-border)] flex items-center justify-between px-4 md:px-6 layout-header shrink-0 overflow-visible">
+            <header class="relative z-50 h-16 bg-white border-b border-[color:var(--color-border)] flex items-center justify-between px-4 md:px-6 layout-header shrink-0 overflow-visible">
                 <!-- Left Header Actions -->
                 <div class="flex items-center gap-4">
                     <!-- Collapse Button (Desktop) / Hamburger Trigger (Mobile) -->
@@ -260,7 +260,8 @@
                             x-transition:leave="transition ease-in duration-75"
                             x-transition:leave-start="opacity-100 scale-100"
                             x-transition:leave-end="opacity-0 scale-95"
-                            class="absolute left-0 mt-2 w-full overflow-hidden rounded-2xl border border-[color:var(--color-border)] bg-white py-2 shadow-lg z-[var(--z-tooltip)]"
+                            class="absolute left-0 mt-2 w-full overflow-hidden rounded-2xl border border-[color:var(--color-border)] bg-white py-2 shadow-lg z-50"
+                            style="z-index: 60;"
                         >
                             <template x-for="item in filteredItems" :key="item.href">
                                 <a
@@ -403,7 +404,7 @@
             </header>
 
             <!-- Dynamic Slot Context Layout -->
-            <div class="flex-1 overflow-y-auto flex flex-col p-4 md:p-6 lg:p-8">
+            <div class="flex-1 overflow-y-auto flex flex-col p-4 md:p-6 lg:p-8 relative z-10">
                 <!-- Breadcrumbs & Slots Header -->
                 @if(!$hideTitle)
                     @if(isset($header))

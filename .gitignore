@@ -11,7 +11,7 @@ apps/backend/node_modules/
 apps/frontend/node_modules/
 
 # Build and generated output
-apps/backend/public/build/
+# apps/backend/public/build/ (tracked for production deployments)
 apps/backend/public/hot
 apps/backend/public/storage
 apps/frontend/dist/
