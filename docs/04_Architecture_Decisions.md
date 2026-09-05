@@ -1,6 +1,6 @@
 # Architecture Decisions
 
-> **Last Reviewed:** 2026-07-02
+> **Last Reviewed:** 2026-09-03
 > **Owner:** Engineering
 > **Source of Truth:** This document (ADRs are historical records — they describe why, not what)
 
@@ -17,6 +17,8 @@ ADRs are **historical records**. Once accepted, they are not rewritten. If a dec
 ## ADR-01 — Astro Instead of React/Next.js for the Customer Frontend
 
 **Status:** Accepted
+
+**Superseded by:** ADR-09
 
 **Context:**
 The customer website is primarily a content and product catalog site with a relatively simple checkout flow. Heavy JavaScript framework overhead was not justified. SEO performance and page load speed are business requirements.
@@ -153,3 +155,22 @@ Audit logs are written once and never updated or deleted. The `AuditLog` Eloquen
 - Audit records can be trusted as complete historical records.
 - Audit tables grow indefinitely without a pruning strategy — `audit:prune` handles configurable retention.
 - Sensitive fields (passwords, tokens, card numbers) are masked at the listener layer before the record is written.
+
+---
+
+## ADR-09 — Laravel Blade as the Customer Storefront
+
+**Status:** Accepted
+
+**Context:**
+The separate Astro storefront duplicated routing, session, CSRF, deployment, and browser-origin concerns while all authoritative catalogue, cart, checkout, customer, and payment rules already lived in Laravel. The Design 05 Blade migration demonstrated that the required SEO, responsive UI, and targeted interactivity could be delivered from the existing Laravel application.
+
+**Decision:**
+Serve the customer storefront, customer account, cart, checkout, tracking, and SEO documents from Laravel Blade on the same origin as the API and admin interface. Bundle only the required CSS and targeted browser scripts with Vite. Remove the Astro application after its routes, assets, interactions, and tests are represented in Laravel.
+
+**Consequences:**
+- The system has one runtime, public origin, session boundary, and deployment unit.
+- Browser mutations use Laravel's normal same-origin CSRF protection.
+- Storefront SEO and business data are rendered directly from Laravel services.
+- Node.js remains a build-time dependency for Vite, not a production storefront server.
+- Future storefront work belongs under `apps/backend/resources` and Laravel routes/controllers.

@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 $workspace = dirname(__DIR__);
-$sourcePath = $workspace.'/apps/frontend/public/brand/okina-logo.png';
-$frontendTarget = $workspace.'/apps/frontend/public/brand/okina-watermark-mark.png';
+$sourcePath = $workspace.'/apps/backend/public/brand/okina-logo.png';
+$publicTarget = $workspace.'/apps/backend/public/brand/okina-watermark-mark.png';
 $backendDirectory = $workspace.'/apps/backend/resources/brand';
 $backendTarget = $backendDirectory.'/okina-watermark-mark.png';
 
@@ -54,8 +54,8 @@ if (! is_dir($backendDirectory)) {
     mkdir($backendDirectory, 0775, true);
 }
 
-imagepng($output, $frontendTarget, 8);
-copy($frontendTarget, $backendTarget);
+imagepng($output, $publicTarget, 8);
+copy($publicTarget, $backendTarget);
 
 imagedestroy($source);
 imagedestroy($output);

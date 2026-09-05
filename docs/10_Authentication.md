@@ -46,7 +46,7 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    participant B as Browser/Astro
+    participant B as Customer Browser
     participant M as Middleware
     participant G as Guard (customer)
     participant DB as Database

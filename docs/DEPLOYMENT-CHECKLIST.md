@@ -15,7 +15,7 @@ The hosting environment must meet or exceed the following specifications:
     - `post_max_size = 10M`
     - `memory_limit = 256M` (minimum recommended for background queues/PDF processing)
 - **Database**: MySQL Server `8.0+` or MariaDB `10.5+`
-- **Node.js**: Version `22.x` (LTS) & `npm` (for building the Astro frontend)
+- **Node.js**: Version `22.x` (LTS) & `npm` (for building Laravel's Vite assets)
 - **Process Manager**: Supervisor or equivalent (to monitor queue workers)
 - **Scheduler**: System Cron (to trigger Laravel scheduler)
 - **SSL Certificate**: Valid HTTPS certificate for the root domain and all api/admin subdomains (e.g., Let's Encrypt).
@@ -43,7 +43,6 @@ Configure these variables in the server's `.env` file:
 | `APP_KEY` | `base64:....` | 32-byte encryption key |
 | `APP_DEBUG` | `false` | Must be `false` in production to prevent exposing stack traces |
 | `APP_URL` | `https://okinacraft.com` | Root application URL |
-| `FRONTEND_URL` | `https://okinacraft.com` | Frontend URL for CORS mapping |
 
 ### Database
 | Key | Example Value | Description |
@@ -155,10 +154,9 @@ Clear cached PHP bytecode to reload PHP file modifications:
 - For **FrankenPHP/RoadRunner**: Restart the process daemon.
 - For **Apache**: `sudo systemctl reload apache2`.
 
-### Step 4.10: Build and Deploy Frontend
-Install node dependencies and build the Astro static/SSR frontend assets:
+### Step 4.10: Build and Deploy Browser Assets
+From `apps/backend`, install Node dependencies and build the Laravel Vite assets:
 ```bash
-cd ../frontend
 npm ci
 npm run build
 ```
@@ -166,7 +164,6 @@ npm run build
 ### Step 4.11: Disable Maintenance Mode
 Once everything is verified, disable the maintenance gate:
 ```bash
-cd ../backend
 php artisan up
 ```
 

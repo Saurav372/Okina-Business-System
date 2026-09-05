@@ -1,6 +1,6 @@
 # Deployment Guide
 
-> **Last Reviewed:** 2026-07-02
+> **Last Reviewed:** 2026-09-03
 > **Owner:** Engineering / DevOps
 > **Source of Truth:** `apps/backend/.env.example`, `docs/DEPLOYMENT-CHECKLIST.md`
 
@@ -17,7 +17,7 @@
 |---|---|---|
 | PHP | 8.3 | With extensions: pdo_mysql, mbstring, openssl, tokenizer, xml, bcmath, fileinfo, zip |
 | MySQL | 8.0 | Primary database |
-| Node.js | 18 | Required for Astro frontend build only |
+| Node.js | 22.12 | Required for Vite asset builds |
 | Composer | 2.x | PHP dependency manager |
 | NPM | 9+ | Node package manager |
 | Web server | Nginx or Apache | PHP-FPM recommended |
@@ -128,7 +128,7 @@ The high-level sequence is:
 4. Run database migrations        php artisan migrate --force
 5. Clear and rebuild caches       php artisan optimize
 6. Restart queue workers          (reload supervisor or restart process)
-7. Build Astro frontend           npm ci && npm run build
+7. Build Laravel browser assets  npm ci && npm run build
 8. Disable maintenance mode       php artisan up
 9. Run health checks              php artisan about, check logs
 ```
@@ -145,8 +145,8 @@ php artisan key:generate
 php artisan migrate --seed
 php artisan storage:link
 
-# Frontend
-cd apps/frontend
+# Browser assets
+cd apps/backend
 npm ci
 npm run build
 ```

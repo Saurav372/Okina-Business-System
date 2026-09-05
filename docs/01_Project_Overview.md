@@ -1,6 +1,6 @@
 # Project Overview
 
-> **Last Reviewed:** 2026-07-02
+> **Last Reviewed:** 2026-09-03
 > **Owner:** Engineering
 > **Source of Truth:** `Build docs/main-system-requirements.md`, `Build docs/feature-list.md`, `Build docs/PROJECT-CONTEXT.md`
 
@@ -68,7 +68,7 @@ Okina Business System
 - Queue-based job processing with retry and deduplication
 - Immutable audit event contract shared across all modules
 
-### Project B — Customer Website (Astro)
+### Project B — Customer Website (Laravel Blade)
 - Public product listing and detail pages with SEO support
 - Product customization: size-wise quantity, print method, design file upload, mockup preview
 - Cart supporting mixed customized items

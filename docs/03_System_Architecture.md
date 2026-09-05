@@ -1,14 +1,14 @@
 # System Architecture
 
-> **Last Reviewed:** 2026-07-02
+> **Last Reviewed:** 2026-09-03
 > **Owner:** Engineering
-> **Source of Truth:** `apps/backend/`, `apps/frontend/`, `apps/backend/config/`, `routes/`
+> **Source of Truth:** `apps/backend/`, `apps/backend/config/`, `apps/backend/routes/`
 
 ---
 
 ## Overview
 
-Okina Business System is a **modular monolith**. One Laravel application serves both the admin operations panel and the backend API. One Astro application serves the customer-facing website. Both share a single MySQL database.
+Okina Business System is a **modular monolith**. One Laravel application serves the customer storefront, admin operations panel, and JSON API from a single origin backed by one MySQL database.
 
 External integrations (Cashfree payments, Google Sheets, notifications) are decoupled from core business transactions via a queue-based job pipeline.
 
@@ -18,7 +18,7 @@ External integrations (Cashfree payments, Google Sheets, notifications) are deco
 
 ```mermaid
 flowchart TD
-    CW["Customer Browser\n(Astro Website)"]
+    CW["Customer Browser\n(Laravel Blade Storefront)"]
     AB["Admin Browser\n(Laravel Admin)"]
     BE["Laravel Backend\n(Modular Monolith)"]
     DB["MySQL Database"]
@@ -29,7 +29,7 @@ flowchart TD
     NS["Notification Services\n(Email / SMS / WhatsApp)"]
     FS["Private File Storage\n(local / S3-compatible)"]
 
-    CW -->|"REST API (JSON)"| BE
+    CW -->|"Blade web routes + session"| BE
     AB -->|"Web routes + session"| BE
     BE -->|"Eloquent ORM"| DB
     BE -->|"Dispatches jobs"| QW
@@ -49,9 +49,9 @@ flowchart TD
 
 | Component | Technology | Role |
 |---|---|---|
-| Customer Website | Astro + Tailwind CSS | Public product pages, cart, checkout, customer account |
+| Customer Website | Laravel Blade + Vite + Tailwind CSS | Public product pages, cart, checkout, customer account |
 | Admin Panel | Laravel (web routes + session) | Order management, CRM, inventory, finance, settings |
-| Backend API | Laravel (JSON API routes) | Serves customer website and customer account endpoints |
+| Backend API | Laravel (JSON API routes) | Supports integrations and reusable domain endpoints |
 | Database | MySQL | Single shared source of truth for all data |
 | Queue Worker | Laravel queue (`database` driver) | Processes notifications, Sheets sync, payment retries |
 | Scheduler | Laravel Artisan (`schedule:run`) | Runs `audit:prune`, `system:backup`, and maintenance tasks |
@@ -112,18 +112,14 @@ Okina Business System/
 │   │   │   ├── factories/         Test factories
 │   │   │   └── seeders/           Database seeders
 │   │   ├── routes/
-│   │   │   ├── web.php            Admin and shared routes
+│   │   │   ├── web.php            Storefront, customer, and admin routes
 │   │   │   ├── api.php            Public and customer API routes
 │   │   │   └── console.php        Scheduled commands
 │   │   ├── storage/app/private/   Uploaded files (gitignored)
-│   │   └── tests/Feature/         Feature test suite (792 tests)
-│   │
-│   └── frontend/                  Astro application
-│       ├── src/
-│       │   ├── pages/             Route pages
-│       │   ├── components/        UI components
-│       │   └── layouts/           Page layouts
-│       └── public/                Static assets
+│   │   ├── resources/views/       Storefront, customer, and admin Blade views
+│   │   ├── resources/css/         Storefront and admin styles
+│   │   ├── resources/js/          Storefront and admin interactions
+│   │   └── tests/Feature/         Feature test suite
 │
 └── docs/                          This documentation suite
 ```

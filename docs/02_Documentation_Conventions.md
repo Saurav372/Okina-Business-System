@@ -65,7 +65,7 @@ Specific authoritative sources by document:
 | API Documentation | `routes/web.php`, `routes/api.php`, `app/Http/Controllers/*`, `app/Http/Requests/*` |
 | Module Documentation | `app/Models/*`, `app/Services/*`, `app/Policies/*`, `app/Jobs/*` |
 | Authentication | `config/auth.php`, `app/Http/Middleware/*`, `app/Policies/*` |
-| Technology Stack | `apps/backend/composer.json`, `apps/frontend/package.json` |
+| Technology Stack | `apps/backend/composer.json`, `apps/backend/package.json` |
 | Business Workflows | `app/Services/*`, `app/Http/Controllers/*` |
 
 ---

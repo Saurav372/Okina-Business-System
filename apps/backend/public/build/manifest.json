@@ -188,7 +188,7 @@
     "src": "_instrument-sans-600-normal-DMks36a2.woff"
   },
   "resources/css/app.css": {
-    "file": "assets/app-5aNtjB3K.css",
+    "file": "assets/app-BDR5Ki1w.css",
     "name": "app",
     "names": [
       "app.css"
@@ -197,7 +197,7 @@
     "isEntry": true
   },
   "resources/css/storefront.css": {
-    "file": "assets/storefront-aHOO6VCW.css",
+    "file": "assets/storefront-CmnSGMNz.css",
     "name": "storefront",
     "names": [
       "storefront.css"
@@ -212,9 +212,18 @@
     "isEntry": true
   },
   "resources/js/storefront.js": {
-    "file": "assets/storefront-C7xIslon.js",
+    "file": "assets/storefront-6GpfQ0DZ.js",
     "name": "storefront",
     "src": "resources/js/storefront.js",
-    "isEntry": true
+    "isEntry": true,
+    "dynamicImports": [
+      "resources/js/storefront/mockup-studio.ts"
+    ]
+  },
+  "resources/js/storefront/mockup-studio.ts": {
+    "file": "assets/mockup-studio-Bx8C5zEu.js",
+    "name": "mockup-studio",
+    "src": "resources/js/storefront/mockup-studio.ts",
+    "isDynamicEntry": true
   }
 }

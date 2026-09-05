@@ -1,13 +1,15 @@
 # Astro-to-Blade Storefront Migration Plan
 
-> **Status:** Implementation in progress
+> **Status:** Completed 2026-09-03
 > **Prepared:** 2026-09-01
 > **Approved design:** `UI test/concepts/design-05/`
 > **Scope:** Replace the customer-facing Astro runtime with Laravel Blade, implement Design 05 as the storefront UI, and preserve the current public URLs, SEO, business rules, and production behavior.
 > **Out of scope:** Creating another visual direction, changing payment providers, changing the database schema, or replacing the existing admin interface.
 > **Implemented 2026-09-01:** Design 05 Blade/Vite foundation, shared storefront layout/components, responsive drawer/mobile dock, live home page, collection index/detail, search, local Archivo/DM Sans assets, catalogue/SEO tests, and desktop/mobile rendered QA.
 >
-> **Implemented 2026-09-02:** Design 05 Blade product detail and customizer, live option/SKU matching, price and availability feedback, print-position/method compatibility, quantity presets, media/fallback preview, product metadata/JSON-LD, preserved validation errors, and a same-origin CSRF-protected add-to-cart action using the existing cart snapshot/service rules. Protected artwork upload/mockup generation, the cart page, checkout, and customer routes remain on the temporary Astro bridge until their phases are implemented.
+> **Implemented 2026-09-02:** Design 05 Blade product detail and customizer, live option/SKU matching, price and availability feedback, print-position/method compatibility, quantity presets, media/fallback preview, product metadata/JSON-LD, preserved validation errors, and a same-origin CSRF-protected add-to-cart action using the existing cart snapshot/service rules.
+>
+> **Completed 2026-09-03:** Cart, checkout, account, addresses, order history/detail, reorder, tracking, confirmation, mockup generation, policies, robots, and sitemap now run on Laravel Blade. Storefront mutations are same-origin and CSRF-protected, required public assets live under Laravel, deployment documentation describes one application, and the verified Astro application has been removed.
 
 ## 1. Recommendation
 

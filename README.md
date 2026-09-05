@@ -2,7 +2,7 @@
 
 A fully integrated business platform for custom-apparel and print-on-demand operations.
 
-**One Laravel backend · One Astro frontend · One shared database**
+**One Laravel application · One shared database · One public origin**
 
 → **[Full Documentation](./docs/00_INDEX.md)**
 
@@ -10,22 +10,16 @@ A fully integrated business platform for custom-apparel and print-on-demand oper
 
 ## Quick Start
 
-### Backend (Laravel)
+### Application (Laravel + Blade)
 
 ```powershell
 cd apps/backend
 copy .env.example .env
 php artisan key:generate
 php artisan migrate --seed
-php artisan serve --host=127.0.0.1 --port=8000
-```
-
-### Frontend (Astro)
-
-```powershell
-cd apps/frontend
 npm ci
-npm run dev -- --host 127.0.0.1 --port 4321
+npm run build
+php artisan serve --host=127.0.0.1 --port=8000
 ```
 
 ### Running Tests
@@ -43,9 +37,9 @@ php artisan test
 
 | App | URL |
 |---|---|
-| Laravel backend | `http://127.0.0.1:8000` |
-| Astro frontend | `http://127.0.0.1:4321` |
+| Customer storefront | `http://127.0.0.1:8000` |
 | Admin panel | `http://127.0.0.1:8000/admin` |
+| JSON API | `http://127.0.0.1:8000/api` |
 
 ---
 

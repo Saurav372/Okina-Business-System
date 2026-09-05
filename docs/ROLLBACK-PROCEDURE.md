@@ -73,9 +73,9 @@ Use this runbook when the failed release introduced no new database migrations.
    ```bash
    sudo systemctl restart php8.3-fpm
    ```
-5. **Build Frontend**: Re-build frontend Astro files if assets changed:
+5. **Build Browser Assets**: Rebuild Laravel's Vite assets if CSS or JavaScript changed:
    ```bash
-   cd ../frontend && npm ci && npm run build
+   npm ci && npm run build
    ```
 
 ---

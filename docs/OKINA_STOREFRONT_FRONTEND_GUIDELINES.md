@@ -6,7 +6,7 @@ This guideline defines the recommended design, implementation, review, and relea
 
 ### Okina storefront architecture
 
-- **Frontend:** Astro + Tailwind CSS
+- **Storefront:** Laravel 13 Blade + Tailwind CSS + targeted browser JavaScript
 - **Backend/API:** Laravel 13
 - **Database:** MySQL
 - Backend remains the source of truth for pricing, inventory, discounts, bulk-order rules, order validation, payments, permissions, and other business rules.
@@ -53,7 +53,7 @@ Before applying UI skills, inspect the existing storefront.
 
 ### Check
 
-- Current Astro structure
+- Current Laravel Blade/Vite structure
 - Existing Tailwind configuration
 - Existing components
 - Existing design tokens
@@ -288,7 +288,7 @@ Product cards for customizable goods should also define:
 
 **Primary skill:** `frontend-ui-engineering`
 
-Translate the approved design direction into reusable Astro/Tailwind components.
+Translate the approved design direction into reusable Blade/Tailwind components.
 
 ### Recommended structure
 
@@ -374,12 +374,12 @@ components/
     `-- Spinner
 ```
 
-### Astro interaction boundaries
+### Blade interaction boundaries
 
 - Render useful product, category, pricing context, and SEO content as HTML by default.
-- Add hydrated islands only where customer interaction requires them, such as search suggestions, variant-dependent availability, the customizer, cart updates, and checkout controls.
-- Give every client-side island one documented owner, API contract, loading strategy, error boundary, and no-JavaScript fallback where the task permits it.
-- Do not hydrate static marketing, trust, policy, or descriptive content merely for animation.
+- Add targeted browser modules only where customer interaction requires them, such as search suggestions, variant-dependent availability, the customizer, cart updates, and checkout controls.
+- Give every client-side module one documented owner, server contract, loading strategy, error boundary, and no-JavaScript fallback where the task permits it.
+- Keep static marketing, trust, policy, and descriptive content server-rendered.
 - Normalize Laravel API errors into consistent field, form, availability, pricing, authorization, and retry states.
 - Never treat a cached or client-calculated amount as final checkout authority.
 
@@ -714,7 +714,7 @@ Test it with a small-batch customer, a multi-size team order, a customer without
 
 Frontend should clearly communicate backend-defined changes when a bulk threshold is reached.
 
-> **Important:** Do not make the Astro frontend the authoritative owner of bulk thresholds or business rules. Laravel remains authoritative.
+> **Important:** Do not make browser JavaScript the authoritative owner of bulk thresholds or business rules. Laravel remains authoritative.
 
 ---
 
@@ -880,7 +880,7 @@ Do not run every skill once across the whole website or treat skill names as sub
 ### Gate 2 - Design and implementation
 
 - Use `frontend-design` for visual identity, hierarchy, composition, product proof, and responsive intent.
-- Use `frontend-ui-engineering` for Astro/Tailwind components, hydration ownership, API integration, and maintainable responsive behavior.
+- Use `frontend-ui-engineering` for Blade/Tailwind components, browser-module ownership, server integration, and maintainable responsive behavior.
 - Integrate real Laravel data before judging the feature complete.
 
 ### Gate 3 - Interaction and inclusive QA
@@ -987,8 +987,8 @@ A page is not complete just because it looks correct.
 - [ ] No duplicate pricing logic
 - [ ] No duplicate inventory logic
 - [ ] No security-sensitive frontend trust
-- [ ] Hydrated Astro islands have a documented interaction owner
-- [ ] Static content is not unnecessarily hydrated
+- [ ] Browser modules have a documented interaction owner
+- [ ] Static content remains server-rendered
 - [ ] File, proof, payment, and approval state remains backend-verifiable
 
 ### Performance
@@ -998,7 +998,7 @@ A page is not complete just because it looks correct.
 - [ ] Layout shift checked
 - [ ] Lighthouse checked
 - [ ] Page and JavaScript budgets defined
-- [ ] Each hydrated island and third-party script has a documented product job
+- [ ] Each browser module and third-party script has a documented product job
 - [ ] Failed-image and slow-media fallbacks work
 
 ### SEO
@@ -1279,11 +1279,11 @@ This keeps the storefront visually strong, technically maintainable, accessible,
 
 ## IMPLEMENTATION RECORD — 11 AUGUST 2026
 
-The first complete customer storefront vertical slice now implements this guideline in `apps/frontend` and the supporting Laravel customer-auth surface.
+The original implementation used a separate Astro application. On 3 September 2026, the complete customer storefront was consolidated into `apps/backend` and the Astro runtime was retired under ADR-09.
 
 ### Implemented
 
-- Astro 7 server rendering with the Node adapter, so published catalog changes no longer require a frontend rebuild
+- Laravel Blade server rendering, so published catalogue changes do not require a browser-asset rebuild
 - Tailwind CSS 4 plus semantic Okina tokens for colour, typography, spacing, focus, state, elevation, and motion
 - Responsive storefront shell, announcement, navigation, search, account/cart state, footer, canonical metadata, Open Graph, robots, and sitemap
 - Homepage, collection index, collection detail, product filtering/sorting, and product search
@@ -1297,9 +1297,9 @@ The first complete customer storefront vertical slice now implements this guidel
 
 ### Verified evidence
 
-- Production Astro build succeeds
-- Frontend dependency audit reports zero vulnerabilities
-- Storefront/customer regression suite: 61 tests, 630 assertions passing
+- Production Laravel Vite build succeeds
+- Browser dependency audit reports zero vulnerabilities
+- Storefront/customer/API regression suite: 84 tests, 683 assertions passing
 - Laravel Blade templates cache successfully
 - Desktop and 375 px mobile browser checks show no page-level horizontal overflow
 - Product option changes update price and SKU; missing required artwork is announced before network submission

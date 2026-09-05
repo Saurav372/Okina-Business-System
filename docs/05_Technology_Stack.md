@@ -1,19 +1,19 @@
 # Technology Stack
 
-> **Last Reviewed:** 2026-07-02
+> **Last Reviewed:** 2026-09-03
 > **Owner:** Engineering
-> **Source of Truth:** `apps/backend/composer.json`, `apps/frontend/package.json`
+> **Source of Truth:** `apps/backend/composer.json`, `apps/backend/package.json`
 
 ---
 
 > ⚠️ **Do not edit version numbers in this document manually.**
-> This table is generated from `composer.json` and `package.json`.
+> These tables are generated from the Laravel application's `composer.json` and `package.json`.
 > Regenerate it whenever dependencies are updated by running:
 > ```powershell
 > # Backend
 > php tools/composer/composer.phar show --format=json | ConvertFrom-Json
-> # Frontend
-> cat apps/frontend/package.json
+> # Browser assets
+> Get-Content apps/backend/package.json
 > ```
 
 ---
@@ -60,17 +60,19 @@
 
 ---
 
-## Frontend (Astro)
+## Storefront and Browser Assets
 
-**Source:** `apps/frontend/package.json`
+**Source:** `apps/backend/package.json`
 
-> Verify current versions from `apps/frontend/package.json` — regenerate this table on dependency updates.
+> Verify current versions from `apps/backend/package.json` — regenerate this table on dependency updates.
 
 | Package | Role |
 |---|---|
-| `astro` | Static site and island framework |
-| `@astrojs/tailwind` | Tailwind CSS integration |
+| Laravel Blade | Server-rendered storefront and admin templates |
+| `vite` | Browser asset bundling and development server |
+| `laravel-vite-plugin` | Laravel asset integration |
 | `tailwindcss` | Utility-first CSS framework |
+| `alpinejs` | Targeted admin interactions |
 
 ---
 
@@ -93,7 +95,7 @@
 |---|---|
 | PHP | 8.3 |
 | MySQL | 8.0 |
-| Node.js | 18 (for Astro frontend build) |
+| Node.js | 22.12+ (for Vite asset builds) |
 | Composer | 2.x |
 | NPM | 9+ |
 

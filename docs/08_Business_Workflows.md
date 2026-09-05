@@ -38,7 +38,7 @@ flowchart LR
 ```mermaid
 sequenceDiagram
     participant CU as Customer
-    participant FE as Astro Frontend
+    participant FE as Laravel Blade Storefront
     participant BE as Laravel Backend
     participant CF as Cashfree
     participant QW as Queue Worker
@@ -134,7 +134,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant CU as Customer
-    participant FE as Astro Frontend
+    participant FE as Laravel Blade Storefront
     participant SS as Sales Staff
     participant BE as Laravel Backend
 
