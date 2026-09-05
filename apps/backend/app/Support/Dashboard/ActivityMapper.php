@@ -5,125 +5,118 @@ namespace App\Support\Dashboard;
 use App\Models\AuditLog;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Models\User;
+use App\Models\VendorOrder;
+use Illuminate\Support\Facades\Gate;
 
 class ActivityMapper
 {
-    /**
-     * Map a single AuditLog record into an ActivityItemDTO.
-     */
+    private const EVENTS = [
+        'order.created' => ['Order created', 'lucide-shopping-cart', 'info', 'orders.view'],
+        'order.cancelled' => ['Order cancelled', 'lucide-shopping-cart', 'neutral', 'orders.view'],
+        'payment.recorded' => ['Payment recorded', 'lucide-credit-card', 'info', 'payments.view'],
+        'refund.requested' => ['Refund requested', 'lucide-credit-card', 'warning', 'refunds.view'],
+        'refund.approved' => ['Refund approved', 'lucide-credit-card', 'info', 'refunds.view'],
+        'stock.moved' => ['Stock adjusted', 'lucide-tag', 'info', 'inventory.view'],
+        'purchase_orders.created' => ['Purchase order created', 'lucide-truck', 'info', 'purchases.view'],
+        'vendors.created' => ['Vendor created', 'lucide-user', 'info', 'vendors.view'],
+    ];
+
+    private const ALIASES = [
+        'orders.order_created' => 'order.created', 'orders.order_cancelled' => 'order.cancelled',
+        'payments.payment_recorded' => 'payment.recorded', 'refunds.refund_requested' => 'refund.requested',
+        'refunds.refund_approved' => 'refund.approved', 'inventory.stock_moved' => 'stock.moved',
+    ];
+
+    /** @return array<string> */
+    public static function allowedActions(User $user): array
+    {
+        $allowed = array_keys(array_filter(self::EVENTS, fn ($event) => $user->hasPermissionTo($event[3])));
+        foreach (self::ALIASES as $legacy => $canonical) {
+            if (in_array($canonical, $allowed, true)) {
+                $allowed[] = $legacy;
+            }
+        }
+
+        return $allowed;
+    }
+
     public function map(AuditLog $log): ActivityItemDTO
     {
-        $actorName = $log->actor_label_snapshot
-            ?? $log->actorUser?->name
-            ?? 'System';
-
-        $actorInitials = $this->getInitials($actorName);
-
-        // Map categories based on action keys
-        $eventConfig = $this->getEventConfig($log->action);
-
-        // Resolve drill-down links safely
-        $href = $this->resolveLink($log);
+        $action = self::ALIASES[$log->action] ?? $log->action;
+        [$title, $icon, $variant] = self::EVENTS[$action] ?? ['Activity recorded', 'lucide-clipboard', 'neutral'];
+        $data = array_merge($log->metadata ?? [], $log->new_values ?? []);
+        $reference = $data['order_public_id'] ?? ($log->subject_type === 'order' ? $log->subject_public_id : null);
+        if (str_starts_with($action, 'order.') && $reference) {
+            $title = 'Order #'.$reference.($action === 'order.created' ? ' created' : ' cancelled');
+        }
+        if ($action === 'payment.recorded' && isset($data['amount_minor']) && ($data['record_status'] ?? $data['payment_status'] ?? null) === 'succeeded') {
+            $amount = ($data['currency'] ?? 'INR') === 'INR'
+                ? DashboardNumbers::money((float) $data['amount_minor'] / 100, 2)
+                : $data['currency'].' '.number_format((float) $data['amount_minor'] / 100, 2);
+            $title = $amount.' received';
+            $variant = 'success';
+        }
+        if ($action === 'stock.moved' && ! empty($data['sku_public_id'])) {
+            $title = 'Stock adjusted · '.$data['sku_public_id'];
+        }
+        if ($action === 'purchase_orders.created' && ! empty($data['public_id'])) {
+            $title = 'Purchase order #'.$data['public_id'].' created';
+        }
+        if ($action === 'vendors.created' && ! empty($data['vendor_code'])) {
+            $title = 'Vendor '.$data['vendor_code'].' created';
+        }
+        // A recorded human-readable summary is more useful than a generic category.
+        if ($log->summary && ! $reference && str_starts_with($action, 'order.')) {
+            $title = $log->summary;
+        }
+        $description = $log->summary && $log->summary !== $title ? $log->summary : ($reference ? 'Order #'.$reference : '');
+        if ($action === 'stock.moved' && isset($data['before_on_hand'], $data['after_on_hand'])) {
+            $description = $data['before_on_hand'].' → '.$data['after_on_hand'].' units on hand';
+        }
+        $actor = $log->actor_label_snapshot ?? $log->actorUser?->name ?? 'System';
 
         return new ActivityItemDTO(
-            title: $eventConfig['title'] ?? $log->summary ?? 'System Action',
-            description: $log->summary ?? 'Action completed successfully.',
-            icon: $eventConfig['icon'] ?? 'lucide-clipboard',
-            variant: $eventConfig['variant'] ?? 'neutral',
+            title: $title, description: $description, icon: $icon, variant: $variant,
             occurredAt: $log->occurred_at ?? $log->created_at,
-            href: $href,
-            actorName: $actorName,
-            actorInitials: $actorInitials
+            href: $this->resolveLink($log, $action, $data), actorName: $actor, actorInitials: $this->getInitials($actor),
         );
     }
 
-    /**
-     * Extract initials.
-     */
     protected function getInitials(string $name): string
     {
-        $words = preg_split('/\s+/', trim($name));
-        $words = array_filter($words);
-        if (empty($words)) {
+        $words = array_values(array_filter(preg_split('/\s+/', trim($name))));
+        if ($words === []) {
             return 'SY';
         }
 
         return count($words) >= 2
-            ? mb_strtoupper(mb_substr($words[0], 0, 1, 'UTF-8').mb_substr(end($words), 0, 1, 'UTF-8'), 'UTF-8')
-            : mb_strtoupper(mb_substr($words[0], 0, 2, 'UTF-8'), 'UTF-8');
+            ? mb_strtoupper(mb_substr($words[0], 0, 1).mb_substr(end($words), 0, 1))
+            : mb_strtoupper(mb_substr($words[0], 0, 2));
     }
 
-    /**
-     * Resolve icon and priority color variants.
-     */
-    protected function getEventConfig(string $action): array
+    private function resolveLink(AuditLog $log, string $action, array $data): ?string
     {
-        if (str_starts_with($action, 'orders.')) {
-            return [
-                'title' => 'Sales Order',
-                'icon' => 'lucide-shopping-cart',
-                'variant' => 'info',
-            ];
+        if (str_starts_with($action, 'order.')) {
+            $ref = $log->subject_public_id ?? $data['order_public_id'] ?? null;
+            $order = $ref ? Order::where('public_id', $ref)->first() : null;
+
+            return $order && Gate::allows('view', $order) ? route('admin.orders.show', $order) : null;
         }
+        if ($action === 'payment.recorded') {
+            $id = $log->subject_id ?? $data['payment_public_id'] ?? null;
+            $payment = $id && ctype_digit((string) $id) ? Payment::find($id) : null;
 
-        if (str_starts_with($action, 'payments.')) {
-            return [
-                'title' => 'Payment Collected',
-                'icon' => 'lucide-credit-card',
-                'variant' => 'success',
-            ];
+            return $payment && Gate::allows('view', $payment) ? route('admin.payments.show', $payment) : null;
         }
+        if ($action === 'purchase_orders.created') {
+            $ref = $log->subject_public_id ?? $data['public_id'] ?? null;
+            $order = $ref ? VendorOrder::where('public_id', $ref)->first() : null;
 
-        if (str_starts_with($action, 'refunds.')) {
-            return [
-                'title' => 'Refund Processing',
-                'icon' => 'lucide-corner-down-left',
-                'variant' => 'danger',
-            ];
+            return $order && Gate::allows('view', $order) ? route('admin.purchases.show', $order->public_id) : null;
         }
-
-        if (str_starts_with($action, 'purchase_orders.')) {
-            return [
-                'title' => 'Purchase Order',
-                'icon' => 'lucide-truck',
-                'variant' => 'warning',
-            ];
-        }
-
-        if (str_starts_with($action, 'products.') || str_starts_with($action, 'inventory.')) {
-            return [
-                'title' => 'Inventory Update',
-                'icon' => 'lucide-tag',
-                'variant' => 'warning',
-            ];
-        }
-
-        return [
-            'title' => 'System Event',
-            'icon' => 'lucide-clipboard',
-            'variant' => 'neutral',
-        ];
-    }
-
-    /**
-     * Resolve dynamic URLs safely.
-     */
-    protected function resolveLink(AuditLog $log): ?string
-    {
-        try {
-            if (str_starts_with($log->action, 'orders.') && ! empty($log->subject_public_id)) {
-                if (Order::where('public_id', $log->subject_public_id)->exists()) {
-                    return route('admin.orders.show', ['order' => $log->subject_public_id]);
-                }
-            }
-
-            if (str_starts_with($log->action, 'payments.') && ! empty($log->subject_id)) {
-                if (Payment::where('id', $log->subject_id)->exists()) {
-                    return route('admin.payments.show', ['payment' => $log->subject_id]);
-                }
-            }
-        } catch (\Exception $e) {
-            // Gracefully ignore link resolution issues
+        if ($action === 'stock.moved' && ! empty($data['sku_public_id']) && Gate::allows('inventory.view')) {
+            return route('admin.inventory.index', ['search' => $data['sku_public_id']]);
         }
 
         return null;

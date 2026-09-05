@@ -6,347 +6,144 @@ use App\Enums\OrderStatus;
 use App\Models\AuditLog;
 use App\Models\Order;
 use App\Models\Payment;
-use App\Models\ProductSku;
-use App\Models\Refund;
 use App\Models\User;
 use App\Models\VendorOrder;
 use App\Support\Dashboard\ActivityMapper;
 use App\Support\Dashboard\ChartPointDTO;
 use App\Support\Dashboard\ChartSeriesDTO;
+use App\Support\Dashboard\DashboardNumbers;
+use App\Support\Dashboard\DashboardOrders;
 use App\Support\Dashboard\DashboardWidgetDTO;
+use App\Support\Inventory\InventoryQueryBuilder;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Gate;
 
 class DashboardService
 {
-    /**
-     * Get the widgets data collection for the admin dashboard.
-     *
-     * @return array<DashboardWidgetDTO>
-     */
+    /** @return array<DashboardWidgetDTO> */
     public function getWidgetsData(): array
     {
-        // Wrap query execution in a 5-minute cache
-        $data = Cache::remember('admin_dashboard_metrics_data', 300, function () {
-            // 1. Today's Orders
-            $todaysOrders = Order::whereDate('created_at', Carbon::today())->count();
-
-            // 2. Pending Orders
-            $pendingOrders = Order::whereNotIn('status', [
-                OrderStatus::Delivered->value(),
-                OrderStatus::Cancelled->value(),
-                OrderStatus::Refunded->value(),
-            ])->count();
-
-            // 3. Advance Payments Pending
-            // We find orders where paid < expected_advance (and expected_advance > 0)
-            $orders = Order::whereNotIn('status', [OrderStatus::Cancelled->value(), OrderStatus::Refunded->value()])
-                ->with(['payments'])
-                ->get();
-            $advancePendingCount = 0;
-            foreach ($orders as $o) {
-                $paid = (int) $o->payments->where('status', 'succeeded')->sum('amount_minor');
-                $expected = $o->getExpectedAdvanceAmount();
-                if ($expected > 0 && $paid < $expected) {
-                    $advancePendingCount++;
-                }
+        // Operational queues are read fresh so returning from an action updates the cards.
+        $statuses = DashboardOrders::open()->selectRaw('status, COUNT(*) as aggregate')->groupBy('status')->pluck('aggregate', 'status');
+        $open = $statuses->sum();
+        $awaiting = $statuses->get(OrderStatus::PendingPayment->value, 0);
+        $ready = $statuses->get(OrderStatus::ReadyToShip->value, 0);
+        $advances = count(DashboardOrders::awaitingAdvanceIds());
+        $today = Carbon::today()->toDateString();
+        $todayOrders = Order::query()->whereDate('placed_at', $today)->count();
+        $collections = Payment::where('status', 'succeeded')->whereDate('paid_at', $today)->sum('amount_minor') / 100;
+        $stockQuery = InventoryQueryBuilder::baseQuery();
+        $stockCount = (clone $stockQuery)->count();
+        $low = InventoryQueryBuilder::applyStatus($stockQuery, 'needs_attention')->count();
+        $pos = VendorOrder::whereIn('status', ['draft', 'ordered', 'partially_received'])->count();
+        $balance = app(FinanceReportService::class)->calculatePerOrderOutstandingReceivables(null) / 100;
+        $parts = [];
+        foreach (OrderStatus::cases() as $status) {
+            if ($count = $statuses->get($status->value, 0)) {
+                $parts[] = $count.' '.strtolower($status->label());
             }
-
-            // 4. Outstanding Balance
-            $totalSalesMinor = Order::where('status', '!=', OrderStatus::Cancelled->value())->sum('total_amount_minor');
-            $totalPaymentsMinor = Payment::where('status', 'succeeded')->sum('amount_minor');
-            $totalRefundsMinor = Refund::where('status', 'succeeded')->sum('amount_minor');
-            $outstandingBalance = ($totalSalesMinor - $totalPaymentsMinor + $totalRefundsMinor) / 100;
-
-            // 5. Low Stock SKUs
-            $lowStock = ProductSku::where('track_stock', true)
-                ->whereColumn('stock_quantity', '<=', 'low_stock_threshold')
-                ->count();
-
-            // 6. Today's Collections
-            $todaysCollectionsMinor = Payment::where('status', 'succeeded')
-                ->whereDate('paid_at', Carbon::today())
-                ->sum('amount_minor');
-            $todaysCollections = $todaysCollectionsMinor / 100;
-
-            // 7. Active Purchase Orders
-            $activePOs = VendorOrder::whereNotIn('status', ['completed', 'cancelled'])->count();
-
-            return [
-                'todays_orders' => $todaysOrders,
-                'pending_orders' => $pendingOrders,
-                'advance_pending' => $advancePendingCount,
-                'outstanding_balance' => $outstandingBalance,
-                'low_stock' => $lowStock,
-                'todays_collections' => $todaysCollections,
-                'active_pos' => $activePOs,
-            ];
-        });
+        }
+        $link = fn (string $ability, string $route, array $params = []) => Gate::allows($ability) ? route($route, $params) : null;
+        $ordersLink = fn (array $params = []) => Gate::allows('viewAny', Order::class) ? route('admin.orders.index', $params) : null;
 
         return [
-            new DashboardWidgetDTO(
-                label: "Today's Orders",
-                value: (string) $data['todays_orders'],
-                trend: 'neutral',
-                trendDirection: 'neutral',
-                description: 'orders placed today',
-                icon: 'lucide-shopping-cart',
-                href: route('admin.sales_orders.create'),
-                variant: 'neutral',
-                accessibilityLabel: "Today's Orders is ".$data['todays_orders']
-            ),
-            new DashboardWidgetDTO(
-                label: 'Pending Orders',
-                value: (string) $data['pending_orders'],
-                trend: 'neutral',
-                trendDirection: 'neutral',
-                description: 'in processing pipeline',
-                icon: 'lucide-clock',
-                href: route('admin.sales_orders.create'),
-                variant: $data['pending_orders'] > 10 ? 'warning' : 'neutral',
-                accessibilityLabel: 'Pending Orders is '.$data['pending_orders']
-            ),
-            new DashboardWidgetDTO(
-                label: 'Advance Payments Pending',
-                value: (string) $data['advance_pending'],
-                trend: 'action required',
-                trendDirection: 'down',
-                description: 'awaiting deposit',
-                icon: 'lucide-alert-circle',
-                href: route('admin.payments.index'),
-                variant: $data['advance_pending'] > 0 ? 'warning' : 'neutral',
-                accessibilityLabel: 'Advance Payments Pending is '.$data['advance_pending']
-            ),
-            new DashboardWidgetDTO(
-                label: 'Outstanding Balance',
-                value: '₹'.number_format($data['outstanding_balance'], 2),
-                trend: 'neutral',
-                trendDirection: 'neutral',
-                description: 'receivable from clients',
-                icon: 'lucide-credit-card',
-                href: route('admin.accounting.customer_ledger'),
-                variant: 'neutral',
-                accessibilityLabel: 'Outstanding Balance is ₹'.number_format($data['outstanding_balance'], 2)
-            ),
-            new DashboardWidgetDTO(
-                label: 'Low Stock SKUs',
-                value: (string) $data['low_stock'],
-                trend: $data['low_stock'] > 0 ? 'critical level' : 'optimal',
-                trendDirection: $data['low_stock'] > 0 ? 'down' : 'neutral',
-                description: 'items below threshold',
-                icon: 'lucide-tag',
-                href: route('admin.google_sheets.sync_logs.index'),
-                variant: $data['low_stock'] > 0 ? 'danger' : 'neutral',
-                accessibilityLabel: 'Low Stock SKUs is '.$data['low_stock']
-            ),
-            new DashboardWidgetDTO(
-                label: "Today's Collections",
-                value: '₹'.number_format($data['todays_collections'], 2),
-                trend: 'up',
-                trendDirection: 'up',
-                description: 'collected today',
-                icon: 'lucide-arrow-down-left',
-                href: route('admin.payments.index'),
-                variant: 'neutral',
-                accessibilityLabel: "Today's Collections is ₹".number_format($data['todays_collections'], 2)
-            ),
-            new DashboardWidgetDTO(
-                label: 'Purchase Orders',
-                value: (string) $data['active_pos'],
-                trend: 'neutral',
-                trendDirection: 'neutral',
-                description: 'active supply orders',
-                icon: 'lucide-truck',
-                href: route('admin.purchase_orders.index'),
-                variant: 'neutral',
-                accessibilityLabel: 'Purchase Orders count is '.$data['active_pos']
-            ),
+            new DashboardWidgetDTO(key: 'open_orders', label: 'Open Orders', value: (string) $open,
+                description: $awaiting ? $awaiting.' awaiting payment' : ($open ? 'Orders moving through fulfilment' : 'No open orders'),
+                detail: implode(' · ', $parts), icon: 'lucide-shopping-cart', href: $ordersLink(['scope' => 'open']),
+                variant: $awaiting ? 'warning' : 'neutral', action: 'View open orders', primary: true),
+            new DashboardWidgetDTO(key: 'receivables', label: 'Outstanding Receivables', value: DashboardNumbers::money($balance),
+                description: $balance > 0 ? 'Unpaid balances on confirmed orders' : 'No outstanding receivables',
+                detail: 'Due-date aging is not available', icon: 'lucide-credit-card',
+                href: $link('reports.finance.view', 'admin.reports.finance.index', ['preset' => 'custom', 'start_date' => $today, 'end_date' => $today]), action: 'View receivables report', primary: true),
+            new DashboardWidgetDTO(key: 'advances', label: 'Payments Awaiting Advance', value: (string) $advances,
+                description: $advances ? $advances.' orders awaiting deposit' : 'No payments awaiting deposit',
+                icon: 'lucide-credit-card', href: $ordersLink(['scope' => 'advance_pending']),
+                variant: $advances ? 'warning' : 'neutral', action: 'View awaiting deposits'),
+            new DashboardWidgetDTO(key: 'today_orders', label: 'Orders Today', value: (string) $todayOrders,
+                description: $todayOrders ? 'Placed today' : 'No orders placed today', icon: 'lucide-shopping-cart',
+                href: $ordersLink(['placed_from' => $today, 'placed_to' => $today]), action: 'View today’s orders'),
+            new DashboardWidgetDTO(key: 'dispatch', label: 'Ready to Dispatch', value: (string) $ready,
+                description: $ready ? 'Ready for shipment' : 'No orders ready for dispatch', icon: 'lucide-truck',
+                href: $ordersLink(['status' => OrderStatus::ReadyToShip->value]), variant: $ready ? 'warning' : 'neutral', action: 'View dispatch queue'),
+            new DashboardWidgetDTO(key: 'low_stock', label: 'Low Stock Items', value: (string) $low,
+                description: $low ? 'Low or depleted stock needs attention' : ($stockCount ? 'All items sufficiently stocked' : 'No inventory items tracked yet'),
+                icon: 'lucide-tag', href: $link('inventory.view', 'admin.inventory.index', ['status' => 'needs_attention']),
+                variant: $low ? 'warning' : 'neutral', action: 'View stock balances'),
+            new DashboardWidgetDTO(key: 'collections', label: 'Collections Today', value: DashboardNumbers::money($collections),
+                description: $collections > 0 ? 'Successful payments received today' : 'No collections today', icon: 'lucide-credit-card',
+                href: Gate::allows('viewAny', Payment::class) ? route('admin.payments.index', ['status' => 'succeeded', 'paid_on' => $today]) : null,
+                action: 'View today’s payments'),
+            new DashboardWidgetDTO(key: 'purchase_orders', label: 'Active Purchase Orders', value: (string) $pos,
+                description: $pos ? 'Draft, ordered or partially received' : 'No active purchase orders', icon: 'lucide-truck',
+                href: Gate::allows('viewAny', VendorOrder::class) ? route('admin.purchase_orders.index', ['scope' => 'active']) : null,
+                action: 'View active purchases'),
         ];
     }
 
-    /**
-     * Get the recent activity timeline collection for the current user.
-     *
-     * @return Collection<ActivityItemDTO>
-     */
     public function getRecentActivity(User $user, int $limit = 5): Collection
     {
-        $logs = Cache::remember("dashboard_activity_user_{$user->id}", 30, function () use ($limit) {
-            $allowedActions = [
-                'orders.order_created',
-                'orders.order_cancelled',
-                'payments.payment_recorded',
-                'refunds.refund_requested',
-                'refunds.refund_approved',
-                'purchase_orders.created',
-                'vendors.created',
-            ];
+        $actions = ActivityMapper::allowedActions($user);
 
-            return AuditLog::with('actorUser')
-                ->whereIn('action', $allowedActions)
-                ->orderBy('occurred_at', 'desc')
-                ->orderBy('id', 'desc')
-                ->limit($limit)
-                ->get();
-        });
-
-        $mapper = new ActivityMapper;
-
-        return collect($logs)->map(fn (AuditLog $log) => $mapper->map($log));
+        return AuditLog::with('actorUser')->whereIn('action', $actions)
+            ->where(function ($query) {
+                $query->where('action', '!=', 'vendors.created')
+                    ->orWhereNotNull('metadata->vendor_code')->orWhereNotNull('summary');
+            })
+            ->orderByDesc('occurred_at')->orderByDesc('id')->limit($limit)->get()
+            ->map(fn (AuditLog $log) => (new ActivityMapper)->map($log));
     }
 
-    /**
-     * Get the sales revenue trend data points.
-     */
-    public function getRevenueTrendSeries(): ChartSeriesDTO
+    public function getRevenueTrendSeries(int $months = 6): ChartSeriesDTO
     {
-        $data = Cache::remember('dashboard:charts:revenue', 300, function () {
-            $pointsMap = collect();
-            for ($i = 5; $i >= 0; $i--) {
-                $date = Carbon::now()->subMonths($i);
-                $key = $date->format('Y-m');
-                $pointsMap->put($key, [
-                    'label' => $date->format('M'),
-                    'value' => 0.0,
-                ]);
-            }
+        return $this->chartSeries($months, true);
+    }
 
-            // Query revenue orders from the last 6 calendar months
-            $orders = Order::where('status', '!=', OrderStatus::Cancelled->value())
-                ->where('placed_at', '>=', Carbon::now()->subMonths(5)->startOfMonth())
-                ->get();
+    public function getMonthlyOrdersSeries(int $months = 6): ChartSeriesDTO
+    {
+        return $this->chartSeries($months, false);
+    }
 
-            foreach ($orders as $order) {
-                $key = $order->placed_at->format('Y-m');
-                if ($pointsMap->has($key)) {
-                    $item = $pointsMap->get($key);
-                    $pointsMap->put($key, [
-                        'label' => $item['label'],
-                        'value' => $item['value'] + ($order->total_amount_minor / 100.0),
-                    ]);
-                }
-            }
-
-            $points = $pointsMap->map(fn ($item) => [
-                'label' => $item['label'],
-                'value' => $item['value'],
-                'formattedValue' => '₹'.number_format($item['value'], 0),
-            ])->values()->toArray();
-
-            // Calculate MoM trend indicators
-            $n = count($points);
-            $currentValue = $n >= 1 ? $points[$n - 1]['value'] : 0.0;
-            $previousValue = $n >= 2 ? $points[$n - 2]['value'] : 0.0;
-
-            $diff = $currentValue - $previousValue;
-            $changePercent = $previousValue > 0.0 ? ($diff / $previousValue) * 100.0 : 0.0;
-            $changeDirection = $diff > 0.0 ? 'up' : ($diff < 0.0 ? 'down' : 'neutral');
-
-            return [
-                'points' => $points,
-                'currentValue' => $currentValue,
-                'previousValue' => $previousValue,
-                'changePercent' => round($changePercent, 1),
-                'changeDirection' => $changeDirection,
-            ];
-        });
-
-        $points = collect($data['points'])->map(fn ($item) => new ChartPointDTO(
-            label: $item['label'],
-            value: $item['value'],
-            formattedValue: $item['formattedValue']
-        ));
+    private function chartSeries(int $months, bool $money): ChartSeriesDTO
+    {
+        $months = in_array($months, [3, 6, 12], true) ? $months : 6;
+        $now = Carbon::now();
+        $start = $now->copy()->startOfMonth()->subMonthsNoOverflow($months - 1);
+        // Compare equal numbers of elapsed days ending immediately before this period.
+        $days = (int) $start->diffInDays($now->copy()->startOfDay());
+        $previousStart = $start->copy()->subDays($days + 1);
+        $previousEnd = $start->copy()->subDay()->setTime($now->hour, $now->minute, $now->second);
+        $orders = Order::query()->where('status', '!=', OrderStatus::Cancelled->value)
+            ->whereBetween('placed_at', [$previousStart, $now])->get(['placed_at', 'total_amount_minor']);
+        $current = $orders->filter(fn (Order $order) => $order->placed_at->gte($start));
+        $previous = $orders->filter(fn (Order $order) => $order->placed_at->betweenIncluded($previousStart, $previousEnd));
+        $points = collect();
+        for ($i = 0; $i < $months; $i++) {
+            $date = $start->copy()->addMonthsNoOverflow($i);
+            $monthOrders = $current->filter(fn (Order $order) => $order->placed_at->format('Y-m') === $date->format('Y-m'));
+            $value = $money ? $monthOrders->sum('total_amount_minor') / 100 : $monthOrders->count();
+            $points->push(new ChartPointDTO(
+                label: $date->format('M'), value: (float) $value,
+                formattedValue: $money ? DashboardNumbers::money($value, 2) : number_format($value).' orders',
+                fullLabel: $date->format('F Y'), orderCount: $monthOrders->count(), partial: $date->isSameMonth($now),
+            ));
+        }
+        $total = $money ? $current->sum('total_amount_minor') / 100 : $current->count();
+        $prior = $money ? $previous->sum('total_amount_minor') / 100 : $previous->count();
 
         return new ChartSeriesDTO(
-            title: 'Revenue Trend',
-            points: $points,
-            color: 'chart-2',
-            unit: '₹',
-            currentValue: $data['currentValue'],
-            previousValue: $data['previousValue'],
-            changePercent: $data['changePercent'],
-            changeDirection: $data['changeDirection']
+            title: $money ? 'Order Value' : 'Monthly Orders', points: $points,
+            color: $money ? 'chart-2' : 'chart-1', unit: $money ? '₹' : '',
+            currentValue: (float) $total, previousValue: (float) $prior,
+            changePercent: $prior > 0 ? round(($total - $prior) / $prior * 100, 1) : null,
+            changeDirection: $total > $prior ? 'up' : ($total < $prior ? 'down' : 'neutral'),
+            periodLabel: $start->format('j M Y').' – '.$now->format('j M Y'),
+            comparisonLabel: $previousStart->format('j M Y').' – '.$previousEnd->format('j M Y').' (same elapsed time)',
+            partialLabel: $now->format('M').' data through '.$now->format('j M'),
         );
     }
 
-    /**
-     * Get the monthly orders volume series data points.
-     */
-    public function getMonthlyOrdersSeries(): ChartSeriesDTO
-    {
-        $data = Cache::remember('dashboard:charts:orders', 300, function () {
-            $pointsMap = collect();
-            for ($i = 5; $i >= 0; $i--) {
-                $date = Carbon::now()->subMonths($i);
-                $key = $date->format('Y-m');
-                $pointsMap->put($key, [
-                    'label' => $date->format('M'),
-                    'value' => 0.0,
-                ]);
-            }
-
-            // Query orders from the last 6 calendar months
-            $orders = Order::where('status', '!=', OrderStatus::Cancelled->value())
-                ->where('placed_at', '>=', Carbon::now()->subMonths(5)->startOfMonth())
-                ->get();
-
-            foreach ($orders as $order) {
-                $key = $order->placed_at->format('Y-m');
-                if ($pointsMap->has($key)) {
-                    $item = $pointsMap->get($key);
-                    $pointsMap->put($key, [
-                        'label' => $item['label'],
-                        'value' => $item['value'] + 1,
-                    ]);
-                }
-            }
-
-            $points = $pointsMap->map(fn ($item) => [
-                'label' => $item['label'],
-                'value' => $item['value'],
-                'formattedValue' => number_format($item['value'], 0).' orders',
-            ])->values()->toArray();
-
-            // Calculate MoM trend indicators
-            $n = count($points);
-            $currentValue = $n >= 1 ? $points[$n - 1]['value'] : 0.0;
-            $previousValue = $n >= 2 ? $points[$n - 2]['value'] : 0.0;
-
-            $diff = $currentValue - $previousValue;
-            $changePercent = $previousValue > 0.0 ? ($diff / $previousValue) * 100.0 : 0.0;
-            $changeDirection = $diff > 0.0 ? 'up' : ($diff < 0.0 ? 'down' : 'neutral');
-
-            return [
-                'points' => $points,
-                'currentValue' => $currentValue,
-                'previousValue' => $previousValue,
-                'changePercent' => round($changePercent, 1),
-                'changeDirection' => $changeDirection,
-            ];
-        });
-
-        $points = collect($data['points'])->map(fn ($item) => new ChartPointDTO(
-            label: $item['label'],
-            value: $item['value'],
-            formattedValue: $item['formattedValue']
-        ));
-
-        return new ChartSeriesDTO(
-            title: 'Monthly Orders',
-            points: $points,
-            color: 'chart-1',
-            unit: '',
-            currentValue: $data['currentValue'],
-            previousValue: $data['previousValue'],
-            changePercent: $data['changePercent'],
-            changeDirection: $data['changeDirection']
-        );
-    }
-
-    /**
-     * Helper to clear the dashboard caches on updates.
-     */
     public function clearCache(User $user): void
     {
         Cache::forget('admin_dashboard_metrics_data');

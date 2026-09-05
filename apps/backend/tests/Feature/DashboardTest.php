@@ -4,12 +4,19 @@ namespace Tests\Feature;
 
 use App\Enums\AuditActorType;
 use App\Enums\OrderStatus;
+use App\Events\AuditEvent;
 use App\Models\AuditLog;
+use App\Models\InventoryItem;
 use App\Models\Order;
+use App\Models\Payment;
 use App\Models\ProductSku;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\DashboardService;
+use App\Support\Admin\OrderIndexCatalog;
+use App\Support\Finance\PaymentFilters;
+use App\Support\Finance\PaymentQueryBuilder;
+use App\Support\Inventory\StockBalanceCatalog;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -74,7 +81,7 @@ class DashboardTest extends TestCase
         $response->assertSee('brand/logo-light.png', false);
         $response->assertSee('Search admin modules', false);
         $response->assertDontSee('Command Palette is not implemented in sandbox.');
-        $response->assertSee('Live System Status');
+        $response->assertSee('Updated');
         $response->assertSee('Welcome to your new dashboard!'); // empty state onboarding should display
     }
 
@@ -114,7 +121,7 @@ class DashboardTest extends TestCase
         $response = $this->actingAs($user)->get(route('admin.dashboard'));
 
         $response->assertStatus(200);
-        $response->assertSee('Pending Orders');
+        $response->assertSee('Open Orders');
         $response->assertSee('1'); // 1 active order
         $response->assertDontSee('Welcome to your new dashboard!'); // Onboarding banner should be hidden now
     }
@@ -215,7 +222,7 @@ class DashboardTest extends TestCase
         // 1. Initially database has 0 orders. Verify empty state prompts display on charts
         $response = $this->actingAs($user)->get(route('admin.dashboard'));
         $response->assertStatus(200);
-        $response->assertSee('No sales revenue logged for the last 6 months.');
+        $response->assertSee('No order value recorded for this period.');
 
         // 2. Create order
         Order::factory()->create([
@@ -231,10 +238,111 @@ class DashboardTest extends TestCase
         $response->assertStatus(200);
 
         // Verification of populated data
-        $response->assertSee('Revenue Trend');
+        $response->assertSee('Order Value');
         $response->assertSee('Monthly Orders');
 
         // Confirm the empty state guidelines cards are now hidden
-        $response->assertDontSee('No sales revenue logged for the last 6 months.');
+        $response->assertDontSee('No order value recorded for this period.');
+    }
+
+    public function test_zero_metrics_are_quiet_and_all_eight_cards_have_stable_keys(): void
+    {
+        $user = $this->createSuperAdminUser();
+        $this->actingAs($user);
+        $widgets = collect((new DashboardService)->getWidgetsData())->keyBy('key');
+        $this->assertCount(8, $widgets);
+        $this->assertSame('No payments awaiting deposit', $widgets['advances']->description);
+        $this->assertSame('No collections today', $widgets['collections']->description);
+        $this->assertNull($widgets['collections']->trend);
+        $this->assertSame('neutral', $widgets['advances']->variant);
+        $this->get(route('admin.dashboard'))->assertDontSee('action required')->assertDontSee('System Event');
+    }
+
+    public function test_operational_cards_and_filtered_lists_agree(): void
+    {
+        $user = $this->createSuperAdminUser();
+        $this->actingAs($user);
+        $ready = Order::factory()->create(['status' => 'ready_to_ship', 'order_metadata' => ['payment_schedule' => ['amount_minor' => 5000]]]);
+        Order::factory()->create(['status' => 'pending_payment']);
+        Order::factory()->create(['status' => 'delivered']);
+        Order::factory()->create(['status' => 'cancelled']);
+        $widgets = collect((new DashboardService)->getWidgetsData())->keyBy('key');
+        $catalog = new OrderIndexCatalog;
+        $this->assertSame('2', $widgets['open_orders']->value);
+        $this->assertSame('1', $widgets['dispatch']->value);
+        $this->assertSame('1', $widgets['advances']->value);
+        $this->assertSame(2, $catalog->query(['scope' => 'open'])->count());
+        $this->assertSame([$ready->id], $catalog->query(['scope' => 'advance_pending'])->pluck('id')->all());
+        $this->get($widgets['open_orders']->href)->assertOk();
+        $this->get($widgets['advances']->href)->assertOk();
+        $this->get($widgets['dispatch']->href)->assertOk();
+    }
+
+    public function test_collection_filter_uses_receipt_date_and_receivables_do_not_net_unrelated_orders(): void
+    {
+        $user = $this->createSuperAdminUser();
+        $this->actingAs($user);
+        $paidOrder = Order::factory()->create(['status' => 'confirmed', 'total_amount_minor' => 10000]);
+        Order::factory()->create(['status' => 'confirmed', 'total_amount_minor' => 20000]);
+        Payment::create([
+            'order_id' => $paidOrder->id, 'payment_type' => 'full', 'provider' => 'manual', 'method' => 'cash', 'status' => 'succeeded',
+            'amount_minor' => 15000, 'currency' => 'INR', 'paid_at' => now(),
+        ]);
+        Payment::query()->update(['created_at' => now()->subDays(2)]);
+        $widgets = collect((new DashboardService)->getWidgetsData())->keyBy('key');
+        $this->assertSame('₹200', $widgets['receivables']->value);
+        $this->assertSame('₹150', $widgets['collections']->value);
+        $this->assertSame(1, PaymentQueryBuilder::buildQuery(new PaymentFilters(['paid_on' => now()->toDateString()]))->count());
+        $this->get($widgets['collections']->href)->assertOk()->assertSee('Received on');
+    }
+
+    public function test_chart_period_totals_and_equal_elapsed_comparison_at_month_end(): void
+    {
+        $this->travelTo(Carbon::parse('2026-09-30 12:00:00'));
+        Order::factory()->create(['status' => 'confirmed', 'placed_at' => '2026-07-01 10:00:00', 'total_amount_minor' => 10000]);
+        Order::factory()->create(['status' => 'confirmed', 'placed_at' => '2026-09-30 11:00:00', 'total_amount_minor' => 20000]);
+        Order::factory()->create(['status' => 'confirmed', 'placed_at' => '2026-06-30 11:00:00', 'total_amount_minor' => 15000]);
+        Order::factory()->create(['status' => 'confirmed', 'placed_at' => '2026-06-30 13:00:00', 'total_amount_minor' => 90000]);
+        Order::factory()->create(['status' => 'cancelled', 'placed_at' => '2026-09-01 12:00:00', 'total_amount_minor' => 90000]);
+        $series = (new DashboardService)->getRevenueTrendSeries(3);
+        $this->assertCount(3, $series->points);
+        $this->assertSame(300.0, $series->currentValue);
+        $this->assertSame(150.0, $series->previousValue);
+        $this->assertSame(100.0, $series->changePercent);
+        $this->assertTrue($series->points->last()->partial);
+        $this->assertSame('September 2026', $series->points->last()->fullLabel);
+        $this->assertSame(['Jul', 'Aug', 'Sep'], $series->points->pluck('label')->all());
+        $this->travelBack();
+    }
+
+    public function test_real_audit_actions_keep_specific_safe_activity_facts(): void
+    {
+        $user = $this->createSuperAdminUser();
+        $this->actingAs($user);
+        event(new AuditEvent('payments.payment_recorded', $user, [
+            'order_public_id' => 'OD-1042', 'payment_public_id' => 1042,
+            'amount_minor' => 1500000, 'currency' => 'INR', 'payment_status' => 'paid', 'record_status' => 'succeeded',
+        ]));
+        $activity = (new DashboardService)->getRecentActivity($user)->first();
+        $this->assertSame('₹15,000.00 received', $activity->title);
+        $this->assertNull($activity->href); // No fabricated record destination.
+        $this->assertSame('payment.recorded', AuditLog::latest('id')->first()->action);
+    }
+
+    public function test_stock_attention_includes_depleted_items_and_matches_the_inventory_list(): void
+    {
+        $user = $this->createSuperAdminUser();
+        $this->actingAs($user);
+        foreach ([0, 3, 20] as $quantity) {
+            $sku = ProductSku::factory()->create(['low_stock_threshold' => 5]);
+            InventoryItem::updateOrCreate(['product_sku_id' => $sku->id], [
+                'on_hand_quantity' => $quantity, 'reserved_quantity' => 0, 'low_stock_threshold' => 5,
+            ]);
+        }
+        $widgets = collect((new DashboardService)->getWidgetsData())->keyBy('key');
+        $this->assertSame('2', $widgets['low_stock']->value);
+        $catalog = new StockBalanceCatalog;
+        $this->assertSame(2, $catalog->getPaginatedBalances(['status' => 'needs_attention'])->total());
+        $this->get($widgets['low_stock']->href)->assertOk()->assertSee('Low or depleted stock');
     }
 }

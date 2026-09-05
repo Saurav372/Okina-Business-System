@@ -8,6 +8,9 @@
     'href' => null,
     'variant' => 'neutral',
     'accessibilityLabel' => null,
+    'action' => null,
+    'primary' => false,
+    'detail' => null,
 ])
 
 @php
@@ -22,6 +25,9 @@
         $variant = $widget->variant;
         $accessibilityLabel = $widget->accessibilityLabel;
         $iconName = $widget->icon;
+        $action = $widget->action;
+        $primary = $widget->primary;
+        $detail = $widget->detail;
     } else {
         $iconName = null;
     }
@@ -56,34 +62,35 @@
     @if($isInteractive) href="{{ $href }}" @endif 
     @if($accessibilityLabel) aria-label="{{ $accessibilityLabel }}" @endif
     {{ $attributes->class([
-        'relative bg-white rounded-[var(--radius-xl)] shadow-[var(--shadow-xs)] p-6 overflow-hidden flex flex-col h-full',
+        'relative bg-white rounded-[var(--radius-xl)] shadow-[var(--shadow-xs)] border p-4 sm:p-5 overflow-hidden flex flex-col h-full',
         $variantBorderClasses,
+        'border-t-2 border-t-neutral-700' => $primary,
         $interactiveClasses
     ]) }}
 >
     <div class="flex items-start justify-between gap-4">
         <div class="flex flex-col flex-1 min-w-0">
-            <span class="text-[15px] font-semibold text-[color:var(--color-neutral-700)] line-clamp-2 min-h-[2.75rem] leading-snug pr-2" title="{{ $label }}">
+            <span class="text-[15px] font-semibold text-[color:var(--color-neutral-700)] line-clamp-2 min-h-[1.25rem] leading-snug pr-2" title="{{ $label }}">
                 {{ $label }}
             </span>
-            <span class="mt-3 text-[32px] font-bold text-[color:var(--color-text-primary)] leading-none tracking-tight tabular-nums break-words break-all sm:break-normal">
+            <span class="mt-3 text-2xl sm:text-[30px] font-bold text-[color:var(--color-text-primary)] leading-none tracking-tight tabular-nums break-words break-all sm:break-normal">
                 {{ $value }}
             </span>
         </div>
         
         @if(isset($icon))
-            <div class="flex items-center justify-center shrink-0 text-[color:var(--color-neutral-400)] pt-1" aria-hidden="true" focusable="false">
+            <div class="flex items-center justify-center shrink-0 text-[color:var(--color-neutral-500)] pt-1" aria-hidden="true" focusable="false">
                 {{ $icon }}
             </div>
         @elseif($iconName)
-            <div class="flex items-center justify-center shrink-0 text-[color:var(--color-neutral-400)] pt-1" aria-hidden="true" focusable="false">
+            <div class="flex items-center justify-center shrink-0 text-[color:var(--color-neutral-500)] pt-1" aria-hidden="true" focusable="false">
                 <x-icons.lucide name="{{ $iconName }}" class="w-5 h-5" />
             </div>
         @endif
     </div>
 
     @if($trend || $description)
-        <div class="mt-5 flex items-center flex-wrap gap-1.5 text-[14px]">
+        <div class="mt-3 flex items-center flex-wrap gap-1.5 text-xs sm:text-sm">
             @if($trend)
                 <span class="inline-flex items-center gap-1 font-semibold {{ $currentTrendStyle }}">
                     @if($normalizedDirection === 'up')
@@ -101,8 +108,14 @@
             @endif
 
             @if($description)
-                <span class="text-[color:var(--color-neutral-500)] font-medium">{{ $description }}</span>
+                <span class="{{ $variant === 'warning' ? 'text-amber-800' : 'text-neutral-600' }} font-medium">{{ $description }}</span>
             @endif
         </div>
+    @endif
+    @if($detail)
+        <p class="mt-1 text-xs leading-relaxed text-neutral-600">{{ $detail }}</p>
+    @endif
+    @if($action && $href)
+        <span class="mt-auto pt-3 text-xs font-semibold text-neutral-700">{{ $action }} <span aria-hidden="true">→</span></span>
     @endif
 </{{ $wrapperTag }}>

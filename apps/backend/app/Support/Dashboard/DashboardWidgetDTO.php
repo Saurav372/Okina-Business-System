@@ -13,6 +13,10 @@ class DashboardWidgetDTO
         public readonly ?string $icon = null,
         public readonly ?string $href = null,
         public readonly string $variant = 'neutral',
-        public readonly ?string $accessibilityLabel = null
+        public readonly ?string $accessibilityLabel = null,
+        public readonly string $key = '',
+        public readonly ?string $action = null,
+        public readonly bool $primary = false,
+        public readonly ?string $detail = null
     ) {}
 }

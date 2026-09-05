@@ -81,18 +81,24 @@
             <!-- Sidebar Navigation Links -->
             <nav class="flex-1 overflow-y-auto px-4 py-6 space-y-6 scrollbar-thin">
                 @foreach($navigation as $group)
-                    <div class="space-y-2">
+                    @php
+                        $groupActive = collect($group->items)->contains(fn ($item) => collect($item->active)->contains(fn ($pattern) => request()->routeIs($pattern)));
+                        $groupKey = 'admin-nav-'.auth()->id().'-'.\Illuminate\Support\Str::slug($group->group);
+                        $groupId = 'nav-group-'.$loop->index;
+                    @endphp
+                    <div class="space-y-2" x-data="{ expanded: true, init() { try { this.expanded = @js($groupActive) || localStorage.getItem(@js($groupKey)) !== 'false'; } catch (e) {} }, toggle() { this.expanded = !this.expanded; try { localStorage.setItem(@js($groupKey), String(this.expanded)); } catch (e) {} } }">
                         <!-- Group Header -->
-                        <h3 
+                        <button type="button" @click="toggle()" :aria-expanded="expanded" aria-controls="{{ $groupId }}"
                             x-show="!sidebarCollapsed" 
-                            class="px-3 text-[10px] font-bold uppercase tracking-widest text-[color:var(--color-ink-400)]"
+                            class="w-full flex items-center justify-between px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-neutral-300 hover:text-white focus-visible:outline-2 focus-visible:outline-white"
                         >
                             {{ $group->group }}
-                        </h3>
+                            <span aria-hidden="true" class="transition-transform" :class="expanded ? '' : '-rotate-90'">⌄</span>
+                        </button>
                         <div x-show="sidebarCollapsed" class="h-px bg-[color:var(--color-ink-800)] my-3"></div>
 
                         <!-- Group Items -->
-                        <ul class="space-y-1">
+                        <ul id="{{ $groupId }}" x-show="expanded || sidebarCollapsed" class="space-y-1">
                             @foreach($group->items as $item)
                                 @php
                                     $isActive = false;
@@ -108,7 +114,7 @@
                                         href="{{ Route::has($item->route) ? route($item->route) : '#' }}" 
                                         class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition duration-[var(--motion-fast)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--focus-ring-color)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--color-surface-sidebar)]
                                             {{ $isActive 
-                                                ? 'bg-[color:var(--color-brand-500)] text-white shadow-md' 
+                                                ? 'bg-[color:var(--color-brand-500)] text-white shadow-md font-bold border-l-4 border-white'
                                                 : 'text-neutral-300 hover:text-white hover:bg-white/5' }}"
                                         @if($isActive) aria-current="page" @endif
                                         :title="sidebarCollapsed ? '{{ $item->label }}' : ''"

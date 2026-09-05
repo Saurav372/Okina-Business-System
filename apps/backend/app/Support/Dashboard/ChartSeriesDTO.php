@@ -17,6 +17,9 @@ class ChartSeriesDTO
         public readonly ?float $currentValue = null,
         public readonly ?float $previousValue = null,
         public readonly ?float $changePercent = null,
-        public readonly string $changeDirection = 'neutral'
+        public readonly string $changeDirection = 'neutral',
+        public readonly string $periodLabel = '',
+        public readonly string $comparisonLabel = '',
+        public readonly string $partialLabel = ''
     ) {}
 }

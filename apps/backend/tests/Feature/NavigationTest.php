@@ -35,9 +35,9 @@ class NavigationTest extends TestCase
 
         $navigation = (new Navigation)->forUser($user);
 
-        // A user with no permissions should only see the Dashboard group (since Dashboard has null permission)
-        $this->assertCount(1, $navigation);
-        $this->assertEquals('Dashboard', $navigation[0]->group);
+        // A user with no permissions should only see groups with null permission items (Dashboard and Account)
+        $visibleGroups = collect($navigation)->map(fn ($g) => $g->group)->all();
+        $this->assertEquals(['Dashboard', 'Account'], $visibleGroups);
     }
 
     public function test_navigation_allows_groups_when_user_has_permissions(): void

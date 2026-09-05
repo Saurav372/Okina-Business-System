@@ -4,6 +4,7 @@ namespace App\Support\Admin;
 
 use App\Enums\OrderStatus;
 use App\Models\Order;
+use App\Support\Dashboard\DashboardOrders;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use InvalidArgumentException;
@@ -100,6 +101,12 @@ final class OrderIndexCatalog
     {
         return [
             [
+                'key' => 'open', 'label' => 'Open Orders', 'statuses' => ['pending_payment', 'confirmed', 'in_production', 'ready_to_ship', 'shipped'],
+            ],
+            [
+                'key' => 'advance_pending', 'label' => 'Awaiting Advance', 'statuses' => [],
+            ],
+            [
                 'key' => 'all',
                 'label' => 'All Orders',
                 'statuses' => OrderStatus::values(),
@@ -181,6 +188,8 @@ final class OrderIndexCatalog
     private function applyScope(Builder $query, string $scope): Builder
     {
         return match ($scope) {
+            'open' => $query->whereNotIn('status', ['delivered', 'cancelled', 'refunded']),
+            'advance_pending' => $query->whereIn('id', DashboardOrders::awaitingAdvanceIds()),
             'pending_payment' => $query->where('status', OrderStatus::PendingPayment->value()),
             'active' => $query->whereIn('status', [
                 OrderStatus::Confirmed->value(),

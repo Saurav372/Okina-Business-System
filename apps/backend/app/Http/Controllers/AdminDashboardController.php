@@ -18,10 +18,11 @@ class AdminDashboardController extends Controller
     {
         $user = $request->user();
 
+        $months = in_array($request->integer('months', 6), [3, 6, 12], true) ? $request->integer('months', 6) : 6;
         $widgets = $this->dashboardService->getWidgetsData();
         $activities = $this->dashboardService->getRecentActivity($user);
-        $revenueSeries = $this->dashboardService->getRevenueTrendSeries();
-        $ordersSeries = $this->dashboardService->getMonthlyOrdersSeries();
+        $revenueSeries = $this->dashboardService->getRevenueTrendSeries($months);
+        $ordersSeries = $this->dashboardService->getMonthlyOrdersSeries($months);
 
         // Calculate if we are in an empty state (0 revenue, 0 active orders, 0 low stock)
         $isEmptyState = true;
@@ -34,6 +35,7 @@ class AdminDashboardController extends Controller
         }
 
         return view('admin.dashboard', compact(
+            'months',
             'widgets',
             'activities',
             'revenueSeries',
