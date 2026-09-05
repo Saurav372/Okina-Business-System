@@ -89,33 +89,48 @@
         @endif
     </div>
 
-    @if($trend || $description)
-        <div class="mt-3 flex items-center flex-wrap gap-1.5 text-xs sm:text-sm">
-            @if($trend)
-                <span class="inline-flex items-center gap-1 font-semibold {{ $currentTrendStyle }}">
-                    @if($normalizedDirection === 'up')
-                        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-                        <span class="sr-only">Trend increased by {{ $trend }} compared to the previous period.</span>
-                    @elseif($normalizedDirection === 'down')
-                        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path></svg>
-                        <span class="sr-only">Trend decreased by {{ $trend }} compared to the previous period.</span>
-                    @else
-                        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 12h14"></path></svg>
-                        <span class="sr-only">No significant change. Trend {{ $trend }}.</span>
-                    @endif
-                    <span aria-hidden="true">{{ $trend }}</span>
-                </span>
-            @endif
+    @php
+        $hasSignificantValue = !in_array((string) $value, ['0', '₹0', '0.00', '₹0.00', ''], true);
+    @endphp
 
-            @if($description)
-                <span class="{{ $variant === 'warning' ? 'text-amber-800' : 'text-neutral-600' }} font-medium">{{ $description }}</span>
+    @if($variant === 'warning' || $variant === 'danger')
+        <div class="mt-3 flex items-center">
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium {{ $variant === 'danger' ? 'bg-rose-50 text-rose-700 border border-rose-200/50' : 'bg-amber-50 text-amber-800 border border-amber-200/50' }}">
+                {{ $description }}
+            </span>
+        </div>
+    @elseif($trend)
+        <div class="mt-3 flex items-center flex-wrap gap-1.5 text-xs">
+            <span class="inline-flex items-center gap-1 font-semibold {{ $currentTrendStyle }}">
+                @if($normalizedDirection === 'up')
+                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                    <span class="sr-only">Trend increased by {{ $trend }} compared to the previous period.</span>
+                @elseif($normalizedDirection === 'down')
+                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path></svg>
+                    <span class="sr-only">Trend decreased by {{ $trend }} compared to the previous period.</span>
+                @else
+                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 12h14"></path></svg>
+                    <span class="sr-only">No significant change. Trend {{ $trend }}.</span>
+                @endif
+                <span aria-hidden="true">{{ $trend }}</span>
+            </span>
+            @if($hasSignificantValue && $description)
+                <span class="text-neutral-500 font-normal">{{ $description }}</span>
             @endif
         </div>
+    @elseif($hasSignificantValue && $description)
+        <div class="mt-3 text-xs text-neutral-500 font-normal line-clamp-1" title="{{ $description }}">
+            {{ $description }}
+        </div>
     @endif
-    @if($detail)
-        <p class="mt-1 text-xs leading-relaxed text-neutral-600">{{ $detail }}</p>
+
+    @if($hasSignificantValue && $detail)
+        <p class="mt-1 text-xs leading-relaxed text-neutral-400 line-clamp-1" title="{{ $detail }}">{{ $detail }}</p>
     @endif
+
     @if($action && $href)
-        <span class="mt-auto pt-3 text-xs font-semibold text-neutral-700">{{ $action }} <span aria-hidden="true">→</span></span>
+        <span class="mt-auto pt-3 text-xs font-medium text-neutral-500 hover:text-neutral-900 transition-colors inline-flex items-center gap-1">
+            {{ $action }} <span aria-hidden="true">→</span>
+        </span>
     @endif
 </{{ $wrapperTag }}>

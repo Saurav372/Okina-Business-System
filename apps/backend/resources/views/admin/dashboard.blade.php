@@ -1,7 +1,7 @@
 <x-layouts.admin title="Admin Dashboard">
     <x-slot:header>
         <div class="flex items-center gap-3">
-            <span class="hidden sm:block text-xs text-neutral-600">Updated {{ now()->format('j M, g:i A T') }}</span>
+            <span class="hidden sm:block text-xs font-medium text-neutral-500">Updated {{ now()->timezone(config('app.timezone', 'Asia/Kolkata'))->format('j M, g:i A') }} IST</span>
             @can('create', \App\Models\Order::class)
                 <a href="{{ route('admin.sales_orders.create') }}" class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-[color:var(--color-brand-600)] text-white rounded-xl hover:bg-[color:var(--color-brand-700)] focus-visible:outline-2 focus-visible:outline-offset-2">
                     <span aria-hidden="true">+</span> New Sales Order
@@ -11,7 +11,6 @@
     </x-slot:header>
     <div class="space-y-6">
         <section aria-label="Operational overview">
-            <p class="mb-4 text-sm text-neutral-600">Your orders, receivables and work awaiting attention.</p>
             <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                 @foreach($widgets as $widget)
                     <x-stat.card :widget="$widget" :data-metric="$widget->key" />
@@ -22,7 +21,7 @@
             <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
                 <div>
                     <h2 class="text-base font-semibold text-neutral-900">Business trends</h2>
-                    <p class="mt-1 text-xs text-neutral-600">Order value excludes cancellations; collections are shown separately above.</p>
+                    <p class="mt-0.5 text-xs text-neutral-500">Net order value · Excludes cancellations</p>
                 </div>
                 <form method="get" action="{{ route('admin.dashboard') }}" class="flex items-center gap-2">
                     <label for="dashboard-period" class="text-xs font-medium text-neutral-600">Period</label>
@@ -54,7 +53,7 @@
             </div>
         </section>
         @if($isEmptyState)
-            <x-alert type="info" title="Welcome to your new dashboard!" dismissible="false">
+            <x-alert type="info" title="Welcome to your new dashboard!" dismissible="true">
                 Create your first sales order to start tracking orders and collections here.
             </x-alert>
         @endif
