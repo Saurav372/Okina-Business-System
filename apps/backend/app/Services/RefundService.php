@@ -78,12 +78,17 @@ class RefundService
                 ],
             ]);
 
-            DB::afterCommit(function () use ($refund, $actor) {
-                event(new AuditEvent('refund.requested', $actor, [
+            DB::afterCommit(function () use ($refund, $actor, $lockedPayment, $existingRefundedSum, $amountMinor) {
+                event(new AuditEvent('refunds.refund_requested', $actor, [
                     'refund_id' => $refund->id,
+                    'refund_public_id' => $refund->id,
                     'payment_id' => $refund->payment_id,
+                    'payment_public_id' => $refund->payment_id,
                     'order_id' => $refund->order_id,
+                    'order_public_id' => $lockedPayment->order?->public_id,
                     'amount_minor' => $refund->amount_minor,
+                    'remaining_refundable_amount_before_request' => $lockedPayment->amount_minor - $existingRefundedSum,
+                    'remaining_after_request' => $lockedPayment->amount_minor - $existingRefundedSum - $amountMinor,
                     'reason_code' => $refund->reason_code,
                     'actor_id' => $actor?->id,
                 ]));
@@ -104,21 +109,25 @@ class RefundService
 
             if ($locked->status !== Refund::STATUS_REQUESTED) {
                 throw ValidationException::withMessages([
-                    'status' => "Cannot approve refund with status [{$locked->status}]. Refund must be in REQUESTED status.",
+                    'refund' => Refund::ERROR_ONLY_REQUESTED_CAN_BE_APPROVED,
                 ]);
             }
 
             $actor = $actor ?: Auth::user();
 
-            $locked->status = Refund::STATUS_APPROVED;
-            $locked->approved_by_user_id = $actor?->id;
-            $locked->approved_at = now();
+            $locked->approve($actor);
             $locked->save();
 
             DB::afterCommit(function () use ($locked, $actor) {
-                event(new AuditEvent('refund.approved', $actor, [
+                event(new AuditEvent('refunds.refund_approved', $actor, [
                     'refund_id' => $locked->id,
+                    'refund_public_id' => $locked->id,
                     'payment_id' => $locked->payment_id,
+                    'payment_public_id' => $locked->payment_id,
+                    'order_id' => $locked->order_id,
+                    'order_public_id' => $locked->order?->public_id,
+                    'status' => Refund::STATUS_APPROVED,
+                    'approved_by_user_id' => $actor?->id,
                     'approved_at' => $locked->approved_at?->toIso8601String(),
                     'actor_id' => $actor?->id,
                 ]));
@@ -177,8 +186,14 @@ class RefundService
             $locked->save();
 
             DB::afterCommit(function () use ($locked, $actor) {
-                event(new AuditEvent('refund.retry_processing', $actor, [
+                event(new AuditEvent('refunds.refund_processing_started', $actor, [
                     'refund_id' => $locked->id,
+                    'refund_public_id' => $locked->id,
+                    'payment_id' => $locked->payment_id,
+                    'payment_public_id' => $locked->payment_id,
+                    'order_id' => $locked->order_id,
+                    'order_public_id' => $locked->order?->public_id,
+                    'status' => Refund::STATUS_PROCESSING,
                     'actor_id' => $actor?->id,
                 ]));
             });
@@ -221,9 +236,13 @@ class RefundService
         $locked->save();
 
         DB::afterCommit(function () use ($locked, $actor) {
-            event(new AuditEvent('refund.succeeded', $actor, [
+            event(new AuditEvent('refunds.refund_processing_succeeded', $actor, [
                 'refund_id' => $locked->id,
+                'refund_public_id' => $locked->id,
                 'payment_id' => $locked->payment_id,
+                'payment_public_id' => $locked->payment_id,
+                'order_id' => $locked->order_id,
+                'order_public_id' => $locked->order?->public_id,
                 'amount_minor' => $locked->amount_minor,
                 'provider_refund_id' => $locked->provider_refund_id,
                 'processed_at' => $locked->processed_at?->toIso8601String(),
@@ -267,9 +286,15 @@ class RefundService
             $locked->save();
 
             DB::afterCommit(function () use ($locked, $actor) {
-                event(new AuditEvent('refund.failed', $actor, [
+                event(new AuditEvent('refunds.refund_processing_failed', $actor, [
                     'refund_id' => $locked->id,
+                    'refund_public_id' => $locked->id,
+                    'payment_id' => $locked->payment_id,
+                    'payment_public_id' => $locked->payment_id,
+                    'order_id' => $locked->order_id,
+                    'order_public_id' => $locked->order?->public_id,
                     'error_message' => $locked->metadata['provider_error_message'] ?? null,
+                    'reason_code' => $locked->reason_code,
                     'actor_id' => $actor?->id,
                 ]));
             });
@@ -297,14 +322,23 @@ class RefundService
                 return $locked;
             }
 
+            $oldStatus = $locked->status;
             $actor = $actor ?: Auth::user();
 
-            $locked->status = Refund::STATUS_CANCELLED;
+            $locked->cancel();
             $locked->save();
 
-            DB::afterCommit(function () use ($locked, $actor) {
-                event(new AuditEvent('refund.cancelled', $actor, [
+            DB::afterCommit(function () use ($locked, $oldStatus, $actor) {
+                event(new AuditEvent('refunds.refund_cancelled', $actor, [
                     'refund_id' => $locked->id,
+                    'refund_public_id' => $locked->id,
+                    'payment_id' => $locked->payment_id,
+                    'payment_public_id' => $locked->payment_id,
+                    'order_id' => $locked->order_id,
+                    'order_public_id' => $locked->order?->public_id,
+                    'old_status' => $oldStatus,
+                    'new_status' => Refund::STATUS_CANCELLED,
+                    'actor_type' => 'user',
                     'actor_id' => $actor?->id,
                 ]));
             });

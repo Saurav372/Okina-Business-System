@@ -15,6 +15,9 @@ class PaymentQueryBuilder
     public static function buildQuery(PaymentFilters $filters): Builder
     {
         $query = Payment::query();
+        if ($filters->paidOn !== null) {
+            $query->whereDate('paid_at', $filters->paidOn);
+        }
 
         if ($filters->search !== null) {
             $term = $filters->search;
@@ -44,6 +47,10 @@ class PaymentQueryBuilder
 
         if ($filters->status !== null) {
             $query->where('status', $filters->status);
+        }
+
+        if ($filters->paymentType !== null) {
+            $query->where('payment_type', $filters->paymentType);
         }
 
         if ($filters->startDate !== null) {

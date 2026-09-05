@@ -76,6 +76,8 @@
         <!-- Filter Bar Form -->
         <div class="bg-white border border-neutral-200 rounded-2xl p-4 sm:p-5 shadow-xs">
             <form method="GET" action="{{ route('admin.payments.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+@if($filters->paidOn)<input type="hidden" name="paid_on" value="{{ $filters->paidOn }}"><p class="text-xs text-neutral-600">Received on {{ $filters->paidOn }} · <a class="underline" href="{{ route('admin.payments.index') }}">Clear date</a></p>@endif
+
                 <!-- Search Input -->
                 <div class="lg:col-span-2 relative">
                     <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-400">

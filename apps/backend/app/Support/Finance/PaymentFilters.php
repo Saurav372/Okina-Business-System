@@ -6,11 +6,15 @@ use Carbon\Carbon;
 
 class PaymentFilters
 {
+    public ?string $paidOn;
+
     public ?string $search;
 
     public ?string $provider;
 
     public ?string $method;
+
+    public ?string $paymentType;
 
     public ?string $status;
 
@@ -27,9 +31,11 @@ class PaymentFilters
      */
     public function __construct(array $input = [])
     {
+        $this->paidOn = ! empty($input['paid_on']) ? Carbon::parse($input['paid_on'])->toDateString() : null;
         $this->search = isset($input['search']) && trim((string) $input['search']) !== '' ? trim((string) $input['search']) : null;
         $this->provider = isset($input['provider']) && $input['provider'] !== 'all' && $input['provider'] !== '' ? (string) $input['provider'] : null;
         $this->method = isset($input['method']) && $input['method'] !== 'all' && $input['method'] !== '' ? (string) $input['method'] : null;
+        $this->paymentType = isset($input['payment_type']) && $input['payment_type'] !== 'all' && $input['payment_type'] !== '' ? (string) $input['payment_type'] : null;
         $this->status = isset($input['status']) && $input['status'] !== 'all' && $input['status'] !== '' ? (string) $input['status'] : null;
 
         $rawStart = isset($input['start_date']) ? trim((string) $input['start_date']) : '';
@@ -53,9 +59,11 @@ class PaymentFilters
     public function toArray(): array
     {
         return array_filter([
+            'paid_on' => $this->paidOn,
             'search' => $this->search,
             'provider' => $this->provider,
             'method' => $this->method,
+            'payment_type' => $this->paymentType,
             'status' => $this->status,
             'start_date' => $this->startDate ? Carbon::parse($this->startDate)->toDateString() : null,
             'end_date' => $this->endDate ? Carbon::parse($this->endDate)->toDateString() : null,
@@ -66,9 +74,10 @@ class PaymentFilters
 
     public function isFiltered(): bool
     {
-        return $this->search !== null
+        return $this->paidOn !== null || $this->search !== null
             || $this->provider !== null
             || $this->method !== null
+            || $this->paymentType !== null
             || $this->status !== null
             || $this->startDate !== null
             || $this->endDate !== null;

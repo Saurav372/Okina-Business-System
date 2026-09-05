@@ -206,7 +206,7 @@ class AdminOrderPdfTest extends TestCase
         $emptyOrder = Order::factory()->create();
 
         $this->actingAs($this->viewerUser)
-            ->get("/admin/orders/{$emptyOrder->public_id}/pdf/preview")
+            ->getJson("/admin/orders/{$emptyOrder->public_id}/pdf/preview")
             ->assertStatus(422)
             ->assertJsonValidationErrors(['order']);
     }
@@ -219,7 +219,7 @@ class AdminOrderPdfTest extends TestCase
         $emptyOrder = Order::factory()->create();
 
         $this->actingAs($this->viewerUser)
-            ->get("/admin/orders/{$emptyOrder->public_id}/pdf/download")
+            ->getJson("/admin/orders/{$emptyOrder->public_id}/pdf/download")
             ->assertStatus(422)
             ->assertJsonValidationErrors(['order']);
     }

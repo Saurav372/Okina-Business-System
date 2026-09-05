@@ -131,13 +131,12 @@ class SecurityReviewTest extends TestCase
      */
     public function test_cors_origins_restricted(): void
     {
-        // 1. Authorized origin should succeed and return headers
+        // The storefront is same-origin, so no browser origin is allow-listed.
         $response = $this->get('/api/catalog/categories', [
             'Origin' => 'http://localhost:4321',
         ]);
-        $response->assertHeader('Access-Control-Allow-Origin', 'http://localhost:4321');
+        $this->assertFalse($response->headers->has('Access-Control-Allow-Origin'));
 
-        // 2. Unauthorized origin should not return CORS headers allowing it
         $response2 = $this->get('/api/catalog/categories', [
             'Origin' => 'http://malicious-website.com',
         ]);

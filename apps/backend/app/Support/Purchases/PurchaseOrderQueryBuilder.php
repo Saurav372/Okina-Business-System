@@ -15,6 +15,9 @@ class PurchaseOrderQueryBuilder
     public static function buildQuery(PurchaseOrderFilters $filters): Builder
     {
         $query = VendorOrder::query();
+        if ($filters->activeOnly) {
+            $query->whereIn('status', ['draft', 'ordered', 'partially_received']);
+        }
 
         if ($filters->search !== null) {
             $term = $filters->search;

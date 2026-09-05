@@ -289,4 +289,19 @@ class Refund extends Model
     {
         return $this->hasOne(PaymentWebhookLog::class);
     }
+
+    public function requester(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'requested_by_user_id');
+    }
+
+    public function approver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by_user_id');
+    }
+
+    public function processor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'processed_by_user_id');
+    }
 }

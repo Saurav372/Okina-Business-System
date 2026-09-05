@@ -32,12 +32,17 @@ class PaymentController extends Controller
         $payments = $this->catalog->getPaginatedPayments($filters, $request->integer('per_page', 25));
 
         if ($request->wantsJson()) {
+            $meta = [
+                'total_amount_minor' => $summary->grossCollectionsMinor,
+            ];
+
+            if ($request->user() && $request->user()->can('finance.view_cost')) {
+                $meta['total_gateway_fee_minor'] = $summary->totalGatewayFeesMinor;
+                $meta['total_net_amount_minor'] = $summary->netRevenueMinor;
+            }
+
             return PaymentResource::collection($payments)->additional([
-                'meta' => [
-                    'total_amount_minor' => $summary->grossCollectionsMinor,
-                    'total_gateway_fee_minor' => $summary->totalGatewayFeesMinor,
-                    'net_revenue_minor' => $summary->netRevenueMinor,
-                ],
+                'meta' => $meta,
             ]);
         }
 

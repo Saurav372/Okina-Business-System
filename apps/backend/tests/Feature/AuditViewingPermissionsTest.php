@@ -58,7 +58,7 @@ class AuditViewingPermissionsTest extends TestCase
 
     public function test_guests_cannot_view_audit_logs_list_or_details(): void
     {
-        $this->getJson(route('admin.audit_logs.index'))
+        $this->get(route('admin.audit_logs.index'))
             ->assertStatus(302)
             ->assertRedirect(route('login'));
 
@@ -71,7 +71,7 @@ class AuditViewingPermissionsTest extends TestCase
             'occurred_at' => now(),
         ]);
 
-        $this->getJson(route('admin.audit_logs.show', $log->id))
+        $this->get(route('admin.audit_logs.show', $log->id))
             ->assertStatus(302)
             ->assertRedirect(route('login'));
     }

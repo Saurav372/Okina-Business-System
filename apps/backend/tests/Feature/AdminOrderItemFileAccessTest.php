@@ -221,12 +221,12 @@ class AdminOrderItemFileAccessTest extends TestCase
     {
         [$order, , , $storedFile] = $this->makeOrderWithStoredFile();
 
-        $this->get(route('admin.orders.files.preview', [
+        $this->getJson(route('admin.orders.files.preview', [
             'order' => $order->public_id,
             'file' => $storedFile->public_id,
         ]))->assertStatus(401);
 
-        $this->get(route('admin.orders.files.download', [
+        $this->getJson(route('admin.orders.files.download', [
             'order' => $order->public_id,
             'file' => $storedFile->public_id,
         ]))->assertStatus(401);

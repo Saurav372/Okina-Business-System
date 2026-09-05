@@ -36,8 +36,14 @@ class AuditLogController extends Controller
             $query->where('module', $filters->module);
         }
 
-        if ($filters->subjectTypeClass) {
-            $query->where('subject_type', $filters->subjectTypeClass);
+        if ($filters->subjectType) {
+            $mappedClass = AuditLogFilters::SUBJECT_MAP[$filters->subjectType] ?? null;
+            $query->where(function ($q) use ($filters, $mappedClass): void {
+                $q->where('subject_type', $filters->subjectType);
+                if ($mappedClass) {
+                    $q->orWhere('subject_type', $mappedClass);
+                }
+            });
         }
 
         if ($filters->subjectId) {
@@ -90,7 +96,7 @@ class AuditLogController extends Controller
         $auditLog->load(['actorUser', 'actorCustomer']);
 
         if ($request->wantsJson()) {
-            return new AuditLogResource($auditLog);
+            return response()->json((new AuditLogResource($auditLog))->resolve());
         }
 
         return view('admin.audit-logs.show', [

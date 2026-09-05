@@ -263,7 +263,7 @@ class FinanceReportService
     /**
      * Calculate per-order as-of outstanding receivables clamped to >= 0 per order.
      */
-    protected function calculatePerOrderOutstandingReceivables(?CarbonImmutable $endDate): int
+    public function calculatePerOrderOutstandingReceivables(?CarbonImmutable $endDate): int
     {
         $cutoffStr = $endDate ? $endDate->toDateTimeString() : CarbonImmutable::now()->toDateTimeString();
 

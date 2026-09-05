@@ -62,8 +62,8 @@ class NotificationLogViewingTest extends TestCase
             'status' => 'pending',
         ]);
 
-        $this->getJson(route('admin.notification_logs.index'))->assertStatus(302)->assertRedirect(route('login'));
-        $this->getJson(route('admin.notification_logs.show', $log))->assertStatus(302)->assertRedirect(route('login'));
+        $this->get(route('admin.notification_logs.index'))->assertStatus(302)->assertRedirect(route('login'));
+        $this->get(route('admin.notification_logs.show', $log))->assertStatus(302)->assertRedirect(route('login'));
     }
 
     /**

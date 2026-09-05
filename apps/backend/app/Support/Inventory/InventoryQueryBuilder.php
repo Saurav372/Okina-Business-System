@@ -77,6 +77,7 @@ class InventoryQueryBuilder
         }
 
         return match ($status) {
+            'needs_attention' => $query->where(fn (Builder $q) => $q->where('on_hand_quantity', '<', 0)->orWhereRaw('available_quantity <= COALESCE(inventory_items.low_stock_threshold, (SELECT low_stock_threshold FROM product_skus WHERE product_skus.id = inventory_items.product_sku_id), 10)')),
             'negative' => $query->where(fn (Builder $q) => $q->where('available_quantity', '<', 0)->orWhere('on_hand_quantity', '<', 0)),
             'out_of_stock' => $query->where('available_quantity', '<=', 0)->where('on_hand_quantity', '>=', 0),
             'low_stock' => $query->where('available_quantity', '>', 0)->whereRaw('available_quantity <= COALESCE(inventory_items.low_stock_threshold, (SELECT low_stock_threshold FROM product_skus WHERE product_skus.id = inventory_items.product_sku_id), 10)'),

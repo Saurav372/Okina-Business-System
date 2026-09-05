@@ -54,7 +54,15 @@ class NotificationLogController extends Controller
             ->withQueryString();
 
         if ($request->wantsJson()) {
-            return NotificationLogResource::collection($logs);
+            $data = NotificationLogResource::collection($logs)->resolve();
+
+            return response()->json([
+                'data' => $data,
+                'current_page' => $logs->currentPage(),
+                'total' => $logs->total(),
+                'per_page' => $logs->perPage(),
+                'last_page' => $logs->lastPage(),
+            ]);
         }
 
         return view('admin.notification-logs.index', [
@@ -75,7 +83,7 @@ class NotificationLogController extends Controller
         }]);
 
         if ($request->wantsJson()) {
-            return new NotificationLogResource($notificationLog);
+            return response()->json((new NotificationLogResource($notificationLog))->resolve());
         }
 
         return view('admin.notification-logs.show', [

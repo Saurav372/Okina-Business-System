@@ -200,7 +200,7 @@ class GoogleSheetsConnectionTest extends TestCase
     public function test_admin_endpoint_authorization_boundaries(): void
     {
         // 1. Guest access denied (302 redirect)
-        $this->postJson(route('admin.google_sheets.test_connection'))
+        $this->post(route('admin.google_sheets.test_connection'))
             ->assertStatus(302);
 
         // 2. Unauthorized roles (Sales Staff) return 403

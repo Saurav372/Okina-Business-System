@@ -23,12 +23,20 @@ class NotificationLogResource extends JsonResource
             'created_at' => $this->created_at?->toIso8601String(),
             'sent_at' => $this->sent_at?->toIso8601String(),
             'failed_at' => $this->failed_at?->toIso8601String(),
+            'template' => $this->relationLoaded('template') && $this->template ? [
+                'id' => $this->template->id,
+                'template_key' => $this->template->template_key,
+                'name' => $this->template->name,
+                'channel' => $this->template->channel,
+                'status' => $this->template->status,
+            ] : null,
             'attempts' => $this->relationLoaded('attempts') ? $this->attempts->map(function ($attempt) {
                 return [
                     'id' => $attempt->id,
                     'status' => $attempt->status,
                     'provider_reference' => $attempt->provider_reference,
                     'error_message' => $attempt->error_message,
+                    'response_payload' => $attempt->response_payload,
                     'attempted_at' => $attempt->attempted_at?->toIso8601String(),
                 ];
             }) : [],

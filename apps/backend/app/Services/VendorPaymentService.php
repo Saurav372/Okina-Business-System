@@ -117,6 +117,7 @@ class VendorPaymentService
 
                 event(new AuditEvent('purchase_orders.payments.recorded', $actor, $payload));
                 event(new AuditEvent('purchase_orders.payment_recorded', $actor, $payload));
+                event(new AuditEvent('vendor_payment.recorded', $actor, $payload));
             });
 
             return [

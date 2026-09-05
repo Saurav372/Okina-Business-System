@@ -25,7 +25,7 @@ final readonly class AuditLogFilters
         public int $perPage,
         public ?string $action,
         public ?string $module,
-        public ?string $subjectTypeClass,
+        public ?string $subjectType,
         public ?string $subjectId,
         public ?string $actorPublicId,
         public CarbonImmutable $startDate,
@@ -47,15 +47,17 @@ final readonly class AuditLogFilters
             $startDate = CarbonImmutable::now($tz)->subDays(29)->startOfDay();
         }
 
-        $subjectTypeInput = strtolower(trim((string) ($validated['subject_type'] ?? '')));
-        $subjectTypeClass = self::SUBJECT_MAP[$subjectTypeInput] ?? null;
+        $subjectType = ! empty($validated['subject_type']) ? strtolower(trim((string) $validated['subject_type'])) : null;
+        $subjectId = ! empty($validated['subject_id'])
+            ? trim((string) $validated['subject_id'])
+            : (! empty($validated['subject_public_id']) ? trim((string) $validated['subject_public_id']) : null);
 
         return new self(
             perPage: $perPage,
             action: ! empty($validated['action']) ? trim((string) $validated['action']) : null,
             module: ! empty($validated['module']) ? trim((string) $validated['module']) : null,
-            subjectTypeClass: $subjectTypeClass,
-            subjectId: ! empty($validated['subject_id']) ? trim((string) $validated['subject_id']) : null,
+            subjectType: $subjectType,
+            subjectId: $subjectId,
             actorPublicId: ! empty($validated['actor_public_id']) ? trim((string) $validated['actor_public_id']) : null,
             startDate: $startDate,
             endDate: $endDate

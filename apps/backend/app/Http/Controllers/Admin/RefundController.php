@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Events\AuditEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\RefundLedgerIndexRequest;
 use App\Http\Requests\Admin\StoreRefundRequest;
@@ -14,7 +15,9 @@ use App\Support\Finance\RefundFilters;
 use App\Support\Finance\RefundMetrics;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 
 class RefundController extends Controller
 {
@@ -82,8 +85,13 @@ class RefundController extends Controller
             actor: $request->user()
         );
 
+        $refund->load(['order', 'payment']);
+
         if ($request->wantsJson()) {
-            return new RefundResource($refund);
+            return (new RefundResource($refund))
+                ->response()
+                ->setStatusCode(201)
+                ->header('Location', route('admin.refunds.show', $refund->id));
         }
 
         return redirect()->route('admin.refunds.show', $refund)
@@ -94,37 +102,101 @@ class RefundController extends Controller
     {
         Gate::authorize('approve', $refund);
 
-        $approved = $this->refundService->approveRefund(
-            refund: $refund,
-            actor: $request->user()
-        );
+        $actor = $request->user();
+
+        $lockedRefund = DB::transaction(function () use ($refund, $actor) {
+            $lockedRefund = Refund::query()
+                ->lockForUpdate()
+                ->findOrFail($refund->getKey());
+
+            $lockedRefund->loadMissing(['order', 'payment']);
+
+            $oldStatus = $lockedRefund->status;
+
+            try {
+                $lockedRefund->approve($actor);
+            } catch (\LogicException $e) {
+                throw ValidationException::withMessages([
+                    'refund' => [$e->getMessage()],
+                ]);
+            }
+
+            $lockedRefund->save();
+
+            $auditPayload = [
+                'refund_public_id' => $lockedRefund->id,
+                'payment_public_id' => $lockedRefund->payment_id,
+                'order_public_id' => $lockedRefund->order?->public_id,
+                'old_status' => $oldStatus,
+                'new_status' => Refund::STATUS_APPROVED,
+                'status' => Refund::STATUS_APPROVED,
+                'approved_by_user_id' => $actor?->id,
+                'actor_type' => 'user',
+                'actor_id' => $actor?->id,
+                'occurred_at' => now()->toIso8601String(),
+            ];
+
+            event(new AuditEvent('refunds.refund_approved', $actor, $auditPayload));
+
+            return $lockedRefund;
+        });
 
         if ($request->wantsJson()) {
-            return new RefundResource($approved);
+            return new RefundResource($lockedRefund);
         }
 
         return redirect()->back()
-            ->with('success', "Refund [#{$approved->id}] successfully APPROVED for processing.");
+            ->with('success', "Refund [#{$lockedRefund->id}] successfully APPROVED for processing.");
     }
 
     public function process(Request $request, Refund $refund)
     {
         Gate::authorize('process', $refund);
 
+        $actor = $request->user();
         $providerRefundId = $request->input('provider_refund_id');
 
-        $processed = $this->refundService->processRefund(
-            refund: $refund,
-            providerRefundId: $providerRefundId,
-            actor: $request->user()
-        );
+        $lockedRefund = DB::transaction(function () use ($refund, $actor, $providerRefundId) {
+            $lockedRefund = Refund::query()
+                ->lockForUpdate()
+                ->findOrFail($refund->getKey());
+
+            $lockedRefund->loadMissing(['order', 'payment']);
+
+            $oldStatus = $lockedRefund->status;
+
+            try {
+                $lockedRefund->markProcessing($actor, now(), $providerRefundId);
+            } catch (\LogicException $e) {
+                throw ValidationException::withMessages([
+                    'refund' => [$e->getMessage()],
+                ]);
+            }
+
+            $lockedRefund->save();
+
+            $auditPayload = [
+                'refund_public_id' => $lockedRefund->id,
+                'payment_public_id' => $lockedRefund->payment_id,
+                'order_public_id' => $lockedRefund->order?->public_id,
+                'old_status' => $oldStatus,
+                'new_status' => Refund::STATUS_PROCESSING,
+                'actor_type' => 'user',
+                'actor_id' => $actor?->id,
+                'occurred_at' => now()->toIso8601String(),
+            ];
+
+            event(new AuditEvent('refunds.refund_processing_started', $actor, $auditPayload));
+
+            return $lockedRefund;
+        });
 
         if ($request->wantsJson()) {
-            return new RefundResource($processed);
+            return new RefundResource($lockedRefund);
         }
 
         return redirect()->back()
-            ->with('success', "Refund [#{$processed->id}] successfully PROCESSED and marked SUCCEEDED.");
+            ->with('success', "Refund [#{$lockedRefund->id}] successfully marked for PROCESSING.");
     }
 
     public function retry(Request $request, Refund $refund): RedirectResponse
@@ -144,16 +216,48 @@ class RefundController extends Controller
     {
         Gate::authorize('cancel', $refund);
 
-        $cancelled = $this->refundService->cancelRefund(
-            refund: $refund,
-            actor: $request->user()
-        );
+        $actor = $request->user();
+
+        $lockedRefund = DB::transaction(function () use ($refund, $actor) {
+            $lockedRefund = Refund::query()
+                ->lockForUpdate()
+                ->findOrFail($refund->getKey());
+
+            $lockedRefund->loadMissing(['order', 'payment']);
+
+            $oldStatus = $lockedRefund->status;
+
+            try {
+                $lockedRefund->cancel();
+            } catch (\LogicException $e) {
+                throw ValidationException::withMessages([
+                    'refund' => [$e->getMessage()],
+                ]);
+            }
+
+            $lockedRefund->save();
+
+            $auditPayload = [
+                'refund_public_id' => $lockedRefund->id,
+                'payment_public_id' => $lockedRefund->payment_id,
+                'order_public_id' => $lockedRefund->order?->public_id,
+                'old_status' => $oldStatus,
+                'new_status' => Refund::STATUS_CANCELLED,
+                'actor_type' => 'user',
+                'actor_id' => $actor?->id,
+                'occurred_at' => now()->toIso8601String(),
+            ];
+
+            event(new AuditEvent('refunds.refund_cancelled', $actor, $auditPayload));
+
+            return $lockedRefund;
+        });
 
         if ($request->wantsJson()) {
-            return new RefundResource($cancelled);
+            return new RefundResource($lockedRefund);
         }
 
         return redirect()->back()
-            ->with('success', "Refund [#{$cancelled->id}] has been CANCELLED.");
+            ->with('success', "Refund [#{$lockedRefund->id}] has been CANCELLED.");
     }
 }

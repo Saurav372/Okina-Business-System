@@ -8,6 +8,8 @@ use Carbon\Carbon;
 
 class PurchaseOrderFilters
 {
+    public bool $activeOnly;
+
     public ?string $search;
 
     public ?string $dateFrom;
@@ -29,6 +31,7 @@ class PurchaseOrderFilters
      */
     public function __construct(array $input = [])
     {
+        $this->activeOnly = ($input['scope'] ?? null) === 'active';
         $this->search = isset($input['search']) && trim((string) $input['search']) !== '' ? trim((string) $input['search']) : null;
 
         $rawDateFrom = isset($input['date_from']) ? trim((string) $input['date_from']) : '';
@@ -64,6 +67,7 @@ class PurchaseOrderFilters
     public function toArray(): array
     {
         return array_filter([
+            'scope' => $this->activeOnly ? 'active' : null,
             'search' => $this->search,
             'date_from' => $this->dateFrom ? Carbon::parse($this->dateFrom)->toDateString() : null,
             'date_to' => $this->dateTo ? Carbon::parse($this->dateTo)->toDateString() : null,
@@ -77,7 +81,7 @@ class PurchaseOrderFilters
 
     public function isFiltered(): bool
     {
-        return $this->search !== null
+        return $this->activeOnly || $this->search !== null
             || $this->status !== null
             || $this->paymentStatus !== null
             || $this->vendorId !== null

@@ -138,6 +138,7 @@
                 <!-- Location Selector -->
                 <div>
                     <select name="location" class="w-full px-3.5 py-2 border border-neutral-300 rounded-xl text-xs text-neutral-800 bg-white focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)] transition-colors">
+                        <option value="needs_attention" @selected(request('status') === 'needs_attention')>Low or depleted stock</option>
                         <option value="all" {{ ($filters->location?->value ?? '') === '' ? 'selected' : '' }}>All Warehouses</option>
                         @foreach ($locations as $loc)
                             <option value="{{ $loc->value }}" {{ ($filters->location?->value ?? '') === $loc->value ? 'selected' : '' }}>{{ $loc->label() }}</option>
@@ -148,7 +149,7 @@
                 <!-- Status Selector -->
                 <div>
                     <select name="status" class="w-full px-3.5 py-2 border border-neutral-300 rounded-xl text-xs text-neutral-800 bg-white focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)] transition-colors">
-                        <option value="all" {{ ($filters->status?->value ?? '') === '' ? 'selected' : '' }}>All Statuses</option>
+                        <option value="all" {{ ($filters->status?->value ?? '') === '' && request('status') !== 'needs_attention' ? 'selected' : '' }}>All Statuses</option>
                         @foreach ($statuses as $st)
                             <option value="{{ $st->value }}" {{ ($filters->status?->value ?? '') === $st->value ? 'selected' : '' }}>{{ $st->label() }}</option>
                         @endforeach

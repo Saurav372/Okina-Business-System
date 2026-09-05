@@ -15,6 +15,7 @@ class PaymentLedgerIndexRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'paid_on' => 'nullable|date_format:Y-m-d',
             'start_date' => 'nullable|date_format:Y-m-d',
             'end_date' => 'nullable|date_format:Y-m-d',
             'provider' => 'nullable|string|max:100',

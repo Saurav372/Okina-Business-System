@@ -23,6 +23,9 @@
             </div>
         @endif
 
+        @if($filters->activeOnly)
+            <p class="text-sm text-neutral-600">Showing active purchase orders · <a href="{{ route('admin.purchases.index') }}" class="underline">Show all purchases</a></p>
+        @endif
         <!-- KPI Metrics Grid (4 Cards) -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <!-- Total POs -->
@@ -82,6 +85,7 @@
                     <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-400">
                         <x-icons.lucide name="lucide-search" class="w-4 h-4" />
                     </div>
+                    @if($filters->activeOnly)<input type="hidden" name="scope" value="active">@endif
                     <input type="text" name="search" value="{{ $filters->search ?? '' }}" placeholder="Search PO public ID, vendor name, SKU, or barcode..." class="w-full pl-9 pr-4 py-2 border border-neutral-300 rounded-xl text-xs text-neutral-800 bg-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)] transition-colors">
                 </div>
 

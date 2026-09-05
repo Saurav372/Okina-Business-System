@@ -203,6 +203,7 @@ class AdminOrderActionController extends Controller
         event(new AuditEvent('payments.payment_recorded', $actor, [
             'order_public_id' => $order->public_id,
             'payment_public_id' => $payment->id,
+            'record_status' => $payment->status,
             'amount_minor' => $payment->amount_minor,
             'currency' => $payment->currency,
             'payment_type' => $payment->payment_type,

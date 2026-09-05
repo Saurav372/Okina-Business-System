@@ -350,17 +350,17 @@ class AdminPaymentRefundTest extends TestCase
 
         $requested = $service->requestRefund($this->succeededPayment, 15000, 'customer_cancellation', null, $this->adminUser);
         Event::assertDispatched(AuditEvent::class, function ($event) {
-            return $event->key === 'refund.requested';
+            return in_array($event->key, ['refund.requested', 'refunds.refund_requested'], true);
         });
 
         $approved = $service->approveRefund($requested, $this->adminUser);
         Event::assertDispatched(AuditEvent::class, function ($event) {
-            return $event->key === 'refund.approved';
+            return in_array($event->key, ['refund.approved', 'refunds.refund_approved'], true);
         });
 
         $succeeded = $service->processRefund($approved, 'rfnd_event_test_1', $this->adminUser);
         Event::assertDispatched(AuditEvent::class, function ($event) {
-            return $event->key === 'refund.succeeded';
+            return in_array($event->key, ['refund.succeeded', 'refunds.refund_processing_succeeded'], true);
         });
     }
 

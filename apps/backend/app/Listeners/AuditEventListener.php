@@ -151,7 +151,13 @@ class AuditEventListener
                 'summary' => $payload['summary'] ?? ($definition !== null ? $definition->summary : null),
                 'old_values' => $payload['old_values'] ?? null,
                 'new_values' => $payload['new_values'] ?? null,
-                'metadata' => $payload['metadata'] ?? null,
+                'metadata' => array_merge(
+                    array_intersect_key($payload, array_flip([
+                        'order_public_id', 'payment_public_id', 'public_id', 'amount_minor', 'currency',
+                        'payment_status', 'record_status', 'vendor_code', 'sku_public_id', 'before_on_hand', 'after_on_hand',
+                    ])),
+                    $payload['metadata'] ?? [],
+                ),
                 'request_id' => $payload['request_id'] ?? null,
                 'idempotency_key' => $idempotencyKey,
                 'ip_address' => request()->ip(),

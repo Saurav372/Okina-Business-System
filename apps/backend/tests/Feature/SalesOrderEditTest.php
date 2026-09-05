@@ -95,7 +95,7 @@ class SalesOrderEditTest extends TestCase
             'status' => 'confirmed',
         ]);
 
-        $this->putJson("/admin/sales-orders/{$order->public_id}", [
+        $this->put("/admin/sales-orders/{$order->public_id}", [
             'customer_id' => $this->customer->id,
             'items' => [
                 ['sku_code' => $this->skuA->sku_code, 'quantity' => 1],
