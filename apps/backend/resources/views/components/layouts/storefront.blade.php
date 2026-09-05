@@ -19,6 +19,8 @@
     <meta name="description" content="{{ $description }}">
     <meta name="robots" content="{{ $robots ?: $site['robots'] }}">
     <meta name="theme-color" content="#c8202a">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('brand/favicon.svg') }}">
     <link rel="canonical" href="{{ $canonical ?: url()->current() }}">
     <meta property="og:type" content="website">
     <meta property="og:title" content="{{ $title }} · {{ $site['site_title'] }}">
@@ -40,7 +42,7 @@
         <a href="{{ route('storefront.home') }}" @if(request()->routeIs('storefront.home')) aria-current="page" @endif><x-storefront.icon name="home" /><span>Home</span></a>
         <a href="{{ route('storefront.categories.index') }}" @if(request()->routeIs('storefront.categories.*', 'storefront.search')) aria-current="page" @endif><x-storefront.icon name="search" /><span>Shop</span></a>
         <a href="{{ auth('customer')->check() ? route('customer.account') : route('customer.login') }}"><x-storefront.icon name="orders" /><span>Orders</span></a>
-        <a href="{{ $site['frontend_url'] }}/cart"><x-storefront.icon name="bag" /><span>Bag</span>@if($cartCount > 0)<b aria-label="{{ $cartCount }} items">{{ min($cartCount, 99) }}</b>@endif</a>
+        <a href="{{ route('storefront.cart') }}" @if(request()->routeIs('storefront.cart*', 'storefront.checkout*')) aria-current="page" @endif><x-storefront.icon name="bag" /><span>Bag</span>@if($cartCount > 0)<b aria-label="{{ $cartCount }} items">{{ min($cartCount, 99) }}</b>@endif</a>
     </nav>
 </body>
 </html>

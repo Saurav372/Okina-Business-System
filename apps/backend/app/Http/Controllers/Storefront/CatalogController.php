@@ -9,6 +9,7 @@ use App\Services\CartResponsePresenter;
 use App\Services\CartService;
 use App\Services\SettingsService;
 use App\Support\Storefront\MoneyFormatter;
+use App\Support\Storefront\StorefrontViewData;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -22,6 +23,7 @@ class CatalogController extends Controller
         private readonly CartService $carts,
         private readonly CartResponsePresenter $cartPresenter,
         private readonly MoneyFormatter $money,
+        private readonly StorefrontViewData $viewData,
     ) {}
 
     public function home(Request $request): View
@@ -124,6 +126,60 @@ class CatalogController extends Controller
         ]);
     }
 
+    public function howItWorks(Request $request): View
+    {
+        return view('storefront.how-it-works', $this->viewData->base($request));
+    }
+
+    public function policy(Request $request, string $slug): View
+    {
+        $policies = [
+            'shipping' => [
+                'title' => 'Shipping policy',
+                'intro' => 'How custom orders move from approval to delivery.',
+                'sections' => [
+                    ['Timelines', 'Production and delivery estimates depend on the product, quantity, artwork approval, and delivery location. The confirmed timeline is shown with your order once the details are validated.'],
+                    ['Tracking', 'When courier tracking is available, it appears in your account and order tracking page.'],
+                    ['Address changes', 'Contact the team as early as possible. Address changes may not be possible after dispatch.'],
+                ],
+            ],
+            'returns' => [
+                'title' => 'Returns and custom orders',
+                'intro' => 'Clear expectations for products made specifically for you.',
+                'sections' => [
+                    ['Custom products', 'Because custom products are made to your approved choices, change-of-mind returns may not be available.'],
+                    ['Quality concerns', 'If an item arrives damaged or materially differs from the approved order, report it promptly with the order number and clear photos.'],
+                    ['Review before production', 'Artwork and order details are reviewed before production to reduce preventable issues.'],
+                ],
+            ],
+            'privacy' => [
+                'title' => 'Privacy policy',
+                'intro' => 'How customer, order, and artwork information is handled.',
+                'sections' => [
+                    ['Order information', 'Contact, address, and order details are used to fulfil and support your order.'],
+                    ['Artwork files', 'Uploaded artwork is treated as private customer material and is delivered through protected access.'],
+                    ['Payments', 'Payment processing is handled by the configured payment provider; the storefront does not display full payment credentials.'],
+                ],
+            ],
+            'terms' => [
+                'title' => 'Terms of service',
+                'intro' => 'The practical terms for ordering custom products.',
+                'sections' => [
+                    ['Approval', 'You are responsible for reviewing submitted product, artwork, placement, size, and quantity details.'],
+                    ['Artwork rights', 'By uploading artwork, you confirm that you have the right to use it for the requested products.'],
+                    ['Production', 'Production begins according to the confirmed order and approval state. Material changes may affect price or timing.'],
+                ],
+            ],
+        ];
+
+        abort_unless(array_key_exists($slug, $policies), 404);
+
+        return view('storefront.policy', [
+            ...$this->viewData->base($request),
+            'policy' => $policies[$slug],
+        ]);
+    }
+
     /**
      * @param  array<int, array<string, mixed>>  $products
      * @return array<int, array<string, mixed>>
@@ -193,7 +249,6 @@ class CatalogController extends Controller
                 ?: 'Custom apparel for teams, events, businesses, and creators. Proof approved before production.',
             'robots' => ((bool) $this->settings->get('seo', 'robots_index', true) ? 'index' : 'noindex')
                 .', '.((bool) $this->settings->get('seo', 'robots_follow', true) ? 'follow' : 'nofollow'),
-            'frontend_url' => rtrim((string) config('app.frontend_url', 'http://127.0.0.1:4321'), '/'),
         ];
 
         return [

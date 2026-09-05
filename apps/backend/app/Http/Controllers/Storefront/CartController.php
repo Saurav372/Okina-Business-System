@@ -4,10 +4,17 @@ namespace App\Http\Controllers\Storefront;
 
 use App\Contracts\CustomizationOptionContract;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Cart\UpdateCartItemRequest;
 use App\Http\Requests\Storefront\AddCartItemRequest;
+use App\Services\CartResponsePresenter;
 use App\Services\CartService;
+use App\Services\CartValidationService;
 use App\Support\Products\CustomizationSnapshotBuilder;
+use App\Support\Storefront\MoneyFormatter;
+use App\Support\Storefront\StorefrontViewData;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class CartController extends Controller
@@ -16,7 +23,23 @@ class CartController extends Controller
         private readonly CustomizationOptionContract $customization,
         private readonly CustomizationSnapshotBuilder $snapshots,
         private readonly CartService $carts,
+        private readonly CartResponsePresenter $cartPresenter,
+        private readonly CartValidationService $cartValidation,
+        private readonly StorefrontViewData $viewData,
+        private readonly MoneyFormatter $money,
     ) {}
+
+    public function show(Request $request): View
+    {
+        $cart = $this->carts->current($request, false);
+
+        return view('storefront.cart', [
+            ...$this->viewData->base($request),
+            'cart' => $this->cartPresenter->payload($cart),
+            'validation' => $this->cartValidation->payload($cart),
+            'money' => $this->money,
+        ]);
+    }
 
     public function store(AddCartItemRequest $request, string $product): RedirectResponse
     {
@@ -67,7 +90,21 @@ class CartController extends Controller
             'customization_snapshot' => $snapshot,
         ]);
 
-        return redirect()->away(rtrim((string) config('app.frontend_url'), '/').'/cart');
+        return redirect()->route('storefront.cart')->with('status', 'Item added to your bag.');
+    }
+
+    public function update(UpdateCartItemRequest $request, string $cartItem): RedirectResponse
+    {
+        $this->carts->updateItem($request, $cartItem, $request->validated());
+
+        return redirect()->route('storefront.cart')->with('status', 'Quantity updated.');
+    }
+
+    public function destroy(Request $request, string $cartItem): RedirectResponse
+    {
+        $this->carts->removeItem($request, $cartItem);
+
+        return redirect()->route('storefront.cart')->with('status', 'Item removed from your bag.');
     }
 
     private function messageFor(string $error): string

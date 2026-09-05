@@ -18,14 +18,13 @@
     </style>
 </head>
 <body>
-@php($storefront = rtrim(env('PUBLIC_SITE_URL', env('FRONTEND_URL', 'http://127.0.0.1:4321')), '/'))
 <div class="auth-shell">
     <aside class="auth-story">
-        <a class="brand" href="{{ $storefront }}"><span class="brand-mark" aria-hidden="true"><img class="brand-logo-image" src="{{ $storefront }}/brand/okina-logo.svg" alt="" width="1080" height="1350"></span><span>Okina Craft</span></a>
+        <a class="brand" href="{{ route('storefront.home') }}"><span class="brand-mark" aria-hidden="true"><img class="brand-logo-image" src="{{ asset('brand/okina-logo.svg') }}" alt="" width="1080" height="1350"></span><span>Okina Craft</span></a>
         <div class="story-copy"><p>Your mark, made wearable</p><h2>A calmer custom-order journey.</h2><p>Your saved artwork, addresses, approvals, and order progress stay together in one private account.</p></div>
         <div class="trust-list"><span>Private artwork</span><span>Saved order history</span><span>Production updates</span></div>
     </aside>
-    <main class="auth-main"><div class="auth-card"><a class="back-link" href="{{ $storefront }}">← Back to the shop</a>@yield('content')</div></main>
+    <main class="auth-main"><div class="auth-card"><a class="back-link" href="{{ route('storefront.home') }}">← Back to the shop</a>@yield('content')</div></main>
 </div>
 </body>
 </html>

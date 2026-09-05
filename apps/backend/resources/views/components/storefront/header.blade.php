@@ -25,7 +25,7 @@
             <a class="sf-icon-button sf-account-link" href="{{ auth('customer')->check() ? route('customer.account') : route('customer.login') }}" aria-label="{{ auth('customer')->check() ? 'Your account' : 'Sign in' }}">
                 <x-storefront.icon name="user" />
             </a>
-            <a class="sf-icon-button" href="{{ $site['frontend_url'] }}/cart" aria-label="Bag with {{ $cartCount }} items">
+            <a class="sf-icon-button" href="{{ route('storefront.cart') }}" aria-label="Bag with {{ $cartCount }} items">
                 <x-storefront.icon name="bag" />
                 @if($cartCount > 0)<span class="sf-count-badge" aria-hidden="true">{{ min($cartCount, 99) }}</span>@endif
             </a>
@@ -41,7 +41,7 @@
             @foreach($categories as $category)
                 <a href="{{ $category['url'] }}" @if(request()->route('category') === $category['slug']) aria-current="page" @endif>{{ $category['name'] }}</a>
             @endforeach
-            <a class="sf-create-link" href="{{ $site['frontend_url'] }}/mockup-generate">Create yours</a>
+            <a class="sf-create-link" href="{{ route('storefront.mockup') }}">Create yours</a>
         </div>
     </nav>
 
@@ -54,7 +54,7 @@
         @foreach($categories as $category)
             <a href="{{ $category['url'] }}">{{ $category['name'] }}</a>
         @endforeach
-        <a href="{{ $site['frontend_url'] }}/mockup-generate">Create your apparel</a>
+        <a href="{{ route('storefront.mockup') }}">Create your apparel</a>
         <a href="{{ auth('customer')->check() ? route('customer.account') : route('customer.login') }}">{{ auth('customer')->check() ? 'Orders and proofs' : 'Sign in' }}</a>
     </nav>
 </header>

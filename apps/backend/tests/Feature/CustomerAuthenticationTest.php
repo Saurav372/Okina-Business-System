@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\CustomerAccount;
-use App\Notifications\CustomerResetPasswordNotification;
 use App\Models\User;
+use App\Notifications\CustomerResetPasswordNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
@@ -14,6 +14,12 @@ use Tests\TestCase;
 class CustomerAuthenticationTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->withoutVite();
+    }
 
     public function test_guests_are_redirected_to_the_customer_login_page(): void
     {
@@ -38,7 +44,9 @@ class CustomerAuthenticationTest extends TestCase
         $this->assertAuthenticatedAs($account, 'customer');
 
         $this->get(route('customer.account'))
-            ->assertRedirect(rtrim(env('PUBLIC_SITE_URL', 'http://127.0.0.1:4321'), '/').'/account');
+            ->assertOk()
+            ->assertViewIs('storefront.account.index')
+            ->assertSee('Welcome back, Saurav Customer.');
     }
 
     public function test_customer_registration_requires_unique_normalized_email(): void

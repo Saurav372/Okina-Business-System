@@ -101,7 +101,7 @@ readonly class PublicCatalogRules implements PublicCatalogContract
             'public_category_fields' => $this->publicCategoryFields(),
             'public_product_fields' => $this->publicProductFields(),
             'public_sku_fields' => $this->publicSkuFields(),
-            'astro_usage' => array_merge($catalog->guidance(), [
+            'storefront_usage' => array_merge($catalog->guidance(), [
                 'Use the category list for navigation and collection pages.',
                 'Use product detail responses for product pages and SKU selection.',
                 'Do not depend on raw stock counts or internal database ids.',

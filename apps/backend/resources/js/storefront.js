@@ -168,3 +168,7 @@ if (customizerRoot instanceof HTMLElement && customizerForm instanceof HTMLFormE
 
 const errorSummary = document.querySelector('[data-error-summary]');
 if (errorSummary instanceof HTMLElement) errorSummary.focus();
+
+if (document.body.dataset.page === 'mockup') {
+    import('./storefront/mockup-studio');
+}

@@ -5,7 +5,6 @@ use App\Http\Controllers\Api\CustomerApiController;
 use App\Http\Controllers\Api\PaymentWebhookController;
 use App\Http\Controllers\Api\ProductCustomizationController;
 use App\Http\Controllers\Api\PublicCatalogController;
-use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/health', function () {
@@ -22,20 +21,20 @@ Route::prefix('catalog')->group(function () {
         ->name('catalog.media.preview');
     Route::get('/products/{product:slug}/customization-options', [ProductCustomizationController::class, 'show']);
     Route::post('/products/{product:slug}/design-upload', [ProductCustomizationController::class, 'store'])
-        ->middleware('auth:customer');
+        ->middleware(['web', 'auth:customer']);
     Route::post('/products/{product:slug}/protected-mockup/{preview_file:public_id}', [ProductCustomizationController::class, 'protectedMockup'])
-        ->middleware(['auth:customer', 'throttle:10,1'])
+        ->middleware(['web', 'auth:customer', 'throttle:10,1'])
         ->withoutScopedBindings()
         ->name('catalog.products.protected-mockup');
     Route::get('/products/{product:slug}/design-preview/{preview_file}', [ProductCustomizationController::class, 'preview'])
         ->middleware('signed')
         ->name('catalog.products.mockup-preview');
     Route::post('/products/{product:slug}/design-preview/{preview_file}/link', [ProductCustomizationController::class, 'previewLink'])
-        ->middleware('auth:customer')
+        ->middleware(['web', 'auth:customer'])
         ->name('catalog.products.mockup-preview-link');
 });
 
-Route::middleware('web')->withoutMiddleware(ValidateCsrfToken::class)->prefix('cart')->group(function () {
+Route::middleware('web')->prefix('cart')->group(function () {
     Route::get('/', [CartController::class, 'index']);
     Route::get('/validation', [CartController::class, 'validation']);
     Route::post('/checkout/validation', [CartController::class, 'checkoutValidation'])->middleware('auth:customer');
@@ -45,7 +44,7 @@ Route::middleware('web')->withoutMiddleware(ValidateCsrfToken::class)->prefix('c
     Route::delete('/items/{cartItem}', [CartController::class, 'destroy']);
 });
 
-Route::middleware(['web', 'customer.access'])->withoutMiddleware(ValidateCsrfToken::class)->prefix('customer')->group(function () {
+Route::middleware(['web', 'customer.access'])->prefix('customer')->group(function () {
     Route::get('/session', [CustomerApiController::class, 'session']);
     Route::post('/logout', [CustomerApiController::class, 'logout']);
     Route::get('/profile', [CustomerApiController::class, 'profile']);

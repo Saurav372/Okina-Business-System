@@ -10,18 +10,18 @@
             <strong>Shop</strong>
             <a href="{{ route('storefront.categories.index') }}">Collections</a>
             <a href="{{ route('storefront.search') }}">All products</a>
-            <a href="{{ $site['frontend_url'] }}/mockup-generate">Create yours</a>
+            <a href="{{ route('storefront.mockup') }}">Create yours</a>
         </nav>
         <nav aria-label="Footer help links">
             <strong>Help</strong>
-            <a href="{{ $site['frontend_url'] }}/how-it-works">How it works</a>
-            <a href="{{ $site['frontend_url'] }}/track-order">Track an order</a>
+            <a href="{{ route('storefront.how-it-works') }}">How it works</a>
+            <a href="{{ route('storefront.track-order') }}">Track an order</a>
             @if($site['support_email'])<a href="mailto:{{ $site['support_email'] }}">Contact support</a>@endif
         </nav>
         <nav aria-label="Footer account links">
             <strong>Account</strong>
             <a href="{{ auth('customer')->check() ? route('customer.account') : route('customer.login') }}">{{ auth('customer')->check() ? 'Your orders' : 'Sign in' }}</a>
-            <a href="{{ $site['frontend_url'] }}/cart">Your bag</a>
+            <a href="{{ route('storefront.cart') }}">Your bag</a>
         </nav>
     </div>
     <div class="sf-footer-bottom"><span>© {{ now()->year }} {{ $site['company_name'] }}</span><span>Proof approved before printing</span></div>

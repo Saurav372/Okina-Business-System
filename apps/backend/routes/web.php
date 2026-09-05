@@ -40,10 +40,17 @@ use App\Http\Controllers\Admin\VendorPaymentController;
 use App\Http\Controllers\Admin\WarehouseTransferController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\Api\CartController as ApiCartController;
+use App\Http\Controllers\Api\ProductCustomizationController as ApiProductCustomizationController;
 use App\Http\Controllers\CustomerAuthController;
+use App\Http\Controllers\StoredFileAccessController;
 use App\Http\Controllers\Storefront\CartController as StorefrontCartController;
 use App\Http\Controllers\Storefront\CatalogController as StorefrontCatalogController;
-use App\Http\Controllers\StoredFileAccessController;
+use App\Http\Controllers\Storefront\CheckoutController;
+use App\Http\Controllers\Storefront\CustomerPortalController;
+use App\Http\Controllers\Storefront\MockupController;
+use App\Http\Controllers\Storefront\OrderStatusController;
+use App\Http\Controllers\Storefront\SeoDocumentController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [StorefrontCatalogController::class, 'home'])->name('storefront.home');
@@ -58,6 +65,18 @@ Route::get('/products/{product}', [StorefrontCatalogController::class, 'product'
 Route::post('/products/{product}/cart', [StorefrontCartController::class, 'store'])
     ->where('product', '[A-Za-z0-9-]+')
     ->name('storefront.products.cart.store');
+Route::get('/cart', [StorefrontCartController::class, 'show'])->name('storefront.cart');
+Route::put('/cart/items/{cartItem}', [StorefrontCartController::class, 'update'])->name('storefront.cart.update');
+Route::delete('/cart/items/{cartItem}', [StorefrontCartController::class, 'destroy'])->name('storefront.cart.destroy');
+Route::get('/how-it-works', [StorefrontCatalogController::class, 'howItWorks'])->name('storefront.how-it-works');
+Route::get('/policies/{slug}', [StorefrontCatalogController::class, 'policy'])
+    ->whereIn('slug', ['shipping', 'returns', 'privacy', 'terms'])
+    ->name('storefront.policy');
+Route::get('/sitemap.xml', [SeoDocumentController::class, 'sitemap'])->name('storefront.sitemap');
+Route::get('/robots.txt', [SeoDocumentController::class, 'robots'])->name('storefront.robots');
+Route::get('/track-order', [OrderStatusController::class, 'track'])->name('storefront.track-order');
+Route::get('/mockup-generate', [MockupController::class, 'create'])->name('storefront.mockup');
+Route::post('/cart/items', [ApiCartController::class, 'store'])->name('storefront.cart.items.store');
 
 Route::middleware('signed')->prefix('files')->group(function (): void {
     Route::get('/{file:public_id}/preview', [StoredFileAccessController::class, 'preview'])->name('files.preview');
@@ -76,7 +95,21 @@ Route::middleware('guest:customer')->group(function () {
 });
 
 Route::middleware('customer.access')->group(function () {
-    Route::get('/account', [CustomerAuthController::class, 'account'])->name('customer.account');
+    Route::post('/products/{product:slug}/design-upload', [ApiProductCustomizationController::class, 'store'])->name('storefront.products.design-upload');
+    Route::post('/products/{product:slug}/protected-mockup/{preview_file:public_id}', [ApiProductCustomizationController::class, 'protectedMockup'])
+        ->middleware('throttle:10,1')
+        ->withoutScopedBindings()
+        ->name('storefront.products.protected-mockup');
+    Route::get('/checkout', [CheckoutController::class, 'show'])->name('storefront.checkout');
+    Route::post('/checkout', [CheckoutController::class, 'store'])->name('storefront.checkout.store');
+    Route::get('/order-confirmation/{order}', [OrderStatusController::class, 'confirmation'])->name('storefront.order-confirmation');
+    Route::get('/account', [CustomerPortalController::class, 'index'])->name('customer.account');
+    Route::get('/account/orders/{order}', [CustomerPortalController::class, 'order'])->name('customer.orders.show');
+    Route::post('/account/orders/{order}/reorder', [CustomerPortalController::class, 'reorder'])->name('customer.orders.reorder');
+    Route::post('/account/addresses', [CustomerPortalController::class, 'storeAddress'])->name('customer.addresses.store');
+    Route::put('/account/addresses/{address}', [CustomerPortalController::class, 'updateAddress'])->name('customer.addresses.update');
+    Route::delete('/account/addresses/{address}', [CustomerPortalController::class, 'destroyAddress'])->name('customer.addresses.destroy');
+    Route::post('/account/addresses/{address}/default', [CustomerPortalController::class, 'setDefaultAddress'])->name('customer.addresses.default');
     Route::post('/logout', [CustomerAuthController::class, 'destroy'])->name('customer.logout');
 });
 

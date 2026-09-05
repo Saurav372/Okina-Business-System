@@ -22,7 +22,7 @@ class EnsureCustomerAccountAccess
                 return response()->json(['message' => 'Unauthenticated.'], 401);
             }
 
-            return redirect()->route('customer.login');
+            return redirect()->guest(route('customer.login'));
         }
 
         if (! $account->canAccessCustomerAccount()) {

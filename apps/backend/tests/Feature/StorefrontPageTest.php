@@ -157,7 +157,7 @@ class StorefrontPageTest extends TestCase
                 'customer_note' => 'Use the approved red logo.',
             ]);
 
-        $response->assertRedirect(rtrim((string) config('app.frontend_url'), '/').'/cart');
+        $response->assertRedirect(route('storefront.cart'));
         $this->assertDatabaseCount('carts', 1);
         $this->assertDatabaseHas('cart_items', [
             'product_id' => $product->id,

@@ -171,13 +171,6 @@ class CustomerAuthController extends Controller
         return redirect()->route('customer.login')->with('status', 'Your password has been reset. You can now sign in.');
     }
 
-    public function account()
-    {
-        $siteUrl = rtrim(env('PUBLIC_SITE_URL', 'http://127.0.0.1:4321'), '/');
-
-        return redirect()->away($siteUrl.'/account');
-    }
-
     public function destroy(Request $request)
     {
         Auth::guard('customer')->logout();

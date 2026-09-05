@@ -100,15 +100,15 @@ class PublicCatalogApiTest extends TestCase
             ->assertNotFound();
     }
 
-    public function test_public_catalog_guidance_matches_astro_usage(): void
+    public function test_public_catalog_guidance_matches_storefront_usage(): void
     {
         $rules = app(PublicCatalogRules::class);
         $guidance = $rules->guidance();
 
         $this->assertSame('/api/catalog/categories', $guidance['categories_endpoint']);
         $this->assertSame('/api/catalog/products', $guidance['products_endpoint']);
-        $this->assertContains('Use category responses for listing and navigation.', $guidance['astro_usage']);
-        $this->assertContains('Do not depend on raw stock counts or internal database ids.', $guidance['astro_usage']);
+        $this->assertContains('Use category responses for listing and navigation.', $guidance['storefront_usage']);
+        $this->assertContains('Do not depend on raw stock counts or internal database ids.', $guidance['storefront_usage']);
         $this->assertContains('sku_code', $guidance['public_sku_fields']);
         $this->assertContains('variants', $guidance['public_product_fields']);
     }

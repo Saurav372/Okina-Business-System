@@ -128,7 +128,7 @@ readonly class CustomizationOptionRules implements CustomizationOptionContract
             'print_positions' => $catalog->printPositions(),
             'print_methods' => $catalog->printMethods(),
             'print_method_compatibility' => $catalog->printMethodCompatibility(),
-            'astro_usage' => $catalog->guidance(),
+            'storefront_usage' => $catalog->guidance(),
         ];
     }
 

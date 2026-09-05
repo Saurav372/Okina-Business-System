@@ -142,7 +142,7 @@
                 @if($requiresPrint)
                     <div class="sf-artwork-path">
                         <div><p class="sf-eyebrow">Artwork</p><h2>Already have a file?</h2><p>Use the full studio to upload artwork and fine-tune placement. Or add instructions below and send the artwork after ordering.</p></div>
-                        <a class="sf-text-link" href="{{ $site['frontend_url'] }}/products/{{ rawurlencode($product['slug']) }}">Open artwork studio <x-storefront.icon name="arrow" /></a>
+                        <a class="sf-text-link" href="{{ route('storefront.mockup', ['product' => $product['slug']]) }}">Open artwork studio <x-storefront.icon name="arrow" /></a>
                     </div>
                 @endif
 
