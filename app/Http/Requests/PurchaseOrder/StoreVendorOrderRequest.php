@@ -26,13 +26,28 @@ class StoreVendorOrderRequest extends FormRequest
     {
         return [
             'vendor_id' => ['required', 'integer', 'exists:vendors,id'],
+            'ordered_at' => ['nullable', 'date'],
+            'order_date' => ['nullable', 'date'],
             'expected_at' => ['nullable', 'date'],
+            'expected_delivery_date' => ['nullable', 'date'],
+            'payment_terms' => ['nullable', 'string', 'max:255'],
+            'status' => ['nullable', 'string', \Illuminate\Validation\Rule::in(['draft', 'ordered'])],
             'subtotal_amount_minor' => ['nullable', 'integer', 'min:0'],
             'tax_amount_minor' => ['nullable', 'integer', 'min:0'],
             'shipping_amount_minor' => ['nullable', 'integer', 'min:0'],
+            'shipping_amount' => ['nullable', 'numeric', 'min:0'],
             'discount_amount_minor' => ['nullable', 'integer', 'min:0'],
+            'discount_amount' => ['nullable', 'numeric', 'min:0'],
             'currency' => ['nullable', 'string', 'size:3'],
             'notes' => ['nullable', 'string'],
+            'items' => ['nullable', 'array'],
+            'items.*.product_sku_id' => ['required_with:items', 'integer', 'exists:product_skus,id'],
+            'items.*.quantity_ordered' => ['required_with:items', 'integer', 'min:1'],
+            'items.*.unit_cost' => ['nullable', 'numeric', 'min:0'],
+            'items.*.unit_cost_minor' => ['nullable', 'integer', 'min:0'],
+            'items.*.tax_amount' => ['nullable', 'numeric', 'min:0'],
+            'items.*.tax_amount_minor' => ['nullable', 'integer', 'min:0'],
+            'items.*.notes' => ['nullable', 'string', 'max:500'],
         ];
     }
 

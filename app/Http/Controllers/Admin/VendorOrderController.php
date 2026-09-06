@@ -13,8 +13,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\PurchaseOrder\StoreVendorOrderRequest;
 use App\Http\Requests\PurchaseOrder\UpdateVendorOrderRequest;
 use App\Http\Requests\PurchaseOrder\UpdateVendorOrderStatusRequest;
+use App\Models\ProductSku;
 use App\Models\Vendor;
 use App\Models\VendorOrder;
+use App\Models\VendorOrderItem;
 use App\Services\PurchaseOrderStatusService;
 use App\Support\Purchases\PurchaseOrderCodeGenerator;
 use Carbon\Carbon;
@@ -79,15 +81,92 @@ class VendorOrderController extends Controller
                 $attempts++;
 
                 $purchaseOrder = DB::transaction(function () use ($request) {
-                    $data = $request->validated();
-                    $data['public_id'] = PurchaseOrderCodeGenerator::generate();
-                    $data['status'] = VendorOrderStatus::DRAFT->value;
-                    $data['payment_status'] = VendorOrderPaymentStatus::UNPAID->value;
-                    $data['created_by_user_id'] = Auth::id();
+                    $validated = $request->validated();
 
-                    $po = new VendorOrder($data);
+                    $orderedAt = $validated['ordered_at'] ?? $validated['order_date'] ?? now();
+                    $expectedAt = $validated['expected_at'] ?? $validated['expected_delivery_date'] ?? null;
+
+                    $shippingMinor = isset($validated['shipping_amount_minor'])
+                        ? (int) $validated['shipping_amount_minor']
+                        : (isset($validated['shipping_amount']) ? (int) round($validated['shipping_amount'] * 100) : 0);
+
+                    $discountMinor = isset($validated['discount_amount_minor'])
+                        ? (int) $validated['discount_amount_minor']
+                        : (isset($validated['discount_amount']) ? (int) round($validated['discount_amount'] * 100) : 0);
+
+                    $status = ($validated['status'] ?? 'draft') === 'ordered'
+                        ? VendorOrderStatus::ORDERED->value
+                        : VendorOrderStatus::DRAFT->value;
+
+                    $notes = $validated['notes'] ?? null;
+                    if (! empty($validated['payment_terms'])) {
+                        $termNote = 'Payment Terms: '.$validated['payment_terms'];
+                        $notes = $notes ? "{$termNote}\n\n{$notes}" : $termNote;
+                    }
+
+                    $po = new VendorOrder([
+                        'vendor_id' => $validated['vendor_id'],
+                        'public_id' => PurchaseOrderCodeGenerator::generate(),
+                        'status' => $status,
+                        'payment_status' => VendorOrderPaymentStatus::UNPAID->value,
+                        'ordered_at' => $orderedAt,
+                        'expected_at' => $expectedAt,
+                        'subtotal_amount_minor' => (int) ($validated['subtotal_amount_minor'] ?? 0),
+                        'tax_amount_minor' => (int) ($validated['tax_amount_minor'] ?? 0),
+                        'shipping_amount_minor' => $shippingMinor,
+                        'discount_amount_minor' => $discountMinor,
+                        'total_amount_minor' => 0,
+                        'currency' => $validated['currency'] ?? 'INR',
+                        'notes' => $notes,
+                        'created_by_user_id' => Auth::id(),
+                    ]);
                     $po->total_amount_minor = $po->calculateTotalAmount();
                     $po->save();
+
+                    // Create Line Items if provided
+                    $itemsData = $validated['items'] ?? [];
+                    foreach ($itemsData as $itemData) {
+                        if (empty($itemData['product_sku_id'])) {
+                            continue;
+                        }
+
+                        $sku = ProductSku::with('product')->find($itemData['product_sku_id']);
+                        if (! $sku) {
+                            continue;
+                        }
+
+                        $unitCostMinor = isset($itemData['unit_cost_minor'])
+                            ? (int) $itemData['unit_cost_minor']
+                            : (isset($itemData['unit_cost']) ? (int) round($itemData['unit_cost'] * 100) : 0);
+
+                        $taxMinor = isset($itemData['tax_amount_minor'])
+                            ? (int) $itemData['tax_amount_minor']
+                            : (isset($itemData['tax_amount']) ? (int) round($itemData['tax_amount'] * 100) : 0);
+
+                        $qty = max(1, (int) ($itemData['quantity_ordered'] ?? 1));
+
+                        $item = new VendorOrderItem([
+                            'vendor_order_id' => $po->id,
+                            'product_sku_id' => $sku->id,
+                            'sku_code_snapshot' => $sku->sku_code,
+                            'product_name_snapshot' => $sku->product?->name ?? $sku->sku_code,
+                            'quantity_ordered' => $qty,
+                            'quantity_received' => 0,
+                            'unit_cost_minor' => $unitCostMinor,
+                            'tax_amount_minor' => $taxMinor,
+                            'notes' => $itemData['notes'] ?? null,
+                        ]);
+                        $item->line_total_minor = $item->calculateLineTotal();
+                        $item->save();
+                    }
+
+                    if (! empty($itemsData)) {
+                        $po->recalculateTotals();
+                        $po->shipping_amount_minor = $shippingMinor;
+                        $po->discount_amount_minor = $discountMinor;
+                        $po->total_amount_minor = $po->calculateTotalAmount();
+                        $po->save();
+                    }
 
                     DB::afterCommit(function () use ($po) {
                         event(new AuditEvent('purchase_orders.created', Auth::user(), [
