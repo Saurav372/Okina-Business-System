@@ -274,11 +274,42 @@
         </div>
 
         <!-- Request Refund Modal -->
-        <div x-show="openRequestModal" style="display: none;" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" @keydown.escape.window="openRequestModal = false">
-            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <div @click="openRequestModal = false" class="fixed inset-0 bg-neutral-950/40 backdrop-blur-xs transition-opacity" aria-hidden="true"></div>
+        <template x-teleport="body">
+            <div
+                x-show="openRequestModal"
+                x-cloak
+                class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 overflow-y-auto"
+                style="z-index: 100;"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="refund-modal-title"
+                @keydown.escape.window="openRequestModal = false"
+            >
+                <!-- Backdrop -->
+                <div
+                    class="fixed inset-0 bg-neutral-950/60 backdrop-blur-sm transition-opacity"
+                    x-show="openRequestModal"
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0"
+                    x-transition:enter-end="opacity-100"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                    @click="openRequestModal = false"
+                    aria-hidden="true"
+                ></div>
 
-                <div class="inline-block align-bottom bg-white border border-neutral-200 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <!-- Dialog Panel -->
+                <div
+                    class="relative z-[101] w-full max-w-lg bg-white border border-neutral-200 rounded-2xl shadow-2xl overflow-hidden my-8"
+                    x-show="openRequestModal"
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+                    x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                    x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+                >
                     <form action="{{ route('admin.refunds.store') }}" method="POST" class="p-6 space-y-4" @submit="updateMinor()">
                         @csrf
                         <div class="flex items-center justify-between border-b border-neutral-200 pb-3">
@@ -286,7 +317,7 @@
                                 <div class="p-2 rounded-xl bg-amber-50 text-amber-600 border border-amber-100">
                                     <x-icons.lucide name="lucide-undo-2" class="w-4 h-4" />
                                 </div>
-                                <h3 class="text-base font-bold text-neutral-900">Request Customer Refund</h3>
+                                <h3 id="refund-modal-title" class="text-base font-bold text-neutral-900">Request Customer Refund</h3>
                             </div>
                             <button type="button" @click="openRequestModal = false" class="text-neutral-400 hover:text-neutral-600 p-1.5 rounded-lg hover:bg-neutral-100 transition-colors" aria-label="Close modal">
                                 <x-icons.lucide name="lucide-x" class="w-5 h-5" />
@@ -312,7 +343,7 @@
                             <label class="block text-xs font-semibold text-neutral-700 mb-1.5">
                                 Select Succeeded Payment <span class="text-red-500">*</span>
                             </label>
-                            <select name="payment_id" x-model="selectedPaymentId" @change="onPaymentChange()" required class="w-full px-3.5 py-2 border @error('payment_id') border-red-300 bg-red-50/20 @else border-neutral-300 bg-white @enderror rounded-xl text-xs text-neutral-900 focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)]">
+                            <select name="payment_id" x-model="selectedPaymentId" @change="onPaymentChange()" required class="w-full px-3.5 py-2.5 border @error('payment_id') border-red-300 bg-red-50/20 @else border-neutral-300 bg-white @enderror rounded-xl text-xs text-neutral-900 focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)]">
                                 <option value="">-- Select Succeeded Payment --</option>
                                 @foreach ($succeededPayments as $p)
                                     <option value="{{ $p->id }}" {{ old('payment_id') == $p->id ? 'selected' : '' }}>
@@ -363,10 +394,10 @@
                                 </template>
                             </div>
                             <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-400 font-mono text-xs">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-400 font-mono text-xs font-bold">
                                     ₹
                                 </div>
-                                <input type="number" name="amount_rupees" step="0.01" min="0.01" :max="selectedPayment ? selectedPayment.remaining_rupees : null" placeholder="0.00" x-model="amountRupees" @input="updateMinor()" required class="w-full pl-7 pr-3.5 py-2 border @error('amount_minor') border-red-300 bg-red-50/20 @else border-neutral-300 bg-white @enderror rounded-xl text-xs text-neutral-900 font-mono focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)]">
+                                <input type="number" name="amount_rupees" step="0.01" min="0.01" :max="selectedPayment ? selectedPayment.remaining_rupees : null" placeholder="0.00" x-model="amountRupees" @input="updateMinor()" required class="w-full pl-8 pr-3.5 py-2.5 border @error('amount_minor') border-red-300 bg-red-50/20 @else border-neutral-300 bg-white @enderror rounded-xl text-xs text-neutral-900 font-mono focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)]">
                             </div>
                             <input type="hidden" name="amount_minor" id="amount_minor_input" :value="amountMinor">
                             @error('amount_minor')
@@ -382,7 +413,7 @@
                             <label class="block text-xs font-semibold text-neutral-700 mb-1.5">
                                 Reason Code <span class="text-red-500">*</span>
                             </label>
-                            <select name="reason_code" required class="w-full px-3.5 py-2 border @error('reason_code') border-red-300 bg-red-50/20 @else border-neutral-300 bg-white @enderror rounded-xl text-xs text-neutral-900 bg-white focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)]">
+                            <select name="reason_code" required class="w-full px-3.5 py-2.5 border @error('reason_code') border-red-300 bg-red-50/20 @else border-neutral-300 bg-white @enderror rounded-xl text-xs text-neutral-900 bg-white focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)]">
                                 <option value="customer_cancellation" {{ old('reason_code', 'customer_cancellation') == 'customer_cancellation' ? 'selected' : '' }}>Customer Cancellation</option>
                                 <option value="damaged_goods" {{ old('reason_code') == 'damaged_goods' ? 'selected' : '' }}>Damaged / Defective Goods</option>
                                 <option value="duplicate_payment" {{ old('reason_code') == 'duplicate_payment' ? 'selected' : '' }}>Duplicate Payment</option>
@@ -398,7 +429,7 @@
                         <!-- Reason Note -->
                         <div>
                             <label class="block text-xs font-semibold text-neutral-700 mb-1.5">Reason Notes &amp; Explanation</label>
-                            <textarea name="reason_note" rows="2" placeholder="Details regarding this refund request..." class="w-full px-3.5 py-2 border @error('reason_note') border-red-300 bg-red-50/20 @else border-neutral-300 @enderror rounded-xl text-xs text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)]">{{ old('reason_note') }}</textarea>
+                            <textarea name="reason_note" rows="2" placeholder="Details regarding this refund request..." class="w-full px-3.5 py-2.5 border @error('reason_note') border-red-300 bg-red-50/20 @else border-neutral-300 @enderror rounded-xl text-xs text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)]">{{ old('reason_note') }}</textarea>
                             @error('reason_note')
                                 <p class="text-[11px] text-red-600 mt-1">{{ $message }}</p>
                             @enderror
@@ -412,7 +443,7 @@
                     </form>
                 </div>
             </div>
-        </div>
+        </template>
 
     </div>
 </x-layouts.admin>
