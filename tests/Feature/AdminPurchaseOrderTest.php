@@ -508,4 +508,69 @@ class AdminPurchaseOrderTest extends TestCase
         $this->assertFalse($partial->isFullyReceived());
         $this->assertTrue($full->isFullyReceived());
     }
+
+    public function test_admin_can_confirm_draft_purchase_order_via_web_route(): void
+    {
+        $po = $this->createTestPo(['status' => VendorOrderStatus::DRAFT->value]);
+
+        $response = $this->actingAs($this->adminUser)
+            ->post(route('admin.purchases.status.update', $po->public_id), [
+                'status' => 'ordered',
+            ]);
+
+        $response->assertRedirect(route('admin.purchases.show', $po->public_id));
+        $response->assertSessionHas('success');
+
+        $po->refresh();
+        $this->assertEquals(VendorOrderStatus::ORDERED, $po->status);
+        $this->assertNotNull($po->ordered_at);
+    }
+
+    public function test_admin_can_confirm_draft_purchase_order_using_confirmed_alias(): void
+    {
+        $po = $this->createTestPo(['status' => VendorOrderStatus::DRAFT->value]);
+
+        $response = $this->actingAs($this->adminUser)
+            ->post(route('admin.purchases.status.update', $po->public_id), [
+                'status' => 'confirmed',
+            ]);
+
+        $response->assertRedirect(route('admin.purchases.show', $po->public_id));
+        $response->assertSessionHas('success');
+
+        $po->refresh();
+        $this->assertEquals(VendorOrderStatus::ORDERED, $po->status);
+    }
+
+    public function test_admin_can_add_and_remove_line_item_on_draft_po_via_web_route(): void
+    {
+        $po = $this->createTestPo(['status' => VendorOrderStatus::DRAFT->value]);
+
+        // Add item
+        $addResponse = $this->actingAs($this->adminUser)
+            ->post(route('admin.purchases.items.store', $po->public_id), [
+                'product_sku_id' => $this->sku->id,
+                'quantity_ordered' => 15,
+                'unit_cost' => 250.50,
+            ]);
+
+        $addResponse->assertRedirect(route('admin.purchases.show', $po->public_id));
+        $addResponse->assertSessionHas('success');
+
+        $po->refresh();
+        $this->assertCount(1, $po->items);
+        $item = $po->items->first();
+        $this->assertEquals(15, $item->quantity_ordered);
+        $this->assertEquals(25050, $item->unit_cost_minor);
+
+        // Remove item
+        $deleteResponse = $this->actingAs($this->adminUser)
+            ->delete(route('admin.purchases.items.destroy', [$po->public_id, $item->id]));
+
+        $deleteResponse->assertRedirect(route('admin.purchases.show', $po->public_id));
+        $deleteResponse->assertSessionHas('success');
+
+        $po->refresh();
+        $this->assertCount(0, $po->items);
+    }
 }

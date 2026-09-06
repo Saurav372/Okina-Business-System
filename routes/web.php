@@ -156,6 +156,9 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     Route::get('/purchases', [PurchaseOrderAdminController::class, 'index'])->name('admin.purchases.index');
     Route::get('/purchases/create', [PurchaseOrderAdminController::class, 'create'])->name('admin.purchases.create');
     Route::get('/purchases/{vendorOrder:public_id}', [PurchaseOrderAdminController::class, 'show'])->name('admin.purchases.show');
+    Route::post('/purchases/{purchaseOrder:public_id}/status', [VendorOrderController::class, 'updateStatus'])->name('admin.purchases.status.update');
+    Route::post('/purchases/{purchaseOrder:public_id}/items', [VendorOrderItemController::class, 'store'])->name('admin.purchases.items.store');
+    Route::delete('/purchases/{purchaseOrder:public_id}/items/{item}', [VendorOrderItemController::class, 'destroy'])->name('admin.purchases.items.destroy');
     Route::post('/purchases/{vendorOrder:public_id}/receive', [PurchaseOrderReceivingController::class, 'receive'])->name('admin.purchases.receive');
     // Inventory & Stock Balances
     Route::get('/inventory', [InventoryController::class, 'index'])->name('admin.inventory.index');

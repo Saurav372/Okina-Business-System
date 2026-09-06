@@ -28,7 +28,7 @@ class VendorOrderItemController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreVendorOrderItemRequest $request, VendorOrder $purchaseOrder): JsonResponse
+    public function store(StoreVendorOrderItemRequest $request, VendorOrder $purchaseOrder): JsonResponse|\Illuminate\Http\RedirectResponse
     {
         Gate::authorize('create', [VendorOrderItem::class, $purchaseOrder]);
 
@@ -79,6 +79,11 @@ class VendorOrderItemController extends Controller
             throw $e;
         }
 
+        if (! $request->expectsJson() && ! $request->is('api/*')) {
+            return redirect()->route('admin.purchases.show', $purchaseOrder->public_id)
+                ->with('success', "Line item [{$sku->sku_code}] added successfully.");
+        }
+
         return response()->json($item, 201);
     }
 
@@ -126,7 +131,7 @@ class VendorOrderItemController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(VendorOrder $purchaseOrder, VendorOrderItem $item): JsonResponse
+    public function destroy(\Illuminate\Http\Request $request, VendorOrder $purchaseOrder, VendorOrderItem $item): JsonResponse|\Illuminate\Http\RedirectResponse
     {
         Gate::authorize('delete', $item);
 
@@ -148,6 +153,11 @@ class VendorOrderItemController extends Controller
                 ]));
             });
         });
+
+        if (! $request->expectsJson() && ! $request->is('api/*')) {
+            return redirect()->route('admin.purchases.show', $purchaseOrder->public_id)
+                ->with('success', 'Line item removed successfully.');
+        }
 
         return response()->json(['message' => 'Purchase order item deleted successfully.']);
     }

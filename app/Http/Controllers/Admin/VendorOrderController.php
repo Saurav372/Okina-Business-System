@@ -348,9 +348,14 @@ class VendorOrderController extends Controller
      */
     public function updateStatus(UpdateVendorOrderStatusRequest $request, VendorOrder $purchaseOrder): JsonResponse|RedirectResponse
     {
-        if ($request->input('status') === 'approved' || $request->input('status') === 'ordered') {
+        $targetStatus = $request->input('status');
+        if ($targetStatus === 'confirmed' || $targetStatus === 'approved') {
+            $targetStatus = 'ordered';
+        }
+
+        if ($targetStatus === 'ordered') {
             Gate::authorize('approve', $purchaseOrder);
-        } elseif ($request->input('status') === 'cancelled') {
+        } elseif ($targetStatus === 'cancelled') {
             Gate::authorize('cancel', $purchaseOrder);
         } else {
             Gate::authorize('update', $purchaseOrder);
@@ -359,14 +364,15 @@ class VendorOrderController extends Controller
         try {
             $updatedOrder = $this->statusService->transition(
                 order: $purchaseOrder,
-                targetStatus: $request->input('status'),
+                targetStatus: $targetStatus,
                 actor: $request->user(),
                 targetPaymentStatus: $request->input('payment_status')
             );
 
             if (! $request->expectsJson() && ! $request->is('api/*')) {
+                $statusLabel = $updatedOrder->status === VendorOrderStatus::ORDERED ? 'Confirmed & Ordered' : $updatedOrder->status->label();
                 return redirect()->route('admin.purchases.show', $updatedOrder->public_id)
-                    ->with('success', "Purchase order status updated to {$updatedOrder->status->value}.");
+                    ->with('success', "Purchase order [{$updatedOrder->public_id}] marked as {$statusLabel}.");
             }
 
             return response()->json($updatedOrder);

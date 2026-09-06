@@ -159,11 +159,25 @@
                                 </td>
 
                                 <!-- Action -->
-                                <td class="py-3.5 px-4 text-center">
-                                    <a href="{{ route('admin.purchases.show', $po->public_id) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-neutral-700 bg-white hover:bg-neutral-50 border border-neutral-300 rounded-lg shadow-2xs transition-colors">
-                                        <x-icons.lucide name="lucide-eye" class="w-3.5 h-3.5 text-neutral-500" />
-                                        <span>View</span>
-                                    </a>
+                                <td class="py-3.5 px-4 text-right">
+                                    <div class="inline-flex items-center justify-end gap-1.5">
+                                        <a href="{{ route('admin.purchases.show', $po->public_id) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-neutral-700 bg-white hover:bg-neutral-50 border border-neutral-300 rounded-lg shadow-2xs transition-colors">
+                                            <x-icons.lucide name="lucide-eye" class="w-3.5 h-3.5 text-neutral-500" />
+                                            <span>View</span>
+                                        </a>
+                                        @if ($po->status === \App\Enums\VendorOrderStatus::DRAFT)
+                                            @can('approve', $po)
+                                                <form action="{{ route('admin.purchases.status.update', $po->public_id) }}" method="POST" class="inline" onsubmit="return confirm('Confirm Purchase Order {{ $po->public_id }}?');">
+                                                    @csrf
+                                                    <input type="hidden" name="status" value="ordered">
+                                                    <button type="submit" class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold text-white bg-[color:var(--color-brand-600)] hover:bg-[color:var(--color-brand-700)] rounded-lg shadow-2xs transition-colors" title="Confirm & Mark as Ordered">
+                                                        <x-icons.lucide name="lucide-check" class="w-3.5 h-3.5" />
+                                                        <span>Confirm</span>
+                                                    </button>
+                                                </form>
+                                            @endcan
+                                        @endif
+                                    </div>
                                 </td>
                             </tr>
                         @empty

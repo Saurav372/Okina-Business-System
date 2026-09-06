@@ -25,6 +25,20 @@ class StoreVendorOrderItemRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('unit_cost') && ! $this->has('unit_cost_minor')) {
+            $this->merge([
+                'unit_cost_minor' => (int) round(((float) $this->input('unit_cost')) * 100),
+            ]);
+        }
+        if ($this->has('tax_amount') && ! $this->has('tax_amount_minor')) {
+            $this->merge([
+                'tax_amount_minor' => (int) round(((float) $this->input('tax_amount')) * 100),
+            ]);
+        }
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -32,7 +46,8 @@ class StoreVendorOrderItemRequest extends FormRequest
      */
     public function rules(): array
     {
-        $purchaseOrderId = $this->route('purchase_order')?->id;
+        $poParam = $this->route('purchase_order') ?? $this->route('purchaseOrder');
+        $purchaseOrderId = is_object($poParam) ? $poParam->id : $poParam;
 
         return [
             'product_sku_id' => [

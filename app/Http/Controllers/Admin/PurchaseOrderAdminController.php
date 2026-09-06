@@ -58,8 +58,13 @@ class PurchaseOrderAdminController extends Controller
             'receipts.creator',
         ]);
 
+        $skus = $vendorOrder->status === VendorOrderStatus::DRAFT
+            ? ProductSku::with('product')->orderBy('sku_code')->get()
+            : collect();
+
         return view('admin.purchases.show', [
             'order' => $vendorOrder,
+            'skus' => $skus,
             'statuses' => VendorOrderStatus::cases(),
             'paymentStatuses' => VendorOrderPaymentStatus::cases(),
         ]);

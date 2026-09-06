@@ -15,7 +15,8 @@ class VendorOrderItemPolicy
     public function create(Authenticatable $actor, VendorOrder $purchaseOrder): bool
     {
         if ($actor instanceof User) {
-            return $actor->hasPermissionTo('purchases.manage');
+            return $actor->hasPermissionTo('purchases.manage')
+                || $actor->hasPermissionTo('inventory.manage');
         }
 
         return false;
@@ -27,7 +28,8 @@ class VendorOrderItemPolicy
     public function update(Authenticatable $actor, VendorOrderItem $item): bool
     {
         if ($actor instanceof User) {
-            return $actor->hasPermissionTo('purchases.manage');
+            return $actor->hasPermissionTo('purchases.manage')
+                || $actor->hasPermissionTo('inventory.manage');
         }
 
         return false;
@@ -39,7 +41,8 @@ class VendorOrderItemPolicy
     public function delete(Authenticatable $actor, VendorOrderItem $item): bool
     {
         if ($actor instanceof User) {
-            return $actor->hasPermissionTo('purchases.manage');
+            return $actor->hasPermissionTo('purchases.manage')
+                || $actor->hasPermissionTo('inventory.manage');
         }
 
         return false;

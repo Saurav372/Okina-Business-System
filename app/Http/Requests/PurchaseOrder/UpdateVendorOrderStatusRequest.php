@@ -19,7 +19,7 @@ class UpdateVendorOrderStatusRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => ['required_without:payment_status', 'nullable', 'string', 'in:draft,submitted,ordered,approved,cancelled,partially_received,received'],
+            'status' => ['required_without:payment_status', 'nullable', 'string', 'in:draft,submitted,ordered,approved,confirmed,cancelled,partially_received,received'],
             'payment_status' => ['required_without:status', 'nullable', 'string', 'in:unpaid,partially_paid,paid,refunded'],
         ];
     }

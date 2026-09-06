@@ -2,6 +2,7 @@
     <div class="space-y-6 max-w-4xl mx-auto" x-data="{
         receiveModalOpen: {{ $errors->receiving->any() ? 'true' : 'false' }},
         payModalOpen: {{ $errors->payment->any() ? 'true' : 'false' }},
+        addItemModalOpen: {{ $errors->any() && old('product_sku_id') ? 'true' : 'false' }},
         activeItem: null,
         receiveQty: 1,
         payAmountRupees: 0,
@@ -20,7 +21,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-neutral-200 pb-5">
             <div>
                 <div class="flex items-center gap-3">
-                    <a href="{{ route('admin.purchases.index') }}" class="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors">
+                    <a href="{{ route('admin.purchases.index') }}" class="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors" title="Back to Purchases">
                         <x-icons.lucide name="lucide-arrow-left" class="w-5 h-5" />
                     </a>
                     <h1 class="text-2xl font-bold text-neutral-900 font-mono">{{ $order->public_id }}</h1>
@@ -36,7 +37,79 @@
                     ({{ $order->vendor?->vendor_code }})
                 </p>
             </div>
+
+            <!-- Header Action Controls -->
+            <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                @if ($order->status === \App\Enums\VendorOrderStatus::DRAFT)
+                    @can('approve', $order)
+                        <form action="{{ route('admin.purchases.status.update', $order->public_id) }}" method="POST" class="inline" onsubmit="return confirm('Confirm and issue Purchase Order {{ $order->public_id }}? This will transition status to Ordered and allow receiving stock.');">
+                            @csrf
+                            <input type="hidden" name="status" value="ordered">
+                            <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-[color:var(--color-brand-600)] hover:bg-[color:var(--color-brand-700)] rounded-xl shadow-xs hover:shadow-md transition-all">
+                                <x-icons.lucide name="lucide-check-circle" class="w-4 h-4" />
+                                <span>Confirm &amp; Place Order</span>
+                            </button>
+                        </form>
+                    @endcan
+
+                    @if ($skus->isNotEmpty())
+                        @can('create', [\App\Models\VendorOrderItem::class, $order])
+                            <button type="button" @click="addItemModalOpen = true" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-neutral-700 bg-white hover:bg-neutral-50 border border-neutral-300 rounded-xl shadow-2xs transition-colors">
+                                <x-icons.lucide name="lucide-plus" class="w-4 h-4 text-neutral-500" />
+                                <span>Add Item</span>
+                            </button>
+                        @endcan
+                    @endif
+
+                    @can('cancel', $order)
+                        <form action="{{ route('admin.purchases.status.update', $order->public_id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to cancel this draft Purchase Order?');">
+                            @csrf
+                            <input type="hidden" name="status" value="cancelled">
+                            <button type="submit" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-neutral-500 hover:text-red-700 hover:bg-red-50 border border-neutral-300 hover:border-red-200 rounded-xl transition-colors">
+                                <x-icons.lucide name="lucide-x" class="w-4 h-4" />
+                                <span>Cancel</span>
+                            </button>
+                        </form>
+                    @endcan
+                @elseif ($order->status === \App\Enums\VendorOrderStatus::ORDERED)
+                    @can('cancel', $order)
+                        @if ($order->items->sum('quantity_received') === 0 && $order->payments->sum('amount_minor') === 0)
+                            <form action="{{ route('admin.purchases.status.update', $order->public_id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to cancel this Purchase Order?');">
+                                @csrf
+                                <input type="hidden" name="status" value="cancelled">
+                                <button type="submit" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-neutral-500 hover:text-red-700 hover:bg-red-50 border border-neutral-300 hover:border-red-200 rounded-xl transition-colors">
+                                    <x-icons.lucide name="lucide-x-circle" class="w-4 h-4" />
+                                    <span>Cancel PO</span>
+                                </button>
+                            </form>
+                        @endif
+                    @endcan
+                @endif
+            </div>
         </div>
+
+        @if ($order->status === \App\Enums\VendorOrderStatus::DRAFT)
+            <!-- Draft Banner -->
+            <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-2xs">
+                <div class="flex items-start gap-2.5">
+                    <x-icons.lucide name="lucide-info" class="w-4 h-4 flex-shrink-0 text-amber-600 mt-0.5" />
+                    <div>
+                        <p class="font-bold">Draft Purchase Order</p>
+                        <p class="text-amber-800 text-[11px] mt-0.5">This procurement order is still in draft state. Confirm the order to finalize terms with the vendor and enable stock-in receiving.</p>
+                    </div>
+                </div>
+                @can('approve', $order)
+                    <form action="{{ route('admin.purchases.status.update', $order->public_id) }}" method="POST" onsubmit="return confirm('Confirm and issue Purchase Order {{ $order->public_id }}?');" class="inline">
+                        @csrf
+                        <input type="hidden" name="status" value="ordered">
+                        <button type="submit" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-[color:var(--color-brand-600)] hover:bg-[color:var(--color-brand-700)] rounded-xl shadow-xs transition-colors whitespace-nowrap">
+                            <x-icons.lucide name="lucide-check-circle" class="w-4 h-4" />
+                            <span>Confirm &amp; Place Order</span>
+                        </button>
+                    </form>
+                @endcan
+            </div>
+        @endif
 
         <!-- Session Flash Messages -->
         @if (session('success'))
@@ -99,9 +172,25 @@
 
         <!-- Line Items & Stock-In Receiving Table -->
         <div class="bg-white border border-neutral-200 rounded-2xl overflow-hidden shadow-xs">
-            <div class="p-5 border-b border-neutral-100">
-                <h3 class="text-sm font-bold text-neutral-900">Line Items &amp; Stock-In Receiving</h3>
-                <p class="text-xs text-neutral-500 mt-0.5">Click <strong>Receive Goods</strong> on any line item with remaining quantity to stock-in goods to inventory.</p>
+            <div class="p-5 border-b border-neutral-100 flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-bold text-neutral-900">Line Items &amp; Stock-In Receiving</h3>
+                    <p class="text-xs text-neutral-500 mt-0.5">
+                        @if ($order->status === \App\Enums\VendorOrderStatus::DRAFT)
+                            Review procurement items and unit costs before confirming the order.
+                        @else
+                            Click <strong>Receive Goods</strong> on any line item with remaining quantity to stock-in goods to inventory.
+                        @endif
+                    </p>
+                </div>
+                @if ($order->status === \App\Enums\VendorOrderStatus::DRAFT && $skus->isNotEmpty())
+                    @can('create', [\App\Models\VendorOrderItem::class, $order])
+                        <button type="button" @click="addItemModalOpen = true" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[color:var(--color-brand-600)] bg-red-50 hover:bg-red-100 border border-red-200 rounded-xl transition-colors shadow-2xs">
+                            <x-icons.lucide name="lucide-plus" class="w-3.5 h-3.5" />
+                            <span>Add Item</span>
+                        </button>
+                    @endcan
+                @endif
             </div>
 
             <div class="overflow-x-auto">
@@ -119,7 +208,7 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-neutral-100">
-                        @foreach ($order->items as $item)
+                        @forelse ($order->items as $item)
                             <tr class="hover:bg-neutral-50/60 transition-colors">
                                 <td class="py-3 px-4 font-mono font-bold text-[color:var(--color-brand-600)]">
                                     {{ $item->productSku?->sku_code ?? $item->sku_code_snapshot }}
@@ -165,12 +254,36 @@
                                                 <span>Receive Goods</span>
                                             </button>
                                         @endcan
+                                    @elseif ($order->status === \App\Enums\VendorOrderStatus::DRAFT)
+                                        @can('delete', $item)
+                                            <form action="{{ route('admin.purchases.items.destroy', [$order->public_id, $item->id]) }}" method="POST" onsubmit="return confirm('Remove line item {{ $item->productSku?->sku_code ?? $item->sku_code_snapshot }}?');" class="inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="p-1 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Remove line item">
+                                                    <x-icons.lucide name="lucide-trash-2" class="w-4 h-4" />
+                                                </button>
+                                            </form>
+                                        @endcan
                                     @else
                                         <span class="text-neutral-400 italic text-[11px]">—</span>
                                     @endif
                                 </td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="8" class="py-10 text-center text-neutral-400">
+                                    <x-icons.lucide name="lucide-package-open" class="w-8 h-8 mx-auto text-neutral-300 mb-2" />
+                                    <p class="text-xs font-semibold text-neutral-700">No items added to this purchase order yet</p>
+                                    @if ($order->status === \App\Enums\VendorOrderStatus::DRAFT && $skus->isNotEmpty())
+                                        <p class="text-[11px] text-neutral-400 mt-1 mb-3">Add items with unit procurement costs before confirming the order.</p>
+                                        <button type="button" @click="addItemModalOpen = true" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-[color:var(--color-brand-600)] hover:bg-[color:var(--color-brand-700)] rounded-xl shadow-xs transition-colors">
+                                            <x-icons.lucide name="lucide-plus" class="w-3.5 h-3.5" />
+                                            <span>Add Line Item</span>
+                                        </button>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforelse
                     </tbody>
                     <tfoot class="border-t-2 border-neutral-200 bg-neutral-50/50">
                         <tr>
@@ -426,6 +539,85 @@
                 </div>
             </div>
         </div>
+
+        @if ($order->status === \App\Enums\VendorOrderStatus::DRAFT && $skus->isNotEmpty())
+            <!-- Add Line Item Modal -->
+            <div x-show="addItemModalOpen" style="display: none;" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                    <div @click="addItemModalOpen = false" class="fixed inset-0 bg-neutral-950/40 backdrop-blur-xs transition-opacity" aria-hidden="true"></div>
+
+                    <div class="inline-block align-bottom bg-white border border-neutral-200 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                        <form action="{{ route('admin.purchases.items.store', $order->public_id) }}" method="POST" class="p-6 space-y-4" x-data="{
+                            selectedSkuId: '',
+                            quantity: 1,
+                            unitCost: 0,
+                            taxAmount: 0,
+                            get lineTotal() {
+                                return Math.max(0, (this.quantity * this.unitCost) + Number(this.taxAmount || 0));
+                            }
+                        }">
+                            @csrf
+
+                            <div class="flex items-center justify-between border-b border-neutral-200 pb-3">
+                                <div>
+                                    <h3 class="text-base font-bold text-neutral-900">Add Line Item</h3>
+                                    <p class="text-xs text-neutral-500 mt-0.5">Add a catalog SKU to this draft purchase order.</p>
+                                </div>
+                                <button type="button" @click="addItemModalOpen = false" class="text-neutral-400 hover:text-neutral-600">
+                                    <x-icons.lucide name="lucide-x" class="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-neutral-700 mb-1">Select Product SKU <span class="text-red-500">*</span></label>
+                                <select name="product_sku_id" x-model="selectedSkuId" required class="w-full px-3.5 py-2 border border-neutral-300 rounded-xl text-xs text-neutral-900 focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)]">
+                                    <option value="">-- Choose SKU --</option>
+                                    @foreach ($skus as $sku)
+                                        <option value="{{ $sku->id }}">
+                                            {{ $sku->sku_code }} — {{ $sku->product?->name }} (In Stock: {{ $sku->stock_quantity ?? 0 }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-neutral-700 mb-1">Quantity Ordered <span class="text-red-500">*</span></label>
+                                    <input type="number" name="quantity_ordered" min="1" x-model.number="quantity" required class="w-full px-3.5 py-2 border border-neutral-300 rounded-xl text-xs font-mono text-neutral-900 focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)]">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-neutral-700 mb-1">Unit Cost (₹) <span class="text-red-500">*</span></label>
+                                    <input type="number" name="unit_cost" step="0.01" min="0" x-model.number="unitCost" required placeholder="0.00" class="w-full px-3.5 py-2 border border-neutral-300 rounded-xl text-xs font-mono text-neutral-900 focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)]">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-neutral-700 mb-1">Tax Amount (₹, optional)</label>
+                                <input type="number" name="tax_amount" step="0.01" min="0" x-model.number="taxAmount" placeholder="0.00" class="w-full px-3.5 py-2 border border-neutral-300 rounded-xl text-xs font-mono text-neutral-900 focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)]">
+                            </div>
+
+                            <div class="p-3 rounded-xl bg-neutral-50 border border-neutral-200 flex items-center justify-between text-xs">
+                                <span class="font-semibold text-neutral-600">Calculated Line Total:</span>
+                                <span class="font-mono font-bold text-neutral-900" x-text="'₹' + lineTotal.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})"></span>
+                            </div>
+
+                            <!-- Submit Bar -->
+                            <div class="flex items-center justify-end gap-3 pt-3 border-t border-neutral-200">
+                                <button type="button" @click="addItemModalOpen = false" class="px-4 py-2 text-xs font-semibold text-neutral-700 hover:text-neutral-900 bg-white hover:bg-neutral-50 border border-neutral-300 rounded-xl transition-colors">
+                                    Cancel
+                                </button>
+                                <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-[color:var(--color-brand-600)] hover:bg-[color:var(--color-brand-700)] rounded-xl shadow-xs transition-colors">
+                                    <span class="flex items-center gap-1.5">
+                                        <x-icons.lucide name="lucide-plus" class="w-4 h-4" />
+                                        Add to Purchase Order
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endif
 
     </div>
 </x-layouts.admin>
