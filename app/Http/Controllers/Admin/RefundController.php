@@ -43,10 +43,31 @@ class RefundController extends Controller
         }
 
         $succeededPayments = Payment::where('status', Payment::STATUS_SUCCEEDED)
-            ->with('order.customer')
+            ->with([
+                'order.customer',
+                'refunds' => function ($query) {
+                    $query->whereIn('status', [
+                        Refund::STATUS_REQUESTED,
+                        Refund::STATUS_APPROVED,
+                        Refund::STATUS_PROCESSING,
+                        Refund::STATUS_SUCCEEDED,
+                    ]);
+                },
+            ])
             ->latest('id')
-            ->limit(50)
-            ->get();
+            ->limit(100)
+            ->get()
+            ->map(function ($payment) {
+                $existingRefundedSum = (int) $payment->refunds->sum('amount_minor');
+                $payment->remaining_refundable_minor = max(0, $payment->amount_minor - $existingRefundedSum);
+                $payment->existing_refunded_minor = $existingRefundedSum;
+
+                return $payment;
+            })
+            ->filter(function ($payment) {
+                return $payment->remaining_refundable_minor > 0;
+            })
+            ->values();
 
         return view('admin.refunds.index', [
             'filters' => $filters,

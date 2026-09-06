@@ -1,5 +1,49 @@
+@php
+    $paymentsJson = $succeededPayments->map(fn($p) => [
+        'id' => (int) $p->id,
+        'order_public_id' => $p->order?->public_id ?? 'N/A',
+        'customer_name' => $p->order?->customer?->name ?? 'Guest Customer',
+        'total_rupees' => number_format($p->amount_minor / 100, 2, '.', ''),
+        'refunded_rupees' => number_format(($p->existing_refunded_minor ?? 0) / 100, 2, '.', ''),
+        'remaining_rupees' => number_format(($p->remaining_refundable_minor ?? $p->amount_minor) / 100, 2, '.', ''),
+        'remaining_minor' => (int) ($p->remaining_refundable_minor ?? $p->amount_minor),
+    ]);
+@endphp
+
 <x-layouts.admin title="Customer Refunds">
-    <div class="space-y-6" x-data="{ openRequestModal: false }">
+    <div class="space-y-6" x-data="{
+        openRequestModal: {{ $errors->any() ? 'true' : 'false' }},
+        selectedPaymentId: '{{ old('payment_id', '') }}',
+        amountRupees: '{{ old('amount_rupees', '') }}',
+        amountMinor: '{{ old('amount_minor', '') }}',
+        payments: {{ Js::from($paymentsJson) }},
+        get selectedPayment() {
+            return this.payments.find(p => p.id == this.selectedPaymentId) || null;
+        },
+        onPaymentChange() {
+            if (this.selectedPayment && (!this.amountRupees || parseFloat(this.amountRupees) <= 0)) {
+                this.setFullRefund();
+            } else {
+                this.updateMinor();
+            }
+        },
+        setFullRefund() {
+            if (this.selectedPayment) {
+                this.amountRupees = this.selectedPayment.remaining_rupees;
+                this.updateMinor();
+            }
+        },
+        setHalfRefund() {
+            if (this.selectedPayment) {
+                this.amountRupees = (this.selectedPayment.remaining_minor / 200).toFixed(2);
+                this.updateMinor();
+            }
+        },
+        updateMinor() {
+            const val = parseFloat(this.amountRupees);
+            this.amountMinor = (!isNaN(val) && val > 0) ? Math.round(val * 100) : '';
+        }
+    }">
 
         <!-- Scopes (Tabs Toolbar) -->
         <div class="flex items-center justify-between border-b border-neutral-200 pb-3 mb-4">
@@ -230,61 +274,140 @@
         </div>
 
         <!-- Request Refund Modal -->
-        <div x-show="openRequestModal" style="display: none;" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div x-show="openRequestModal" style="display: none;" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" @keydown.escape.window="openRequestModal = false">
             <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                 <div @click="openRequestModal = false" class="fixed inset-0 bg-neutral-950/40 backdrop-blur-xs transition-opacity" aria-hidden="true"></div>
 
                 <div class="inline-block align-bottom bg-white border border-neutral-200 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                    <form action="{{ route('admin.refunds.store') }}" method="POST" class="p-6 space-y-4">
+                    <form action="{{ route('admin.refunds.store') }}" method="POST" class="p-6 space-y-4" @submit="updateMinor()">
                         @csrf
                         <div class="flex items-center justify-between border-b border-neutral-200 pb-3">
-                            <h3 class="text-base font-bold text-neutral-900">Request Customer Refund</h3>
-                            <button type="button" @click="openRequestModal = false" class="text-neutral-400 hover:text-neutral-600">
+                            <div class="flex items-center gap-2">
+                                <div class="p-2 rounded-xl bg-amber-50 text-amber-600 border border-amber-100">
+                                    <x-icons.lucide name="lucide-undo-2" class="w-4 h-4" />
+                                </div>
+                                <h3 class="text-base font-bold text-neutral-900">Request Customer Refund</h3>
+                            </div>
+                            <button type="button" @click="openRequestModal = false" class="text-neutral-400 hover:text-neutral-600 p-1.5 rounded-lg hover:bg-neutral-100 transition-colors" aria-label="Close modal">
                                 <x-icons.lucide name="lucide-x" class="w-5 h-5" />
                             </button>
                         </div>
 
+                        @if ($errors->any())
+                            <div class="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs font-medium space-y-1">
+                                <div class="font-bold flex items-center gap-1.5 text-red-900">
+                                    <x-icons.lucide name="lucide-alert-circle" class="w-4 h-4 text-red-600 shrink-0" />
+                                    <span>Unable to create refund request</span>
+                                </div>
+                                <ul class="list-disc list-inside space-y-0.5 text-red-700 pl-1 text-[11px]">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+
                         <!-- Select Payment -->
                         <div>
-                            <label class="block text-xs font-semibold text-neutral-700 mb-1.5">Select Succeeded Payment</label>
-                            <select name="payment_id" required class="w-full px-3.5 py-2 border border-neutral-300 rounded-xl text-xs text-neutral-900 bg-white focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)]">
+                            <label class="block text-xs font-semibold text-neutral-700 mb-1.5">
+                                Select Succeeded Payment <span class="text-red-500">*</span>
+                            </label>
+                            <select name="payment_id" x-model="selectedPaymentId" @change="onPaymentChange()" required class="w-full px-3.5 py-2 border @error('payment_id') border-red-300 bg-red-50/20 @else border-neutral-300 bg-white @enderror rounded-xl text-xs text-neutral-900 focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)]">
                                 <option value="">-- Select Succeeded Payment --</option>
                                 @foreach ($succeededPayments as $p)
-                                    <option value="{{ $p->id }}">Order #{{ $p->order?->public_id }} - ₹{{ number_format($p->amount_minor / 100, 2) }} ({{ $p->order?->customer?->name ?? 'Guest' }})</option>
+                                    <option value="{{ $p->id }}" {{ old('payment_id') == $p->id ? 'selected' : '' }}>
+                                        Order #{{ $p->order?->public_id }} &bull; ₹{{ number_format($p->amount_minor / 100, 2) }} ({{ $p->order?->customer?->name ?? 'Guest' }}) &bull; Available: ₹{{ number_format($p->remaining_refundable_minor / 100, 2) }}
+                                    </option>
                                 @endforeach
                             </select>
+                            @error('payment_id')
+                                <p class="text-[11px] text-red-600 mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Selected Payment Overview Card -->
+                        <div x-show="selectedPayment" style="display: none;" class="p-3.5 rounded-xl bg-neutral-50 border border-neutral-200 text-xs space-y-2">
+                            <div class="flex items-center justify-between text-neutral-600">
+                                <span>Customer:</span>
+                                <span class="font-semibold text-neutral-900" x-text="selectedPayment?.customer_name"></span>
+                            </div>
+                            <div class="flex items-center justify-between text-neutral-600">
+                                <span>Original Paid:</span>
+                                <span class="font-mono font-medium text-neutral-800" x-text="'₹' + selectedPayment?.total_rupees"></span>
+                            </div>
+                            <div class="flex items-center justify-between text-neutral-600" x-show="parseFloat(selectedPayment?.refunded_rupees) > 0">
+                                <span>Previously Refunded:</span>
+                                <span class="font-mono font-medium text-amber-700" x-text="'₹' + selectedPayment?.refunded_rupees"></span>
+                            </div>
+                            <div class="flex items-center justify-between border-t border-neutral-200 pt-2 font-bold text-neutral-900">
+                                <span>Maximum Refundable:</span>
+                                <span class="font-mono text-emerald-700 text-sm" x-text="'₹' + selectedPayment?.remaining_rupees"></span>
+                            </div>
                         </div>
 
                         <!-- Refund Amount (Rupees) -->
                         <div>
-                            <label class="block text-xs font-semibold text-neutral-700 mb-1.5">Refund Amount (in ₹ Rupees)</label>
-                            <input type="number" name="amount_rupees" step="0.01" min="0.01" placeholder="e.g. 500.00" required class="w-full px-3.5 py-2 border border-neutral-300 rounded-xl text-xs text-neutral-900 font-mono focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)]" onchange="document.getElementById('amount_minor_input').value = Math.round(parseFloat(this.value) * 100);">
-                            <input type="hidden" name="amount_minor" id="amount_minor_input">
+                            <div class="flex items-center justify-between mb-1.5">
+                                <label class="block text-xs font-semibold text-neutral-700">
+                                    Refund Amount (₹ Rupees) <span class="text-red-500">*</span>
+                                </label>
+                                <template x-if="selectedPayment">
+                                    <div class="flex items-center gap-1.5">
+                                        <button type="button" @click="setFullRefund()" class="px-2 py-0.5 text-[10px] font-bold text-[color:var(--color-brand-700)] bg-[color:var(--color-brand-50)] hover:bg-[color:var(--color-brand-100)] rounded-md border border-[color:var(--color-brand-200)] transition-colors">
+                                            Full (₹<span x-text="selectedPayment?.remaining_rupees"></span>)
+                                        </button>
+                                        <button type="button" @click="setHalfRefund()" class="px-2 py-0.5 text-[10px] font-semibold text-neutral-600 bg-neutral-100 hover:bg-neutral-200 rounded-md border border-neutral-200 transition-colors">
+                                            50%
+                                        </button>
+                                    </div>
+                                </template>
+                            </div>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-400 font-mono text-xs">
+                                    ₹
+                                </div>
+                                <input type="number" name="amount_rupees" step="0.01" min="0.01" :max="selectedPayment ? selectedPayment.remaining_rupees : null" placeholder="0.00" x-model="amountRupees" @input="updateMinor()" required class="w-full pl-7 pr-3.5 py-2 border @error('amount_minor') border-red-300 bg-red-50/20 @else border-neutral-300 bg-white @enderror rounded-xl text-xs text-neutral-900 font-mono focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)]">
+                            </div>
+                            <input type="hidden" name="amount_minor" id="amount_minor_input" :value="amountMinor">
+                            @error('amount_minor')
+                                <p class="text-[11px] text-red-600 mt-1">{{ $message }}</p>
+                            @enderror
+                            @error('amount_rupees')
+                                <p class="text-[11px] text-red-600 mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <!-- Mandatory Reason Code -->
                         <div>
-                            <label class="block text-xs font-semibold text-neutral-700 mb-1.5">Mandatory Reason Code</label>
-                            <select name="reason_code" required class="w-full px-3.5 py-2 border border-neutral-300 rounded-xl text-xs text-neutral-900 bg-white focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)]">
-                                <option value="customer_cancellation">Customer Cancellation</option>
-                                <option value="damaged_goods">Damaged / Defective Goods</option>
-                                <option value="duplicate_payment">Duplicate Payment</option>
-                                <option value="pricing_correction">Pricing Correction</option>
-                                <option value="order_adjustment">Order Adjustment</option>
-                                <option value="other">Other Reason</option>
+                            <label class="block text-xs font-semibold text-neutral-700 mb-1.5">
+                                Reason Code <span class="text-red-500">*</span>
+                            </label>
+                            <select name="reason_code" required class="w-full px-3.5 py-2 border @error('reason_code') border-red-300 bg-red-50/20 @else border-neutral-300 bg-white @enderror rounded-xl text-xs text-neutral-900 bg-white focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)]">
+                                <option value="customer_cancellation" {{ old('reason_code', 'customer_cancellation') == 'customer_cancellation' ? 'selected' : '' }}>Customer Cancellation</option>
+                                <option value="damaged_goods" {{ old('reason_code') == 'damaged_goods' ? 'selected' : '' }}>Damaged / Defective Goods</option>
+                                <option value="duplicate_payment" {{ old('reason_code') == 'duplicate_payment' ? 'selected' : '' }}>Duplicate Payment</option>
+                                <option value="pricing_correction" {{ old('reason_code') == 'pricing_correction' ? 'selected' : '' }}>Pricing Correction</option>
+                                <option value="order_adjustment" {{ old('reason_code') == 'order_adjustment' ? 'selected' : '' }}>Order Adjustment</option>
+                                <option value="other" {{ old('reason_code') == 'other' ? 'selected' : '' }}>Other Reason</option>
                             </select>
+                            @error('reason_code')
+                                <p class="text-[11px] text-red-600 mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <!-- Reason Note -->
                         <div>
                             <label class="block text-xs font-semibold text-neutral-700 mb-1.5">Reason Notes &amp; Explanation</label>
-                            <textarea name="reason_note" rows="2" placeholder="Details regarding this refund request..." class="w-full px-3.5 py-2 border border-neutral-300 rounded-xl text-xs text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)]"></textarea>
+                            <textarea name="reason_note" rows="2" placeholder="Details regarding this refund request..." class="w-full px-3.5 py-2 border @error('reason_note') border-red-300 bg-red-50/20 @else border-neutral-300 @enderror rounded-xl text-xs text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)]">{{ old('reason_note') }}</textarea>
+                            @error('reason_note')
+                                <p class="text-[11px] text-red-600 mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <!-- Submit Bar -->
                         <div class="flex items-center justify-end gap-3 pt-3 border-t border-neutral-200">
-                            <button type="button" @click="openRequestModal = false" class="px-4 py-2 text-xs font-semibold text-neutral-700 hover:text-neutral-900 bg-white hover:bg-neutral-50 border border-neutral-300 rounded-xl">Cancel</button>
-                            <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-[color:var(--color-brand-600)] hover:bg-[color:var(--color-brand-700)] rounded-xl shadow-xs">Create Refund Request</button>
+                            <button type="button" @click="openRequestModal = false" class="px-4 py-2 text-xs font-semibold text-neutral-700 hover:text-neutral-900 bg-white hover:bg-neutral-50 border border-neutral-300 rounded-xl transition-colors">Cancel</button>
+                            <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-[color:var(--color-brand-600)] hover:bg-[color:var(--color-brand-700)] rounded-xl shadow-xs transition-colors">Create Refund Request</button>
                         </div>
                     </form>
                 </div>
