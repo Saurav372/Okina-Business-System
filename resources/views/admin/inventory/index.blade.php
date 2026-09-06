@@ -250,7 +250,7 @@
                                 <!-- Action Buttons -->
                                 <td class="py-3.5 px-4 text-center">
                                     <div class="flex items-center justify-center gap-1.5">
-                                        @can('manage', 'inventory')
+                                        @can('inventory.manage')
                                             <button type="button"
                                                 data-item="{{ json_encode([
                                                     'id' => $item->id,

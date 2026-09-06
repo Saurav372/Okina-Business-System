@@ -80,6 +80,14 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(GoogleSheetsSyncLog::class, GoogleSheetsSyncLogPolicy::class);
         Gate::policy(InventoryItem::class, InventoryPolicy::class);
 
+        Gate::define('manage', function (User $user, mixed $target = null): bool {
+            if ($target === 'inventory' || $target === InventoryItem::class || $target instanceof InventoryItem) {
+                return (new InventoryPolicy)->manage($user);
+            }
+
+            return false;
+        });
+
         Gate::define('reports.finance.view', function (User $user) {
             return $user->hasPermissionTo('reports.finance.view')
                 || $user->hasPermissionTo('reports.view')

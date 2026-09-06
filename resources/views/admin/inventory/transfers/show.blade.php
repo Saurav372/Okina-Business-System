@@ -24,7 +24,7 @@
 
             <!-- Lifecycle Action Buttons -->
             <div class="flex items-center gap-2">
-                @can('manage', 'inventory')
+                @can('inventory.manage')
                     @if ($transfer->status === \App\Enums\WarehouseTransferStatus::DRAFT)
                         <form action="{{ route('admin.inventory.transfers.ship', $transfer) }}" method="POST">
                             @csrf

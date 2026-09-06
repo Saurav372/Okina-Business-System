@@ -15,7 +15,7 @@
                 </a>
             </div>
 
-            @can('manage', 'inventory')
+            @can('inventory.manage')
                 <a href="{{ route('admin.inventory.transfers.create') }}" class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold bg-[color:var(--color-brand-600)] text-white rounded-xl hover:bg-[color:var(--color-brand-700)] transition-colors shadow-xs">
                     <x-icons.lucide name="lucide-plus" class="w-4 h-4" />
                     <span>Initiate Transfer</span>
