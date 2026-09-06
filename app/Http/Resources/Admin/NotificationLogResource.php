@@ -39,7 +39,7 @@ class NotificationLogResource extends JsonResource
                     'response_payload' => $attempt->response_payload,
                     'attempted_at' => $attempt->attempted_at?->toIso8601String(),
                 ];
-            }) : [],
+            })->values()->all() : [],
         ];
     }
 }

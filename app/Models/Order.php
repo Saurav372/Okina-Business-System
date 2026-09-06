@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -231,6 +232,61 @@ class Order extends Model
     public function refunds(): HasMany
     {
         return $this->hasMany(Refund::class);
+    }
+
+    public function cancellation(): HasOne
+    {
+        return $this->hasOne(OrderCancellation::class);
+    }
+
+    public function canBeCancelled(): bool
+    {
+        return in_array($this->status, [
+            OrderStatus::PendingPayment->value,
+            OrderStatus::Confirmed->value,
+            OrderStatus::InProduction->value,
+            OrderStatus::ReadyToShip->value,
+        ], true);
+    }
+
+    public function getCapturedPaymentsAmountMinor(): int
+    {
+        return (int) $this->payments()
+            ->where('status', Payment::STATUS_SUCCEEDED)
+            ->sum('amount_minor');
+    }
+
+    public function getSucceededRefundsAmountMinor(): int
+    {
+        return (int) $this->refunds()
+            ->where('status', Refund::STATUS_SUCCEEDED)
+            ->sum('amount_minor');
+    }
+
+    public function getPendingRefundRequestsAmountMinor(): int
+    {
+        return (int) $this->refunds()
+            ->whereIn('status', [
+                Refund::STATUS_REQUESTED,
+                Refund::STATUS_APPROVED,
+                Refund::STATUS_PROCESSING,
+            ])
+            ->sum('amount_minor');
+    }
+
+    public function getRefundableCapturedAmountMinor(): int
+    {
+        return max(0, $this->getCapturedPaymentsAmountMinor() - $this->getSucceededRefundsAmountMinor());
+    }
+
+    public function getAvailableRefundRequestAmountMinor(): int
+    {
+        return max(
+            0,
+            $this->getCapturedPaymentsAmountMinor()
+            - $this->getSucceededRefundsAmountMinor()
+            - $this->getPendingRefundRequestsAmountMinor()
+        );
     }
 
     /**

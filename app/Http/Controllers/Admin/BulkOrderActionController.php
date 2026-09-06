@@ -28,7 +28,9 @@ class BulkOrderActionController extends Controller
 
         $statusEnum = OrderStatus::tryFrom($result->action);
         $statusLabel = $statusEnum ? $statusEnum->label() : ucfirst(str_replace('_', ' ', $result->action));
-        $message = "{$result->updatedCount} order(s) updated to {$statusLabel} successfully.";
+        $message = $result->action === 'confirmed'
+            ? "{$result->updatedCount} orders confirmed successfully."
+            : "{$result->updatedCount} order(s) updated to {$statusLabel} successfully.";
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -171,5 +173,51 @@ class BulkOrderActionController extends Controller
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ]);
+    }
+
+    public function bulkCancel(Request $request)
+    {
+        $validated = $request->validate([
+            'order_ids' => ['required', 'array', 'min:1'],
+            'order_ids.*' => ['required', 'string'],
+            'reason_code' => ['required', 'string', 'in:customer_request,artwork_issue,lead_time_delay,pricing_error,duplicate_order,other'],
+            'reason_note' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $result = $this->bulkService->bulkCancel(
+            orderIds: $validated['order_ids'],
+            reasonCode: $validated['reason_code'],
+            reasonNote: $validated['reason_note'] ?? null,
+            actor: $request->user()
+        );
+
+        $message = "Bulk cancellation completed: {$result['cancelled_count']} order(s) cancelled.";
+        $skippedParts = [];
+        if (! empty($result['skipped']['in_production'])) {
+            $count = count($result['skipped']['in_production']);
+            $skippedParts[] = "{$count} In Production (requires individual inspection)";
+        }
+        if (! empty($result['skipped']['ready_to_ship'])) {
+            $count = count($result['skipped']['ready_to_ship']);
+            $skippedParts[] = "{$count} Ready to Ship";
+        }
+        if (! empty($result['skipped']['shipped_or_terminal'])) {
+            $count = count($result['skipped']['shipped_or_terminal']);
+            $skippedParts[] = "{$count} Already Shipped/Terminal";
+        }
+
+        if (! empty($skippedParts)) {
+            $message .= ' Skipped: ' . implode(', ', $skippedParts) . '.';
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'data' => $result,
+            ]);
+        }
+
+        return redirect()->back()->with('success', $message);
     }
 }

@@ -12,11 +12,16 @@
 
 <x-layouts.admin title="Customer Refunds">
     <div class="space-y-6" x-data="{
-        openRequestModal: {{ $errors->any() ? 'true' : 'false' }},
-        selectedPaymentId: '{{ old('payment_id', '') }}',
+        openRequestModal: {{ ($errors->any() || request('open') == 1) ? 'true' : 'false' }},
+        selectedPaymentId: '{{ old('payment_id', request('payment_id', '')) }}',
         amountRupees: '{{ old('amount_rupees', '') }}',
         amountMinor: '{{ old('amount_minor', '') }}',
         payments: {{ Js::from($paymentsJson) }},
+        init() {
+            if (this.selectedPaymentId && this.selectedPayment && (!this.amountRupees || parseFloat(this.amountRupees) <= 0)) {
+                this.setFullRefund();
+            }
+        },
         get selectedPayment() {
             return this.payments.find(p => p.id == this.selectedPaymentId) || null;
         },

@@ -11,6 +11,8 @@
         x-data="{
             selectedOrders: [],
             selectedBulkStatus: 'confirmed',
+            bulkCancelReason: 'customer_request',
+            bulkCancelNote: '',
             pageOrderIds: {{ json_encode($orders->pluck('public_id')->all()) }},
             get allSelected() {
                 return this.pageOrderIds.length > 0 && this.pageOrderIds.every(id => this.selectedOrders.includes(id));
@@ -35,6 +37,12 @@
                 form.target = '_self';
                 document.getElementById('bulk-action-input').value = action;
                 document.getElementById('bulk-target-status-input').value = targetStatus || '';
+                form.submit();
+            },
+            submitBulkCancel() {
+                const form = document.getElementById('bulk-cancel-form');
+                document.getElementById('bulk-cancel-reason-input').value = this.bulkCancelReason;
+                document.getElementById('bulk-cancel-note-input').value = this.bulkCancelNote;
                 form.submit();
             },
             submitPackingSlips() {
@@ -566,6 +574,16 @@
         </template>
     </form>
 
+    <!-- Hidden Form for Dedicated Bulk Cancel Submission -->
+    <form id="bulk-cancel-form" method="POST" action="{{ route('admin.orders.bulk.cancel') }}" class="hidden">
+        @csrf
+        <input type="hidden" name="reason_code" id="bulk-cancel-reason-input">
+        <input type="hidden" name="reason_note" id="bulk-cancel-note-input">
+        <template x-for="id in selectedOrders" :key="id">
+            <input type="hidden" name="order_ids[]" :value="id">
+        </template>
+    </form>
+
     <!-- Floating Bulk Action Toolbar -->
     <div 
         x-show="selectedOrders.length > 0"
@@ -711,11 +729,59 @@
         </x-slot:footer>
     </x-modal>
 
-    <x-modal id="bulk-cancel-modal" title="Cancel selected orders?">
-        <p class="text-sm text-neutral-600">This action will cancel all selected orders. Are you sure you want to proceed?</p>
+    <x-modal id="bulk-cancel-modal" title="Cancel Selected Orders">
+        <div class="space-y-4">
+            <div class="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900 leading-relaxed space-y-1">
+                <div class="font-bold flex items-center gap-1.5">
+                    <x-icons.lucide name="lucide-alert-triangle" class="w-4 h-4 text-amber-600" />
+                    Pre-Production Orders Only
+                </div>
+                <p class="text-amber-800">
+                    Bulk cancellation applies strictly to orders in <span class="font-semibold">Pending Payment</span> and <span class="font-semibold">Confirmed</span>. Any selected orders currently <span class="font-semibold">In Production</span> or <span class="font-semibold">Ready to Ship</span> will be safely skipped to ensure mandatory operational and scrap inspection.
+                </p>
+            </div>
+
+            <div class="space-y-1.5">
+                <label class="block text-xs font-bold uppercase tracking-wider text-neutral-700">
+                    Cancellation Reason <span class="text-rose-600">*</span>
+                </label>
+                <select 
+                    x-model="bulkCancelReason" 
+                    class="w-full rounded-xl border border-neutral-300 px-3 py-2 text-xs font-semibold text-neutral-800 focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                >
+                    <option value="customer_request">Customer Request</option>
+                    <option value="artwork_issue">Artwork / Design Issue</option>
+                    <option value="lead_time_delay">Lead Time Delay</option>
+                    <option value="pricing_error">Pricing / Quotation Error</option>
+                    <option value="duplicate_order">Duplicate Order</option>
+                    <option value="other">Other Reason</option>
+                </select>
+            </div>
+
+            <div class="space-y-1.5">
+                <label class="block text-xs font-bold uppercase tracking-wider text-neutral-700">
+                    Notes / Explanation <span x-show="bulkCancelReason === 'other'" class="text-rose-600">*</span>
+                </label>
+                <textarea 
+                    x-model="bulkCancelNote" 
+                    rows="2" 
+                    placeholder="Provide operational reason or context for bulk cancellation..."
+                    class="w-full rounded-xl border border-neutral-300 px-3 py-2 text-xs text-neutral-800 focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                ></textarea>
+            </div>
+        </div>
         <x-slot:footer>
-            <button type="button" @click="$dispatch('close-overlay', 'bulk-cancel-modal')" class="px-4 py-2 border border-neutral-300 rounded-xl text-xs font-semibold text-neutral-700 bg-white hover:bg-neutral-50 cursor-pointer">Cancel</button>
-            <button type="button" @click="submitBulkAction('cancel')" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold cursor-pointer">Cancel Orders</button>
+            <button type="button" @click="$dispatch('close-overlay', 'bulk-cancel-modal')" class="px-4 py-2 border border-neutral-300 rounded-xl text-xs font-semibold text-neutral-700 bg-white hover:bg-neutral-50 cursor-pointer">
+                Close
+            </button>
+            <button 
+                type="button" 
+                @click="submitBulkCancel()" 
+                :disabled="bulkCancelReason === 'other' && !bulkCancelNote.trim()"
+                class="px-4 py-2 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold cursor-pointer transition-colors"
+            >
+                Cancel Selected Orders
+            </button>
         </x-slot:footer>
     </x-modal>
     </div>

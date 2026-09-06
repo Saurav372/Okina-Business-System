@@ -1,52 +1,48 @@
-<x-layouts.admin title="Operational Expenses">
-    <div class="space-y-6" x-data="{
-        categoryModalOpen: {{ $errors->category->any() ? 'true' : 'false' }},
-        rejectModalOpen: {{ $errors->rejection->any() ? 'true' : 'false' }},
-        activeExpense: null,
-        rejectionReason: '',
+<x-layouts.admin title="Operational Expenses" description="Track business expenditure, category allocations, proof attachments, and approval workflows.">
+    <x-slot:header>
+        @can('viewExpenseReports', \App\Models\Expense::class)
+            <a href="{{ route('admin.expenses.export', request()->query()) }}"
+               class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold bg-white border border-neutral-300 text-neutral-700 rounded-xl hover:bg-neutral-50 transition-colors shadow-xs">
+                <x-icons.lucide name="lucide-download" class="w-4 h-4 text-neutral-500" />
+                <span>Export CSV</span>
+            </a>
+        @endcan
 
-        openRejectModal(expense) {
-            this.activeExpense = expense;
-            this.rejectionReason = '';
-            this.rejectModalOpen = true;
-        }
-    }">
+        @can('create', \App\Models\ExpenseCategory::class)
+            <button type="button"
+                    @click="$dispatch('open-category-modal')"
+                    onclick="window.dispatchEvent(new CustomEvent('open-category-modal'))"
+                    class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold bg-neutral-100 text-neutral-700 rounded-xl hover:bg-neutral-200 transition-colors shadow-xs">
+                <x-icons.lucide name="lucide-folder-tree" class="w-4 h-4 text-neutral-600" />
+                <span>Categories</span>
+            </button>
+        @endcan
 
-        <!-- Header & Action Buttons -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-neutral-200 pb-3 mb-4">
-            <div>
-                <h1 class="text-2xl font-bold text-neutral-900 tracking-tight">Operational Expenses</h1>
-                <p class="text-xs text-neutral-500 mt-1">Track business expenditure, category allocations, proof attachments, and approval workflows.</p>
-            </div>
-            <div class="flex items-center gap-2">
-                @can('viewExpenseReports', \App\Models\Expense::class)
-                    <a href="{{ route('admin.expenses.export', request()->query()) }}"
-                       class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold bg-white border border-neutral-300 text-neutral-700 rounded-xl hover:bg-neutral-50 transition-colors shadow-xs">
-                        <x-icons.lucide name="lucide-download" class="w-4 h-4 text-neutral-500" />
-                        <span>Export CSV</span>
-                    </a>
-                @endcan
+        @can('create', \App\Models\Expense::class)
+            <button type="button"
+                    @click="$dispatch('open-overlay', 'record-expense-modal')"
+                    aria-haspopup="dialog"
+                    class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold bg-[color:var(--color-brand-600)] text-white rounded-xl hover:bg-[color:var(--color-brand-700)] transition-colors shadow-xs">
+                <x-icons.lucide name="lucide-plus" class="w-4 h-4" />
+                <span>Record Expense</span>
+            </button>
+        @endcan
+    </x-slot:header>
 
-                @can('create', \App\Models\ExpenseCategory::class)
-                    <button type="button"
-                            @click="categoryModalOpen = true"
-                            class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold bg-neutral-100 text-neutral-700 rounded-xl hover:bg-neutral-200 transition-colors shadow-xs">
-                        <x-icons.lucide name="lucide-folder-tree" class="w-4 h-4 text-neutral-600" />
-                        <span>Categories</span>
-                    </button>
-                @endcan
+    <div class="space-y-6" 
+         @open-category-modal.window="categoryModalOpen = true"
+         x-data="{
+             categoryModalOpen: {{ ($errors->category->any() || request('open_categories') == 1) ? 'true' : 'false' }},
+             rejectModalOpen: {{ $errors->rejection->any() ? 'true' : 'false' }},
+             activeExpense: null,
+             rejectionReason: '',
 
-                @can('create', \App\Models\Expense::class)
-                    <button type="button"
-                            @click="$dispatch('open-overlay', 'record-expense-modal')"
-                            aria-haspopup="dialog"
-                            class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold bg-[color:var(--color-brand-600)] text-white rounded-xl hover:bg-[color:var(--color-brand-700)] transition-colors shadow-xs">
-                        <x-icons.lucide name="lucide-plus" class="w-4 h-4" />
-                        <span>Record Expense</span>
-                    </button>
-                @endcan
-            </div>
-        </div>
+             openRejectModal(expense) {
+                 this.activeExpense = expense;
+                 this.rejectionReason = '';
+                 this.rejectModalOpen = true;
+             }
+         }">
 
         <!-- Session Flash Messages -->
         @if (session('success'))
@@ -564,15 +560,45 @@
                 </div>
 
                 <!-- Add Category Form -->
-                <form method="POST" action="{{ route('admin.expense_categories.store') }}" class="mb-6 space-y-3 bg-neutral-50 p-4 rounded-xl border border-neutral-200">
+                <form 
+                    method="POST" 
+                    action="{{ route('admin.expense_categories.store') }}" 
+                    x-data="{ 
+                        catName: '', 
+                        catCode: '', 
+                        autoCode: true,
+                        onNameChange() {
+                            if (this.autoCode) {
+                                this.catCode = this.catName.trim().toUpperCase().replace(/[^A-Z0-9]+/g, '_').slice(0, 30);
+                            }
+                        }
+                    }"
+                    class="mb-6 space-y-3 bg-neutral-50 p-4 rounded-xl border border-neutral-200"
+                >
                     @csrf
                     <div class="text-xs font-bold text-neutral-800 uppercase">Create New Category</div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                            <input type="text" name="name" placeholder="Category Name *" required class="w-full text-xs rounded-xl border-neutral-300" />
+                            <input 
+                                type="text" 
+                                name="name" 
+                                x-model="catName"
+                                @input="onNameChange()"
+                                placeholder="Category Name (e.g. Utilities) *" 
+                                required 
+                                class="w-full text-xs rounded-xl border-neutral-300" 
+                            />
                         </div>
                         <div>
-                            <input type="text" name="code" placeholder="Machine Code e.g. UTILITIES *" required class="w-full text-xs rounded-xl border-neutral-300 uppercase" />
+                            <input 
+                                type="text" 
+                                name="code" 
+                                x-model="catCode"
+                                @input="autoCode = false"
+                                placeholder="Machine Code e.g. UTILITIES *" 
+                                required 
+                                class="w-full text-xs rounded-xl border-neutral-300 uppercase font-mono" 
+                            />
                         </div>
                     </div>
                     <div>

@@ -95,12 +95,15 @@ class AuditLogController extends Controller
 
         $auditLog->load(['actorUser', 'actorCustomer']);
 
+        $resolved = (new AuditLogResource($auditLog))->resolve($request);
+
         if ($request->wantsJson()) {
-            return response()->json((new AuditLogResource($auditLog))->resolve());
+            return response()->json($resolved);
         }
 
         return view('admin.audit-logs.show', [
-            'auditLog' => new AuditLogResource($auditLog),
+            'auditLog' => $resolved,
+            'model' => $auditLog,
         ]);
     }
 }

@@ -74,25 +74,32 @@ class FinanceLedgerController extends Controller
 
         $vendors = Vendor::query()
             ->when($search !== '', function ($query) use ($search) {
-                $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('vendor_code', 'like', "%{$search}%");
+                $query->where(function ($sub) use ($search) {
+                    $sub->where('name', 'like', "%{$search}%")
+                        ->orWhere('vendor_code', 'like', "%{$search}%");
+                });
             })
+            ->withSum([
+                'purchaseOrders as total_po_value_minor' => function ($q) {
+                    $q->whereNotIn('status', [\App\Enums\VendorOrderStatus::CANCELLED->value]);
+                },
+            ], 'total_amount_minor')
+            ->withSum([
+                'payments as total_paid_minor' => function ($q) {
+                    $q->where('vendor_payments.status', \App\Enums\VendorPaymentStatus::PAID->value);
+                },
+            ], 'amount_minor')
             ->get()
             ->map(function (Vendor $vendor) {
-                $pos = VendorOrder::where('vendor_id', $vendor->id)->get();
-                $payments = VendorPayment::whereHas('purchaseOrder', function ($q) use ($vendor) {
-                    $q->where('vendor_id', $vendor->id);
-                })->get();
-
-                $totalPOValueMinor = $pos->sum('total_amount_minor');
-                $totalPaidMinor = $payments->sum('amount_minor');
-                $outstandingMinor = $totalPOValueMinor - $totalPaidMinor;
+                $totalPOValueMinor = (int) ($vendor->total_po_value_minor ?? 0);
+                $totalPaidMinor = (int) ($vendor->total_paid_minor ?? 0);
+                $outstandingMinor = max(0, $totalPOValueMinor - $totalPaidMinor);
 
                 return [
                     'id' => $vendor->id,
                     'vendor_code' => $vendor->vendor_code,
                     'name' => $vendor->name,
-                    'status' => $vendor->status,
+                    'status' => $vendor->status instanceof \BackedEnum ? $vendor->status->value : (string) $vendor->status,
                     'total_po_value' => $totalPOValueMinor / 100,
                     'total_paid' => $totalPaidMinor / 100,
                     'outstanding_balance' => $outstandingMinor / 100,

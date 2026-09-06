@@ -259,4 +259,70 @@ class NotificationLogViewingTest extends TestCase
         $response->assertJsonPath('attempts.0.id', $attempt->id);
         $response->assertJsonPath('attempts.0.response_payload.error_code', 500);
     }
+
+    /**
+     * Test authorized user can render HTML index view.
+     */
+    public function test_authorized_user_can_render_html_index_view(): void
+    {
+        NotificationLog::create([
+            'event_type' => 'order.confirmed',
+            'channel' => 'email',
+            'recipient_type' => 'customer',
+            'recipient_address' => 'customer@example.com',
+            'status' => 'sent',
+        ]);
+
+        $response = $this->actingAs($this->authorizedUser)
+            ->get(route('admin.notification_logs.index'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Notification Logs');
+        $response->assertSee('order.confirmed');
+        $response->assertSee('Transmission History');
+    }
+
+    /**
+     * Test authorized user can render HTML show view without array access or null offset errors.
+     */
+    public function test_authorized_user_can_render_html_show_view(): void
+    {
+        $template = NotificationTemplate::create([
+            'template_key' => 'order.confirmed',
+            'channel' => 'email',
+            'name' => 'Order Confirmation',
+            'body_template' => 'Your order has been confirmed.',
+            'status' => 'active',
+        ]);
+
+        $log = NotificationLog::create([
+            'event_type' => 'order.confirmed',
+            'channel' => 'email',
+            'recipient_type' => 'customer',
+            'recipient_address' => 'customer@example.com',
+            'subject_rendered' => 'Order #123 Confirmed',
+            'body_summary' => 'Your order #123 has been received.',
+            'status' => 'sent',
+            'template_id' => $template->id,
+            'sent_at' => now(),
+        ]);
+
+        NotificationDeliveryAttempt::create([
+            'notification_log_id' => $log->id,
+            'status' => 'sent',
+            'provider_reference' => 'msg_12345',
+            'response_payload' => ['delivered' => true],
+            'attempted_at' => now(),
+        ]);
+
+        $response = $this->actingAs($this->authorizedUser)
+            ->get(route('admin.notification_logs.show', $log));
+
+        $response->assertStatus(200);
+        $response->assertSee('Notification Log Detail');
+        $response->assertSee('order.confirmed');
+        $response->assertSee('msg_12345');
+        $response->assertSee('Back to Notification Logs');
+    }
 }
+

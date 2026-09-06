@@ -31,7 +31,7 @@ class ExpenseCategoryController extends Controller
             return ExpenseCategoryResource::collection($categories);
         }
 
-        return redirect()->route('admin.expenses.index');
+        return redirect()->route('admin.expenses.index', ['open_categories' => 1]);
     }
 
     public function store(CreateExpenseCategoryRequest $request): JsonResponse|ExpenseCategoryResource|RedirectResponse

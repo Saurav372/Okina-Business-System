@@ -25,14 +25,14 @@ class AuditLogResource extends JsonResource
             'action' => $this->action,
             'module' => $this->module,
             'actor' => [
-                'type' => $this->actor_type?->value ?? 'system',
+                'type' => $this->actor_type instanceof \BackedEnum ? $this->actor_type->value : ($this->actor_type ?? 'system'),
                 'name' => $actorName,
                 'user_id' => $this->actor_user_id,
             ],
             'subject' => [
                 'type' => $this->subject_type,
                 'id' => $this->subject_id,
-                'public_id' => $this->subject_public_id,
+                'public_id' => $this->subject_public_id ?? ($this->metadata['public_id'] ?? null),
             ],
             'summary' => $this->summary,
             'old_values' => AuditPayloadSanitizer::sanitize($this->old_values),

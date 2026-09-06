@@ -87,7 +87,8 @@ class NotificationLogController extends Controller
         }
 
         return view('admin.notification-logs.show', [
-            'notificationLog' => new NotificationLogResource($notificationLog),
+            'notificationLog' => (new NotificationLogResource($notificationLog))->resolve($request),
+            'log' => $notificationLog,
         ]);
     }
 }

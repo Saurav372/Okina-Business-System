@@ -202,15 +202,6 @@ class Navigation
                         'children' => [],
                     ],
                     [
-                        'label' => 'Expense Categories',
-                        'route' => 'admin.expense_categories.index',
-                        'icon' => 'lucide-tag',
-                        'order' => 40,
-                        'permission' => 'expense_categories.view',
-                        'active' => ['admin.expense_categories.*'],
-                        'children' => [],
-                    ],
-                    [
                         'label' => 'Customer Ledger',
                         'route' => 'admin.accounting.customer_ledger',
                         'icon' => 'lucide-users',

@@ -175,10 +175,12 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     Route::post('/inventory/transfers/{transfer}/cancel', [WarehouseTransferController::class, 'cancel'])->name('admin.inventory.transfers.cancel');
     Route::get('/orders/{order:public_id}', [OrderController::class, 'show'])->name('admin.orders.show');
     Route::get('/orders/{order:public_id}/detail', fn (\App\Models\Order $order) => redirect()->route('admin.orders.show', $order));
-    Route::post('/orders/{order:public_id}/status', [AdminOrderActionController::class, 'updateStatus'])->name('admin.orders.status.update');
     Route::post('/orders/bulk', [BulkOrderActionController::class, 'handle'])->middleware('can:orders.manage')->name('admin.orders.bulk');
+    Route::post('/orders/bulk/cancel', [BulkOrderActionController::class, 'bulkCancel'])->name('admin.orders.bulk.cancel');
     Route::post('/orders/bulk/packing-slips', [BulkOrderActionController::class, 'packingSlips'])->middleware('can:orders.manage')->name('admin.orders.bulk.packing_slips');
     Route::post('/orders/bulk/export-manifest', [BulkOrderActionController::class, 'exportManifest'])->middleware('can:orders.manage')->name('admin.orders.bulk.manifest');
+    Route::post('/orders/{order:public_id}/status', [AdminOrderActionController::class, 'updateStatus'])->name('admin.orders.status.update');
+    Route::post('/orders/{order:public_id}/cancel', [AdminOrderActionController::class, 'cancel'])->name('admin.orders.cancel');
     Route::post('/orders/{order:public_id}/shipping', [AdminOrderActionController::class, 'updateShipping'])->name('admin.orders.shipping.update');
     Route::post('/orders/{order:public_id}/payments', [AdminOrderActionController::class, 'recordPayment'])->name('admin.orders.payments.record');
     Route::get('/orders/{order:public_id}/pdf/preview', [SalesOrderController::class, 'previewPdf'])->name('admin.orders.pdf.preview');

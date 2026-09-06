@@ -34,7 +34,12 @@ class VendorPayment extends Model
 
     public function vendorOrder(): BelongsTo
     {
-        return $this->belongsTo(VendorOrder::class);
+        return $this->belongsTo(VendorOrder::class, 'vendor_order_id');
+    }
+
+    public function purchaseOrder(): BelongsTo
+    {
+        return $this->vendorOrder();
     }
 
     public function recordedBy(): BelongsTo

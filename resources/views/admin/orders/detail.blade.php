@@ -7,7 +7,15 @@
 
     @if ($errors->any())
         <div role="alert" class="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
-            <p class="font-bold">The proof could not be uploaded.</p>
+            <p class="font-bold">
+                @if ($errors->hasAny(['proof_file', 'proof_name', 'message_for_customer']))
+                    The proof could not be uploaded.
+                @elseif ($errors->hasAny(['reason_code', 'reason_note', 'material_consumed', 'customization_applied', 'scrap_incurred', 'production_impact_notes', 'physical_interception_confirmed', 'refund_amount']))
+                    Order cancellation could not be processed.
+                @else
+                    There were problems with your submission.
+                @endif
+            </p>
             <ul class="mt-1 list-disc space-y-1 pl-5">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
@@ -69,6 +77,16 @@
         
         <!-- Action Buttons (Responsive 50/50 on Mobile) -->
         <div class="flex items-center gap-3 w-full md:w-auto">
+            @if ($order->canBeCancelled() && auth()->user()->can('cancel', $order))
+                <button 
+                    @click="$dispatch('open-cancel-modal')"
+                    type="button"
+                    class="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-rose-300 text-rose-700 hover:bg-rose-50 hover:border-rose-400 font-bold rounded-xl text-xs transition-all duration-150 shadow-xs focus:outline-none focus:ring-2 focus:ring-rose-500/20"
+                >
+                    <x-icons.lucide name="lucide-x-circle" class="w-4 h-4 text-rose-600" />
+                    Cancel Order
+                </button>
+            @endif
             <button 
                 @click="$dispatch('open-pdf-preview')"
                 class="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-neutral-100 text-neutral-700 hover:bg-neutral-200 font-bold rounded-xl text-xs transition-all duration-150 focus:outline-none"
@@ -85,9 +103,75 @@
             </a>
         </div>
     </div>
+
+    @if ($order->status === 'cancelled' && $order->cancellation)
+        @php $c = $order->cancellation; @endphp
+        <div class="mb-6 rounded-2xl border border-rose-200 bg-rose-50/70 p-5 space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-rose-200/60 pb-3">
+                <div class="flex items-center gap-2.5">
+                    <span class="p-1.5 rounded-lg bg-rose-100 text-rose-700">
+                        <x-icons.lucide name="lucide-alert-octagon" class="w-4 h-4" />
+                    </span>
+                    <div>
+                        <h3 class="text-sm font-bold text-rose-900">Order Cancelled</h3>
+                        <p class="text-xs text-rose-700">
+                            Cancelled on {{ $c->created_at->format('d M Y • h:i A') }}
+                            @if($c->cancelledBy)
+                                by <span class="font-semibold">{{ $c->cancelledBy->name }}</span>
+                            @endif
+                            (Previous Status: <span class="font-semibold uppercase font-mono">{{ str_replace('_', ' ', $c->previous_status) }}</span>)
+                        </p>
+                    </div>
+                </div>
+                <div class="text-xs font-semibold px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 border border-rose-300">
+                    Reason: {{ ucwords(str_replace('_', ' ', $c->reason_code)) }}
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-rose-950">
+                @if($c->reason_note)
+                    <div class="md:col-span-3">
+                        <span class="font-bold text-rose-800">Explanation:</span>
+                        <p class="mt-0.5 text-neutral-800 bg-white/80 p-2.5 rounded-xl border border-rose-100">{{ $c->reason_note }}</p>
+                    </div>
+                @endif
+
+                @if($c->previous_status === 'in_production')
+                    <div>
+                        <span class="font-bold text-rose-800">Material Consumed:</span>
+                        <span class="ml-1 font-semibold">{{ $c->material_consumed ? 'Yes' : 'No' }}</span>
+                    </div>
+                    <div>
+                        <span class="font-bold text-rose-800">Scrap Incurred:</span>
+                        <span class="ml-1 font-semibold">{{ $c->scrap_incurred ? 'Yes' : 'No' }}</span>
+                        @if($c->scrap_quantity)
+                            ({{ $c->scrap_quantity }} pcs)
+                        @endif
+                    </div>
+                    <div>
+                        <span class="font-bold text-rose-800">Estimated Scrap Loss:</span>
+                        <span class="ml-1 font-mono font-bold">{{ $c->scrap_amount_minor ? '₹' . number_format($c->scrap_amount_minor / 100, 2) : 'None' }}</span>
+                    </div>
+                    @if($c->production_impact_notes)
+                        <div class="md:col-span-3">
+                            <span class="font-bold text-rose-800">Production Impact Notes:</span>
+                            <p class="mt-0.5 text-neutral-800 bg-white/80 p-2.5 rounded-xl border border-rose-100">{{ $c->production_impact_notes }}</p>
+                        </div>
+                    @endif
+                @endif
+
+                @if($c->physical_interception_confirmed)
+                    <div class="md:col-span-3 flex items-center gap-2 text-emerald-800 bg-emerald-50 border border-emerald-200 p-2 rounded-xl">
+                        <x-icons.lucide name="lucide-check-circle" class="w-4 h-4 text-emerald-600" />
+                        <span>Physical parcel interception confirmed before courier handoff.</span>
+                    </div>
+                @endif
+            </div>
+        </div>
+    @endif
  
     <!-- Tabbed Layout Container -->
-    <div x-data="{ activeTab: @js(session('proof_uploaded') || $errors->any() ? 'mockups' : 'items') }" class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+    <div x-data="{ activeTab: @js(session('proof_uploaded') || $errors->hasAny(['proof_file', 'proof_name', 'message_for_customer']) ? 'mockups' : 'items') }" class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         
         <!-- Tab content & detail panels (Left / 2 Columns) -->
         <div class="lg:col-span-2 space-y-6">
@@ -213,7 +297,36 @@
                         Outstanding: <span class="font-mono text-rose-600">₹{{ number_format($summary['amounts']['outstanding_balance_minor'] / 100, 2) }}</span>
                     </div>
                 </div>
- 
+
+                @if($order->status === 'cancelled' && $order->getAvailableRefundRequestAmountMinor() > 0)
+                    @php
+                        $firstRefundablePayment = $order->payments->where('status', \App\Models\Payment::STATUS_SUCCEEDED)->first(function($p) {
+                            $refunded = $p->refunds->whereIn('status', [
+                                \App\Models\Refund::STATUS_REQUESTED,
+                                \App\Models\Refund::STATUS_APPROVED,
+                                \App\Models\Refund::STATUS_PROCESSING,
+                                \App\Models\Refund::STATUS_SUCCEEDED,
+                            ])->sum('amount_minor');
+                            return ($p->amount_minor - $refunded) > 0;
+                        });
+                    @endphp
+                    <div class="rounded-xl border border-amber-200 bg-amber-50/80 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div class="space-y-0.5">
+                            <h5 class="text-xs font-bold text-amber-900 flex items-center gap-1.5">
+                                <x-icons.lucide name="lucide-alert-circle" class="w-4 h-4 text-amber-600" />
+                                Cancelled Order with Captured Payments
+                            </h5>
+                            <p class="text-xs text-amber-800">
+                                This order has <span class="font-mono font-bold">₹{{ number_format($order->getAvailableRefundRequestAmountMinor() / 100, 2) }}</span> captured and not yet refunded.
+                            </p>
+                        </div>
+                        <a href="{{ route('admin.refunds.index', array_filter(['open' => 1, 'payment_id' => $firstRefundablePayment?->id])) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold transition-colors shrink-0 shadow-xs">
+                            <x-icons.lucide name="lucide-external-link" class="w-3.5 h-3.5" />
+                            Request Customer Refund
+                        </a>
+                    </div>
+                @endif
+
                 <!-- Recorded Payments -->
                 <div class="space-y-4">
                     <h4 class="text-xs font-bold text-neutral-400 uppercase tracking-wider">Payments Log</h4>
@@ -540,5 +653,325 @@
             </div>
         </div>
     </div>
- 
+
+    <!-- 7. Order Cancellation Modal -->
+    @if ($order->canBeCancelled() && auth()->user()->can('cancel', $order))
+        <template x-teleport="body">
+            <div 
+                x-data="{ 
+                    showCancelModal: {{ $errors->hasAny(['reason_code', 'reason_note', 'material_consumed', 'customization_applied', 'scrap_incurred', 'affected_quantity', 'scrap_quantity', 'scrap_amount', 'production_impact_notes', 'physical_interception_confirmed', 'create_refund_request', 'refund_amount']) ? 'true' : 'false' }},
+                    reasonCode: '{{ old('reason_code', 'customer_request') }}',
+                    reasonNote: '{{ old('reason_note', '') }}',
+                    materialConsumed: '{{ old('material_consumed', '0') }}',
+                    customizationApplied: '{{ old('customization_applied', '0') }}',
+                    scrapIncurred: '{{ old('scrap_incurred', '0') }}',
+                    affectedQuantity: '{{ old('affected_quantity', '') }}',
+                    scrapQuantity: '{{ old('scrap_quantity', '') }}',
+                    scrapAmount: '{{ old('scrap_amount', '') }}',
+                    productionImpactNotes: '{{ old('production_impact_notes', '') }}',
+                    physicalInterceptionConfirmed: {{ old('physical_interception_confirmed') ? 'true' : 'false' }},
+                    createRefundRequest: {{ old('create_refund_request') ? 'true' : 'false' }},
+                    refundAmount: '{{ old('refund_amount', number_format($order->getAvailableRefundRequestAmountMinor() / 100, 2, '.', '')) }}',
+                    availableRefund: {{ $order->getAvailableRefundRequestAmountMinor() / 100 }},
+                    isSubmitting: false,
+                }"
+                @open-cancel-modal.window="showCancelModal = true"
+                @keydown.escape.window="showCancelModal = false"
+                x-show="showCancelModal"
+                x-cloak
+                class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
+                style="display: none;"
+            >
+                <div 
+                    @click.away="showCancelModal = false"
+                    class="bg-white rounded-3xl w-full max-w-xl max-h-[90vh] flex flex-col shadow-2xl relative overflow-hidden my-8"
+                >
+                    <!-- Modal Header -->
+                    <div class="px-6 py-4 border-b border-neutral-200 flex items-center justify-between shrink-0 bg-neutral-50/50">
+                        <div class="flex items-center gap-2">
+                            <span class="p-1.5 rounded-lg bg-rose-100 text-rose-700">
+                                <x-icons.lucide name="lucide-alert-triangle" class="w-4 h-4" />
+                            </span>
+                            <div>
+                                <h3 class="text-sm font-bold text-neutral-900">
+                                    @if ($order->status === 'in_production')
+                                        Cancel Order in Production (Manager Override)
+                                    @elseif ($order->status === 'ready_to_ship')
+                                        Cancel Ready to Ship Order (Interception)
+                                    @else
+                                        Cancel Order {{ $order->public_id }}
+                                    @endif
+                                </h3>
+                                <p class="text-xs text-neutral-500">Current Status: <span class="font-bold uppercase font-mono">{{ str_replace('_', ' ', $order->status) }}</span></p>
+                            </div>
+                        </div>
+                        <button 
+                            @click="showCancelModal = false"
+                            class="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors focus:outline-none"
+                        >
+                            <x-icons.lucide name="lucide-x" class="w-5 h-5" />
+                        </button>
+                    </div>
+
+                    <!-- Modal Body Form -->
+                    <form 
+                        action="{{ route('admin.orders.cancel', ['order' => $order->public_id]) }}" 
+                        method="POST" 
+                        @submit="isSubmitting = true"
+                        class="flex-1 overflow-y-auto p-6 space-y-5"
+                    >
+                        @csrf
+
+                        <!-- Stage-Specific Warning Callouts -->
+                        @if ($order->status === 'in_production')
+                            <div class="rounded-2xl border border-amber-300 bg-amber-50 p-4 space-y-2">
+                                <div class="flex items-start gap-2 text-amber-900 font-bold text-xs">
+                                    <x-icons.lucide name="lucide-alert-triangle" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                                    <span>⚠ Production has already started</span>
+                                </div>
+                                <p class="text-xs text-amber-800 leading-relaxed">
+                                    Cancelling this order may create customized inventory or production waste that cannot be returned to normal saleable stock. Operational notes and loss assessments are mandatory.
+                                </p>
+                            </div>
+                        @elseif ($order->status === 'ready_to_ship')
+                            <div class="rounded-2xl border border-blue-200 bg-blue-50 p-4 space-y-2">
+                                <div class="flex items-start gap-2 text-blue-900 font-bold text-xs">
+                                    <x-icons.lucide name="lucide-shield-alert" class="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                                    <span>Verify Physical Custody & Shipping Interception</span>
+                                </div>
+                                <p class="text-xs text-blue-800 leading-relaxed">
+                                    Confirm that the parcel has been physically held and has NOT been collected by the courier partner. If handed over, use the Customer Return workflow.
+                                </p>
+                            </div>
+                        @endif
+
+                        <!-- Reason Code -->
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-neutral-700">
+                                Cancellation Reason <span class="text-rose-600">*</span>
+                            </label>
+                            <select 
+                                name="reason_code" 
+                                x-model="reasonCode" 
+                                required
+                                class="w-full rounded-xl border border-neutral-300 px-3.5 py-2 text-xs font-semibold text-neutral-800 focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                            >
+                                <option value="customer_request">Customer Request</option>
+                                <option value="artwork_issue">Artwork / Design Issue</option>
+                                <option value="lead_time_delay">Lead Time Delay</option>
+                                <option value="pricing_error">Pricing / Quotation Error</option>
+                                <option value="duplicate_order">Duplicate Order</option>
+                                <option value="other">Other Reason</option>
+                            </select>
+                        </div>
+
+                        <!-- Reason Note / Explanation -->
+                        <div class="space-y-1.5">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-neutral-700">
+                                Explanation Notes <span x-show="reasonCode === 'other'" class="text-rose-600">*</span>
+                            </label>
+                            <textarea 
+                                name="reason_note" 
+                                x-model="reasonNote" 
+                                :required="reasonCode === 'other'"
+                                rows="2" 
+                                placeholder="Details about customer cancellation or context..."
+                                class="w-full rounded-xl border border-neutral-300 px-3.5 py-2 text-xs text-neutral-800 focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                            ></textarea>
+                        </div>
+
+                        <!-- In-Production Loss Metrics -->
+                        @if ($order->status === 'in_production')
+                            <div class="border-t border-neutral-100 pt-4 space-y-4">
+                                <h4 class="text-xs font-extrabold uppercase tracking-wider text-neutral-900 flex items-center gap-1.5">
+                                    <x-icons.lucide name="lucide-factory" class="w-3.5 h-3.5 text-neutral-500" />
+                                    Production Loss & Material Assessment
+                                </h4>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div class="space-y-1.5">
+                                        <label class="block text-xs font-semibold text-neutral-700">Material Consumed?</label>
+                                        <select 
+                                            name="material_consumed" 
+                                            x-model="materialConsumed"
+                                            class="w-full rounded-xl border border-neutral-300 px-3.5 py-2 text-xs font-semibold text-neutral-800 focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                                        >
+                                            <option value="0">No (Untouched blanks)</option>
+                                            <option value="1">Yes (Customization started)</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="space-y-1.5">
+                                        <label class="block text-xs font-semibold text-neutral-700">Scrap Incurred?</label>
+                                        <select 
+                                            name="scrap_incurred" 
+                                            x-model="scrapIncurred"
+                                            class="w-full rounded-xl border border-neutral-300 px-3.5 py-2 text-xs font-semibold text-neutral-800 focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                                        >
+                                            <option value="0">No</option>
+                                            <option value="1">Yes</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                    <div class="space-y-1.5">
+                                        <label class="block text-xs font-semibold text-neutral-700">Affected Pieces</label>
+                                        <input 
+                                            type="number" 
+                                            name="affected_quantity" 
+                                            x-model="affectedQuantity" 
+                                            min="0" 
+                                            placeholder="e.g. 50"
+                                            class="w-full rounded-xl border border-neutral-300 px-3 py-2 text-xs text-neutral-800 focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                                        />
+                                    </div>
+
+                                    <div class="space-y-1.5">
+                                        <label class="block text-xs font-semibold text-neutral-700">Scrap Pieces</label>
+                                        <input 
+                                            type="number" 
+                                            name="scrap_quantity" 
+                                            x-model="scrapQuantity" 
+                                            min="0" 
+                                            placeholder="e.g. 20"
+                                            class="w-full rounded-xl border border-neutral-300 px-3 py-2 text-xs text-neutral-800 focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                                        />
+                                    </div>
+
+                                    <div class="space-y-1.5">
+                                        <label class="block text-xs font-semibold text-neutral-700">Estimated Scrap Loss</label>
+                                        <div class="relative">
+                                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-xs font-bold text-neutral-400">₹</span>
+                                            <input 
+                                                type="number" 
+                                                step="0.01" 
+                                                name="scrap_amount" 
+                                                x-model="scrapAmount" 
+                                                min="0" 
+                                                placeholder="0.00"
+                                                class="w-full rounded-xl border border-neutral-300 pl-7 pr-3 py-2 text-xs font-mono text-neutral-800 focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-1.5">
+                                    <label class="block text-xs font-bold uppercase tracking-wider text-neutral-700">
+                                        Production Impact Notes <span class="text-rose-600">*</span>
+                                    </label>
+                                    <textarea 
+                                        name="production_impact_notes" 
+                                        x-model="productionImpactNotes" 
+                                        required 
+                                        rows="2" 
+                                        placeholder="e.g., 35 shirts already screen-printed with customer branding; remaining 65 blank garments untouched."
+                                        class="w-full rounded-xl border border-neutral-300 px-3.5 py-2 text-xs text-neutral-800 focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                                    ></textarea>
+                                </div>
+                            </div>
+                        @endif
+
+                        <!-- Ready-to-Ship Physical Interception Checkbox -->
+                        @if ($order->status === 'ready_to_ship')
+                            <div class="border-t border-neutral-100 pt-4">
+                                <label class="flex items-start gap-3 cursor-pointer select-none">
+                                    <input 
+                                        type="checkbox" 
+                                        name="physical_interception_confirmed" 
+                                        value="1" 
+                                        x-model="physicalInterceptionConfirmed" 
+                                        required
+                                        class="mt-1 w-4 h-4 text-neutral-900 rounded border-neutral-300 focus:ring-neutral-900"
+                                    />
+                                    <span class="text-xs text-neutral-800 font-semibold leading-relaxed">
+                                        I confirm that fulfillment is under our physical control and the package has been intercepted prior to courier dispatch. <span class="text-rose-600">*</span>
+                                    </span>
+                                </label>
+                            </div>
+                        @endif
+
+                        <!-- Financial Summary & Refund Request Option -->
+                        <div class="border-t border-neutral-100 pt-4 space-y-3">
+                            <h4 class="text-xs font-extrabold uppercase tracking-wider text-neutral-900 flex items-center gap-1.5">
+                                <x-icons.lucide name="lucide-credit-card" class="w-3.5 h-3.5 text-neutral-500" />
+                                Financial Exposure & Refund
+                            </h4>
+
+                            <div class="rounded-xl border border-neutral-200 bg-neutral-50 p-3 space-y-1.5 text-xs">
+                                <div class="flex justify-between text-neutral-600">
+                                    <span>Captured Payments:</span>
+                                    <span class="font-mono font-semibold">₹{{ number_format($order->getCapturedPaymentsAmountMinor() / 100, 2) }}</span>
+                                </div>
+                                <div class="flex justify-between text-neutral-600">
+                                    <span>Already Refunded:</span>
+                                    <span class="font-mono font-semibold">₹{{ number_format($order->getSucceededRefundsAmountMinor() / 100, 2) }}</span>
+                                </div>
+                                <div class="flex justify-between text-neutral-900 font-bold border-t border-neutral-200 pt-1.5">
+                                    <span>Available to Request:</span>
+                                    <span class="font-mono text-emerald-700">₹{{ number_format($order->getAvailableRefundRequestAmountMinor() / 100, 2) }}</span>
+                                </div>
+                            </div>
+
+                            @if ($order->getAvailableRefundRequestAmountMinor() > 0)
+                                <div class="space-y-2 pt-1">
+                                    <label class="flex items-center gap-2.5 cursor-pointer select-none">
+                                        <input 
+                                            type="checkbox" 
+                                            name="create_refund_request" 
+                                            value="1" 
+                                            x-model="createRefundRequest" 
+                                            class="w-4 h-4 text-neutral-900 rounded border-neutral-300 focus:ring-neutral-900"
+                                        />
+                                        <span class="text-xs font-bold text-neutral-800">
+                                            Create internal customer refund request
+                                        </span>
+                                    </label>
+
+                                    <div x-show="createRefundRequest" x-transition class="pl-6 space-y-1.5">
+                                        <label class="block text-xs font-semibold text-neutral-700">Requested Refund Amount (₹)</label>
+                                        <div class="relative max-w-xs">
+                                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-xs font-bold text-neutral-400">₹</span>
+                                            <input 
+                                                type="number" 
+                                                step="0.01" 
+                                                name="refund_amount" 
+                                                x-model="refundAmount" 
+                                                min="0.01" 
+                                                :max="availableRefund"
+                                                class="w-full rounded-xl border border-neutral-300 pl-7 pr-3 py-1.5 text-xs font-mono text-neutral-800 focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                                            />
+                                        </div>
+                                        <p class="text-[11px] text-neutral-500">
+                                            Creates an internal refund request in <span class="font-semibold text-neutral-700">requested</span> status for finance disbursement; money is not disbursed automatically.
+                                        </p>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+
+                        <!-- Footer Actions -->
+                        <div class="pt-4 border-t border-neutral-200 flex items-center justify-end gap-3">
+                            <button 
+                                type="button" 
+                                @click="showCancelModal = false"
+                                class="px-4 py-2 border border-neutral-300 text-neutral-700 font-bold rounded-xl text-xs hover:bg-neutral-50 transition-colors focus:outline-none"
+                            >
+                                Keep Order
+                            </button>
+                            <button 
+                                type="submit" 
+                                :disabled="isSubmitting"
+                                class="inline-flex items-center gap-2 px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20 disabled:opacity-50"
+                            >
+                                <x-icons.lucide name="lucide-x-circle" class="w-4 h-4" />
+                                <span x-text="isSubmitting ? 'Cancelling...' : 'Confirm Cancellation'"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </template>
+    @endif
+
 </x-layouts.admin>

@@ -237,4 +237,82 @@ class AdminOrderActionController extends Controller
 
         return redirect()->back()->with('success', 'Payment recorded successfully.');
     }
+
+    public function cancel(Request $request, Order $order)
+    {
+        Gate::authorize('cancel', $order);
+
+        // Normalize boolean string values ('true', 'false', '1', '0') before validation
+        $booleans = ['material_consumed', 'customization_applied', 'scrap_incurred', 'physical_interception_confirmed', 'create_refund_request'];
+        $normalized = [];
+        foreach ($booleans as $field) {
+            if ($request->has($field)) {
+                $normalized[$field] = filter_var($request->input($field), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+            }
+        }
+        if (!empty($normalized)) {
+            $request->merge($normalized);
+        }
+
+        $validated = $request->validate([
+            'reason_code' => ['required', 'string', 'in:customer_request,artwork_issue,lead_time_delay,pricing_error,duplicate_order,other'],
+            'reason_note' => ['nullable', 'string', 'max:1000', Rule::requiredIf($request->input('reason_code') === 'other')],
+            'material_consumed' => ['nullable', 'boolean'],
+            'customization_applied' => ['nullable', 'boolean'],
+            'scrap_incurred' => ['nullable', 'boolean'],
+            'affected_quantity' => ['nullable', 'integer', 'min:0'],
+            'scrap_quantity' => ['nullable', 'integer', 'min:0'],
+            'scrap_amount' => ['nullable', 'numeric', 'min:0'],
+            'production_impact_notes' => ['nullable', 'string', 'max:2000', Rule::requiredIf($order->status === OrderStatus::InProduction->value)],
+            'physical_interception_confirmed' => ['nullable', 'boolean', Rule::requiredIf($order->status === OrderStatus::ReadyToShip->value)],
+            'create_refund_request' => ['nullable', 'boolean'],
+            'refund_amount' => ['nullable', 'numeric', 'min:0.01'],
+        ]);
+
+        // Server-side conversion of Rupee currency input to integer minor units
+        $scrapAmountMinor = null;
+        if ($request->filled('scrap_amount')) {
+            $scrapAmountMinor = (int) round(((float) $request->input('scrap_amount')) * 100);
+        }
+
+        $refundAmountMinor = null;
+        if ($request->filled('refund_amount')) {
+            $refundAmountMinor = (int) round(((float) $request->input('refund_amount')) * 100);
+        }
+
+        $cancellationService = app(\App\Services\OrderCancellationService::class);
+
+        $cancellation = $cancellationService->cancel(
+            order: $order,
+            actor: $request->user(),
+            reasonCode: $validated['reason_code'],
+            reasonNote: $validated['reason_note'] ?? null,
+            materialConsumed: $request->boolean('material_consumed'),
+            customizationApplied: $request->boolean('customization_applied'),
+            scrapIncurred: $request->boolean('scrap_incurred'),
+            affectedQuantity: isset($validated['affected_quantity']) ? (int) $validated['affected_quantity'] : null,
+            scrapQuantity: isset($validated['scrap_quantity']) ? (int) $validated['scrap_quantity'] : null,
+            scrapAmountMinor: $scrapAmountMinor,
+            productionImpactNotes: $validated['production_impact_notes'] ?? null,
+            physicalInterceptionConfirmed: $request->boolean('physical_interception_confirmed'),
+            createRefundRequest: $request->boolean('create_refund_request'),
+            requestedRefundAmountMinor: $refundAmountMinor,
+        );
+
+        $message = "Order {$order->public_id} has been cancelled successfully.";
+        if ($request->boolean('create_refund_request') && $refundAmountMinor > 0) {
+            $formattedRefund = number_format($refundAmountMinor / 100, 2);
+            $message .= " Internal refund request of ₹{$formattedRefund} has been submitted for finance approval.";
+        }
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'cancellation' => $cancellation,
+            ]);
+        }
+
+        return redirect()->back()->with('success', $message);
+    }
 }
