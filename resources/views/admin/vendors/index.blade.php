@@ -1,14 +1,14 @@
 <x-layouts.admin title="Vendors Directory" description="Manage supplier accounts, contact details, GSTIN tax IDs, and procurement terms.">
     <x-slot:header>
         @can('create', App\Models\Vendor::class)
-            <button type="button" @click="openCreateModal()" class="inline-flex items-center gap-1.5 px-4 py-2 bg-[color:var(--color-brand-600)] text-white text-xs font-bold rounded-xl shadow-xs hover:bg-[color:var(--color-brand-700)] transition-colors">
+            <button type="button" @click="$dispatch('open-vendor-modal')" onclick="window.dispatchEvent(new CustomEvent('open-vendor-modal'))" class="inline-flex items-center gap-1.5 px-4 py-2 bg-[color:var(--color-brand-600)] text-white text-xs font-bold rounded-xl shadow-xs hover:bg-[color:var(--color-brand-700)] transition-colors">
                 <x-icons.lucide name="lucide-plus" class="w-4 h-4" />
                 <span>Add New Vendor</span>
             </button>
         @endcan
     </x-slot:header>
 
-    <div class="space-y-6" x-data="vendorModal()">
+    <div class="space-y-6" x-data="vendorModal()" @open-vendor-modal.window="openCreateModal()">
 
         <!-- Session Flash Messages -->
         @if (session('success'))
@@ -222,7 +222,13 @@
                                 <td colspan="7" class="py-12 text-center text-neutral-400">
                                     <x-icons.lucide name="lucide-building-2" class="w-10 h-10 mx-auto text-neutral-300 mb-3" />
                                     <p class="text-sm font-semibold text-neutral-700">No vendors found</p>
-                                    <p class="text-xs text-neutral-400 mt-1">Try adjusting your search terms or active status filter.</p>
+                                    <p class="text-xs text-neutral-400 mt-1">Try adjusting your search terms or register your first vendor.</p>
+                                    @can('create', App\Models\Vendor::class)
+                                        <button type="button" @click="openCreateModal()" class="mt-4 inline-flex items-center gap-1.5 px-4 py-2 bg-[color:var(--color-brand-600)] text-white text-xs font-bold rounded-xl shadow-xs hover:bg-[color:var(--color-brand-700)] transition-colors">
+                                            <x-icons.lucide name="lucide-plus" class="w-4 h-4" />
+                                            <span>Register First Vendor</span>
+                                        </button>
+                                    @endcan
                                 </td>
                             </tr>
                         @endforelse
