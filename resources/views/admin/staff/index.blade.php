@@ -11,16 +11,22 @@
         rolesUser: null,
         statusUser: null,
         statusAction: '',
-        openEdit(user) {
-            this.editUser = user;
+        staffData: {{ Js::from($staffMembers->getCollection()->keyBy('id')->map(fn($m) => [
+            'id' => $m->id,
+            'name' => $m->name,
+            'phone' => $m->phone ?? '',
+            'roles' => $m->roles->pluck('slug')->values()->all(),
+        ])) }},
+        openEdit(id) {
+            this.editUser = this.staffData[id] || null;
             $dispatch('open-overlay', 'edit-staff-modal');
         },
-        openRoles(user) {
-            this.rolesUser = user;
+        openRoles(id) {
+            this.rolesUser = this.staffData[id] || null;
             $dispatch('open-overlay', 'roles-staff-modal');
         },
-        confirmStatus(user, action) {
-            this.statusUser = user;
+        confirmStatus(id, action) {
+            this.statusUser = this.staffData[id] || null;
             this.statusAction = action;
             $dispatch('open-overlay', 'status-confirm-modal');
         }
@@ -156,7 +162,6 @@
                             @php
                                 $isSuperAdmin = $member->hasRole(\App\Models\Role::SUPER_ADMIN);
                                 $isLocked = $member->isSecurityLocked();
-                                $rolesJson = htmlspecialchars(json_encode($member->roles->pluck('slug')->all()), ENT_QUOTES, 'UTF-8');
                             @endphp
                             <tr class="hover:bg-neutral-50/70 transition-colors">
                                 <!-- Staff Member Profile -->
@@ -240,24 +245,24 @@
                                 <!-- Actions Dropdown / Quick Links -->
                                 <td class="px-6 py-3.5 text-right">
                                     <div class="inline-flex items-center gap-1.5">
-                                        <button type="button" @click="openEdit({ id: {{ $member->id }}, name: '{{ addslashes($member->name) }}', phone: '{{ addslashes($member->phone ?? '') }}' })" class="px-2.5 py-1 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs font-bold rounded-lg transition-colors">
+                                        <button type="button" @click="openEdit({{ $member->id }})" class="px-2.5 py-1 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs font-bold rounded-lg transition-colors">
                                             Edit
                                         </button>
-                                        <button type="button" @click="openRoles({ id: {{ $member->id }}, name: '{{ addslashes($member->name) }}', roles: {{ $rolesJson }} })" class="px-2.5 py-1 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs font-bold rounded-lg transition-colors">
+                                        <button type="button" @click="openRoles({{ $member->id }})" class="px-2.5 py-1 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs font-bold rounded-lg transition-colors">
                                             Roles
                                         </button>
 
                                         @if($isLocked)
-                                            <button type="button" @click="confirmStatus({ id: {{ $member->id }}, name: '{{ addslashes($member->name) }}' }, 'unlock')" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-bold rounded-lg transition-colors">
+                                            <button type="button" @click="confirmStatus({{ $member->id }}, 'unlock')" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-bold rounded-lg transition-colors">
                                                 Unlock
                                             </button>
                                         @elseif($member->status === \App\Models\User::STATUS_SUSPENDED)
-                                            <button type="button" @click="confirmStatus({ id: {{ $member->id }}, name: '{{ addslashes($member->name) }}' }, 'reactivate')" class="px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-xs font-bold rounded-lg transition-colors">
+                                            <button type="button" @click="confirmStatus({{ $member->id }}, 'reactivate')" class="px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-xs font-bold rounded-lg transition-colors">
                                                 Reactivate
                                             </button>
                                         @elseif($member->status === \App\Models\User::STATUS_ACTIVE)
                                             @if($member->id !== auth()->id())
-                                                <button type="button" @click="confirmStatus({ id: {{ $member->id }}, name: '{{ addslashes($member->name) }}' }, 'suspend')" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-lg transition-colors">
+                                                <button type="button" @click="confirmStatus({{ $member->id }}, 'suspend')" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-lg transition-colors">
                                                     Suspend
                                                 </button>
                                             @endif

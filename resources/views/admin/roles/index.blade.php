@@ -2,10 +2,21 @@
     <div class="space-y-6" x-data="{
         selectedRole: null,
         rolePermissions: [],
-        openModal(role, permSlugs) {
-            this.selectedRole = role;
-            this.rolePermissions = permSlugs;
+        rolesData: {{ Js::from($roles->keyBy('id')->map(fn($r) => [
+            'id' => $r->id,
+            'name' => $r->name,
+            'slug' => $r->slug,
+            'permissions' => $r->permissions->pluck('slug')->values()->all(),
+        ])) }},
+        openEditRole(roleId) {
+            const role = this.rolesData[roleId];
+            if (!role) return;
+            this.selectedRole = { id: role.id, name: role.name, slug: role.slug };
+            this.rolePermissions = [...role.permissions];
             $dispatch('open-overlay', 'edit-role-permissions-modal');
+        },
+        closeEditRole() {
+            $dispatch('close-overlay', 'edit-role-permissions-modal');
         }
     }">
         @if(session('status'))
@@ -33,14 +44,13 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             @foreach($roles as $role)
                 @php
-                    $isSuperAdmin = $role->slug === \App\Models\Role::SUPER_ADMIN;
-                    $rolePermsJson = htmlspecialchars(json_encode($role->permissions->pluck('slug')->all()), ENT_QUOTES, 'UTF-8');
+                    $isSuperAdminRole = $role->slug === \App\Models\Role::SUPER_ADMIN;
                 @endphp
                 <div class="bg-white rounded-2xl border border-neutral-200 shadow-xs p-5 flex flex-col justify-between space-y-4">
                     <div class="space-y-2">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
-                                @if($isSuperAdmin)
+                                @if($isSuperAdminRole)
                                     <div class="w-7 h-7 rounded-lg bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center">
                                         <x-icons.lucide name="lucide-shield-alert" class="w-4 h-4" />
                                     </div>
@@ -59,7 +69,7 @@
                     </div>
 
                     <div class="pt-3 border-t border-neutral-100 flex items-center justify-between">
-                        @if($isSuperAdmin)
+                        @if($isSuperAdminRole)
                             <span class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-rose-600 bg-rose-50 px-2 py-1 rounded-md border border-rose-200">
                                 <x-icons.lucide name="lucide-lock" class="w-3 h-3" />
                                 <span>Universal Bypass</span>
@@ -68,8 +78,8 @@
                             <span class="text-[11px] font-semibold text-neutral-600">
                                 {{ $role->permissions->count() }} permissions
                             </span>
-                            @if($isSuperAdmin || auth()->user()->hasRole(\App\Models\Role::SUPER_ADMIN))
-                                <button type="button" @click="openModal({ id: {{ $role->id }}, name: '{{ addslashes($role->name) }}', slug: '{{ $role->slug }}' }, {{ $rolePermsJson }})" class="px-3 py-1 bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-bold rounded-lg transition-colors shadow-xs">
+                            @if(auth()->user()->hasRole(\App\Models\Role::SUPER_ADMIN))
+                                <button type="button" @click="openEditRole({{ $role->id }})" class="px-3 py-1 bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-bold rounded-lg transition-colors shadow-xs">
                                     Edit Capabilities
                                 </button>
                             @endif
@@ -180,7 +190,7 @@
                         <x-icons.lucide name="lucide-shield-check" class="w-5 h-5 text-neutral-800" />
                         <h3 class="text-base font-bold text-neutral-900">Configure Role Permissions</h3>
                     </div>
-                    <p class="text-xs text-neutral-500 mt-0.5">Toggle authorized permissions for role: <span class="font-bold text-neutral-800" x-text="selectedRole?.name"></span></p>
+                    <p class="text-xs text-neutral-500 mt-0.5">Toggle authorized permissions for role: <span class="font-bold text-neutral-800" x-text="selectedRole ? selectedRole.name : ''"></span></p>
                 </div>
 
                 <div class="space-y-6 max-h-[60vh] overflow-y-auto pr-2">
@@ -192,7 +202,7 @@
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 @foreach($domainPermissions as $perm)
                                     <label class="flex items-start gap-2.5 p-2.5 rounded-xl border border-neutral-200 hover:border-neutral-300 bg-neutral-50/50 hover:bg-neutral-50 cursor-pointer select-none transition-colors">
-                                        <input type="checkbox" name="permissions[]" value="{{ $perm->slug }}" :checked="rolePermissions.includes('{{ $perm->slug }}')" class="rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900 mt-0.5">
+                                        <input type="checkbox" name="permissions[]" value="{{ $perm->slug }}" x-model="rolePermissions" class="rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900 mt-0.5">
                                         <div class="space-y-0.5">
                                             <div class="flex items-center gap-1.5 font-bold text-xs text-neutral-900">
                                                 <span>{{ $perm->name }}</span>
@@ -219,7 +229,7 @@
                 </div>
 
                 <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-neutral-100">
-                    <button type="button" @click="$dispatch('close-overlay', 'edit-role-permissions-modal')" class="px-4 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs font-bold rounded-xl transition-colors">
+                    <button type="button" @click="closeEditRole()" class="px-4 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs font-bold rounded-xl transition-colors">
                         Cancel
                     </button>
                     <button type="submit" class="px-5 py-2 bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-bold rounded-xl transition-colors shadow-xs">
