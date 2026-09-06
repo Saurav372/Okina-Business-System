@@ -42,6 +42,32 @@ class VendorController extends Controller
         $inactiveVendors = Vendor::where('status', VendorStatus::INACTIVE)->count();
         $blockedVendors = Vendor::where('status', VendorStatus::BLOCKED)->count();
 
+        // Total Procurement Spend across confirmed POs (Ordered, Partially Received, Received, Closed)
+        $totalSpendMinor = (int) \App\Models\VendorOrder::query()
+            ->whereIn('status', [
+                \App\Enums\VendorOrderStatus::ORDERED->value,
+                \App\Enums\VendorOrderStatus::PARTIALLY_RECEIVED->value,
+                \App\Enums\VendorOrderStatus::RECEIVED->value,
+                \App\Enums\VendorOrderStatus::CLOSED->value,
+            ])
+            ->sum('total_amount_minor');
+
+        // Total Settled Payments to Vendors
+        $totalPaidMinor = (int) \App\Models\VendorPayment::query()
+            ->where('status', \App\Enums\VendorPaymentStatus::PAID->value)
+            ->sum('amount_minor');
+
+        // Outstanding Liability owed to suppliers
+        $outstandingLiabilityMinor = max(0, $totalSpendMinor - $totalPaidMinor);
+
+        // Active Pending POs awaiting goods receipt
+        $activePendingOrdersCount = \App\Models\VendorOrder::query()
+            ->whereIn('status', [
+                \App\Enums\VendorOrderStatus::ORDERED->value,
+                \App\Enums\VendorOrderStatus::PARTIALLY_RECEIVED->value,
+            ])
+            ->count();
+
         // Safely resolve editing vendor for validation recovery state
         $editingVendorId = old('edit_vendor_id');
         $editingVendor = null;
@@ -69,6 +95,9 @@ class VendorController extends Controller
             'activeVendors' => $activeVendors,
             'inactiveVendors' => $inactiveVendors,
             'blockedVendors' => $blockedVendors,
+            'totalSpendMinor' => $totalSpendMinor,
+            'outstandingLiabilityMinor' => $outstandingLiabilityMinor,
+            'activePendingOrdersCount' => $activePendingOrdersCount,
             'modalMode' => $modalMode,
             'editingVendor' => $editingVendor,
             'formAction' => $formAction,

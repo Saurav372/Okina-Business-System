@@ -83,4 +83,17 @@ class Vendor extends Model
     {
         return $this->hasMany(VendorOrder::class, 'vendor_id');
     }
+
+    public function payments(): \Illuminate\Database\Eloquent\Relations\HasManyThrough
+    {
+        return $this->hasManyThrough(VendorPayment::class, VendorOrder::class, 'vendor_id', 'vendor_order_id');
+    }
+
+    public function outstandingLiabilityMinor(): int
+    {
+        $spend = (int) ($this->total_spend_minor ?? $this->purchase_orders_sum_total_amount_minor ?? 0);
+        $paid = (int) ($this->total_paid_minor ?? $this->payments_sum_amount_minor ?? 0);
+
+        return max(0, $spend - $paid);
+    }
 }

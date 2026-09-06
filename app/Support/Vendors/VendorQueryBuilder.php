@@ -2,6 +2,8 @@
 
 namespace App\Support\Vendors;
 
+use App\Enums\VendorOrderStatus;
+use App\Enums\VendorPaymentStatus;
 use App\Models\Vendor;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -14,7 +16,31 @@ class VendorQueryBuilder
      */
     public static function buildQuery(VendorFilters $filters): Builder
     {
-        $query = Vendor::query()->withCount('purchaseOrders');
+        $query = Vendor::query()
+            ->withCount([
+                'purchaseOrders',
+                'purchaseOrders as active_pos_count' => function ($q) {
+                    $q->whereIn('status', [
+                        VendorOrderStatus::ORDERED->value,
+                        VendorOrderStatus::PARTIALLY_RECEIVED->value,
+                    ]);
+                },
+            ])
+            ->withSum([
+                'purchaseOrders as total_spend_minor' => function ($q) {
+                    $q->whereIn('status', [
+                        VendorOrderStatus::ORDERED->value,
+                        VendorOrderStatus::PARTIALLY_RECEIVED->value,
+                        VendorOrderStatus::RECEIVED->value,
+                        VendorOrderStatus::CLOSED->value,
+                    ]);
+                },
+            ], 'total_amount_minor')
+            ->withSum([
+                'payments as total_paid_minor' => function ($q) {
+                    $q->where('vendor_payments.status', VendorPaymentStatus::PAID->value);
+                },
+            ], 'amount_minor');
 
         if ($filters->search) {
             $pattern = "%{$filters->search}%";
