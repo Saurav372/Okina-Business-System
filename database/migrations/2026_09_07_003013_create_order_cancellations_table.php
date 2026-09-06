@@ -30,7 +30,10 @@ return new class extends Migration
 
             // Shipping interception audit
             $table->boolean('physical_interception_confirmed')->default(false);
-            $table->foreignId('shipping_intercept_confirmed_by_user_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('shipping_intercept_confirmed_by_user_id')
+                ->nullable()
+                ->constrained('users', 'id', 'oc_ship_intercept_user_fk')
+                ->nullOnDelete();
             $table->timestamp('shipping_intercept_confirmed_at')->nullable();
             $table->string('shipping_status_at_cancellation')->nullable();
 
