@@ -82,6 +82,17 @@ class AdminSalesOrderCreationTest extends TestCase
             ],
         );
 
+        Permission::query()->updateOrCreate(
+            ['slug' => 'orders.view'],
+            [
+                'name' => 'View Orders',
+                'group' => 'orders',
+                'guard_name' => 'web',
+                'description' => 'View orders',
+                'is_sensitive' => false,
+            ],
+        );
+
         $role = Role::query()->updateOrCreate(
             ['slug' => 'order_creator'],
             [
@@ -93,7 +104,7 @@ class AdminSalesOrderCreationTest extends TestCase
             ],
         );
 
-        $permissionIds = Permission::query()->whereIn('slug', ['orders.manage'])->pluck('id')->all();
+        $permissionIds = Permission::query()->whereIn('slug', ['orders.manage', 'orders.view'])->pluck('id')->all();
         $role->permissions()->sync($permissionIds);
 
         $dashboardRole = Role::query()->updateOrCreate(
@@ -149,6 +160,16 @@ class AdminSalesOrderCreationTest extends TestCase
         $decodedNotes = $order->internal_notes ? json_decode($order->internal_notes, true) : [];
         $this->assertArrayHasKey('payment_schedule', $decodedNotes);
         $this->assertSame(1000, $decodedNotes['payment_schedule']['amount_minor']);
+
+        // Verify that /admin/orders/{public_id}/detail redirects gracefully to order show
+        $this->actingAs($user)
+            ->get("/admin/orders/{$order->public_id}/detail")
+            ->assertRedirect(route('admin.orders.show', $order));
+
+        // Verify order show page loads with 200 OK
+        $this->actingAs($user)
+            ->get(route('admin.orders.show', $order))
+            ->assertStatus(200);
     }
 
     public function test_unauthorized_staff_cannot_create_sales_order(): void
