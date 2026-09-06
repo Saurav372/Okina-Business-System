@@ -1,19 +1,14 @@
-<x-layouts.admin title="Vendors Directory">
-    <div class="space-y-6" x-data="vendorModal()">
+<x-layouts.admin title="Vendors Directory" description="Manage supplier accounts, contact details, GSTIN tax IDs, and procurement terms.">
+    <x-slot:header>
+        @can('create', App\Models\Vendor::class)
+            <button type="button" @click="openCreateModal()" class="inline-flex items-center gap-1.5 px-4 py-2 bg-[color:var(--color-brand-600)] text-white text-xs font-bold rounded-xl shadow-xs hover:bg-[color:var(--color-brand-700)] transition-colors">
+                <x-icons.lucide name="lucide-plus" class="w-4 h-4" />
+                <span>Add New Vendor</span>
+            </button>
+        @endcan
+    </x-slot:header>
 
-        <!-- Header Bar -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-neutral-200 pb-4">
-            <div>
-                <h1 class="text-2xl font-bold text-neutral-900 tracking-tight">Vendors Directory</h1>
-                <p class="text-xs text-neutral-500 mt-1">Manage supplier accounts, contact details, GSTIN tax IDs, and procurement terms.</p>
-            </div>
-            @can('create', App\Models\Vendor::class)
-                <button type="button" @click="openCreateModal()" class="inline-flex items-center gap-1.5 px-4 py-2 bg-[color:var(--color-brand-600)] text-white text-xs font-bold rounded-xl shadow-xs hover:bg-[color:var(--color-brand-700)] transition-colors self-start sm:self-auto">
-                    <x-icons.lucide name="lucide-plus" class="w-4 h-4" />
-                    <span>Add New Vendor</span>
-                </button>
-            @endcan
-        </div>
+    <div class="space-y-6" x-data="vendorModal()">
 
         <!-- Session Flash Messages -->
         @if (session('success'))

@@ -1,19 +1,14 @@
-<x-layouts.admin title="Purchase Orders">
-    <div class="space-y-6">
+<x-layouts.admin title="Purchase Orders" description="Manage vendor procurement, stock-in receiving, and order receipts.">
+    <x-slot:header>
+        @can('create', \App\Models\VendorOrder::class)
+            <a href="{{ route('admin.purchases.create') }}" class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold bg-[color:var(--color-brand-600)] text-white rounded-xl hover:bg-[color:var(--color-brand-700)] transition-colors shadow-xs">
+                <x-icons.lucide name="lucide-plus" class="w-4 h-4" />
+                <span>Create Purchase Order</span>
+            </a>
+        @endcan
+    </x-slot:header>
 
-        <!-- Header & Action -->
-        <div class="flex items-center justify-between border-b border-neutral-200 pb-3 mb-4">
-            <div>
-                <h1 class="text-2xl font-bold text-neutral-900 tracking-tight">Purchase Orders</h1>
-                <p class="text-xs text-neutral-500 mt-1">Manage vendor procurement, stock-in receiving, and order receipts.</p>
-            </div>
-            @can('create', \App\Models\VendorOrder::class)
-                <a href="{{ route('admin.purchases.create') }}" class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold bg-[color:var(--color-brand-600)] text-white rounded-xl hover:bg-[color:var(--color-brand-700)] transition-colors shadow-xs">
-                    <x-icons.lucide name="lucide-plus" class="w-4 h-4" />
-                    <span>Create Purchase Order</span>
-                </a>
-            @endcan
-        </div>
+    <div class="space-y-6">
 
         <!-- Session Flash Messages -->
         @if (session('success'))

@@ -1,4 +1,4 @@
-@props(['title' => null, 'hideTitle' => false])
+@props(['title' => null, 'description' => null, 'hideTitle' => false])
 
 <x-layouts.app :title="$title">
     <div x-data="pageNavigator" class="min-h-screen bg-[color:var(--color-surface-page)] flex flex-col relative overflow-hidden">
@@ -501,6 +501,9 @@
                             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                                 <div>
                                     <h1 class="text-2xl font-bold tracking-tight text-[color:var(--color-text-heading)]">{{ $title ?? 'Workspace Window' }}</h1>
+                                    @if($description)
+                                        <p class="text-xs text-neutral-500 mt-1">{{ $description }}</p>
+                                    @endif
                                 </div>
                                 <div class="flex items-center gap-2.5 shrink-0">
                                     {{ $header }}
@@ -515,6 +518,9 @@
                                 <span class="text-[color:var(--color-text-body)] font-semibold">{{ $title ?? 'Administration' }}</span>
                             </div>
                             <h1 class="text-2xl font-bold tracking-tight text-[color:var(--color-text-heading)]">{{ $title ?? 'Workspace Window' }}</h1>
+                            @if($description)
+                                <p class="text-xs text-neutral-500 mt-1">{{ $description }}</p>
+                            @endif
                         </div>
                     @endif
                 @endif
