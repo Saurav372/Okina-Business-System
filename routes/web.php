@@ -32,8 +32,10 @@ use App\Http\Controllers\Admin\ProductVariantController;
 use App\Http\Controllers\Admin\PurchaseOrderAdminController;
 use App\Http\Controllers\Admin\PurchaseOrderReceivingController;
 use App\Http\Controllers\Admin\RefundController;
+use App\Http\Controllers\Admin\RolePermissionController;
 use App\Http\Controllers\Admin\SalesOrderController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\StaffUserController;
 use App\Http\Controllers\Admin\SystemHealthController;
 use App\Http\Controllers\Admin\VendorController;
 use App\Http\Controllers\Admin\VendorOrderController;
@@ -42,6 +44,7 @@ use App\Http\Controllers\Admin\VendorPaymentController;
 use App\Http\Controllers\Admin\WarehouseTransferController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\StaffInvitationController;
 use App\Http\Controllers\Api\CartController as ApiCartController;
 use App\Http\Controllers\Api\ProductCustomizationController as ApiProductCustomizationController;
 use App\Http\Controllers\CustomerAuthController;
@@ -309,7 +312,24 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     // Settings admin routes
     Route::get('/settings', [SettingController::class, 'index'])->name('admin.settings.index');
     Route::post('/settings', [SettingController::class, 'update'])->name('admin.settings.update');
+
+    // Staff & Access Control Management
+    Route::get('/staff', [StaffUserController::class, 'index'])->name('admin.staff.index');
+    Route::post('/staff', [StaffUserController::class, 'store'])->name('admin.staff.store');
+    Route::patch('/staff/{staff}', [StaffUserController::class, 'update'])->name('admin.staff.update');
+    Route::put('/staff/{staff}/roles', [StaffUserController::class, 'updateRoles'])->name('admin.staff.update_roles');
+    Route::post('/staff/{staff}/status', [StaffUserController::class, 'updateStatus'])->name('admin.staff.update_status');
+    Route::post('/staff/{staff}/reset-password', [StaffUserController::class, 'sendPasswordReset'])->name('admin.staff.reset_password');
+    Route::post('/staff/{staff}/resend-invitation', [StaffUserController::class, 'resendInvitation'])->name('admin.staff.resend_invitation');
+
+    // Role & Permission Matrix
+    Route::get('/roles', [RolePermissionController::class, 'index'])->name('admin.roles.index');
+    Route::put('/roles/{role}', [RolePermissionController::class, 'update'])->name('admin.roles.update');
 });
+
+// Staff Invitation Activation (Guest)
+Route::get('/staff/invitation/{token}', [StaffInvitationController::class, 'show'])->name('staff.invitation.show');
+Route::post('/staff/invitation/{token}', [StaffInvitationController::class, 'update'])->name('staff.invitation.update');
 
 // Web App Manifest Dynamic Route
 Route::get('/manifest.webmanifest', function () {

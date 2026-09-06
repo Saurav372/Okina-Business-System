@@ -248,7 +248,26 @@ class Navigation
             [
                 'group' => 'Users',
                 'order' => 100,
-                'items' => [],
+                'items' => [
+                    [
+                        'label' => 'Staff Members',
+                        'route' => 'admin.staff.index',
+                        'icon' => 'lucide-users',
+                        'order' => 10,
+                        'permission' => 'users.view',
+                        'active' => ['admin.staff.*'],
+                        'children' => [],
+                    ],
+                    [
+                        'label' => 'Roles & Permissions',
+                        'route' => 'admin.roles.index',
+                        'icon' => 'lucide-shield-check',
+                        'order' => 20,
+                        'permission' => 'users.manage_roles',
+                        'active' => ['admin.roles.*'],
+                        'children' => [],
+                    ],
+                ],
             ],
             [
                 'group' => 'Administration',

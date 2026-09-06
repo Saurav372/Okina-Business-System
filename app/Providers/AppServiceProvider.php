@@ -63,9 +63,26 @@ class AppServiceProvider extends ServiceProvider
             DB::statement('PRAGMA foreign_keys = ON;');
         }
         Gate::before(function ($user, $ability) {
-            if ($user instanceof User && str_contains($ability, '.')) {
-                return $user->hasPermissionTo($ability) ? true : null;
+            if ($user instanceof User && $user->hasRole(Role::SUPER_ADMIN)) {
+                return true;
             }
+
+            return null;
+        });
+
+        Gate::after(function ($user, $ability, $result, $arguments) {
+            if ($result === null && empty($arguments) && $user instanceof User) {
+                return $user->hasPermissionTo($ability);
+            }
+
+            return $result;
+        });
+
+        \Illuminate\Support\Facades\Route::bind('staff', function ($value) {
+            return User::query()
+                ->whereKey($value)
+                ->where('user_type', User::TYPE_STAFF)
+                ->firstOrFail();
         });
 
         Gate::policy(AuditLog::class, AuditLogPolicy::class);

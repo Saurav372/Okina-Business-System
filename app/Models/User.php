@@ -29,8 +29,11 @@ use Illuminate\Support\Facades\DB;
     'two_factor_confirmed_at',
     'disabled_at',
     'disabled_by',
+    'invitation_token_hash',
+    'invitation_sent_at',
+    'invitation_expires_at',
 ])]
-#[Hidden(['password', 'remember_token'])]
+#[Hidden(['password', 'remember_token', 'invitation_token_hash'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
@@ -202,7 +205,56 @@ class User extends Authenticatable
             'password_changed_at' => 'datetime',
             'two_factor_confirmed_at' => 'datetime',
             'disabled_at' => 'datetime',
+            'invitation_sent_at' => 'datetime',
+            'invitation_expires_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Generate and store an expiring cryptographic invitation token.
+     * Returns the plaintext token for one-time link dispatch.
+     */
+    public function generateInvitationToken(int $expiresInHours = 48): string
+    {
+        $plainToken = \Illuminate\Support\Str::random(48);
+
+        $this->forceFill([
+            'invitation_token_hash' => hash('sha256', $plainToken),
+            'invitation_sent_at' => now(),
+            'invitation_expires_at' => now()->addHours($expiresInHours),
+        ])->save();
+
+        return $plainToken;
+    }
+
+    /**
+     * Check if user has an active, unexpired invitation token.
+     */
+    public function hasValidInvitation(): bool
+    {
+        return $this->status === self::STATUS_INVITED
+            && ! empty($this->invitation_token_hash)
+            && $this->invitation_expires_at !== null
+            && $this->invitation_expires_at->isFuture();
+    }
+
+    /**
+     * Check if staff account is currently security-locked by failed attempts.
+     */
+    public function isSecurityLocked(): bool
+    {
+        return $this->locked_until !== null && $this->locked_until->isFuture();
+    }
+
+    /**
+     * Check if user is a fully operational, active Super Admin.
+     */
+    public function isOperationalSuperAdmin(): bool
+    {
+        return $this->user_type === self::TYPE_STAFF
+            && $this->status === self::STATUS_ACTIVE
+            && ! $this->isSecurityLocked()
+            && $this->hasRole(Role::SUPER_ADMIN);
     }
 
     /**
