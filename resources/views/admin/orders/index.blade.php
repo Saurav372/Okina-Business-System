@@ -236,17 +236,21 @@
                     $payIntent = 'danger';
                 }
 
-                $statusIntent = match ($o->status) {
-                    'pending_payment' => 'warning',
-                    'confirmed' => 'primary',
-                    'in_production' => 'info',
-                    'ready_to_ship' => 'warning',
-                    'shipped' => 'warning',
-                    'delivered' => 'success',
-                    'cancelled' => 'danger',
-                    'refunded' => 'success',
-                    default => 'neutral',
-                };
+                $statusConfig = [
+                    'pending_payment' => ['intent' => 'warning', 'label' => 'Pending Payment'],
+                    'confirmed'       => ['intent' => 'blue',    'label' => 'Confirmed'],
+                    'in_production'   => ['intent' => 'purple',  'label' => 'In Production'],
+                    'ready_to_ship'   => ['intent' => 'warning', 'label' => 'Ready to Ship'],
+                    'shipped'         => ['intent' => 'info',    'label' => 'Shipped'],
+                    'delivered'       => ['intent' => 'success', 'label' => 'Delivered'],
+                    'cancelled'       => ['intent' => 'danger',  'label' => 'Cancelled'],
+                    'refunded'        => ['intent' => 'neutral', 'label' => 'Refunded'],
+                ];
+
+                $orderStatus = $statusConfig[$o->status] ?? [
+                    'intent' => 'neutral',
+                    'label'  => ucwords(str_replace('_', ' ', $o->status)),
+                ];
 
                 $sourcesConfig = config('orders.sources', []);
                 $sourceLabel = $sourcesConfig[$o->order_source] ?? ucfirst($o->order_source);
@@ -292,8 +296,8 @@
 
                     <div class="flex justify-between items-center">
                         <span class="text-neutral-400 font-semibold">Status</span>
-                        <x-badge :intent="$statusIntent" size="sm">
-                            {{ str_replace('_', ' ', $o->status) }}
+                        <x-badge :intent="$orderStatus['intent']" size="sm">
+                            {{ $orderStatus['label'] }}
                         </x-badge>
                     </div>
 
@@ -412,17 +416,21 @@
                             $payIntent = 'danger';
                         }
 
-                        $statusIntent = match ($o->status) {
-                            'pending_payment' => 'warning',
-                            'confirmed' => 'primary',
-                            'in_production' => 'info',
-                            'ready_to_ship' => 'warning',
-                            'shipped' => 'warning',
-                            'delivered' => 'success',
-                            'cancelled' => 'danger',
-                            'refunded' => 'success',
-                            default => 'neutral',
-                        };
+                        $statusConfig = [
+                            'pending_payment' => ['intent' => 'warning', 'label' => 'Pending Payment'],
+                            'confirmed'       => ['intent' => 'blue',    'label' => 'Confirmed'],
+                            'in_production'   => ['intent' => 'purple',  'label' => 'In Production'],
+                            'ready_to_ship'   => ['intent' => 'warning', 'label' => 'Ready to Ship'],
+                            'shipped'         => ['intent' => 'info',    'label' => 'Shipped'],
+                            'delivered'       => ['intent' => 'success', 'label' => 'Delivered'],
+                            'cancelled'       => ['intent' => 'danger',  'label' => 'Cancelled'],
+                            'refunded'        => ['intent' => 'neutral', 'label' => 'Refunded'],
+                        ];
+
+                        $orderStatus = $statusConfig[$o->status] ?? [
+                            'intent' => 'neutral',
+                            'label'  => ucwords(str_replace('_', ' ', $o->status)),
+                        ];
 
                         $sourcesConfig = config('orders.sources', []);
                         $sourceLabel = $sourcesConfig[$o->order_source] ?? ucfirst($o->order_source);
@@ -452,8 +460,8 @@
                             {{ $sourceLabel }}
                         </x-table.cell>
                         <x-table.cell>
-                            <x-badge :intent="$statusIntent" size="sm">
-                                {{ str_replace('_', ' ', $o->status) }}
+                            <x-badge :intent="$orderStatus['intent']" size="sm">
+                                {{ $orderStatus['label'] }}
                             </x-badge>
                         </x-table.cell>
                         <x-table.cell>
