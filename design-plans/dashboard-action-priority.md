@@ -4,7 +4,7 @@ Written against: 7f30093faef347830491c4360571471f75468892
 
 ## Evidence chain
 
-- Surface: `/admin`, `apps/backend/routes/web.php` → `AdminDashboardController` → `DashboardService` → `resources/views/admin/dashboard.blade.php`.
+- Surface: `/admin`, `routes/web.php` → `AdminDashboardController` → `DashboardService` → `resources/views/admin/dashboard.blade.php`.
 - Design sources: user-supplied dashboard screenshot and explicit requested improvements. Preserve the dark sidebar, red brand accents, white cards, existing typography, and restrained borders.
 - Governing owners: `resources/views/components/stat/card.blade.php`, `components/stat/grid.blade.php`, `components/layouts/admin.blade.php`; chart presentation is inline in the dashboard, using `ChartGeometryPresenter` and `ChartPathBuilder`.
 - Explicit exceptions: None documented.
@@ -70,7 +70,7 @@ Prioritize operational work and trustworthy explanations while retaining the exi
 - Product: an admin can identify actionable orders, money due, and dispatch work, then open the matching records.
 - Interface: verify zero, healthy, urgent, large-value, long-label, partial-month, and unavailable-comparison states at mobile, tablet, and desktop widths.
 - Data: test aggregates and list counts, date boundaries, zero comparison baselines, non-overlapping status totals, real event mapping, and permission-sensitive links.
-- Repository: from apps/backend run `php artisan test` and `npm run build`; run `./vendor/bin/pint --test` and `./vendor/bin/phpstan analyse` according to repository requirements. Distinguish pre-existing failures.
+- Repository: run `php artisan test` and `npm run build`; run `./vendor/bin/pint --test` and `./vendor/bin/phpstan analyse` according to repository requirements. Distinguish pre-existing failures.
 - Render and inspect the implemented page; confirm tooltips stay inside chart bounds and mobile wording matches desktop.
 
 ## Stop conditions

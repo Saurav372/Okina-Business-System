@@ -173,4 +173,22 @@ Serve the customer storefront, customer account, cart, checkout, tracking, and S
 - Browser mutations use Laravel's normal same-origin CSRF protection.
 - Storefront SEO and business data are rendered directly from Laravel services.
 - Node.js remains a build-time dependency for Vite, not a production storefront server.
-- Future storefront work belongs under `apps/backend/resources` and Laravel routes/controllers.
+- Future storefront work belongs under `resources/` and Laravel routes/controllers.
+
+---
+
+## ADR-10 — Flattening Monolith to Repository Root
+
+**Status:** Accepted
+
+**Context:**
+Following the retirement of the separate Astro frontend (ADR-09), the codebase was unified into a single Laravel monolith. Retaining the `apps/backend/` subfolder was misleading and added unnecessary nesting for CLI commands, build scripts, and server configurations.
+
+**Decision:**
+Flatten the Laravel application directly to the repository root (`app/`, `config/`, `public/`, `resources/`, `routes/`, `composer.json`, `package.json`). Remove the `apps/backend/` directory wrapper completely.
+
+**Consequences:**
+- The repository follows standard Laravel directory layout.
+- CLI commands (`php artisan`, `composer`, `npm`) execute directly from root without requiring `cd apps/backend`.
+- Web server document root points to `public/`.
+- Single `.gitignore` and `README.md` at root.

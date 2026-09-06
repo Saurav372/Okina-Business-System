@@ -9,7 +9,8 @@
 >
 > **Implemented 2026-09-02:** Design 05 Blade product detail and customizer, live option/SKU matching, price and availability feedback, print-position/method compatibility, quantity presets, media/fallback preview, product metadata/JSON-LD, preserved validation errors, and a same-origin CSRF-protected add-to-cart action using the existing cart snapshot/service rules.
 >
-> **Completed 2026-09-03:** Cart, checkout, account, addresses, order history/detail, reorder, tracking, confirmation, mockup generation, policies, robots, and sitemap now run on Laravel Blade. Storefront mutations are same-origin and CSRF-protected, required public assets live under Laravel, deployment documentation describes one application, and the verified Astro application has been removed.
+>
+> **Repository Layout Update 2026-09-06 (ADR-10):** Following the successful migration and retirement of Astro, the repository was flattened from `apps/backend/` into the project root. Historical paths in this document referencing `apps/backend/` now reside directly at the project root (`/`).
 
 ## 1. Recommendation
 

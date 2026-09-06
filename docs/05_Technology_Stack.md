@@ -2,7 +2,7 @@
 
 > **Last Reviewed:** 2026-09-03
 > **Owner:** Engineering
-> **Source of Truth:** `apps/backend/composer.json`, `apps/backend/package.json`
+> **Source of Truth:** `composer.json`, `package.json`
 
 ---
 
@@ -13,14 +13,14 @@
 > # Backend
 > php tools/composer/composer.phar show --format=json | ConvertFrom-Json
 > # Browser assets
-> Get-Content apps/backend/package.json
+> Get-Content package.json
 > ```
 
 ---
 
 ## Backend (Laravel)
 
-**Source:** `apps/backend/composer.json`
+**Source:** `composer.json`
 
 ### Production Dependencies
 
@@ -62,9 +62,9 @@
 
 ## Storefront and Browser Assets
 
-**Source:** `apps/backend/package.json`
+**Source:** `package.json`
 
-> Verify current versions from `apps/backend/package.json` — regenerate this table on dependency updates.
+> Verify current versions from `package.json` — regenerate this table on dependency updates.
 
 | Package | Role |
 |---|---|
@@ -105,10 +105,10 @@
 
 | File | Purpose |
 |---|---|
-| `apps/backend/.env` | Environment-specific configuration (never committed) |
-| `apps/backend/.env.example` | Safe template for all required env keys |
-| `apps/backend/config/audit.php` | Audit log retention duration |
-| `apps/backend/config/backup.php` | Backup storage path and retention |
-| `apps/backend/config/sheets.php` | Google Sheets credentials and entity column maps |
-| `apps/backend/phpstan.neon` | PHPStan analysis configuration |
-| `apps/backend/pint.json` | Laravel Pint code style configuration |
+| `.env` | Environment-specific configuration (never committed) |
+| `.env.example` | Safe template for all required env keys |
+| `config/audit.php` | Audit log retention duration |
+| `config/backup.php` | Backup storage path and retention |
+| `config/sheets.php` | Google Sheets credentials and entity column maps |
+| `phpstan.neon` | PHPStan analysis configuration |
+| `pint.json` | Laravel Pint code style configuration |

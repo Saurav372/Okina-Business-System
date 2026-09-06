@@ -2,7 +2,7 @@
 
 > **Last Reviewed:** 2026-07-02
 > **Owner:** Engineering
-> **Source of Truth:** `apps/backend/config/auth.php`, `apps/backend/app/Http/Middleware/*`, `apps/backend/app/Policies/*`
+> **Source of Truth:** `config/auth.php`, `app/Http/Middleware/*`, `app/Policies/*`
 
 ---
 

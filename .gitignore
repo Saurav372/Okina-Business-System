@@ -5,21 +5,21 @@
 
 # Dependencies
 /vendor/
-node_modules/
-apps/backend/vendor/
-apps/backend/node_modules/
+/node_modules/
 
 # Build and generated output
-# apps/backend/public/build/ (tracked for production deployments)
-apps/backend/public/hot
-apps/backend/public/storage
+# /public/build/ (tracked for production deployments)
+/public/hot
+/public/storage
+/public/fonts-manifest.dev.json
 
 # Laravel runtime files
-apps/backend/storage/*.key
-apps/backend/storage/pail/
-apps/backend/bootstrap/cache/*.php
-apps/backend/.phpunit.cache/
-apps/backend/.phpunit.result.cache
+*.log
+/storage/*.key
+/storage/pail/
+/bootstrap/cache/*.php
+.phpunit.cache/
+.phpunit.result.cache
 
 # Tool caches and local artifacts
 .npm-cache/

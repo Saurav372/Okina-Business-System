@@ -1279,7 +1279,7 @@ This keeps the storefront visually strong, technically maintainable, accessible,
 
 ## IMPLEMENTATION RECORD — 11 AUGUST 2026
 
-The original implementation used a separate Astro application. On 3 September 2026, the complete customer storefront was consolidated into `apps/backend` and the Astro runtime was retired under ADR-09.
+The original implementation used a separate Astro application. On 3 September 2026, the complete customer storefront was consolidated into Laravel under ADR-09 and later flattened to the repository root under ADR-10.
 
 ### Implemented
 

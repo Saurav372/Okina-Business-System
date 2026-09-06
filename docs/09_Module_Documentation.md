@@ -2,7 +2,7 @@
 
 > **Last Reviewed:** 2026-07-02
 > **Owner:** Engineering
-> **Source of Truth:** `apps/backend/app/Models/*`, `apps/backend/app/Services/*`, `apps/backend/app/Policies/*`, `apps/backend/app/Jobs/*`, `apps/backend/app/Events/*`
+> **Source of Truth:** `app/Models/*`, `app/Services/*`, `app/Policies/*`, `app/Jobs/*`, `app/Events/*`
 
 ---
 

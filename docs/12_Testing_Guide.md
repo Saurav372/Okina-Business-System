@@ -2,7 +2,7 @@
 
 > **Last Reviewed:** 2026-07-02
 > **Owner:** Engineering
-> **Source of Truth:** `apps/backend/tests/`, `apps/backend/phpunit.xml`, `apps/backend/phpstan.neon`, `apps/backend/pint.json`
+> **Source of Truth:** `tests/`, `phpunit.xml`, `phpstan.neon`, `pint.json`
 
 ---
 
@@ -16,7 +16,7 @@
 | Test database | SQLite (in-memory, configured in `phpunit.xml`) |
 | Framework | PHPUnit 12 |
 
-All tests live in `apps/backend/tests/Feature/`. There are no separate unit test files — business logic is tested through feature tests that exercise the full HTTP or service layer.
+All tests live in `tests/Feature/`. There are no separate unit test files — business logic is tested through feature tests that exercise the full HTTP or service layer.
 
 ---
 
@@ -24,7 +24,6 @@ All tests live in `apps/backend/tests/Feature/`. There are no separate unit test
 
 ### Full test suite
 ```powershell
-cd apps/backend
 php artisan test
 # or
 composer test
@@ -66,7 +65,7 @@ Pint enforces the project's PHP code style (PSR-12 based with Laravel convention
 ./vendor/bin/pint app/Services/FinanceReportService.php tests/Feature/FinanceReportTest.php
 ```
 
-Configuration: `apps/backend/pint.json`
+Configuration: `pint.json`
 
 ---
 
@@ -84,7 +83,7 @@ PHPStan performs static type analysis. The project must pass at the configured l
 ./vendor/bin/phpstan analyse app/Services/ app/Models/
 ```
 
-Configuration: `apps/backend/phpstan.neon`
+Configuration: `phpstan.neon`
 
 ---
 
@@ -164,17 +163,16 @@ For CI environments (GitHub Actions, etc.):
 ```yaml
 - name: Run tests
   run: |
-    cd apps/backend
     composer install --no-interaction
     cp .env.example .env
     php artisan key:generate
     php artisan test --no-interaction
 
 - name: Check code style
-  run: cd apps/backend && ./vendor/bin/pint --test
+  run: ./vendor/bin/pint --test
 
 - name: Static analysis
-  run: cd apps/backend && ./vendor/bin/phpstan analyse
+  run: ./vendor/bin/phpstan analyse
 ```
 
 ---

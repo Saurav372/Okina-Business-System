@@ -2,7 +2,7 @@
 
 > **Last Reviewed:** 2026-09-03
 > **Owner:** Engineering
-> **Source of Truth:** `apps/backend/`, `apps/backend/config/`, `apps/backend/routes/`
+> **Source of Truth:** `app/`, `config/`, `routes/`
 
 ---
 
@@ -86,42 +86,45 @@ flowchart TD
 
 ```
 Okina Business System/
-├── apps/
-│   ├── backend/                   Laravel application
-│   │   ├── app/
-│   │   │   ├── Console/           Artisan commands
-│   │   │   ├── Contracts/         Shared interfaces
-│   │   │   ├── Enums/             Backed PHP enums
-│   │   │   ├── Events/            Domain events (AuditEvent, LowStockDetected, etc.)
-│   │   │   ├── Exceptions/        Domain exceptions
-│   │   │   ├── Http/
-│   │   │   │   ├── Controllers/   API and web controllers
-│   │   │   │   ├── Middleware/     Auth, CORS, rate limiting
-│   │   │   │   └── Requests/      Form request validation classes
-│   │   │   ├── Jobs/              Queued jobs
-│   │   │   ├── Listeners/         Event listeners (AuditEventListener, etc.)
-│   │   │   ├── Models/            Eloquent models (41 models)
-│   │   │   ├── Observers/         Model observers
-│   │   │   ├── Policies/          Authorization policies
-│   │   │   ├── Providers/         Service providers
-│   │   │   ├── Services/          Business logic services (20 services)
-│   │   │   └── Support/           Shared helpers and value objects
-│   │   ├── config/                App configuration (auth, audit, backup, sheets, etc.)
-│   │   ├── database/
-│   │   │   ├── migrations/        48 migration files (schema source of truth)
-│   │   │   ├── factories/         Test factories
-│   │   │   └── seeders/           Database seeders
-│   │   ├── routes/
-│   │   │   ├── web.php            Storefront, customer, and admin routes
-│   │   │   ├── api.php            Public and customer API routes
-│   │   │   └── console.php        Scheduled commands
-│   │   ├── storage/app/private/   Uploaded files (gitignored)
-│   │   ├── resources/views/       Storefront, customer, and admin Blade views
-│   │   ├── resources/css/         Storefront and admin styles
-│   │   ├── resources/js/          Storefront and admin interactions
-│   │   └── tests/Feature/         Feature test suite
-│
-└── docs/                          This documentation suite
+├── app/
+│   ├── Console/           Artisan commands
+│   ├── Contracts/         Shared interfaces
+│   ├── Enums/             Backed PHP enums
+│   ├── Events/            Domain events (AuditEvent, LowStockDetected, etc.)
+│   ├── Exceptions/        Domain exceptions
+│   ├── Http/
+│   │   ├── Controllers/   API and web controllers
+│   │   ├── Middleware/     Auth, CORS, rate limiting
+│   │   └── Requests/      Form request validation classes
+│   ├── Jobs/              Queued jobs
+│   ├── Listeners/         Event listeners (AuditEventListener, etc.)
+│   ├── Models/            Eloquent models (41 models)
+│   ├── Observers/         Model observers
+│   ├── Policies/          Authorization policies
+│   ├── Providers/         Service providers
+│   ├── Services/          Business logic services (20 services)
+│   └── Support/           Shared helpers and value objects
+├── bootstrap/             App bootstrap and cache
+├── config/                App configuration (auth, audit, backup, sheets, etc.)
+├── database/
+│   ├── migrations/        48 migration files (schema source of truth)
+│   ├── factories/         Test factories
+│   └── seeders/           Database seeders
+├── public/                Web server document root (assets, build, index.php)
+├── resources/
+│   ├── views/             Storefront, customer, and admin Blade views
+│   ├── css/               Storefront and admin styles
+│   └── js/                Storefront and admin interactions
+├── routes/
+│   ├── web.php            Storefront, customer, and admin routes
+│   ├── api.php            Public and customer API routes
+│   └── console.php        Scheduled commands
+├── storage/app/private/   Uploaded files (gitignored)
+├── tests/Feature/         Feature test suite
+├── docs/                  This documentation suite
+├── composer.json          PHP dependencies
+├── package.json           Vite & frontend dependencies
+└── vite.config.js         Asset bundler configuration
 ```
 
 ---

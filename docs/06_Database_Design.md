@@ -2,7 +2,7 @@
 
 > **Last Reviewed:** 2026-07-02
 > **Owner:** Engineering
-> **Source of Truth:** `apps/backend/database/migrations/*`, `apps/backend/app/Models/*`
+> **Source of Truth:** `database/migrations/*`, `app/Models/*`
 
 ---
 
@@ -254,4 +254,4 @@ erDiagram
 - **Constraints:** Foreign key constraints enforce referential integrity at the database level, not only in application code.
 - **Check constraints:** MySQL check constraints are used for enum-like column validation where supported.
 
-Migration files: [`apps/backend/database/migrations/`](../apps/backend/database/migrations/)
+Migration files: [`database/migrations/`](../database/migrations/)

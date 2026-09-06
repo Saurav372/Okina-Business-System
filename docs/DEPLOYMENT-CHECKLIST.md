@@ -155,7 +155,7 @@ Clear cached PHP bytecode to reload PHP file modifications:
 - For **Apache**: `sudo systemctl reload apache2`.
 
 ### Step 4.10: Build and Deploy Browser Assets
-From `apps/backend`, install Node dependencies and build the Laravel Vite assets:
+From the project root, install Node dependencies and build the Laravel Vite assets:
 ```bash
 npm ci
 npm run build

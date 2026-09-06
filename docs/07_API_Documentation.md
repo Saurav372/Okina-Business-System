@@ -2,7 +2,7 @@
 
 > **Last Reviewed:** 2026-07-02
 > **Owner:** Engineering
-> **Source of Truth:** `apps/backend/routes/web.php`, `apps/backend/routes/api.php`, `apps/backend/app/Http/Controllers/*`, `apps/backend/app/Http/Requests/*`
+> **Source of Truth:** `routes/web.php`, `routes/api.php`, `app/Http/Controllers/*`, `app/Http/Requests/*`
 
 ---
 

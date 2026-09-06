@@ -72,7 +72,6 @@ Log rotation can be configured via `config/logging.php` using the `daily` driver
 
 ### Manual backup
 ```powershell
-cd apps/backend
 php artisan system:backup
 ```
 

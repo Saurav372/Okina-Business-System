@@ -2,7 +2,7 @@
 
 > **Last Reviewed:** 2026-09-03
 > **Owner:** Engineering / DevOps
-> **Source of Truth:** `apps/backend/.env.example`, `docs/DEPLOYMENT-CHECKLIST.md`
+> **Source of Truth:** `.env.example`, `docs/DEPLOYMENT-CHECKLIST.md`
 
 ---
 
@@ -138,15 +138,10 @@ The high-level sequence is:
 ## First-Time Setup
 
 ```powershell
-# Backend
-cd apps/backend
 copy .env.example .env
 php artisan key:generate
 php artisan migrate --seed
 php artisan storage:link
-
-# Browser assets
-cd apps/backend
 npm ci
 npm run build
 ```
@@ -159,7 +154,7 @@ The queue worker must be a persistent, supervised process in production. Use Sup
 
 ```ini
 [program:okina-queue-worker]
-command=php /path/to/apps/backend/artisan queue:work database --sleep=3 --tries=3 --max-time=3600
+command=php /path/to/project/artisan queue:work database --sleep=3 --tries=3 --max-time=3600
 autostart=true
 autorestart=true
 user=www-data
@@ -173,7 +168,7 @@ redirect_stderr=true
 Add to the web server user's crontab:
 
 ```
-* * * * * cd /path/to/apps/backend && php artisan schedule:run >> /dev/null 2>&1
+* * * * * cd /path/to/project && php artisan schedule:run >> /dev/null 2>&1
 ```
 
 The scheduler handles:

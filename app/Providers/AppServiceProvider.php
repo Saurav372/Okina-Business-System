@@ -59,7 +59,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (config('database.default') === 'sqlite') {
+        if (config('database.default') === 'sqlite' && extension_loaded('pdo_sqlite')) {
             DB::statement('PRAGMA foreign_keys = ON;');
         }
         Gate::before(function ($user, $ability) {

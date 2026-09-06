@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 $workspace = dirname(__DIR__);
-$sourcePath = $workspace.'/apps/backend/public/brand/okina-logo.png';
-$publicTarget = $workspace.'/apps/backend/public/brand/okina-watermark-mark.png';
-$backendDirectory = $workspace.'/apps/backend/resources/brand';
+$sourcePath = $workspace.'/public/brand/okina-logo.png';
+$publicTarget = $workspace.'/public/brand/okina-watermark-mark.png';
+$backendDirectory = $workspace.'/resources/brand';
 $backendTarget = $backendDirectory.'/okina-watermark-mark.png';
 
 if (! function_exists('imagecreatefrompng')) {

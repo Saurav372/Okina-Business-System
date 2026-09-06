@@ -13,7 +13,6 @@ A fully integrated business platform for custom-apparel and print-on-demand oper
 ### Application (Laravel + Blade)
 
 ```powershell
-cd apps/backend
 copy .env.example .env
 php artisan key:generate
 php artisan migrate --seed
@@ -25,7 +24,6 @@ php artisan serve --host=127.0.0.1 --port=8000
 ### Running Tests
 
 ```powershell
-cd apps/backend
 php artisan test
 ./vendor/bin/pint --test
 ./vendor/bin/phpstan analyse

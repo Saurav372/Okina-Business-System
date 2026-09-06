@@ -2,7 +2,7 @@
 
 > **Last Reviewed:** 2026-07-02
 > **Owner:** Engineering
-> **Source of Truth:** `apps/backend/app/Services/*`, `apps/backend/app/Http/Controllers/*`
+> **Source of Truth:** `app/Services/*`, `app/Http/Controllers/*`
 
 ---
 
