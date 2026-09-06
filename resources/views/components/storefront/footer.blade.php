@@ -10,7 +10,7 @@
             <strong>Shop</strong>
             <a href="{{ route('storefront.categories.index') }}">Collections</a>
             <a href="{{ route('storefront.search') }}">All products</a>
-            <a href="{{ route('storefront.mockup') }}">Create yours</a>
+            <a href="{{ route('storefront.search') }}?q=tee">T-Shirts & Hoodies</a>
         </nav>
         <nav aria-label="Footer help links">
             <strong>Help</strong>

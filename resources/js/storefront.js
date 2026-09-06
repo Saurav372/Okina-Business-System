@@ -1,3 +1,65 @@
+// Storefront Drawer & Header Controller (UI-Skills compliant: keyboard trap, aria, micro-interactions)
+const cartDrawer = document.querySelector('[data-cart-drawer]');
+const cartTriggers = document.querySelectorAll('[data-cart-trigger]');
+const drawerCloses = document.querySelectorAll('[data-drawer-close]');
+
+const openCartDrawer = () => {
+    if (!(cartDrawer instanceof HTMLElement)) return;
+    cartDrawer.classList.add('sf-drawer-open');
+    cartDrawer.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+
+    // Focus close button for accessible keyboard trap
+    const closeBtn = cartDrawer.querySelector('[data-drawer-close]');
+    if (closeBtn instanceof HTMLElement) closeBtn.focus();
+};
+
+const closeCartDrawer = () => {
+    if (!(cartDrawer instanceof HTMLElement)) return;
+    cartDrawer.classList.remove('sf-drawer-open');
+    cartDrawer.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+};
+
+cartTriggers.forEach((trigger) => {
+    trigger.addEventListener('click', (e) => {
+        e.preventDefault();
+        openCartDrawer();
+    });
+});
+
+drawerCloses.forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        closeCartDrawer();
+    });
+});
+
+// Click outside drawer panel closes it
+cartDrawer?.addEventListener('pointerdown', (e) => {
+    if (e.target === cartDrawer) {
+        closeCartDrawer();
+    }
+});
+
+// Quantity Stepper Handler in Drawer
+document.querySelectorAll('.sf-drawer-qty-stepper').forEach((form) => {
+    const input = form.querySelector('.sf-qty-input');
+    form.querySelectorAll('.sf-qty-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            if (!(input instanceof HTMLInputElement)) return;
+            const delta = parseInt(btn.dataset.step || '0', 10);
+            const current = parseInt(input.value || '1', 10);
+            const next = Math.max(1, current + delta);
+            if (next !== current) {
+                input.value = String(next);
+                form.submit();
+            }
+        });
+    });
+});
+
+// Mobile Navigation Menu Controller
 const menuTrigger = document.querySelector('[data-menu-trigger]');
 const mobileMenu = document.querySelector('[data-mobile-menu]');
 const menuClose = document.querySelector('[data-menu-close]');
@@ -6,7 +68,6 @@ const closeMenu = ({ returnFocus = true } = {}) => {
     if (!(menuTrigger instanceof HTMLButtonElement) || !(mobileMenu instanceof HTMLElement)) return;
     mobileMenu.hidden = true;
     menuTrigger.setAttribute('aria-expanded', 'false');
-    menuTrigger.querySelector('.sf-sr-only').textContent = 'Open menu';
     if (returnFocus) menuTrigger.focus();
 };
 
@@ -14,7 +75,6 @@ const openMenu = () => {
     if (!(menuTrigger instanceof HTMLButtonElement) || !(mobileMenu instanceof HTMLElement)) return;
     mobileMenu.hidden = false;
     menuTrigger.setAttribute('aria-expanded', 'true');
-    menuTrigger.querySelector('.sf-sr-only').textContent = 'Close menu';
     const firstLink = mobileMenu.querySelector('a');
     if (firstLink instanceof HTMLElement) firstLink.focus();
 };
@@ -27,7 +87,14 @@ menuTrigger?.addEventListener('click', () => {
 menuClose?.addEventListener('click', () => closeMenu());
 
 document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && mobileMenu instanceof HTMLElement && !mobileMenu.hidden) closeMenu();
+    if (event.key === 'Escape') {
+        if (cartDrawer instanceof HTMLElement && cartDrawer.classList.contains('sf-drawer-open')) {
+            closeCartDrawer();
+        }
+        if (mobileMenu instanceof HTMLElement && !mobileMenu.hidden) {
+            closeMenu();
+        }
+    }
 });
 
 document.addEventListener('pointerdown', (event) => {
@@ -36,6 +103,7 @@ document.addEventListener('pointerdown', (event) => {
     closeMenu({ returnFocus: false });
 });
 
+// Catalog Filtering & Sorting
 const productGrid = document.querySelector('[data-product-grid]');
 const productFilter = document.querySelector('[data-product-filter]');
 const productSort = document.querySelector('[data-product-sort]');
@@ -74,6 +142,7 @@ const updateProductGrid = () => {
 productFilter?.addEventListener('input', updateProductGrid);
 productSort?.addEventListener('change', updateProductGrid);
 
+// Product Customizer Option Matrix Handler
 const customizerRoot = document.querySelector('[data-product-customizer]');
 const customizerForm = document.querySelector('[data-customizer-form]');
 const customizerDataNode = document.querySelector('#product-customizer-data');

@@ -394,6 +394,10 @@ class FileUploadService
 
     private function generatePreviewMetadataFromBytes(string $bytes, string $mimeType): ?array
     {
+        if (!function_exists('imagecreatefromstring')) {
+            return null;
+        }
+
         $image = @imagecreatefromstring($bytes);
 
         if ($image === false) {

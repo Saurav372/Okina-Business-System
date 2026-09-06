@@ -38,10 +38,10 @@ class SalesOrderController extends Controller
             ->get(['id', 'display_name', 'name']);
 
         $skus = ProductSku::query()
-            ->with('product')
+            ->with('product:id,name')
             ->orderBy('sku_code')
             ->limit(500)
-            ->get(['id', 'sku_code', 'product_id']);
+            ->get(['id', 'sku_code', 'product_id', 'price_minor', 'stock_quantity', 'name_suffix']);
 
         return view('admin.orders.create', [
             'customers' => $customers,
@@ -51,23 +51,33 @@ class SalesOrderController extends Controller
 
     public function skuSearch(Request $request)
     {
-        $q = (string) $request->query('q', '');
+        $q = trim((string) $request->query('q', ''));
 
         $results = ProductSku::query()
-            ->with('product')
+            ->with('product:id,name')
             ->when($q !== '', function ($builder) use ($q) {
-                $builder->where('sku_code', 'like', "%{$q}%")
-                    ->orWhereHas('product', function ($b) use ($q) {
-                        $b->where('name', 'like', "%{$q}%");
-                    });
+                $builder->where(function ($b) use ($q) {
+                    $b->where('sku_code', 'like', "%{$q}%")
+                        ->orWhereHas('product', function ($pb) use ($q) {
+                            $pb->where('name', 'like', "%{$q}%");
+                        });
+                });
             })
             ->limit(50)
-            ->get(['id', 'sku_code', 'product_id'])
+            ->get(['id', 'sku_code', 'product_id', 'price_minor', 'stock_quantity', 'name_suffix'])
             ->map(function (ProductSku $sku) {
+                $prodName = $sku->product?->name ?? '';
+                if ($sku->name_suffix) {
+                    $prodName = $prodName ? "{$prodName} ({$sku->name_suffix})" : $sku->name_suffix;
+                }
                 return [
                     'id' => $sku->id,
                     'sku_code' => $sku->sku_code,
-                    'label' => $sku->sku_code.($sku->product ? ' - '.$sku->product->name : ''),
+                    'product_name' => $prodName,
+                    'price_minor' => $sku->price_minor,
+                    'price_formatted' => $sku->price_minor !== null ? '₹' . number_format($sku->price_minor / 100, 2) : null,
+                    'stock_quantity' => $sku->stock_quantity,
+                    'label' => $sku->sku_code . ($prodName ? ' · ' . $prodName : ''),
                 ];
             });
 

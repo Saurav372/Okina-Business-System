@@ -4,57 +4,98 @@
     'cartCount' => 0,
 ])
 
-<div class="sf-promo" role="region" aria-label="Current offer">
-    <p><span aria-hidden="true">◆</span> First order offer · use <strong>FIRSTORDER</strong></p>
+<!-- Top Announcement Ticker (Competitor Benchmark: Destiny Clothing & Printmine) -->
+<div class="sf-announcement-bar" role="region" aria-label="Announcement">
+    <div class="sf-announcement-inner">
+        <span class="sf-announcement-pill">FREE DIGITAL PROOF</span>
+        <p class="sf-announcement-text">
+            <span>📦 PAN-INDIA SHIPPING</span>
+            <span class="sf-sep">|</span>
+            <span>⚡ 48H RAPID DISPATCH</span>
+            <span class="sf-sep">|</span>
+            <span>✨ NO MINIMUM ORDER REQUIRED</span>
+        </p>
+        <span class="sf-announcement-code">CODE: <strong>FIRSTORDER</strong> (10% OFF)</span>
+    </div>
 </div>
 
-<header class="sf-header" data-storefront-header>
-    <div class="sf-header-main">
-        <a class="sf-brand" href="{{ route('storefront.home') }}" aria-label="{{ $site['company_name'] }} home">
-            <span class="sf-brand-mark" aria-hidden="true">O</span>
-            <span>OKINA</span>
-        </a>
-
-        <form class="sf-search" action="{{ route('storefront.search') }}" method="get" role="search">
-            <label class="sf-sr-only" for="site-search">Search products</label>
-            <input id="site-search" name="q" type="search" value="{{ request('q') }}" placeholder="Search T-shirts, teamwear, hoodies…" autocomplete="off">
-            <button type="submit" aria-label="Search products"><x-storefront.icon name="search" /></button>
-        </form>
-
-        <nav class="sf-header-actions" aria-label="Account and bag">
-            <a class="sf-icon-button sf-account-link" href="{{ auth('customer')->check() ? route('customer.account') : route('customer.login') }}" aria-label="{{ auth('customer')->check() ? 'Your account' : 'Sign in' }}">
-                <x-storefront.icon name="user" />
+<!-- Floating Elevated Header with Okina Logo & Direct Slide-Out Cart Bag Trigger -->
+<header class="sf-header-sticky" data-storefront-header>
+    <div class="sf-navbar-wrapper">
+        <div class="sf-navbar">
+            <!-- Brand Logo with authentic Ensō flame mark -->
+            <a class="sf-brand-logo" href="{{ route('storefront.home') }}" aria-label="{{ $site['company_name'] }} Home">
+                <img src="/brand/okina-logo.png" alt="{{ $site['company_name'] }}" class="sf-logo-img" width="168" height="42">
             </a>
-            <a class="sf-icon-button" href="{{ route('storefront.cart') }}" aria-label="Bag with {{ $cartCount }} items">
-                <x-storefront.icon name="bag" />
-                @if($cartCount > 0)<span class="sf-count-badge" aria-hidden="true">{{ min($cartCount, 99) }}</span>@endif
-            </a>
-            <button class="sf-icon-button sf-menu-trigger" type="button" aria-expanded="false" aria-controls="storefront-mobile-menu" data-menu-trigger>
-                <span class="sf-sr-only">Open menu</span>
-                <x-storefront.icon name="menu" />
-            </button>
-        </nav>
+
+            <!-- Center Navigation Links -->
+            <nav class="sf-nav-links" aria-label="Main Navigation">
+                <a href="{{ route('storefront.categories.index') }}" class="sf-nav-link @if(request()->routeIs('storefront.categories.index')) sf-active @endif">
+                    All Styles
+                </a>
+                @foreach($categories as $category)
+                    <a href="{{ $category['url'] }}" class="sf-nav-link @if(request()->route('category') === $category['slug']) sf-active @endif">
+                        {{ $category['name'] }}
+                    </a>
+                @endforeach
+            </nav>
+
+            <!-- Quick Search Bar (Inline Elevated) -->
+            <form class="sf-quick-search" action="{{ route('storefront.search') }}" method="get" role="search">
+                <label class="sf-sr-only" for="header-search-input">Search products</label>
+                <div class="sf-search-input-wrap">
+                    <x-storefront.icon name="search" class="sf-search-ico" />
+                    <input id="header-search-input" name="q" type="search" value="{{ request('q') }}" placeholder="Search oversized tees, hoodies…" autocomplete="off">
+                </div>
+            </form>
+
+            <!-- Actions: Account & Slide-Out Bag Trigger -->
+            <div class="sf-nav-actions" aria-label="User actions">
+                <a class="sf-action-btn sf-account-btn" href="{{ auth('customer')->check() ? route('customer.account') : route('customer.login') }}" aria-label="{{ auth('customer')->check() ? 'Your Account' : 'Sign In' }}">
+                    <x-storefront.icon name="user" />
+                    <span class="sf-action-label">{{ auth('customer')->check() ? 'Account' : 'Sign In' }}</span>
+                </a>
+
+                <!-- Bag Trigger Button (Opens Slide-out Cart Drawer) -->
+                <button type="button" class="sf-action-btn sf-bag-trigger" aria-label="Open shopping bag with {{ $cartCount }} items" aria-controls="cart-drawer" data-cart-trigger>
+                    <div class="sf-bag-icon-wrapper">
+                        <x-storefront.icon name="bag" />
+                        <span class="sf-bag-count" data-cart-count-badge aria-hidden="true">{{ min($cartCount, 99) }}</span>
+                    </div>
+                    <span class="sf-action-label">Bag</span>
+                </button>
+
+                <!-- Mobile Hamburger Toggle -->
+                <button class="sf-action-btn sf-mobile-toggle" type="button" aria-expanded="false" aria-controls="storefront-mobile-menu" data-menu-trigger aria-label="Open mobile menu">
+                    <x-storefront.icon name="menu" />
+                </button>
+            </div>
+        </div>
     </div>
 
-    <nav class="sf-category-nav" aria-label="Product collections">
-        <div>
-            @foreach($categories as $category)
-                <a href="{{ $category['url'] }}" @if(request()->route('category') === $category['slug']) aria-current="page" @endif>{{ $category['name'] }}</a>
-            @endforeach
-            <a class="sf-create-link" href="{{ route('storefront.mockup') }}">Create yours</a>
-        </div>
-    </nav>
-
+    <!-- Mobile Slide Down Menu -->
     <nav class="sf-mobile-menu" id="storefront-mobile-menu" aria-label="Mobile navigation" hidden data-mobile-menu>
         <div class="sf-mobile-menu-head">
-            <strong>Browse Okina</strong>
-            <button class="sf-icon-button" type="button" data-menu-close aria-label="Close menu"><x-storefront.icon name="close" /></button>
+            <span class="sf-mobile-title">Explore Collections</span>
+            <button class="sf-icon-button" type="button" data-menu-close aria-label="Close menu">
+                <x-storefront.icon name="close" />
+            </button>
         </div>
-        <a href="{{ route('storefront.categories.index') }}">Shop all collections</a>
-        @foreach($categories as $category)
-            <a href="{{ $category['url'] }}">{{ $category['name'] }}</a>
-        @endforeach
-        <a href="{{ route('storefront.mockup') }}">Create your apparel</a>
-        <a href="{{ auth('customer')->check() ? route('customer.account') : route('customer.login') }}">{{ auth('customer')->check() ? 'Orders and proofs' : 'Sign in' }}</a>
+        <div class="sf-mobile-search-row">
+            <form action="{{ route('storefront.search') }}" method="get" role="search">
+                <input name="q" type="search" value="{{ request('q') }}" placeholder="Search products, tees, hoodies…" autocomplete="off">
+                <button type="submit" aria-label="Search"><x-storefront.icon name="search" /></button>
+            </form>
+        </div>
+        <div class="sf-mobile-links">
+            <a href="{{ route('storefront.categories.index') }}" class="sf-mobile-link">All Collections</a>
+            @foreach($categories as $category)
+                <a href="{{ $category['url'] }}" class="sf-mobile-link">{{ $category['name'] }}</a>
+            @endforeach
+            <a href="{{ auth('customer')->check() ? route('customer.account') : route('customer.login') }}" class="sf-mobile-link">
+                {{ auth('customer')->check() ? 'My Account & Orders' : 'Sign In / Register' }}
+            </a>
+            <a href="{{ route('storefront.track-order') }}" class="sf-mobile-link">Track Order Status</a>
+        </div>
     </nav>
 </header>

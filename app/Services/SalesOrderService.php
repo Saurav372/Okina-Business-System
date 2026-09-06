@@ -39,6 +39,7 @@ readonly class SalesOrderService
 
         $orderItemAttributes = [];
         $lineTotals = [];
+        $mockupFilesToAttach = [];
 
         foreach ($items as $item) {
             $sku = ProductSku::query()
@@ -76,6 +77,15 @@ readonly class SalesOrderService
             ];
 
             $lineTotals[] = (int) $lineTotal;
+
+            $mockupId = data_get($item, 'customization_snapshot.mockup.stored_file_id');
+            if (!empty($mockupId)) {
+                $mockupFilesToAttach[] = [
+                    'stored_file_id' => (int) $mockupId,
+                    'filename' => data_get($item, 'customization_snapshot.mockup.original_filename') ?: "{$product->name} Mockup",
+                    'notes' => data_get($item, 'customization_snapshot.production_notes') ?: data_get($item, 'customization_snapshot.customer_note'),
+                ];
+            }
         }
         $discountAmount = isset($input['discount_amount_minor']) ? (int) $input['discount_amount_minor'] : 0;
         $shippingAmount = isset($input['shipping_amount_minor']) ? (int) $input['shipping_amount_minor'] : 0;
@@ -91,7 +101,7 @@ readonly class SalesOrderService
 
         $paymentSchedule = isset($input['advance_payment']) ? ['payment_schedule' => $input['advance_payment']] : null;
 
-        $order = DB::transaction(function () use ($customer, $orderItemAttributes, $totals, $currency, $input, $actor, $paymentSchedule) {
+        $order = DB::transaction(function () use ($customer, $orderItemAttributes, $totals, $currency, $input, $actor, $paymentSchedule, $mockupFilesToAttach) {
             $order = Order::create([
                 'order_type' => $this->rules->orderType(),
                 'order_source' => $this->rules->orderSource(),
@@ -114,8 +124,26 @@ readonly class SalesOrderService
             ]);
 
             $orderItems = $order->items()->createMany($orderItemAttributes);
-
             $order->setRelation('items', $orderItems);
+
+            // Transactionally associate mockups to order
+            $seenStoredFileIds = [];
+            $sortOrder = 1;
+            foreach ($mockupFilesToAttach as $mockupInfo) {
+                $fileId = $mockupInfo['stored_file_id'];
+                if (in_array($fileId, $seenStoredFileIds, true)) {
+                    continue;
+                }
+                $seenStoredFileIds[] = $fileId;
+
+                $order->mockups()->create([
+                    'stored_file_id' => $fileId,
+                    'display_name' => $mockupInfo['filename'],
+                    'is_featured' => true,
+                    'sort_order' => $sortOrder++,
+                    'notes' => $mockupInfo['notes'] ?: null,
+                ]);
+            }
 
             return $order;
         });

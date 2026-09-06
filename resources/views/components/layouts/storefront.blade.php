@@ -38,11 +38,13 @@
     <main id="main-content" tabindex="-1">{{ $slot }}</main>
     <x-storefront.footer :site="$site" />
 
+    <x-storefront.cart-drawer :cart="$cart ?? null" :money="$money ?? null" />
+
     <nav class="sf-mobile-dock" aria-label="Primary mobile navigation">
         <a href="{{ route('storefront.home') }}" @if(request()->routeIs('storefront.home')) aria-current="page" @endif><x-storefront.icon name="home" /><span>Home</span></a>
         <a href="{{ route('storefront.categories.index') }}" @if(request()->routeIs('storefront.categories.*', 'storefront.search')) aria-current="page" @endif><x-storefront.icon name="search" /><span>Shop</span></a>
         <a href="{{ auth('customer')->check() ? route('customer.account') : route('customer.login') }}"><x-storefront.icon name="orders" /><span>Orders</span></a>
-        <a href="{{ route('storefront.cart') }}" @if(request()->routeIs('storefront.cart*', 'storefront.checkout*')) aria-current="page" @endif><x-storefront.icon name="bag" /><span>Bag</span>@if($cartCount > 0)<b aria-label="{{ $cartCount }} items">{{ min($cartCount, 99) }}</b>@endif</a>
+        <button type="button" class="sf-dock-bag-btn" data-cart-trigger aria-label="Open Bag with {{ $cartCount }} items"><x-storefront.icon name="bag" /><span>Bag</span>@if($cartCount > 0)<b aria-label="{{ $cartCount }} items">{{ min($cartCount, 99) }}</b>@endif</button>
     </nav>
 </body>
 </html>

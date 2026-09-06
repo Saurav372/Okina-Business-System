@@ -46,18 +46,42 @@ class CustomizationSnapshotBuilder
     {
         $normalizedPlacement = $this->normalizePlacement(data_get($snapshot, 'placement', []));
 
+        $printMethods = data_get($snapshot, 'print_methods');
+        if (is_array($printMethods)) {
+            $printMethods = array_values(array_filter(array_map('strval', $printMethods)));
+        }
+
+        $printMethod = $this->cleanString(data_get($snapshot, 'print_method'));
+        if (empty($printMethod) && !empty($printMethods)) {
+            $printMethod = implode(', ', $printMethods);
+        }
+
+        $productionNotes = $this->cleanNote(data_get($snapshot, 'production_notes') ?? data_get($snapshot, 'customer_note'));
+
+        $mockupData = data_get($snapshot, 'mockup');
+        $cleanMockup = null;
+        if (is_array($mockupData) && !empty($mockupData['stored_file_id'])) {
+            $cleanMockup = [
+                'stored_file_id' => (int) $mockupData['stored_file_id'],
+                'original_filename' => $this->cleanString($mockupData['original_filename'] ?? null),
+            ];
+        }
+
         return array_filter([
             'schema_version' => data_get($snapshot, 'schema_version', self::SCHEMA_VERSION),
             'product' => $this->publicProductReference(data_get($snapshot, 'product', [])),
             'sku_code' => $this->cleanString(data_get($snapshot, 'sku_code')),
             'variant_key' => $this->cleanString(data_get($snapshot, 'variant_key')),
             'selected_options_snapshot' => $this->publicSelectedOptionsSnapshot(data_get($snapshot, 'selected_options_snapshot', [])),
-            'print_method' => $this->cleanString(data_get($snapshot, 'print_method')),
+            'print_method' => $printMethod,
+            'print_methods' => !empty($printMethods) ? $printMethods : null,
             'print_position' => $this->cleanString(data_get($snapshot, 'print_position')),
             'placement' => $normalizedPlacement,
             'files' => $this->publicFileReferences(data_get($snapshot, 'files', [])),
+            'mockup' => $cleanMockup,
             'mockup_preview' => $this->publicMockupPreview(data_get($snapshot, 'mockup_preview', [])),
-            'customer_note' => $this->cleanNote(data_get($snapshot, 'customer_note')),
+            'production_notes' => $productionNotes,
+            'customer_note' => $productionNotes,
         ], static fn (mixed $value): bool => $value !== null && $value !== []);
     }
 

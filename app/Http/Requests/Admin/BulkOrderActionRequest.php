@@ -15,7 +15,23 @@ class BulkOrderActionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'action' => ['required', 'string', Rule::in(['confirm', 'cancel'])],
+            'action' => ['required', 'string', Rule::in([
+                'confirm',
+                'cancel',
+                'in_production',
+                'ready_to_ship',
+                'shipped',
+                'delivered',
+                'update_status',
+            ])],
+            'target_status' => ['nullable', 'string', Rule::in([
+                'confirmed',
+                'in_production',
+                'ready_to_ship',
+                'shipped',
+                'delivered',
+                'cancelled',
+            ])],
             'order_ids' => ['required', 'array', 'min:1'],
             'order_ids.*' => ['required', 'string'],
         ];

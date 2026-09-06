@@ -40,12 +40,13 @@
         <div
             x-show="open"
             x-cloak
-            class="fixed inset-0 z-modal flex {{ $isFull ? '' : 'items-center justify-center p-4 sm:p-6' }} overflow-y-auto"
+            class="fixed inset-0 z-[100] flex {{ $isFull ? '' : 'items-center justify-center p-4 sm:p-6' }} overflow-y-auto"
+            style="z-index: 100;"
             @keydown.tab="focusTrap($event)"
         >
             {{-- Backdrop --}}
             <div
-                class="fixed inset-0 bg-neutral-900/50 backdrop-blur-sm"
+                class="fixed inset-0 bg-neutral-950/60 backdrop-blur-sm"
                 x-show="open"
                 x-transition:enter="ease-[var(--motion-ease)] duration-[var(--motion-normal)]"
                 x-transition:enter-start="opacity-0"
@@ -64,7 +65,7 @@
                 aria-modal="true"
                 aria-labelledby="{{ $titleId }}"
                 @if(filled($description)) aria-describedby="{{ $descId }}" @endif
-                class="relative {{ $sizeClass }} {{ $isFull ? 'min-h-full flex flex-col' : 'rounded-2xl' }} bg-white shadow-2xl ring-1 ring-black/5 overflow-hidden"
+                class="relative {{ $sizeClass }} {{ $isFull ? 'min-h-full flex flex-col' : 'rounded-2xl' }} bg-white shadow-2xl ring-1 ring-black/5 overflow-hidden z-[101]"
                 x-show="open"
                 x-transition:enter="ease-[var(--motion-ease)] duration-[var(--motion-normal)]"
                 x-transition:enter-start="opacity-0 scale-95 translate-y-2"

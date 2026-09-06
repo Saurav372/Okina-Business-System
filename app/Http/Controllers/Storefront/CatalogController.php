@@ -255,6 +255,8 @@ class CatalogController extends Controller
             'site' => $site,
             'navigationCategories' => array_slice($categories, 0, 5),
             'cartCount' => (int) ($cart['item_count'] ?? 0),
+            'cart' => $cart,
+            'money' => $this->money,
         ];
     }
 

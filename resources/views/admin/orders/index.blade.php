@@ -10,6 +10,7 @@
     <div 
         x-data="{
             selectedOrders: [],
+            selectedBulkStatus: 'confirmed',
             pageOrderIds: {{ json_encode($orders->pluck('public_id')->all()) }},
             get allSelected() {
                 return this.pageOrderIds.length > 0 && this.pageOrderIds.every(id => this.selectedOrders.includes(id));
@@ -28,9 +29,25 @@
                     });
                 }
             },
-            submitBulkAction(action) {
+            submitBulkAction(action, targetStatus = null) {
+                const form = document.getElementById('bulk-action-form');
+                form.action = '{{ route('admin.orders.bulk') }}';
+                form.target = '_self';
                 document.getElementById('bulk-action-input').value = action;
-                document.getElementById('bulk-action-form').submit();
+                document.getElementById('bulk-target-status-input').value = targetStatus || '';
+                form.submit();
+            },
+            submitPackingSlips() {
+                const form = document.getElementById('bulk-action-form');
+                form.action = '{{ route('admin.orders.bulk.packing_slips') }}';
+                form.target = '_blank';
+                form.submit();
+            },
+            submitExportManifest() {
+                const form = document.getElementById('bulk-action-form');
+                form.action = '{{ route('admin.orders.bulk.manifest') }}';
+                form.target = '_self';
+                form.submit();
             }
         }"
     >
@@ -85,13 +102,26 @@
                 <!-- Search Input -->
                 <div class="flex-1 space-y-1">
                     <label class="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">Search Orders</label>
-                    <input 
-                        type="text" 
-                        name="search" 
-                        value="{{ $activeFilters['search'] ?? '' }}" 
-                        placeholder="Order No, Customer, Phone, Email..."
-                        class="w-full px-4 py-2 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)] text-xs text-neutral-800 placeholder-neutral-400"
-                    >
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            name="search" 
+                            value="{{ $activeFilters['search'] ?? '' }}" 
+                            placeholder="Order No, Customer, Phone, Email..."
+                            @input.debounce.400ms="$el.form.submit()"
+                            x-init="if ($el.value) { $el.focus(); $el.setSelectionRange($el.value.length, $el.value.length); }"
+                            class="w-full pl-4 @if(!empty($activeFilters['search'])) pr-9 @else pr-4 @endif py-2 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[color:var(--focus-ring-color)] text-xs text-neutral-800 placeholder-neutral-400"
+                        >
+                        @if(!empty($activeFilters['search']))
+                            <a 
+                                href="{{ route('admin.orders.index', array_merge(request()->except('search', 'page'))) }}"
+                                class="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 p-0.5 rounded-full hover:bg-neutral-100 transition-colors"
+                                title="Clear search"
+                            >
+                                <x-icons.lucide name="lucide-x" class="w-3.5 h-3.5" />
+                            </a>
+                        @endif
+                    </div>
                 </div>
 
                 <!-- Mobile Toggle button & Desktop direct Apply Button -->
@@ -224,7 +254,10 @@
                 $custName = data_get($o->customer_snapshot, 'name', 'N/A');
                 $custPhone = data_get($o->customer_snapshot, 'phone', 'N/A');
             @endphp
-            <div class="bg-white border border-[color:var(--color-border)] rounded-2xl p-4 shadow-xs hover:border-neutral-300 transition-colors">
+            <div 
+                class="bg-white border border-[color:var(--color-border)] rounded-2xl p-4 shadow-xs hover:border-neutral-300 transition-colors"
+                :class="{ '!bg-red-50/50 !border-red-300 ring-1 ring-red-200': selectedOrders.includes('{{ $o->public_id }}') }"
+            >
                 <div class="flex items-center justify-between gap-2 border-b border-neutral-100 pb-2.5 mb-2.5">
                     <div class="flex items-center gap-2">
                         <input 
@@ -397,7 +430,7 @@
                         $custName = data_get($o->customer_snapshot, 'name', 'N/A');
                         $custPhone = data_get($o->customer_snapshot, 'phone', 'N/A');
                     @endphp
-                    <x-table.row>
+                    <x-table.row x-bind:class="{ '!bg-red-50/60 font-medium': selectedOrders.includes('{{ $o->public_id }}') }">
                         <x-table.cell>
                             <input 
                                 type="checkbox" 
@@ -519,6 +552,7 @@
     <form id="bulk-action-form" method="POST" action="{{ route('admin.orders.bulk') }}" class="hidden">
         @csrf
         <input type="hidden" name="action" id="bulk-action-input">
+        <input type="hidden" name="target_status" id="bulk-target-status-input">
         <template x-for="id in selectedOrders" :key="id">
             <input type="hidden" name="order_ids[]" :value="id">
         </template>
@@ -533,48 +567,136 @@
         x-transition:leave="transition ease-in duration-200"
         x-transition:leave-start="opacity-100 translate-y-0"
         x-transition:leave-end="opacity-0 translate-y-10"
-        class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-neutral-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-6 z-50 border border-neutral-800"
+        class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-neutral-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-4 z-50 border border-neutral-800 max-w-[95vw] overflow-x-auto"
     >
-        <div class="flex items-center gap-2">
+        <!-- Selection Counter -->
+        <div class="flex items-center gap-2 shrink-0">
             <span class="w-2.5 h-2.5 rounded-full bg-[color:var(--color-brand-500)] animate-pulse"></span>
-            <span class="text-xs font-bold text-neutral-300 whitespace-nowrap">
-                <span x-text="selectedOrders.length + (selectedOrders.length === 1 ? ' order selected' : ' orders selected')"></span>
+            <span class="text-xs font-bold text-neutral-200 whitespace-nowrap">
+                <span x-text="selectedOrders.length"></span>
+                <span x-text="selectedOrders.length === 1 ? ' order selected' : ' orders selected'"></span>
             </span>
         </div>
         
-        <div class="h-4 w-px bg-neutral-800"></div>
+        <div class="h-5 w-px bg-neutral-800 shrink-0"></div>
 
-        <div class="flex items-center gap-2">
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-2 shrink-0">
+            <!-- Change Status Dropdown / Modal Trigger -->
             <button 
                 type="button"
-                @click="$dispatch('open-overlay', 'bulk-confirm-modal')"
-                class="px-3.5 py-1.5 bg-white text-neutral-900 hover:bg-neutral-100 rounded-xl text-xs font-bold transition-colors focus:outline-none cursor-pointer"
+                @click="$dispatch('open-overlay', 'bulk-status-modal')"
+                class="px-3.5 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-white rounded-xl text-xs font-bold transition-colors focus:outline-none flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
             >
-                Confirm
+                <x-icons.lucide name="lucide-sliders-horizontal" class="w-3.5 h-3.5 text-neutral-400" />
+                <span>Change Status</span>
             </button>
+
+            <!-- Batch Print Packing Slips -->
+            <button 
+                type="button"
+                @click="submitPackingSlips()"
+                class="px-3.5 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-white rounded-xl text-xs font-bold transition-colors focus:outline-none flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+                title="Print batch packing slips in a new window"
+            >
+                <x-icons.lucide name="lucide-printer" class="w-3.5 h-3.5 text-neutral-400" />
+                <span>Packing Slips</span>
+            </button>
+
+            <!-- Export Courier Manifest -->
+            <button 
+                type="button"
+                @click="submitExportManifest()"
+                class="px-3.5 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-white rounded-xl text-xs font-bold transition-colors focus:outline-none flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+                title="Export shipping manifest CSV for courier pickups"
+            >
+                <x-icons.lucide name="lucide-download" class="w-3.5 h-3.5 text-neutral-400" />
+                <span>Courier Manifest</span>
+            </button>
+
+            <!-- Quick Cancel -->
             <button 
                 type="button"
                 @click="$dispatch('open-overlay', 'bulk-cancel-modal')"
-                class="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-colors focus:outline-none cursor-pointer"
+                class="px-3 py-1.5 bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white rounded-xl text-xs font-bold transition-colors focus:outline-none cursor-pointer whitespace-nowrap"
             >
                 Cancel
             </button>
         </div>
 
-        <div class="h-4 w-px bg-neutral-800"></div>
+        <div class="h-5 w-px bg-neutral-800 shrink-0"></div>
 
+        <!-- Clear Selection -->
         <button 
             type="button"
             @click="selectedOrders = []"
-            class="text-neutral-400 hover:text-white text-xs font-bold transition-colors focus:outline-none whitespace-nowrap cursor-pointer"
+            class="text-neutral-400 hover:text-white text-xs font-semibold transition-colors focus:outline-none whitespace-nowrap cursor-pointer shrink-0"
         >
-            Clear Selection
+            Clear
         </button>
     </div>
 
+    <!-- Batch Change Status Modal -->
+    <x-modal id="bulk-status-modal" title="Update Status for Selected Orders">
+        <div class="space-y-4">
+            <p class="text-xs text-neutral-600">
+                Choose the new status to apply across all <strong x-text="selectedOrders.length"></strong> selected orders:
+            </p>
+            <div class="space-y-2">
+                <label class="flex items-center gap-3 p-2.5 rounded-xl border border-neutral-200 hover:bg-neutral-50 cursor-pointer transition-colors" :class="selectedBulkStatus === 'confirmed' ? 'bg-neutral-50 border-neutral-800' : ''">
+                    <input type="radio" name="bulk_status_choice" value="confirmed" x-model="selectedBulkStatus" class="text-neutral-900 focus:ring-neutral-800">
+                    <div>
+                        <div class="text-xs font-bold text-neutral-900">Confirmed</div>
+                        <div class="text-[11px] text-neutral-500">Mark orders as verified and ready for production prep</div>
+                    </div>
+                </label>
+
+                <label class="flex items-center gap-3 p-2.5 rounded-xl border border-neutral-200 hover:bg-neutral-50 cursor-pointer transition-colors" :class="selectedBulkStatus === 'in_production' ? 'bg-neutral-50 border-neutral-800' : ''">
+                    <input type="radio" name="bulk_status_choice" value="in_production" x-model="selectedBulkStatus" class="text-neutral-900 focus:ring-neutral-800">
+                    <div>
+                        <div class="text-xs font-bold text-neutral-900">In Production</div>
+                        <div class="text-[11px] text-neutral-500">Move orders into screen/DTF printing and decoration queue</div>
+                    </div>
+                </label>
+
+                <label class="flex items-center gap-3 p-2.5 rounded-xl border border-neutral-200 hover:bg-neutral-50 cursor-pointer transition-colors" :class="selectedBulkStatus === 'ready_to_ship' ? 'bg-neutral-50 border-neutral-800' : ''">
+                    <input type="radio" name="bulk_status_choice" value="ready_to_ship" x-model="selectedBulkStatus" class="text-neutral-900 focus:ring-neutral-800">
+                    <div>
+                        <div class="text-xs font-bold text-neutral-900">Ready to Ship</div>
+                        <div class="text-[11px] text-neutral-500">Printing complete; garments packed and ready for carrier pickup</div>
+                    </div>
+                </label>
+
+                <label class="flex items-center gap-3 p-2.5 rounded-xl border border-neutral-200 hover:bg-neutral-50 cursor-pointer transition-colors" :class="selectedBulkStatus === 'shipped' ? 'bg-neutral-50 border-neutral-800' : ''">
+                    <input type="radio" name="bulk_status_choice" value="shipped" x-model="selectedBulkStatus" class="text-neutral-900 focus:ring-neutral-800">
+                    <div>
+                        <div class="text-xs font-bold text-neutral-900">Shipped</div>
+                        <div class="text-[11px] text-neutral-500">Parcels handed over to courier for transit</div>
+                    </div>
+                </label>
+
+                <label class="flex items-center gap-3 p-2.5 rounded-xl border border-neutral-200 hover:bg-neutral-50 cursor-pointer transition-colors" :class="selectedBulkStatus === 'delivered' ? 'bg-neutral-50 border-neutral-800' : ''">
+                    <input type="radio" name="bulk_status_choice" value="delivered" x-model="selectedBulkStatus" class="text-neutral-900 focus:ring-neutral-800">
+                    <div>
+                        <div class="text-xs font-bold text-neutral-900">Delivered</div>
+                        <div class="text-[11px] text-neutral-500">Fulfilled and delivered to customers</div>
+                    </div>
+                </label>
+            </div>
+        </div>
+        <x-slot:footer>
+            <button type="button" @click="$dispatch('close-overlay', 'bulk-status-modal')" class="px-4 py-2 border border-neutral-300 rounded-xl text-xs font-semibold text-neutral-700 bg-white hover:bg-neutral-50 cursor-pointer">
+                Cancel
+            </button>
+            <button type="button" @click="submitBulkAction('update_status', selectedBulkStatus)" class="px-4 py-2 bg-neutral-900 text-white hover:bg-neutral-800 rounded-xl text-xs font-bold cursor-pointer transition-colors">
+                Apply Status Update
+            </button>
+        </x-slot:footer>
+    </x-modal>
+
     <!-- Confirmation Modals -->
     <x-modal id="bulk-confirm-modal" title="Confirm selected orders?">
-        <p class="text-sm text-neutral-600">This action will change the status of all selected orders. Are you sure you want to proceed?</p>
+        <p class="text-sm text-neutral-600">This action will mark all selected orders as <strong>Confirmed</strong>. Are you sure you want to proceed?</p>
         <x-slot:footer>
             <button type="button" @click="$dispatch('close-overlay', 'bulk-confirm-modal')" class="px-4 py-2 border border-neutral-300 rounded-xl text-xs font-semibold text-neutral-700 bg-white hover:bg-neutral-50 cursor-pointer">Cancel</button>
             <button type="button" @click="submitBulkAction('confirm')" class="px-4 py-2 bg-[color:var(--color-brand-600)] text-white hover:bg-[color:var(--color-brand-700)] rounded-xl text-xs font-bold cursor-pointer">Confirm</button>

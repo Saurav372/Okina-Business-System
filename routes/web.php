@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminOrderActionController;
 use App\Http\Controllers\Admin\AdminOrderDesignFileController;
+use App\Http\Controllers\Admin\AdminOrderMockupUploadController;
 use App\Http\Controllers\Admin\AdminOrderProofController;
 use App\Http\Controllers\Admin\AdminProfileController;
 use App\Http\Controllers\Admin\AdminSecurityController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\Admin\ExpenseAttachmentController;
 use App\Http\Controllers\Admin\ExpenseCategoryController;
 use App\Http\Controllers\Admin\ExpenseController;
 use App\Http\Controllers\Admin\ExpenseReportController;
+use App\Http\Controllers\Admin\CustomerController as AdminCustomerController;
 use App\Http\Controllers\Admin\ExpenseWorkflowController;
 use App\Http\Controllers\Admin\FinanceLedgerController;
 use App\Http\Controllers\Admin\FinanceReportController;
@@ -171,6 +173,8 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     Route::get('/orders/{order:public_id}', [OrderController::class, 'show'])->name('admin.orders.show');
     Route::post('/orders/{order:public_id}/status', [AdminOrderActionController::class, 'updateStatus'])->name('admin.orders.status.update');
     Route::post('/orders/bulk', [BulkOrderActionController::class, 'handle'])->middleware('can:orders.manage')->name('admin.orders.bulk');
+    Route::post('/orders/bulk/packing-slips', [BulkOrderActionController::class, 'packingSlips'])->middleware('can:orders.manage')->name('admin.orders.bulk.packing_slips');
+    Route::post('/orders/bulk/export-manifest', [BulkOrderActionController::class, 'exportManifest'])->middleware('can:orders.manage')->name('admin.orders.bulk.manifest');
     Route::post('/orders/{order:public_id}/shipping', [AdminOrderActionController::class, 'updateShipping'])->name('admin.orders.shipping.update');
     Route::post('/orders/{order:public_id}/payments', [AdminOrderActionController::class, 'recordPayment'])->name('admin.orders.payments.record');
     Route::get('/orders/{order:public_id}/pdf/preview', [SalesOrderController::class, 'previewPdf'])->name('admin.orders.pdf.preview');
@@ -179,6 +183,8 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     Route::post('/sales-orders', [SalesOrderController::class, 'store'])->name('admin.sales_orders.store');
     Route::put('/sales-orders/{order:public_id}', [SalesOrderController::class, 'update'])->name('admin.sales_orders.update');
     Route::get('/skus/search', [SalesOrderController::class, 'skuSearch'])->name('admin.skus.search');
+    Route::post('/sales-orders/upload-mockup', [AdminOrderMockupUploadController::class, 'upload'])->middleware('can:orders.manage')->name('admin.sales_orders.upload_mockup');
+    Route::post('/customers/quick-create', [AdminCustomerController::class, 'quickStore'])->middleware('can:orders.manage')->name('admin.customers.quick_store');
 
     // B2.2.8 — Admin design-file access bridge (order-scoped, policy-gated)
     Route::get('/orders/{order:public_id}/files/{file:public_id}/preview', [AdminOrderDesignFileController::class, 'preview'])->name('admin.orders.files.preview')->withoutScopedBindings();
