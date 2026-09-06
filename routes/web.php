@@ -171,6 +171,7 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     Route::post('/inventory/transfers/{transfer}/receive', [WarehouseTransferController::class, 'receive'])->name('admin.inventory.transfers.receive');
     Route::post('/inventory/transfers/{transfer}/cancel', [WarehouseTransferController::class, 'cancel'])->name('admin.inventory.transfers.cancel');
     Route::get('/orders/{order:public_id}', [OrderController::class, 'show'])->name('admin.orders.show');
+    Route::get('/orders/{order:public_id}/detail', fn (\App\Models\Order $order) => redirect()->route('admin.orders.show', $order));
     Route::post('/orders/{order:public_id}/status', [AdminOrderActionController::class, 'updateStatus'])->name('admin.orders.status.update');
     Route::post('/orders/bulk', [BulkOrderActionController::class, 'handle'])->middleware('can:orders.manage')->name('admin.orders.bulk');
     Route::post('/orders/bulk/packing-slips', [BulkOrderActionController::class, 'packingSlips'])->middleware('can:orders.manage')->name('admin.orders.bulk.packing_slips');

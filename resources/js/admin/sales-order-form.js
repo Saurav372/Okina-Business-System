@@ -476,7 +476,7 @@ export default function registerSalesOrderForm(Alpine) {
                 });
                 const data = await response.json().catch(() => ({}));
                 if (response.status === 201 && data.public_id) {
-                    window.location.assign(`${this.config.orderDetailBaseUrl}/${encodeURIComponent(data.public_id)}/detail`);
+                    window.location.assign(`${this.config.orderDetailBaseUrl}/${encodeURIComponent(data.public_id)}`);
                     return;
                 }
                 if (response.status === 422 && data.errors) {
