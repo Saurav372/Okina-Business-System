@@ -1,4 +1,4 @@
-@props(['product', 'index' => 0])
+@props(['product', 'index' => 0, 'business' => false, 'previewArt' => null])
 
 @php
     // Color swatches mapping for apparel variants
@@ -27,8 +27,9 @@
         })
         ->filter()
         ->unique('code')
-        ->values()
-        ->take(4);
+        ->values();
+    $extraColorCount = max(0, $colors->count() - 4);
+    $colors = $colors->take(4);
 
     $colorHexMap = [
         'ink' => '#111111',
@@ -57,7 +58,10 @@
             @if(!empty($product['badge']))
                 <span class="sf-card-badge">{{ $product['badge'] }}</span>
             @endif
-            @if(data_get($product, 'cover_image.url'))
+            @if($business && $previewArt)
+                <img src="/storefront/business/{{ $previewArt }}.png" alt="{{ $product['name'] }} — illustrative style preview" loading="lazy" width="1254" height="1254">
+                <span class="sf-style-preview">Style preview</span>
+            @elseif(data_get($product, 'cover_image.url'))
                 <img src="{{ data_get($product, 'cover_image.url') }}" alt="{{ data_get($product, 'cover_image.alt_text') ?: $product['name'] }}" loading="lazy" width="{{ data_get($product, 'cover_image.width') ?: 720 }}" height="{{ data_get($product, 'cover_image.height') ?: 780 }}">
             @else
                 <div class="sf-product-fallback" aria-hidden="true"><span>{{ mb_strtoupper(mb_substr($product['name'], 0, 2)) }}</span></div>
@@ -65,7 +69,7 @@
 
             <!-- Quick Action Hover Overlay -->
             <div class="sf-card-hover-action">
-                <span>Design Now &rarr;</span>
+                <span>View options &rarr;</span>
             </div>
         </div>
 
@@ -79,30 +83,30 @@
                         @endphp
                         <span class="sf-swatch-dot" style="background-color: {{ $hex }};" title="{{ $color['label'] }}" aria-label="{{ $color['label'] }}"></span>
                     @endforeach
-                    @if(count($product['skus'] ?? []) > 4)
-                        <span class="sf-swatch-more">+more</span>
+                    @if($extraColorCount > 0)
+                        <span class="sf-swatch-more">+{{ $extraColorCount }} colors</span>
                     @endif
                 </div>
             @endif
 
             <p class="sf-product-cat">{{ data_get($product, 'category.name', 'Custom apparel') }}</p>
             <h3 class="sf-product-name">{{ $product['name'] }}</h3>
-
-            <!-- Social proof stars -->
-            <div class="sf-product-rating" aria-label="Rated 4.9 out of 5 stars">
-                <span class="sf-stars">★★★★★</span>
-                <span class="sf-rating-count">(4.9)</span>
-            </div>
+            @if($business && !empty($product['short_description']))
+                <p class="sf-commerce-product-description">{{ $product['short_description'] }}</p>
+            @endif
 
             <div class="sf-price-row">
                 <div class="sf-price-group">
-                    <strong class="sf-price-current">{{ $product['display_price'] }}</strong>
+                    <strong class="sf-price-current"><small>From</small> {{ $product['display_price'] }}</strong>
                     @if(!empty($product['display_compare_at_price']))
                         <del class="sf-price-strike">{{ $product['display_compare_at_price'] }}</del>
                     @endif
                 </div>
                 <span class="sf-cta-pill">Customize <x-storefront.icon name="arrow" /></span>
             </div>
+            @if($business)
+                <span class="sf-commerce-product-action">Customize for Your Brand <x-storefront.icon name="arrow" /></span>
+            @endif
         </div>
     </a>
 </article>

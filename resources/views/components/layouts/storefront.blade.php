@@ -18,7 +18,7 @@
     <title>{{ $title }} · {{ $site['site_title'] }}</title>
     <meta name="description" content="{{ $description }}">
     <meta name="robots" content="{{ $robots ?: $site['robots'] }}">
-    <meta name="theme-color" content="#c8202a">
+    <meta name="theme-color" content="{{ config('branding.colors.theme') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" type="image/svg+xml" href="{{ asset('brand/favicon.svg') }}">
     <link rel="canonical" href="{{ $canonical ?: url()->current() }}">

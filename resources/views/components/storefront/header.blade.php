@@ -7,15 +7,11 @@
 <!-- Top Announcement Ticker (Competitor Benchmark: Destiny Clothing & Printmine) -->
 <div class="sf-announcement-bar" role="region" aria-label="Announcement">
     <div class="sf-announcement-inner">
-        <span class="sf-announcement-pill">FREE DIGITAL PROOF</span>
+        <span class="sf-announcement-pill">OKINA CRAFT</span>
         <p class="sf-announcement-text">
-            <span>📦 PAN-INDIA SHIPPING</span>
-            <span class="sf-sep">|</span>
-            <span>⚡ 48H RAPID DISPATCH</span>
-            <span class="sf-sep">|</span>
-            <span>✨ NO MINIMUM ORDER REQUIRED</span>
+            <span>Custom Printed Apparel for Businesses, Teams &amp; Events</span>
         </p>
-        <span class="sf-announcement-code">CODE: <strong>FIRSTORDER</strong> (10% OFF)</span>
+        <a class="sf-announcement-link" href="{{ route('storefront.track-order') }}">Track your order <span aria-hidden="true">↗</span></a>
     </div>
 </div>
 
@@ -26,6 +22,7 @@
             <!-- Brand Logo with authentic Ensō flame mark -->
             <a class="sf-brand-logo" href="{{ route('storefront.home') }}" aria-label="{{ $site['company_name'] }} Home">
                 <img src="/brand/okina-logo.png" alt="{{ $site['company_name'] }}" class="sf-logo-img" width="168" height="42">
+                <span class="sf-brand-wordmark">OKINA<span>CRAFT</span></span>
             </a>
 
             <!-- Center Navigation Links -->
@@ -38,6 +35,8 @@
                         {{ $category['name'] }}
                     </a>
                 @endforeach
+                <a href="{{ route('storefront.home') }}#printing-methods" class="sf-nav-link">Printing Methods</a>
+                <a href="{{ route('storefront.home') }}#bulk-orders" class="sf-nav-link">Bulk Orders</a>
             </nav>
 
             <!-- Quick Search Bar (Inline Elevated) -->
@@ -45,7 +44,7 @@
                 <label class="sf-sr-only" for="header-search-input">Search products</label>
                 <div class="sf-search-input-wrap">
                     <x-storefront.icon name="search" class="sf-search-ico" />
-                    <input id="header-search-input" name="q" type="search" value="{{ request('q') }}" placeholder="Search oversized tees, hoodies…" autocomplete="off">
+                    <input id="header-search-input" name="q" type="search" value="{{ request('q') }}" placeholder="Search products, categories…" autocomplete="off">
                 </div>
             </form>
 
@@ -83,7 +82,8 @@
         </div>
         <div class="sf-mobile-search-row">
             <form action="{{ route('storefront.search') }}" method="get" role="search">
-                <input name="q" type="search" value="{{ request('q') }}" placeholder="Search products, tees, hoodies…" autocomplete="off">
+                <label class="sf-sr-only" for="mobile-search-input">Search products</label>
+                <input id="mobile-search-input" name="q" type="search" value="{{ request('q') }}" placeholder="Search products, tees, hoodies…" autocomplete="off">
                 <button type="submit" aria-label="Search"><x-storefront.icon name="search" /></button>
             </form>
         </div>
@@ -92,6 +92,8 @@
             @foreach($categories as $category)
                 <a href="{{ $category['url'] }}" class="sf-mobile-link">{{ $category['name'] }}</a>
             @endforeach
+            <a href="{{ route('storefront.home') }}#printing-methods" class="sf-mobile-link">Printing Methods</a>
+            <a href="{{ route('storefront.home') }}#bulk-orders" class="sf-mobile-link">Bulk Orders</a>
             <a href="{{ auth('customer')->check() ? route('customer.account') : route('customer.login') }}" class="sf-mobile-link">
                 {{ auth('customer')->check() ? 'My Account & Orders' : 'Sign In / Register' }}
             </a>

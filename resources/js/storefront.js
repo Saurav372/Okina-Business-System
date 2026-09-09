@@ -2,9 +2,22 @@
 const cartDrawer = document.querySelector('[data-cart-drawer]');
 const cartTriggers = document.querySelectorAll('[data-cart-trigger]');
 const drawerCloses = document.querySelectorAll('[data-drawer-close]');
+let cartReturnFocus = null;
+let cartPreviousOverflow = '';
+const drawerBackground = new Map();
 
 const openCartDrawer = () => {
     if (!(cartDrawer instanceof HTMLElement)) return;
+    if (cartDrawer.classList.contains('sf-drawer-open')) return;
+    cartReturnFocus = document.activeElement;
+    cartPreviousOverflow = document.body.style.overflow;
+    if (mobileMenu instanceof HTMLElement && !mobileMenu.hidden) closeMenu({ returnFocus: false });
+    for (const sibling of document.body.children) {
+        if (sibling instanceof HTMLElement && sibling !== cartDrawer && !sibling.contains(cartDrawer)) {
+            drawerBackground.set(sibling, sibling.inert);
+            sibling.inert = true;
+        }
+    }
     cartDrawer.classList.add('sf-drawer-open');
     cartDrawer.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
@@ -16,10 +29,33 @@ const openCartDrawer = () => {
 
 const closeCartDrawer = () => {
     if (!(cartDrawer instanceof HTMLElement)) return;
+    if (!cartDrawer.classList.contains('sf-drawer-open')) return;
+    for (const [element, wasInert] of drawerBackground) element.inert = wasInert;
+    drawerBackground.clear();
+    if (cartReturnFocus instanceof HTMLElement && cartReturnFocus.isConnected) cartReturnFocus.focus();
     cartDrawer.classList.remove('sf-drawer-open');
     cartDrawer.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
+    document.body.style.overflow = cartPreviousOverflow;
 };
+
+cartDrawer?.addEventListener('keydown', (event) => {
+    if (event.key !== 'Tab' || !cartDrawer.classList.contains('sf-drawer-open')) return;
+    const focusable = Array.from(cartDrawer.querySelectorAll('a[href], button, input, select, textarea, [tabindex]'))
+        .filter((element) => element instanceof HTMLElement && !element.matches(':disabled') && element.tabIndex >= 0 && element.getClientRects().length > 0);
+    const first = focusable[0];
+    const last = focusable.at(-1);
+    if (!first) {
+        event.preventDefault();
+        return;
+    }
+    if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+    }
+});
 
 cartTriggers.forEach((trigger) => {
     trigger.addEventListener('click', (e) => {
@@ -30,7 +66,7 @@ cartTriggers.forEach((trigger) => {
 
 drawerCloses.forEach((btn) => {
     btn.addEventListener('click', (e) => {
-        e.preventDefault();
+        if (!(btn instanceof HTMLAnchorElement)) e.preventDefault();
         closeCartDrawer();
     });
 });
@@ -85,6 +121,11 @@ menuTrigger?.addEventListener('click', () => {
 });
 
 menuClose?.addEventListener('click', () => closeMenu());
+mobileMenu?.addEventListener('click', (event) => {
+    if (event.target instanceof Element && event.target.closest('a[href]')) {
+        closeMenu({ returnFocus: false });
+    }
+});
 
 document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
