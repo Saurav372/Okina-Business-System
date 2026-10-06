@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "skills": {
+    "improve-ui": {
+      "source": "ibelick/ui-skills",
+      "sourceType": "github",
+      "skillPath": "skills/improve-ui/SKILL.md",
+      "computedHash": "31c09b79a1c196adccb1637a225cef54f537da87430fda0ba309ef83e78f10e5"
+    },
+    "landing-page": {
+      "source": "MengTo/Skills",
+      "sourceType": "github",
+      "skillPath": "agent-skills/web-design/landing-page/SKILL.md",
+      "computedHash": "bb0c2721d98ff0f5839522710d50e57b6470dbe398d4bbc56c6a33be9302c15b"
+    },
+    "landing-page-design": {
+      "source": "elayadesign/ai-design-skills",
+      "sourceType": "github",
+      "skillPath": "skills/landing-page-design/SKILL.md",
+      "computedHash": "45a4ccd7cd4a374d973207a8ae9afc26cbbfc699f59c93f6700f3b944d276bec"
+    }
+  }
+}

@@ -53,10 +53,15 @@ use App\Http\Controllers\Storefront\CartController as StorefrontCartController;
 use App\Http\Controllers\Storefront\CatalogController as StorefrontCatalogController;
 use App\Http\Controllers\Storefront\CheckoutController;
 use App\Http\Controllers\Storefront\CustomerPortalController;
+use App\Http\Controllers\Storefront\LandingPageController;
 use App\Http\Controllers\Storefront\MockupController;
 use App\Http\Controllers\Storefront\OrderStatusController;
 use App\Http\Controllers\Storefront\SeoDocumentController;
 use Illuminate\Support\Facades\Route;
+
+// Meta Ads & B2B Lead-Gen Landing Page
+Route::get('/lp/custom-t-shirts', [LandingPageController::class, 'index'])->name('landing.custom-t-shirts');
+Route::post('/lp/quote-request', [LandingPageController::class, 'storeQuote'])->name('landing.quote-request');
 
 Route::get('/', [StorefrontCatalogController::class, 'home'])->name('storefront.home');
 Route::get('/categories', [StorefrontCatalogController::class, 'categories'])->name('storefront.categories.index');
