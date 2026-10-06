@@ -642,7 +642,7 @@
                                             </button>
                                         </form>
 
-                                        <form method="POST" action="{{ route('admin.expense_categories.destroy', $cat->public_id) }}" class="inline" onsubmit="return confirm('Delete category {{ $cat->name }}?');">
+                                        <form method="POST" action="{{ route('admin.expense_categories.destroy', $cat->public_id) }}" class="inline" data-confirm="Delete category {{ $cat->name }}?" onsubmit="return confirm(this.dataset.confirm);">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="text-[11px] font-semibold text-red-600 hover:underline">

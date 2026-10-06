@@ -13,9 +13,9 @@
 <x-layouts.admin title="Customer Refunds">
     <div class="space-y-6" x-data="{
         openRequestModal: {{ ($errors->any() || request('open') == 1) ? 'true' : 'false' }},
-        selectedPaymentId: '{{ old('payment_id', request('payment_id', '')) }}',
-        amountRupees: '{{ old('amount_rupees', '') }}',
-        amountMinor: '{{ old('amount_minor', '') }}',
+        selectedPaymentId: {{ Js::from(old('payment_id', request('payment_id', ''))) }},
+        amountRupees: {{ Js::from(old('amount_rupees', '')) }},
+        amountMinor: {{ Js::from(old('amount_minor', '')) }},
         payments: {{ Js::from($paymentsJson) }},
         init() {
             if (this.selectedPaymentId && this.selectedPayment && (!this.amountRupees || parseFloat(this.amountRupees) <= 0)) {

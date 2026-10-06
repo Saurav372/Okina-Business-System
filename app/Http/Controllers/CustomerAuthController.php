@@ -59,6 +59,7 @@ class CustomerAuthController extends Controller
 
         Auth::guard('customer')->login($account, remember: false);
         $request->session()->regenerate();
+        $request->session()->put('customer_password_fingerprint', hash('sha256', $account->getAuthPassword()));
 
         return redirect()->route('customer.account');
     }
@@ -100,6 +101,7 @@ class CustomerAuthController extends Controller
 
         Auth::guard('customer')->login($account, remember: false);
         $request->session()->regenerate();
+        $request->session()->put('customer_password_fingerprint', hash('sha256', $account->getAuthPassword()));
 
         return redirect()->intended(route('customer.account'));
     }
@@ -159,6 +161,7 @@ class CustomerAuthController extends Controller
                     'password_changed_at' => now(),
                     'failed_login_attempts' => 0,
                     'locked_until' => null,
+                    'remember_token' => Str::random(60),
                 ])->save();
                 event(new PasswordReset($customerAccount));
             }

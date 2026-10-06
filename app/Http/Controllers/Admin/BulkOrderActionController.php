@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\BulkOrderActionRequest;
 use App\Models\Order;
 use App\Services\BulkOrderActionService;
+use App\Support\Security\CsvCell;
 use Illuminate\Http\Request;
 
 class BulkOrderActionController extends Controller
@@ -87,7 +88,7 @@ class BulkOrderActionController extends Controller
             return redirect()->back()->with('error', 'Matching orders could not be found.');
         }
 
-        $filename = 'okina_courier_manifest_' . now()->format('Y-m-d_His') . '.csv';
+        $filename = 'okina_courier_manifest_'.now()->format('Y-m-d_His').'.csv';
 
         return response()->streamDownload(function () use ($orders) {
             $handle = fopen('php://output', 'w');
@@ -145,7 +146,7 @@ class BulkOrderActionController extends Controller
                 $itemNames = $order->items->pluck('product_name_snapshot')->filter()->unique()->implode(', ');
                 $description = $itemNames ? "Custom Apparel ({$itemNames})" : 'Custom Apparel / T-Shirts';
 
-                fputcsv($handle, [
+                fputcsv($handle, array_map(CsvCell::literal(...), [
                     $order->public_id,
                     $order->placed_at?->format('Y-m-d H:i') ?? $order->created_at?->format('Y-m-d H:i') ?? '',
                     $name,
@@ -165,7 +166,7 @@ class BulkOrderActionController extends Controller
                     $declaredVal,
                     $order->courier_name ?? '',
                     $order->tracking_number ?? '',
-                ]);
+                ]));
             }
 
             fclose($handle);
@@ -207,7 +208,7 @@ class BulkOrderActionController extends Controller
         }
 
         if (! empty($skippedParts)) {
-            $message .= ' Skipped: ' . implode(', ', $skippedParts) . '.';
+            $message .= ' Skipped: '.implode(', ', $skippedParts).'.';
         }
 
         if ($request->expectsJson()) {

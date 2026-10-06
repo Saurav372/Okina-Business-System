@@ -201,6 +201,24 @@ class PaymentWebhookProcessingTest extends TestCase
         return [$order, $attempt, $payload];
     }
 
+    public function test_unsigned_event_cannot_poison_or_disclose_a_valid_event(): void
+    {
+        [$order, $attempt, $payload] = $this->createPendingCheckoutWebhookContext();
+        $this->postWebhook($payload, 'invalid-signature')->assertUnauthorized();
+        $this->assertSame(0, PaymentWebhookLog::where('provider_event_id', $payload['event_id'])->count());
+        // An old unauthenticated reservation must not survive the upgrade.
+        PaymentWebhookLog::firstOrFail()->forceFill(['provider_event_id' => $payload['event_id']])->save();
+        $this->postWebhook($payload, $this->signatureFor($payload))->assertOk()
+            ->assertJsonPath('data.payment_recorded', true);
+        $this->postWebhook($payload, 'invalid-signature')->assertUnauthorized()
+            ->assertJsonMissingPath('data.order_public_id')
+            ->assertJsonMissingPath('data.payment_attempt_public_id');
+        $this->assertDatabaseCount('payments', 1);
+        $this->postWebhook($payload, $this->signatureFor($payload))->assertOk()
+            ->assertJsonPath('data.processing_status', 'ignored_duplicate');
+        $this->assertDatabaseCount('payments', 1);
+    }
+
     private function postWebhook(array $payload, string $signature)
     {
         return $this->withHeader('X-Signature', $signature)

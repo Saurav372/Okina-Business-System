@@ -34,7 +34,7 @@ class FinanceLedgerController extends Controller
             ->get()
             ->map(function (Customer $customer) {
                 $orders = Order::where('customer_id', $customer->id)->get();
-                $payments = Payment::where('customer_id', $customer->id)->where('status', 'succeeded')->get();
+                $payments = Payment::whereHas('order', fn ($query) => $query->where('customer_id', $customer->id))->where('status', 'succeeded')->get();
                 $refunds = Refund::whereHas('order', function ($q) use ($customer) {
                     $q->where('customer_id', $customer->id);
                 })->where('status', 'succeeded')->get();
@@ -124,7 +124,7 @@ class FinanceLedgerController extends Controller
         $salesMinor = Order::where('status', '!=', 'cancelled')->sum('total_amount_minor');
         $collectionsMinor = Payment::where('status', 'succeeded')->sum('amount_minor');
         $refundsMinor = Refund::where('status', 'succeeded')->sum('amount_minor');
-        $expensesMinor = Expense::where('approval_status', 'approved')->sum('amount_minor');
+        $expensesMinor = Expense::where('status', 'approved')->sum('amount_minor');
         $vendorPayoutsMinor = VendorPayment::sum('amount_minor');
 
         $netCashflowMinor = $collectionsMinor - $refundsMinor - $expensesMinor - $vendorPayoutsMinor;
@@ -181,16 +181,16 @@ class FinanceLedgerController extends Controller
             });
 
         // 4. Expenses
-        Expense::where('approval_status', 'approved')
+        Expense::where('status', 'approved')
             ->latest()
             ->limit(20)
             ->get()
             ->each(function (Expense $expense) use ($transactions) {
                 $transactions->push([
-                    'date' => $expense->expense_date ?? $expense->created_at,
+                    'date' => $expense->occurred_at ?? $expense->created_at,
                     'type' => 'Expense',
                     'reference' => $expense->public_id,
-                    'description' => $expense->description ?? 'Business expense',
+                    'description' => $expense->notes ?? 'Business expense',
                     'debit' => $expense->amount_minor / 100,
                     'credit' => 0,
                 ]);
@@ -205,7 +205,7 @@ class FinanceLedgerController extends Controller
                     'date' => $vp->paid_at ?? $vp->created_at,
                     'type' => 'Vendor Payment',
                     'reference' => $vp->id,
-                    'description' => 'Payment to Vendor for Purchase Order '.($vp->purchaseOrder?->public_id ?? ''),
+                    'description' => 'Payment to Vendor for Purchase Order '.($vp->vendorOrder?->public_id ?? ''),
                     'debit' => $vp->amount_minor / 100,
                     'credit' => 0,
                 ]);

@@ -159,7 +159,7 @@ class GoogleSheetsClient
         ]);
 
         $params = [
-            'valueInputOption' => 'USER_ENTERED',
+            'valueInputOption' => 'RAW',
         ];
 
         $service->spreadsheets_values->update($spreadsheetId, $range, $body, $params);
@@ -184,7 +184,7 @@ class GoogleSheetsClient
         ]);
 
         $params = [
-            'valueInputOption' => 'USER_ENTERED',
+            'valueInputOption' => 'RAW',
         ];
 
         $service->spreadsheets_values->append($spreadsheetId, $range, $body, $params);

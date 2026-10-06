@@ -15,7 +15,7 @@
     $progressPercent = min(100, round(((int) $subtotal / $freeShippingThreshold) * 100));
 @endphp
 
-<div id="cart-drawer" class="sf-drawer-backdrop" aria-hidden="true" data-cart-drawer>
+<div id="cart-drawer" class="sf-drawer-backdrop" aria-hidden="true" inert data-cart-drawer>
     <div class="sf-drawer-panel" role="dialog" aria-modal="true" aria-labelledby="drawer-heading" tabindex="-1">
         <!-- Drawer Header -->
         <div class="sf-drawer-header">

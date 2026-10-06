@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\CustomerAccount;
 use App\Models\Product;
 use App\Models\StoredFile;
+use App\Support\Security\ImagePixelBudget;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -91,7 +92,9 @@ final class ProtectedMockupService
             ]);
         }
 
-        $artwork = @imagecreatefromstring($sourceDisk->get($sourcePath));
+        $sourceBytes = $sourceDisk->get($sourcePath);
+        ImagePixelBudget::validateBytes($sourceBytes);
+        $artwork = @imagecreatefromstring($sourceBytes);
 
         if ($artwork === false) {
             throw ValidationException::withMessages([

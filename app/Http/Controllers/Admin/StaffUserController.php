@@ -10,11 +10,11 @@ use App\Http\Requests\Admin\UpdateStaffRolesRequest;
 use App\Http\Requests\Admin\UpdateStaffStatusRequest;
 use App\Models\Role;
 use App\Models\User;
+use App\Notifications\StaffInvitationNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Schema;
@@ -140,6 +140,7 @@ class StaffUserController extends Controller
         });
 
         $invitationUrl = route('staff.invitation.show', $plainToken);
+        $createdUser->notify(new StaffInvitationNotification($invitationUrl));
 
         // Immutable Audit Log
         event(new AuditEvent('users.staff_invited', $actor, [
@@ -158,8 +159,7 @@ class StaffUserController extends Controller
         ]));
 
         return redirect()->route('admin.staff.index')
-            ->with('status', "Staff member {$createdUser->name} has been invited successfully.")
-            ->with('invitation_url', $invitationUrl);
+            ->with('status', "An invitation has been sent to {$createdUser->email}.");
     }
 
     /**
@@ -391,8 +391,11 @@ class StaffUserController extends Controller
                 ->withErrors(['staff' => 'This account is already activated and cannot receive an invitation.']);
         }
 
+        abort_unless($staff->user_type === User::TYPE_STAFF, 404);
+        abort_if($staff->hasRole(Role::SUPER_ADMIN) && ! $actor->hasRole(Role::SUPER_ADMIN), 403);
         $plainToken = $staff->generateInvitationToken(48);
         $invitationUrl = route('staff.invitation.show', $plainToken);
+        $staff->notify(new StaffInvitationNotification($invitationUrl));
 
         event(new AuditEvent('users.invitation_resent', $actor, [
             'subject_type' => 'user',
@@ -405,8 +408,7 @@ class StaffUserController extends Controller
         ]));
 
         return redirect()->route('admin.staff.index')
-            ->with('status', "Invitation for {$staff->name} has been regenerated.")
-            ->with('invitation_url', $invitationUrl);
+            ->with('status', "An invitation has been sent to {$staff->email}.");
     }
 
     /**

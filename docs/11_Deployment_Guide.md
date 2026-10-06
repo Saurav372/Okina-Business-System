@@ -141,10 +141,24 @@ The high-level sequence is:
 copy .env.example .env
 php artisan key:generate
 php artisan migrate --seed
+php artisan admin:create admin@example.com --name="Administrator"
 php artisan storage:link
 npm ci
 npm run build
 ```
+
+Replace the example email with the intended administrator's address. The command
+prompts privately for a new password and confirmation; default seeding never
+creates a privileged test account. Configure a real production mail transport
+before inviting staff. Invitations are delivered to the intended recipient and
+are no longer displayed to the inviting administrator.
+
+After upgrading, disable or rotate any previously seeded default administrator
+and revoke its sessions after confirming access through a legitimate account.
+Existing customer browser sessions require a fresh login after this security update.
+Uploaded images must be valid and at most 8 megapixels and 8000 pixels per side.
+Google Sheets sync now writes text literally; dates retain the mapper's explicit
+text format rather than being automatically interpreted by Sheets.
 
 ---
 

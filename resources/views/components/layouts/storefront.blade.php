@@ -4,6 +4,8 @@
     'site',
     'navigationCategories' => [],
     'cartCount' => 0,
+    'cart' => null,
+    'money' => null,
     'canonical' => null,
     'robots' => null,
     'structuredData' => null,

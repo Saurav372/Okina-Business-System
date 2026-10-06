@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\CustomerAccount;
 use App\Models\StoredFile;
 use App\Models\User;
+use App\Support\Security\ImagePixelBudget;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
@@ -245,6 +246,9 @@ class FileUploadService
         if ((int) $uploadedFile->getSize() <= 0 || (int) $uploadedFile->getSize() > self::MAX_BYTES) {
             $this->throwUnsafeFileError();
         }
+        if (str_starts_with($mimeType, 'image/')) {
+            ImagePixelBudget::validateBytes($uploadedFile->getContent());
+        }
     }
 
     private function resolveCustomerId(Authenticatable $actor, array $attributes): ?int
@@ -394,7 +398,8 @@ class FileUploadService
 
     private function generatePreviewMetadataFromBytes(string $bytes, string $mimeType): ?array
     {
-        if (!function_exists('imagecreatefromstring')) {
+        ImagePixelBudget::validateBytes($bytes);
+        if (! function_exists('imagecreatefromstring')) {
             return null;
         }
 

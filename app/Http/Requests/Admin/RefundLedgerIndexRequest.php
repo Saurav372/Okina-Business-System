@@ -15,6 +15,7 @@ class RefundLedgerIndexRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'payment_id' => ['nullable', 'integer', 'min:1'],
             'start_date' => 'nullable|date_format:Y-m-d',
             'end_date' => 'nullable|date_format:Y-m-d',
             'provider' => 'nullable|string|max:100',

@@ -18,11 +18,11 @@
         ['truck', 'Follow your delivery', 'Track progress from your account.'],
     ];
     $methods = [
-        ['printer', 'DTF printing', 'Colorful, versatile transfers.', 'A design is printed onto a transfer film and applied to the garment with heat. Check the selected product for available placements and artwork requirements.'],
-        ['shirt', 'DTG printing', 'Detailed, full-color designs.', 'Ink is printed directly onto a compatible garment. Fabric, artwork and garment color determine which setup is suitable.'],
-        ['needle', 'Embroidery', 'A textured, stitched finish.', 'Thread creates a tactile finish for logos and lettering. Small details may need to be simplified for a clear stitched result.'],
-        ['layers', 'Puff printing', 'Dimension you can feel.', 'A raised print adds texture to bold shapes and lettering. Ask about garment compatibility before planning this finish.'],
-        ['drop', 'Sublimation', 'Color that becomes part of the fabric.', 'Heat transfers dye into compatible polyester fabrics. Light-colored garments usually provide the clearest result.'],
+        ['printer', 'DTF printing', 'Vibrant color for your artwork.', 'A design is printed onto a transfer film and applied to the garment with heat. Check the selected product for available placements and artwork requirements.'],
+        ['shirt', 'DTG printing', 'Bring detailed artwork to life.', 'Ink is printed directly onto a compatible garment. Fabric, artwork and garment color determine which setup is suitable.'],
+        ['needle', 'Embroidery', 'A premium finish for logos & uniforms.', 'Thread creates a tactile finish for logos and lettering. Small details may need to be simplified for a clear stitched result.'],
+        ['layers', 'Puff printing', 'Make bold designs stand out.', 'A raised print adds texture to bold shapes and lettering. Ask about garment compatibility before planning this finish.'],
+        ['drop', 'Sublimation', 'Smooth color, part of the fabric.', 'Heat transfers dye into compatible polyester fabrics. Light-colored garments usually provide the clearest result.'],
     ];
 @endphp
 <x-layouts.storefront
@@ -33,31 +33,20 @@
 >
     <div class="sf-business-home">
         <section class="sf-commerce-hero" aria-labelledby="home-heading">
-            <div class="sf-commerce-hero-photo"><img src="/storefront/business/hero.png" alt="Model wearing a black custom printed t-shirt with a white chest design" width="1586" height="992" fetchpriority="high"></div>
             <div class="sf-commerce-hero-inner">
                 <div class="sf-commerce-hero-copy">
-                    <p class="sf-commerce-eyebrow">CUSTOM APPAREL. STRONGER BRANDS.</p>
-                    <h1 id="home-heading">Custom Printed<br>Apparel for<br><span>Brands, Teams &amp; Events.</span></h1>
-                    <p class="sf-commerce-lead">Custom t-shirts, uniforms, event apparel and branded merchandise. Bring your people together with a look that’s unmistakably yours.</p>
+                    <p class="sf-commerce-eyebrow">CUSTOM APPAREL FOR TEAMS, BRANDS &amp; EVENTS</p>
+                    <h1 id="home-heading">Your logo.<br>Your team.<br><span>Made to stand out.</span></h1>
+                    <p class="sf-commerce-lead">Put your brand on t-shirts, polos and hoodies. Choose your apparel, add your artwork and create a look your team can call its own.</p>
                     <div class="sf-commerce-actions">
-                        <a class="sf-commerce-button" href="{{ route('storefront.categories.index') }}">Shop Custom Apparel <x-storefront.icon name="arrow" /></a>
-                        <a class="sf-commerce-button sf-commerce-button-outline" href="#bulk-orders">{{ !empty($site['support_email']) ? 'Get Bulk Quote' : 'Explore Bulk Orders' }}</a>
+                        <a class="sf-commerce-button" href="{{ route('storefront.categories.index') }}">Explore Custom Apparel <x-storefront.icon name="arrow" /></a>
+                        <a class="sf-commerce-button sf-commerce-button-outline" href="#bulk-orders">Plan a Bulk Order</a>
                     </div>
+                    <p class="sf-commerce-hero-assurance"><x-storefront.icon name="check" />Review your artwork proof before production.</p>
                 </div>
-                <div class="sf-commerce-hero-sign" aria-hidden="true"><span>APPAREL<br>THAT BUILDS<br>BUSINESSES</span><i></i><small>UNIFORMS<br>EVENTS<br>PROMOTIONS<br>TEAMS<br>BRANDED MERCH</small></div>
-            </div>
-            <div class="sf-commerce-benefits">
-                @foreach([['team', 'Bulk orders', 'Outfit your whole team'], ['diamond', 'Your brand, your way', 'Make your mark'], ['settings', 'Print options', 'Choose on your product'], ['truck', 'Order tracking', 'Follow every stage']] as [$icon, $heading, $copy])
-                    <div><x-storefront.icon :name="$icon" /><p><strong>{{ $heading }}</strong><small>{{ $copy }}</small></p></div>
-                @endforeach
+                <picture class="sf-commerce-hero-photo"><source media="(max-width: 1100px)" srcset="/storefront/business/hero-team.png" width="1448" height="1086"><img src="/storefront/business/hero-background.png" alt="Three people showcasing custom branded black t-shirts, a polo and a jacket in a sunlit apparel studio" width="1942" height="809" fetchpriority="high"></picture>
             </div>
         </section>
-
-        <div class="sf-commerce-process-strip" aria-label="Your custom apparel journey">
-            @foreach($process as [$icon, $heading, $copy])
-                <div><x-storefront.icon :name="$icon" /><p><span>{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span><strong>{{ $heading }}</strong><small>{{ $copy }}</small></p>@unless($loop->last)<x-storefront.icon name="arrow" class="sf-process-arrow" />@endunless</div>
-            @endforeach
-        </div>
 
         <section class="sf-commerce-section" aria-labelledby="shop-by-category">
             <div class="sf-commerce-heading"><div><h2 id="shop-by-category">Shop Custom Apparel</h2><p>Professional apparel for every business need.</p></div><a href="{{ route('storefront.categories.index') }}">View All Categories <x-storefront.icon name="arrow" /></a></div>
@@ -127,7 +116,7 @@
         <section class="sf-commerce-section sf-commerce-bulk-grid" id="bulk-orders" aria-labelledby="bulk-heading">
             <div class="sf-commerce-bulk-card">
                 <img src="/storefront/business/uniform.png" alt="A coordinated team wearing custom branded polo shirts" width="1254" height="1254" loading="lazy">
-                <div class="sf-commerce-bulk-copy"><p class="sf-commerce-eyebrow">FOR BUSINESSES &amp; ORGANIZATIONS</p><h2 id="bulk-heading">Businesses &amp; Bulk Orders</h2><p>Uniforms. Events. Promotions. Team apparel.<br>Build a consistent look for your people. Start with a garment, then review sizes, quantities and customization options.</p><div class="sf-commerce-actions">
+                <div class="sf-commerce-bulk-copy"><p class="sf-commerce-eyebrow">BUILT FOR BUSINESSES &amp; TEAMS</p><h2 id="bulk-heading">Bulk custom apparel made simple.</h2><p>Uniforms. Events. Promotions. Team apparel.<br>Build a consistent look for your people. Start with a garment, then review sizes, quantities and customization options.</p><div class="sf-commerce-actions">
                     @if(!empty($site['support_email']))
                         <a class="sf-commerce-button" href="mailto:{{ $site['support_email'] }}?subject=Bulk%20apparel%20quote">Get a Quote <x-storefront.icon name="arrow" /></a>
                     @else

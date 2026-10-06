@@ -18,6 +18,8 @@ use App\Services\InventoryBalanceService;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -28,7 +30,7 @@ class VendorOrderItemController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreVendorOrderItemRequest $request, VendorOrder $purchaseOrder): JsonResponse|\Illuminate\Http\RedirectResponse
+    public function store(StoreVendorOrderItemRequest $request, VendorOrder $purchaseOrder): JsonResponse|RedirectResponse
     {
         Gate::authorize('create', [VendorOrderItem::class, $purchaseOrder]);
 
@@ -92,6 +94,7 @@ class VendorOrderItemController extends Controller
      */
     public function update(UpdateVendorOrderItemRequest $request, VendorOrder $purchaseOrder, VendorOrderItem $item): JsonResponse
     {
+        abort_unless((int) $item->vendor_order_id === (int) $purchaseOrder->id, 404);
         Gate::authorize('update', $item);
 
         if ($purchaseOrder->status->value !== 'draft') {
@@ -99,7 +102,13 @@ class VendorOrderItemController extends Controller
         }
 
         DB::transaction(function () use ($request, $purchaseOrder, $item) {
-            $data = $request->except(['expected_at']);
+            $purchaseOrder->refresh();
+            $purchaseOrder = VendorOrder::whereKey($purchaseOrder->id)->lockForUpdate()->firstOrFail();
+            $item = $purchaseOrder->items()->whereKey($item->id)->lockForUpdate()->firstOrFail();
+            if ($purchaseOrder->status !== VendorOrderStatus::DRAFT) {
+                throw new PurchaseOrderImmutableException('Cannot modify items of a purchase order that is not in draft status.');
+            }
+            $data = $request->safe()->except(['expected_at']);
             $item->fill($data);
 
             if ($request->has('expected_at')) {
@@ -125,14 +134,15 @@ class VendorOrderItemController extends Controller
             });
         });
 
-        return response()->json($item);
+        return response()->json($item->refresh());
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(\Illuminate\Http\Request $request, VendorOrder $purchaseOrder, VendorOrderItem $item): JsonResponse|\Illuminate\Http\RedirectResponse
+    public function destroy(Request $request, VendorOrder $purchaseOrder, VendorOrderItem $item): JsonResponse|RedirectResponse
     {
+        abort_unless((int) $item->vendor_order_id === (int) $purchaseOrder->id, 404);
         Gate::authorize('delete', $item);
 
         if ($purchaseOrder->status->value !== 'draft') {
@@ -140,6 +150,11 @@ class VendorOrderItemController extends Controller
         }
 
         DB::transaction(function () use ($purchaseOrder, $item) {
+            $purchaseOrder = VendorOrder::whereKey($purchaseOrder->id)->lockForUpdate()->firstOrFail();
+            $item = $purchaseOrder->items()->whereKey($item->id)->lockForUpdate()->firstOrFail();
+            if ($purchaseOrder->status !== VendorOrderStatus::DRAFT) {
+                throw new PurchaseOrderImmutableException('Cannot modify items of a purchase order that is not in draft status.');
+            }
             $item->delete();
 
             $purchaseOrder->recalculateTotals();

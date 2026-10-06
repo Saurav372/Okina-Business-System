@@ -21,24 +21,24 @@ Route::prefix('catalog')->group(function () {
         ->name('catalog.media.preview');
     Route::get('/products/{product:slug}/customization-options', [ProductCustomizationController::class, 'show']);
     Route::post('/products/{product:slug}/design-upload', [ProductCustomizationController::class, 'store'])
-        ->middleware(['web', 'auth:customer']);
+        ->middleware(['web', 'customer.access']);
     Route::post('/products/{product:slug}/protected-mockup/{preview_file:public_id}', [ProductCustomizationController::class, 'protectedMockup'])
-        ->middleware(['web', 'auth:customer', 'throttle:10,1'])
+        ->middleware(['web', 'customer.access', 'throttle:10,1'])
         ->withoutScopedBindings()
         ->name('catalog.products.protected-mockup');
     Route::get('/products/{product:slug}/design-preview/{preview_file}', [ProductCustomizationController::class, 'preview'])
         ->middleware('signed')
         ->name('catalog.products.mockup-preview');
     Route::post('/products/{product:slug}/design-preview/{preview_file}/link', [ProductCustomizationController::class, 'previewLink'])
-        ->middleware(['web', 'auth:customer'])
+        ->middleware(['web', 'customer.access'])
         ->name('catalog.products.mockup-preview-link');
 });
 
 Route::middleware('web')->prefix('cart')->group(function () {
     Route::get('/', [CartController::class, 'index']);
     Route::get('/validation', [CartController::class, 'validation']);
-    Route::post('/checkout/validation', [CartController::class, 'checkoutValidation'])->middleware('auth:customer');
-    Route::post('/checkout', [CartController::class, 'checkout'])->middleware('auth:customer');
+    Route::post('/checkout/validation', [CartController::class, 'checkoutValidation'])->middleware('customer.access');
+    Route::post('/checkout', [CartController::class, 'checkout'])->middleware('customer.access');
     Route::post('/items', [CartController::class, 'store']);
     Route::patch('/items/{cartItem}', [CartController::class, 'update']);
     Route::delete('/items/{cartItem}', [CartController::class, 'destroy']);

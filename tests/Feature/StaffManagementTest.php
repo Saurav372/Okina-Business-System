@@ -2,8 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\AuditLog;
-use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use Database\Seeders\AccessControlSeeder;
@@ -110,7 +108,7 @@ class StaffManagementTest extends TestCase
 
         $response->assertStatus(302)
             ->assertRedirect(route('admin.staff.index'))
-            ->assertSessionHas('invitation_url');
+            ->assertSessionMissing('invitation_url');
 
         $invited = User::query()->where('email', 'priya@okina.test')->first();
         $this->assertNotNull($invited);

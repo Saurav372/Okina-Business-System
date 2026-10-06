@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureCustomerAccountAccess;
 use App\Http\Middleware\EnsureDashboardAccess;
+use App\Http\Middleware\ValidateCustomerSession;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -14,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->web(append: [ValidateCustomerSession::class]);
         $middleware->alias([
             'customer.access' => EnsureCustomerAccountAccess::class,
             'dashboard.access' => EnsureDashboardAccess::class,

@@ -31,22 +31,6 @@
             $dispatch('open-overlay', 'status-confirm-modal');
         }
     }">
-        <!-- Flash Alert / Invitation URL Copy Banner -->
-        @if(session('invitation_url'))
-            <div class="p-4 rounded-2xl bg-indigo-50 border border-indigo-200 text-indigo-900 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div class="space-y-1">
-                    <div class="flex items-center gap-2 font-bold text-xs">
-                        <x-icons.lucide name="lucide-mail" class="w-4 h-4 text-indigo-600" />
-                        <span>Invitation Link Generated (Valid for 48 Hours)</span>
-                    </div>
-                    <p class="text-[11px] text-indigo-700 font-mono break-all">{{ session('invitation_url') }}</p>
-                </div>
-                <button type="button" onclick="navigator.clipboard.writeText('{{ session('invitation_url') }}'); alert('Invitation link copied to clipboard!');" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-colors whitespace-nowrap self-start sm:self-auto">
-                    Copy Link
-                </button>
-            </div>
-        @endif
-
         @if(session('status'))
             <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold shadow-xs flex items-center gap-2">
                 <x-icons.lucide name="lucide-check-circle" class="w-4 h-4 text-emerald-600" />

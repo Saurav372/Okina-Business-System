@@ -47,22 +47,36 @@ class PaymentWebhookProcessingService
             return $this->failureResult('validation_error', 'provider_event_id is required.', $normalizedWebhook, $headers, 422);
         }
 
+        if (! $this->signatureIsValid($normalizedWebhook, $headers)) {
+            // Untrusted events may be logged, but cannot reserve a provider event ID.
+            return $this->failureResult('signature_mismatch', 'Webhook signature verification failed.', $normalizedWebhook, $headers, 401);
+        }
+
         $existingLog = PaymentWebhookLog::query()
             ->where('provider', $provider)
             ->where('provider_event_id', $eventId)
             ->first();
 
         if ($existingLog !== null) {
-            $existingLog->forceFill([
-                'processing_status' => $this->webhookRules->webhookLogProcessingStatusIgnoredDuplicate(),
-                'processed_at' => now(),
-                'error_message' => null,
-            ])->save();
+            if (! $existingLog->signature_verified) {
+                // Release pre-upgrade unauthenticated reservations while retaining their audit row.
+                PaymentWebhookLog::whereKey($existingLog->id)->where('signature_verified', false)
+                    ->update(['provider_event_id' => null]);
+            } else {
+                $existingLog->forceFill([
+                    'processing_status' => $this->webhookRules->webhookLogProcessingStatusIgnoredDuplicate(),
+                    'processed_at' => now(),
+                    'error_message' => null,
+                ])->save();
 
-            return $this->resultFromLog($existingLog, $this->duplicateResult($existingLog));
+                return $this->resultFromLog($existingLog, $this->duplicateResult($existingLog));
+            }
         }
 
-        $log = PaymentWebhookLog::create([
+        $log = PaymentWebhookLog::firstOrCreate([
+            'provider' => $provider,
+            'provider_event_id' => $eventId,
+        ], [
             'provider' => $provider,
             'provider_event_id' => $eventId,
             'event_type' => (string) ($normalizedWebhook['event_type'] ?? 'unknown'),
@@ -70,19 +84,15 @@ class PaymentWebhookProcessingService
             'provider_payment_id' => $normalizedWebhook['provider_payment_id'] ?? null,
             'provider_refund_id' => $normalizedWebhook['provider_refund_id'] ?? null,
             'processing_status' => $this->webhookRules->webhookLogProcessingStatusReceived(),
-            'signature_verified' => false,
+            'signature_verified' => true,
             'payload_summary' => $normalizedWebhook['payload_summary'] ?? null,
             'error_message' => null,
             'received_at' => Carbon::parse($normalizedWebhook['received_at'] ?? now()),
         ]);
 
-        if (! $this->signatureIsValid($normalizedWebhook, $headers)) {
-            $this->updateLogFailure($log, 'signature_mismatch', 'Webhook signature verification failed.');
-
-            return $this->resultFromLog($log, $this->failureResponseFromLog($log, 401));
+        if (! $log->wasRecentlyCreated) {
+            return $this->resultFromLog($log, $this->duplicateResult($log));
         }
-
-        $log->forceFill(['signature_verified' => true])->save();
 
         try {
             $result = DB::transaction(function () use ($provider, $normalizedWebhook, $log): array {
@@ -635,12 +645,12 @@ class PaymentWebhookProcessingService
     {
         $log = PaymentWebhookLog::create([
             'provider' => (string) ($normalizedWebhook['provider'] ?? 'cashfree'),
-            'provider_event_id' => $normalizedWebhook['provider_event_id'] ?? null,
+            'provider_event_id' => null,
             'event_type' => (string) ($normalizedWebhook['event_type'] ?? 'unknown'),
             'provider_order_id' => $normalizedWebhook['provider_order_id'] ?? null,
             'provider_payment_id' => $normalizedWebhook['provider_payment_id'] ?? null,
             'provider_refund_id' => $normalizedWebhook['provider_refund_id'] ?? null,
-            'processing_status' => 'failed',
+            'processing_status' => $failureType === 'signature_mismatch' ? 'signature_mismatch' : 'failed',
             'signature_verified' => false,
             'payload_summary' => $normalizedWebhook['payload_summary'] ?? null,
             'error_message' => $message,

@@ -319,10 +319,10 @@
                                                         @click="
                                                             activeVariant = { 
                                                                 id: '{{ $v->id }}', 
-                                                                name: '{{ $v->name }}', 
-                                                                code: '{{ $v->code }}', 
-                                                                display_type: '{{ $v->display_type }}', 
-                                                                values_csv: '{{ implode(', ', array_column($v->values, 'label')) }}', 
+                                                                name: {{ Js::from($v->name) }},
+                                                                code: {{ Js::from($v->code) }},
+                                                                display_type: {{ Js::from($v->display_type) }},
+                                                                values_csv: {{ Js::from(implode(', ', array_column($v->values, 'label'))) }},
                                                                 is_required: {{ $v->is_required ? 'true' : 'false' }}, 
                                                                 sort_order: {{ $v->sort_order }} 
                                                             }; 
@@ -428,8 +428,8 @@
                                                                     @click="
                                                                         activeSku = {
                                                                             id: '{{ $sku->id }}',
-                                                                            sku_code: '{{ $sku->sku_code }}',
-                                                                            barcode: '{{ $sku->barcode ?? '' }}',
+                                                                            sku_code: {{ Js::from($sku->sku_code) }},
+                                                                            barcode: {{ Js::from($sku->barcode ?? '') }},
                                                                             price_minor: {{ $sku->price_minor ?? 0 }},
                                                                             compare_at_price_minor: '{{ $sku->compare_at_price_minor ?? '' }}',
                                                                             status: '{{ $sku->status }}',
