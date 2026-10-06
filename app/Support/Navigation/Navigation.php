@@ -112,6 +112,48 @@ class Navigation
                 ],
             ],
             [
+                'group' => 'Marketing',
+                'order' => 25,
+                'items' => [
+                    [
+                        'label' => 'Landing Pages',
+                        'route' => 'admin.marketing.landing_pages.index',
+                        'icon' => 'lucide-layout-template',
+                        'order' => 10,
+                        'permission' => 'landing_pages.view',
+                        'active' => ['admin.marketing.landing_pages.*'],
+                        'children' => [],
+                    ],
+                    [
+                        'label' => 'Landing Leads',
+                        'route' => 'admin.marketing.leads.index',
+                        'icon' => 'lucide-inbox',
+                        'order' => 20,
+                        'permission' => 'landing_leads.view',
+                        'active' => ['admin.marketing.leads.*'],
+                        'children' => [],
+                    ],
+                    [
+                        'label' => 'Tracking & Pixels',
+                        'route' => 'admin.marketing.tracking.index',
+                        'icon' => 'lucide-sliders-horizontal',
+                        'order' => 30,
+                        'permission' => 'marketing_tracking.view',
+                        'active' => ['admin.marketing.tracking.*'],
+                        'children' => [],
+                    ],
+                    [
+                        'label' => 'Analytics & Funnel',
+                        'route' => 'admin.marketing.analytics.index',
+                        'icon' => 'lucide-bar-chart-3',
+                        'order' => 40,
+                        'permission' => 'marketing_analytics.view',
+                        'active' => ['admin.marketing.analytics.*'],
+                        'children' => [],
+                    ],
+                ],
+            ],
+            [
                 'group' => 'Products',
                 'order' => 30,
                 'items' => [

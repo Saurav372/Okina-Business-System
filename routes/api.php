@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CustomerApiController;
+use App\Http\Controllers\Api\MarketingEventApiController;
 use App\Http\Controllers\Api\PaymentWebhookController;
 use App\Http\Controllers\Api\ProductCustomizationController;
 use App\Http\Controllers\Api\PublicCatalogController;
@@ -10,6 +11,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/health', function () {
     return ['status' => 'ok'];
 });
+
+Route::post('/marketing/events', [MarketingEventApiController::class, 'store']);
 
 Route::prefix('catalog')->group(function () {
     Route::get('/storefront', [PublicCatalogController::class, 'storefront']);

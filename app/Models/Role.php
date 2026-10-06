@@ -33,6 +33,8 @@ class Role extends Model
 
     public const PRODUCTION_STAFF = 'production_staff';
 
+    public const ADS_MANAGER = 'ads_manager';
+
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'role_user')

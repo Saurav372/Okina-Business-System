@@ -60,6 +60,7 @@ class User extends Authenticatable
         Role::INVENTORY_STAFF,
         Role::FINANCE_STAFF,
         Role::PRODUCTION_STAFF,
+        Role::ADS_MANAGER,
     ];
 
     public function roles(): BelongsToMany

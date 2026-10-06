@@ -22,6 +22,10 @@ use App\Http\Controllers\Admin\GoogleSheetsSyncLogController;
 use App\Http\Controllers\Admin\InventoryController;
 use App\Http\Controllers\Admin\InventoryMovementController;
 use App\Http\Controllers\Admin\NotificationLogController;
+use App\Http\Controllers\Admin\Marketing\LandingLeadAdminController;
+use App\Http\Controllers\Admin\Marketing\LandingPageAdminController;
+use App\Http\Controllers\Admin\Marketing\MarketingAnalyticsController;
+use App\Http\Controllers\Admin\Marketing\MarketingTrackingController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\ProductController;
@@ -330,6 +334,31 @@ Route::middleware(['auth', 'dashboard.access'])->prefix('admin')->group(function
     // Role & Permission Matrix
     Route::get('/roles', [RolePermissionController::class, 'index'])->name('admin.roles.index');
     Route::put('/roles/{role}', [RolePermissionController::class, 'update'])->name('admin.roles.update');
+
+    // Marketing Operations (Landing Pages, Leads, Tracking, Analytics)
+    Route::prefix('marketing')->name('admin.marketing.')->group(function () {
+        // Landing Pages
+        Route::get('/landing-pages', [LandingPageAdminController::class, 'index'])->name('landing_pages.index');
+        Route::get('/landing-pages/{landingPage}/edit', [LandingPageAdminController::class, 'edit'])->name('landing_pages.edit');
+        Route::put('/landing-pages/{landingPage}', [LandingPageAdminController::class, 'update'])->name('landing_pages.update');
+        Route::post('/landing-pages/{landingPage}/publish', [LandingPageAdminController::class, 'publish'])->name('landing_pages.publish');
+        Route::post('/landing-pages/{landingPage}/unpublish', [LandingPageAdminController::class, 'unpublish'])->name('landing_pages.unpublish');
+        Route::post('/landing-pages/media', [LandingPageAdminController::class, 'uploadMedia'])->name('landing_pages.media.upload');
+
+        // Leads
+        Route::get('/leads', [LandingLeadAdminController::class, 'index'])->name('leads.index');
+        Route::get('/leads/export', [LandingLeadAdminController::class, 'export'])->name('leads.export');
+        Route::get('/leads/{lead}', [LandingLeadAdminController::class, 'show'])->name('leads.show');
+        Route::patch('/leads/{lead}/status', [LandingLeadAdminController::class, 'updateStatus'])->name('leads.status.update');
+
+        // Tracking & Pixels
+        Route::get('/tracking', [MarketingTrackingController::class, 'index'])->name('tracking.index');
+        Route::put('/tracking', [MarketingTrackingController::class, 'update'])->name('tracking.update');
+        Route::post('/tracking/test-event', [MarketingTrackingController::class, 'sendTestEvent'])->name('tracking.test_event');
+
+        // Analytics & Funnel
+        Route::get('/analytics', [MarketingAnalyticsController::class, 'index'])->name('analytics.index');
+    });
 });
 
 // Staff Invitation Activation (Guest)

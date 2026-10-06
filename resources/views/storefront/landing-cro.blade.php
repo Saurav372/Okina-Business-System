@@ -1377,8 +1377,10 @@
             vertical-align: middle;
         }
     </style>
+    {!! $trackingHead ?? '' !!}
 </head>
 <body>
+    {!! $trackingBody ?? '' !!}
 
     <!-- Skip to Content (B10 Accessibility) -->
     <a href="#main-content" class="sr-only">Skip to main content</a>
@@ -1685,6 +1687,7 @@
 
                     <form action="{{ route('landing.quote-request') }}" method="POST" enctype="multipart/form-data" id="leadForm">
                         @csrf
+                        <input type="hidden" name="event_id" id="leadEventId" value="">
                         <input type="hidden" name="source" value="{{ $source }}">
                         <input type="hidden" name="utm_source" value="{{ $utm['utm_source'] ?? '' }}">
                         <input type="hidden" name="utm_medium" value="{{ $utm['utm_medium'] ?? '' }}">
@@ -2159,6 +2162,71 @@
                 privacyModal.addEventListener('click', function (e) {
                     if (e.target === privacyModal) {
                         privacyModal.close();
+                    }
+                });
+            }
+
+            // Marketing Event Tracking & Deduplication (Pixel + Server CAPI)
+            function generateUuid() {
+                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                    var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+                    return v.toString(16);
+                });
+            }
+
+            function beaconEvent(eventName, eventId, payload) {
+                try {
+                    fetch('/api/marketing/events', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                        },
+                        body: JSON.stringify({
+                            event_name: eventName,
+                            event_id: eventId,
+                            landing_page_slug: 'custom-t-shirts',
+                            utm_source: '{{ $utm['utm_source'] ?? '' }}',
+                            utm_medium: '{{ $utm['utm_medium'] ?? '' }}',
+                            utm_campaign: '{{ $utm['utm_campaign'] ?? '' }}',
+                            utm_content: '{{ $utm['utm_content'] ?? '' }}',
+                            payload: payload || {}
+                        })
+                    }).catch(function () {});
+                } catch (e) {}
+            }
+
+            // WhatsApp Click Tracking
+            document.querySelectorAll('a[href*="wa.me"]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var waEventId = generateUuid();
+                    if (window.fbq) {
+                        fbq('track', 'Contact', {content_name: 'WhatsApp Conversation'}, {eventID: waEventId});
+                    }
+                    beaconEvent('WhatsAppClick', waEventId, {cta: 'whatsapp_button'});
+                });
+            });
+
+            // Quote Form Start & Deduplicated Submit
+            var leadForm = document.getElementById('leadForm');
+            var leadEventIdInput = document.getElementById('leadEventId');
+            var formStarted = false;
+
+            if (leadForm) {
+                leadForm.addEventListener('focusin', function () {
+                    if (!formStarted) {
+                        formStarted = true;
+                        beaconEvent('QuoteFormStart', generateUuid(), {});
+                    }
+                }, {once: true});
+
+                leadForm.addEventListener('submit', function () {
+                    var submitEventId = generateUuid();
+                    if (leadEventIdInput) {
+                        leadEventIdInput.value = submitEventId;
+                    }
+                    if (window.fbq) {
+                        fbq('track', 'Lead', {content_name: 'Custom Apparel Quote'}, {eventID: submitEventId});
                     }
                 });
             }
