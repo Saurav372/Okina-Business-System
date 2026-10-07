@@ -334,7 +334,7 @@ Alpine.data('pageNavigator', () => ({
                     };
 
                     // Synchronize transition end cleanly with JS redirects
-                    const timeout = setTimeout(navigateAction, 250);
+                    const timeout = setTimeout(navigateAction, 110);
                     main.addEventListener('transitionend', () => {
                         clearTimeout(timeout);
                         navigateAction();

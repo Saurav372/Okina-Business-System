@@ -586,7 +586,9 @@
 
     <!-- Floating Bulk Action Toolbar -->
     <div 
+        x-cloak
         x-show="selectedOrders.length > 0"
+        style="display: none;"
         x-transition:enter="transition ease-out duration-300"
         x-transition:enter-start="opacity-0 translate-y-10"
         x-transition:enter-end="opacity-100 translate-y-0"

@@ -7,7 +7,7 @@
     $path = \App\Support\Dashboard\ChartPathBuilder::toLinePath($layout->coordinates->slice(0, -1));
     $lastPath = \App\Support\Dashboard\ChartPathBuilder::toLinePath($layout->coordinates->slice(-2)->values());
 @endphp
-<section class="min-w-0 bg-white border border-[color:var(--color-border)] rounded-2xl p-5 shadow-xs flex flex-col justify-between" x-data="{ active: null }" @keydown.escape="active = null">
+<section class="min-w-0 bg-white border border-neutral-200/80 rounded-xl p-5 shadow-xs flex flex-col justify-between" x-data="{ active: null }" @keydown.escape="active = null">
     <div>
         <div class="flex items-start justify-between gap-3">
             <div>
@@ -39,8 +39,8 @@
             <svg viewBox="0 0 480 220" class="w-full overflow-visible" role="group" aria-label="{{ $series->title }} by month; focus a month for details">
                 @foreach($layout->ticks as $tick)
                     @if($money || $tick['value'] == floor($tick['value']))
-                        <line x1="55" x2="425" y1="{{ $tick['y'] }}" y2="{{ $tick['y'] }}" stroke="var(--color-border)" />
-                        <text x="47" y="{{ $tick['y'] + 4 }}" text-anchor="end" class="text-[11px] fill-neutral-600">
+                        <line x1="55" x2="425" y1="{{ $tick['y'] }}" y2="{{ $tick['y'] }}" stroke="rgba(0, 0, 0, 0.06)" stroke-dasharray="3 3" />
+                        <text x="47" y="{{ $tick['y'] + 4 }}" text-anchor="end" class="text-[11px] fill-neutral-500">
                             {{ $money ? ($tick['value'] >= 100000 ? '₹'.round($tick['value'] / 100000, 1).'L' : ($tick['value'] >= 1000 ? '₹'.round($tick['value'] / 1000, 1).'K' : '₹'.$tick['value'])) : number_format($tick['value']) }}
                         </text>
                     @endif

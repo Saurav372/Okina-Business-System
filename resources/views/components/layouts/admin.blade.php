@@ -4,18 +4,20 @@
     <div x-data="pageNavigator" class="min-h-screen bg-[color:var(--color-surface-page)] flex flex-col relative overflow-hidden">
         <div 
             x-data="{
-                sidebarCollapsed: false,
+                sidebarCollapsed: document.documentElement.classList.contains('sidebar-collapsed'),
                 mobileSidebarOpen: false,
                 activeDropdown: null,
                 init() {
                     try {
                         this.sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+                        document.documentElement.classList.toggle('sidebar-collapsed', this.sidebarCollapsed);
                     } catch (e) {
                         this.sidebarCollapsed = false;
                     }
                 },
                 toggleSidebar() {
                     this.sidebarCollapsed = !this.sidebarCollapsed;
+                    document.documentElement.classList.toggle('sidebar-collapsed', this.sidebarCollapsed);
                     try {
                         localStorage.setItem('sidebarCollapsed', this.sidebarCollapsed);
                     } catch (e) {}
@@ -29,7 +31,9 @@
         >
         <!-- Mobile Sidebar Overlay (Drawer Backdrop) -->
         <div 
+            x-cloak
             x-show="mobileSidebarOpen" 
+            style="display: none;"
             x-transition:enter="transition-opacity ease-out duration-300"
             x-transition:enter-start="opacity-0"
             x-transition:enter-end="opacity-100"
@@ -50,7 +54,7 @@
                 'md:w-64': !sidebarCollapsed,
                 'md:w-20': sidebarCollapsed
             }"
-            class="fixed inset-y-0 left-0 z-50 w-64 bg-[color:var(--color-surface-sidebar)] text-white flex flex-col transition-all duration-300 ease-in-out md:static shrink-0 border-r border-[color:var(--color-ink-800)] layout-sidebar"
+            class="fixed inset-y-0 left-0 z-50 w-64 bg-[color:var(--color-surface-sidebar)] text-white flex flex-col transition-[width,transform] duration-200 ease-in-out md:static shrink-0 border-r border-[color:var(--color-ink-800)] layout-sidebar"
         >
             <!-- Sidebar Header -->
             <div class="h-16 flex items-center justify-between px-6 border-b border-[color:var(--color-ink-800)] shrink-0">
@@ -86,19 +90,45 @@
                         $groupKey = 'admin-nav-'.auth()->id().'-'.\Illuminate\Support\Str::slug($group->group);
                         $groupId = 'nav-group-'.$loop->index;
                     @endphp
-                    <div class="space-y-2" x-data="{ expanded: true, init() { try { this.expanded = @js($groupActive) || localStorage.getItem(@js($groupKey)) !== 'false'; } catch (e) {} }, toggle() { this.expanded = !this.expanded; try { localStorage.setItem(@js($groupKey), String(this.expanded)); } catch (e) {} } }">
+                    <div class="space-y-2" x-data="{ 
+                        expanded: {{ $groupActive ? 'true' : 'false' }}, 
+                        routeActive: {{ $groupActive ? 'true' : 'false' }},
+                        init() { 
+                            if (this.routeActive) {
+                                this.expanded = true;
+                                return;
+                            }
+                            try { 
+                                const saved = localStorage.getItem(@js($groupKey));
+                                if (saved !== null) {
+                                    this.expanded = saved === 'true';
+                                } else {
+                                    this.expanded = @js($groupActive);
+                                }
+                            } catch (e) {} 
+                        }, 
+                        toggle() { 
+                            this.expanded = !this.expanded; 
+                            try { localStorage.setItem(@js($groupKey), String(this.expanded)); } catch (e) {} 
+                        } 
+                    }">
                         <!-- Group Header -->
                         <button type="button" @click="toggle()" :aria-expanded="expanded" aria-controls="{{ $groupId }}"
                             x-show="!sidebarCollapsed" 
                             class="w-full flex items-center justify-between px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-neutral-300 hover:text-white focus-visible:outline-2 focus-visible:outline-white"
                         >
                             {{ $group->group }}
-                            <span aria-hidden="true" class="transition-transform" :class="expanded ? '' : '-rotate-90'">⌄</span>
+                            <span aria-hidden="true" class="transition-transform {{ !$groupActive ? '-rotate-90' : '' }}" :class="expanded ? '' : '-rotate-90'">⌄</span>
                         </button>
                         <div x-show="sidebarCollapsed" class="h-px bg-[color:var(--color-ink-800)] my-3"></div>
 
                         <!-- Group Items -->
-                        <ul id="{{ $groupId }}" x-show="expanded || sidebarCollapsed" class="space-y-1">
+                        <ul id="{{ $groupId }}" 
+                            x-show="expanded || sidebarCollapsed" 
+                            x-cloak
+                            style="{{ !$groupActive ? 'display: none;' : '' }}" 
+                            class="space-y-1"
+                        >
                             @foreach($group->items as $item)
                                 @php
                                     $isActive = false;
@@ -124,7 +154,7 @@
                                         </span>
                                         <span 
                                             x-show="!sidebarCollapsed"
-                                            class="transition-opacity duration-200 whitespace-nowrap"
+                                            class="transition-opacity duration-200 whitespace-nowrap sidebar-label"
                                         >
                                             {{ $item->label }}
                                         </span>
@@ -259,7 +289,9 @@
                         </label>
 
                         <div
+                            x-cloak
                             x-show="open"
+                            style="display: none; z-index: 60;"
                             x-transition:enter="transition ease-out duration-100"
                             x-transition:enter-start="opacity-0 scale-95"
                             x-transition:enter-end="opacity-100 scale-100"
@@ -267,7 +299,6 @@
                             x-transition:leave-start="opacity-100 scale-100"
                             x-transition:leave-end="opacity-0 scale-95"
                             class="absolute left-0 mt-2 w-full overflow-hidden rounded-2xl border border-[color:var(--color-border)] bg-white py-2 shadow-lg z-50"
-                            style="z-index: 60;"
                         >
                             <template x-for="item in filteredItems" :key="item.href">
                                 <a
@@ -304,7 +335,9 @@
                         </button>
                         <!-- Quick Actions dropdown overlay -->
                         <div 
+                            x-cloak
                             x-show="open"
+                            style="display: none;"
                             x-transition:enter="transition ease-out duration-100"
                             x-transition:enter-start="opacity-0 scale-95"
                             x-transition:enter-end="opacity-100 scale-100"
@@ -356,7 +389,9 @@
                         </button>
 
                         <div 
+                            x-cloak
                             x-show="open"
+                            style="display: none; z-index: 60;"
                             x-transition:enter="transition ease-out duration-100"
                             x-transition:enter-start="opacity-0 scale-95"
                             x-transition:enter-end="opacity-100 scale-100"
@@ -364,7 +399,6 @@
                             x-transition:leave-start="opacity-100 scale-100"
                             x-transition:leave-end="opacity-0 scale-95"
                             class="absolute right-0 mt-2 w-80 bg-white border border-[color:var(--color-border)] rounded-2xl shadow-lg py-2 z-50"
-                            style="z-index: 60;"
                         >
                             <div class="px-4 py-2 border-b border-[color:var(--color-border)] flex items-center justify-between">
                                 <span class="text-xs font-bold uppercase tracking-wider text-neutral-700">Notifications</span>
@@ -412,7 +446,9 @@
                         </button>
                         <!-- Account profile popover dropdown -->
                         <div 
+                            x-cloak
                             x-show="open"
+                            style="display: none;"
                             x-transition:enter="transition ease-out duration-100"
                             x-transition:enter-start="opacity-0 scale-95"
                             x-transition:enter-end="opacity-100 scale-100"
@@ -526,7 +562,7 @@
                 @endif
 
                 <!-- Content Slot Main Panel -->
-                <main class="flex-1 relative layout-main">
+                <main class="flex-1 relative layout-main bg-[color:var(--color-surface-page,#fafaf9)]">
                     {{ $slot }}
                 </main>
             </div>

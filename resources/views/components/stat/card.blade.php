@@ -50,11 +50,11 @@
     $variantBorderClasses = match ($variant) {
         'danger' => 'border-rose-300 ring-2 ring-rose-100/50 bg-rose-50/5',
         'warning' => 'border-amber-300 ring-2 ring-amber-100/50 bg-amber-50/5',
-        default => 'border-[color:var(--color-border)]',
+        default => 'border-neutral-200/80',
     };
 
     $interactiveClasses = $isInteractive 
-        ? 'cursor-pointer hover:-translate-y-0.5 hover:border-[color:var(--color-neutral-300)] hover:shadow-[var(--shadow-md)] transition-all duration-[var(--duration-200)] ease-[var(--ease-out)] focus-visible:outline-none focus-visible:ring-[length:var(--focus-ring-width)] focus-visible:ring-[color:var(--focus-ring-color)] focus-visible:ring-offset-[length:var(--focus-ring-offset)] block' 
+        ? 'cursor-pointer hover:-translate-y-0.5 hover:border-neutral-300 hover:shadow-md active:scale-[0.99] transition-all duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--focus-ring-color)] focus-visible:ring-offset-2 block' 
         : '';
 @endphp
 
@@ -62,29 +62,29 @@
     @if($isInteractive) href="{{ $href }}" @endif 
     @if($accessibilityLabel) aria-label="{{ $accessibilityLabel }}" @endif
     {{ $attributes->class([
-        'relative bg-white rounded-[var(--radius-xl)] shadow-[var(--shadow-xs)] border p-4 sm:p-5 overflow-hidden flex flex-col h-full',
+        'relative bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.03)] border p-4 sm:p-5 overflow-hidden flex flex-col justify-between h-full',
         $variantBorderClasses,
-        'border-t-2 border-t-neutral-700' => $primary,
+        'border-t-2 border-t-[color:var(--color-brand-600)]' => $primary,
         $interactiveClasses
     ]) }}
 >
-    <div class="flex items-start justify-between gap-4">
+    <div class="flex items-start justify-between gap-3">
         <div class="flex flex-col flex-1 min-w-0">
-            <span class="text-[15px] font-semibold text-[color:var(--color-neutral-700)] line-clamp-2 min-h-[1.25rem] leading-snug pr-2" title="{{ $label }}">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-neutral-500 line-clamp-1 pr-2" title="{{ $label }}">
                 {{ $label }}
             </span>
-            <span class="mt-3 text-2xl sm:text-[30px] font-bold text-[color:var(--color-text-primary)] leading-none tracking-tight tabular-nums break-words break-all sm:break-normal">
+            <span class="mt-2 text-2xl sm:text-[28px] font-bold text-neutral-900 leading-none tracking-tight tabular-nums break-words break-all sm:break-normal">
                 {{ $value }}
             </span>
         </div>
         
         @if(isset($icon))
-            <div class="flex items-center justify-center shrink-0 text-[color:var(--color-neutral-500)] pt-1" aria-hidden="true" focusable="false">
+            <div class="flex items-center justify-center shrink-0 w-8 h-8 rounded-lg bg-neutral-100/80 border border-neutral-200/60 text-neutral-600" aria-hidden="true" focusable="false">
                 {{ $icon }}
             </div>
         @elseif($iconName)
-            <div class="flex items-center justify-center shrink-0 text-[color:var(--color-neutral-500)] pt-1" aria-hidden="true" focusable="false">
-                <x-icons.lucide name="{{ $iconName }}" class="w-5 h-5" />
+            <div class="flex items-center justify-center shrink-0 w-8 h-8 rounded-lg bg-neutral-100/80 border border-neutral-200/60 text-neutral-600" aria-hidden="true" focusable="false">
+                <x-icons.lucide name="{{ $iconName }}" class="w-4 h-4" />
             </div>
         @endif
     </div>

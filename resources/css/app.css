@@ -763,65 +763,74 @@
 }
 
 /* ======================================================
-   PAGE TRANSITIONS SYSTEM (U1.6.6)
+   PAGE TRANSITIONS SYSTEM
  ====================================================== */
 
 @view-transition {
     navigation: auto; /* Enable cross-document view transitions natively */
 }
 
-/* Define View Transition names to keep Sidebar & Header fixed during transition */
-/* IMPORTANT: Exactly one layout-sidebar, one layout-header, and one layout-main must exist inside the viewport */
-.layout-sidebar {
-    view-transition-name: admin-sidebar;
-}
-.layout-header {
-    view-transition-name: admin-header;
-}
-.layout-main {
-    view-transition-name: admin-main;
+/*
+ * Do NOT snapshot or cross-fade the root document or persistent navigation shell.
+ * Sidebar, header, search, and dropdowns remain completely stationary.
+ */
+:root {
+    view-transition-name: none;
 }
 
-/* Main Content Entrance/Exit Animations */
-@keyframes transition-fade-in {
+.layout-sidebar,
+.layout-header {
+    view-transition-name: none;
+}
+
+/*
+ * Only the actual page workspace participates in the transition.
+ */
+.layout-main {
+    view-transition-name: admin-content;
+    background-color: #fafaf9;
+}
+
+/* Subtle, fast content transitions */
+@media (prefers-reduced-motion: no-preference) {
+    ::view-transition-old(admin-content) {
+        animation: 90ms ease-out both admin-content-out;
+    }
+    ::view-transition-new(admin-content) {
+        animation: 110ms ease-out both admin-content-in;
+    }
+}
+
+@keyframes admin-content-out {
+    to { opacity: 0; }
+}
+
+@keyframes admin-content-in {
     from { opacity: 0; }
     to { opacity: 1; }
 }
-@keyframes transition-fade-out {
-    from { opacity: 1; }
-    to { opacity: 0; }
-}
-@keyframes transition-slide-up {
-    from { transform: translateY(8px); }
-    to { transform: translateY(0); }
-}
 
-/* Custom transitions for main content wrapper */
-::view-transition-old(admin-main) {
-    animation: transition-fade-out var(--motion-fast) var(--motion-ease) forwards;
-}
-::view-transition-new(admin-main) {
-    animation: transition-fade-in var(--motion-fast) var(--motion-ease) backwards,
-               transition-slide-up var(--motion-fast) var(--motion-ease) backwards;
+@media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(admin-content),
+    ::view-transition-new(admin-content) {
+        animation: none !important;
+    }
 }
 
 /* Fallback transitions for non-supporting browsers (using ui- namespace consistently) */
 .ui-transition-fade-out {
     opacity: 0;
-    transform: translateY(8px);
-    transition: opacity var(--motion-fast) var(--motion-ease), transform var(--motion-fast) var(--motion-ease);
+    transition: opacity 100ms ease-out;
 }
 .ui-transition-fade-in {
     opacity: 1;
-    transform: translateY(0);
-    transition: opacity var(--motion-fast) var(--motion-ease), transform var(--motion-fast) var(--motion-ease);
+    transition: opacity 100ms ease-out;
 }
 
 /* Supports fallback on page load for browsers that do NOT support view transition names */
 @supports not (view-transition-name: test) {
     .layout-main {
-        animation: transition-fade-in var(--motion-normal) var(--motion-ease) backwards,
-                   transition-slide-up var(--motion-normal) var(--motion-ease) backwards;
+        animation: admin-content-in 100ms ease-out backwards;
     }
 }
 
