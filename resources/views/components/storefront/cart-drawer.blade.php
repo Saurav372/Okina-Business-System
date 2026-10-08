@@ -39,7 +39,7 @@
                     <x-storefront.icon name="check" /> You have unlocked <strong>FREE PAN-INDIA SHIPPING</strong>!
                 </p>
             @else
-                <p class="sf-meter-text">Free shipping on orders above ₹999</p>
+                <p class="sf-meter-text">Add <strong>₹999</strong> of custom apparel for <span>FREE PAN-INDIA DELIVERY</span></p>
             @endif
             <div class="sf-meter-track" role="progressbar" aria-valuenow="{{ $progressPercent }}" aria-valuemin="0" aria-valuemax="100">
                 <div class="sf-meter-fill" style="width: {{ $progressPercent }}%;"></div>
@@ -55,7 +55,7 @@
                     </div>
                     <h3>Your bag is empty</h3>
                     <p>Start exploring our premium blank apparel and customize with your artwork.</p>
-                    <a href="{{ route('storefront.categories.index') }}" class="sf-button" data-drawer-close>
+                    <a href="{{ route('storefront.categories.index') }}" class="sf-button sf-drawer-empty-btn" data-drawer-close>
                         Explore Collections <x-storefront.icon name="arrow" />
                     </a>
                 </div>

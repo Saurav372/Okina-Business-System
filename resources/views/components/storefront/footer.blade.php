@@ -4,19 +4,27 @@
     <div class="sf-footer-grid">
         <div class="sf-footer-brand">
             <a class="sf-brand sf-brand-inverse" href="{{ route('storefront.home') }}"><span class="sf-brand-mark" aria-hidden="true">O</span><span>OKINA</span></a>
-            <p>Custom apparel made carefully in India. Your proof comes before production.</p>
+            <p>Custom apparel made carefully in India. Your digital proof comes before production.</p>
         </div>
         <nav aria-label="Footer shop links">
             <strong>Shop</strong>
             <a href="{{ route('storefront.categories.index') }}">Collections</a>
             <a href="{{ route('storefront.search') }}">All products</a>
-            <a href="{{ route('storefront.search') }}?q=tee">T-Shirts & Hoodies</a>
+            <a href="{{ route('storefront.search') }}?q=tee">T-Shirts &amp; Hoodies</a>
+            <a href="{{ route('storefront.search') }}?q=polo">Corporate Polos</a>
         </nav>
         <nav aria-label="Footer help links">
             <strong>Help</strong>
             <a href="{{ route('storefront.how-it-works') }}">How it works</a>
             <a href="{{ route('storefront.track-order') }}">Track an order</a>
-            @if($site['support_email'])<a href="mailto:{{ $site['support_email'] }}">Contact support</a>@endif
+            @if(!empty($site['support_email']))<a href="mailto:{{ $site['support_email'] }}">Contact support</a>@endif
+        </nav>
+        <nav aria-label="Footer policy links">
+            <strong>Policies</strong>
+            <a href="{{ route('storefront.policy', 'shipping') }}">Shipping &amp; Delivery</a>
+            <a href="{{ route('storefront.policy', 'returns') }}">Returns &amp; Refunds</a>
+            <a href="{{ route('storefront.policy', 'privacy') }}">Privacy Policy</a>
+            <a href="{{ route('storefront.policy', 'terms') }}">Terms of Service</a>
         </nav>
         <nav aria-label="Footer account links">
             <strong>Account</strong>
@@ -24,5 +32,8 @@
             <a href="{{ route('storefront.cart') }}">Your bag</a>
         </nav>
     </div>
-    <div class="sf-footer-bottom"><span>© {{ now()->year }} {{ $site['company_name'] }}</span><span>Proof approved before printing</span></div>
+    <div class="sf-footer-bottom">
+        <span>© {{ now()->year }} {{ $site['company_name'] }}. All rights reserved.</span>
+        <span>Secure Payments via UPI, Cards &amp; NetBanking · Proof Approved Before Printing</span>
+    </div>
 </footer>

@@ -59,7 +59,7 @@
                 <span class="sf-card-badge">{{ $product['badge'] }}</span>
             @endif
             @if($business && $previewArt)
-                <img src="/storefront/business/{{ $previewArt }}.png" alt="{{ $product['name'] }} — illustrative style preview" loading="lazy" width="1254" height="1254">
+                <img src="/storefront/business/{{ $previewArt }}.webp" alt="{{ $product['name'] }} — illustrative style preview" loading="lazy" width="1254" height="1254">
                 <span class="sf-style-preview">Style preview</span>
             @elseif(data_get($product, 'cover_image.url'))
                 <img src="{{ data_get($product, 'cover_image.url') }}" alt="{{ data_get($product, 'cover_image.alt_text') ?: $product['name'] }}" loading="lazy" width="{{ data_get($product, 'cover_image.width') ?: 720 }}" height="{{ data_get($product, 'cover_image.height') ?: 780 }}">

@@ -6,10 +6,10 @@
         'event-kits' => ['event', 'Bring your campaign to life'],
     ];
     $inspiration = [
-        ['cafe', 'Café uniforms', 'A shared identity, from the first coffee.', 'tee'],
-        ['uniform', 'Branded workwear', 'Make your business part of every day.', 'polo'],
-        ['event', 'Event printing', 'Wear the message. Bring people together.', 'tee'],
-        ['team', 'Team apparel', 'One team. A look that belongs to everyone.', 'hoodie'],
+        ['inspiration-cafe', 'Café & Hospitality', 'A shared identity, from the first morning coffee.', 'tee'],
+        ['inspiration-workwear', 'Design & Agency Workwear', 'Make your business part of every working day.', 'polo'],
+        ['inspiration-event', 'Campaigns & Events', 'Wear the message. Bring people together.', 'tee'],
+        ['inspiration-team', 'Campus & Club Apparel', 'One team. A look that belongs to everyone.', 'hoodie'],
     ];
     $process = [
         ['shirt', 'Choose apparel', 'Pick the right style for your team.'],
@@ -18,11 +18,11 @@
         ['truck', 'Follow your delivery', 'Track progress from your account.'],
     ];
     $methods = [
-        ['printer', 'DTF printing', 'Vibrant color for your artwork.', 'A design is printed onto a transfer film and applied to the garment with heat. Check the selected product for available placements and artwork requirements.'],
-        ['shirt', 'DTG printing', 'Bring detailed artwork to life.', 'Ink is printed directly onto a compatible garment. Fabric, artwork and garment color determine which setup is suitable.'],
-        ['needle', 'Embroidery', 'A premium finish for logos & uniforms.', 'Thread creates a tactile finish for logos and lettering. Small details may need to be simplified for a clear stitched result.'],
-        ['layers', 'Puff printing', 'Make bold designs stand out.', 'A raised print adds texture to bold shapes and lettering. Ask about garment compatibility before planning this finish.'],
-        ['drop', 'Sublimation', 'Smooth color, part of the fabric.', 'Heat transfers dye into compatible polyester fabrics. Light-colored garments usually provide the clearest result.'],
+        ['printer', 'DTF printing', 'Vibrant color for your artwork.', 'A design is printed onto a transfer film and applied to the garment with heat. Check the selected product for available placements and artwork requirements.', ['Full Color', 'High Detail', 'Tees & Hoodies']],
+        ['shirt', 'DTG printing', 'Bring detailed artwork to life.', 'Ink is printed directly onto a compatible garment. Fabric, artwork and garment color determine which setup is suitable.', ['Ultra-Soft Feel', 'Breathable', '100% Cotton']],
+        ['needle', 'Embroidery', 'A premium finish for logos & uniforms.', 'Thread creates a tactile finish for logos and lettering. Small details may need to be simplified for a clear stitched result.', ['Tactile Texture', 'Durable Stitched', 'Polos & Jackets']],
+        ['layers', 'Puff printing', 'Make bold designs stand out.', 'A raised print adds texture to bold shapes and lettering. Ask about garment compatibility before planning this finish.', ['3D Raised', 'Streetwear Drop', 'Heavyweight Tees']],
+        ['drop', 'Sublimation', 'Smooth color, part of the fabric.', 'Heat transfers dye into compatible polyester fabrics. Light-colored garments usually provide the clearest result.', ['Zero Handfeel', 'All-Over Print', 'Sportswear']],
     ];
 @endphp
 <x-layouts.storefront
@@ -42,9 +42,17 @@
                         <a class="sf-commerce-button" href="{{ route('storefront.categories.index') }}">Explore Custom Apparel <x-storefront.icon name="arrow" /></a>
                         <a class="sf-commerce-button sf-commerce-button-outline" href="#bulk-orders">Plan a Bulk Order</a>
                     </div>
-                    <p class="sf-commerce-hero-assurance"><x-storefront.icon name="check" />Review your artwork proof before production.</p>
+                    <div class="sf-commerce-hero-assurance">
+                        <span class="sf-assurance-check"><x-storefront.icon name="check" /></span>
+                        <span>Review your artwork proof before production.</span>
+                    </div>
                 </div>
-                <picture class="sf-commerce-hero-photo"><source media="(max-width: 1100px)" srcset="/storefront/business/hero-team.png" width="1448" height="1086"><img src="/storefront/business/hero-background.png" alt="Three people showcasing custom branded black t-shirts, a polo and a jacket in a sunlit apparel studio" width="1942" height="809" fetchpriority="high"></picture>
+                <picture class="sf-commerce-hero-photo">
+                    <source media="(max-width: 1100px)" type="image/webp" srcset="/storefront/business/hero-team.webp" width="1448" height="1086">
+                    <source media="(max-width: 1100px)" srcset="/storefront/business/hero-team.png" width="1448" height="1086">
+                    <source type="image/webp" srcset="/storefront/business/hero-background.webp" width="1942" height="809">
+                    <img src="/storefront/business/hero-background.png" alt="Three people showcasing custom branded black t-shirts, a polo and a jacket in a sunlit apparel studio" width="1942" height="809" fetchpriority="high">
+                </picture>
             </div>
         </section>
 
@@ -58,7 +66,7 @@
                         @endphp
                         <a class="sf-commerce-category" href="{{ $category['url'] }}">
                             @if($theme)
-                                <img src="/storefront/business/{{ $theme[0] }}.png" alt="{{ $category['name'] }} design inspiration" width="1254" height="1254" loading="lazy">
+                                <img src="/storefront/business/{{ $theme[0] }}.webp" alt="{{ $category['name'] }} design inspiration" width="1254" height="1254" loading="lazy">
                             @elseif(data_get($category, 'cover_image.url'))
                                 <img src="{{ data_get($category, 'cover_image.url') }}" alt="{{ $category['name'] }}" width="720" height="720" loading="lazy">
                             @else
@@ -99,7 +107,10 @@
             <div class="sf-commerce-heading"><div><h2 id="business-inspiration">Made for the way you work.</h2><p>Design inspiration for businesses and organizations.</p></div><a href="{{ route('storefront.categories.index') }}">Find Your Team’s Style <x-storefront.icon name="arrow" /></a></div>
             <div class="sf-commerce-inspiration-grid">
                 @foreach($inspiration as [$image, $title, $copy, $query])
-                    <a class="sf-commerce-category sf-commerce-example" href="{{ route('storefront.search', ['q' => $query]) }}"><img src="/storefront/business/{{ $image }}.png" alt="Illustrative {{ Str::lower($title) }} design" width="1254" height="1254" loading="lazy"><div><strong>{{ $title }}</strong><small>{{ $copy }}</small></div></a>
+                    <a class="sf-commerce-category sf-commerce-example" href="{{ route('storefront.search', ['q' => $query]) }}">
+                        <img src="/storefront/business/{{ $image }}.webp" alt="Illustrative {{ Str::lower($title) }} design" width="1024" height="1024" loading="lazy">
+                        <div><strong>{{ $title }}</strong><small>{{ $copy }}</small></div>
+                    </a>
                 @endforeach
             </div>
         </section>
@@ -107,29 +118,85 @@
         <section class="sf-commerce-section" id="printing-methods" aria-labelledby="methods-heading">
             <div class="sf-commerce-heading"><div><h2 id="methods-heading">The right print for every requirement.</h2><p>Explore the finishes. Available methods depend on your garment.</p></div><a href="{{ route('storefront.how-it-works') }}">How Printing Works <x-storefront.icon name="arrow" /></a></div>
             <div class="sf-commerce-methods">
-                @foreach($methods as [$icon, $title, $copy, $detail])
-                    <details><summary><x-storefront.icon :name="$icon" /><span><strong>{{ $title }}</strong><small>{{ $copy }}</small></span><span class="sf-method-plus" aria-hidden="true">+</span></summary><p>{{ $detail }}</p></details>
+                @foreach($methods as [$icon, $title, $copy, $detail, $tags])
+                    <details>
+                        <summary>
+                            <x-storefront.icon :name="$icon" />
+                            <span>
+                                <strong>{{ $title }}</strong>
+                                <small>{{ $copy }}</small>
+                            </span>
+                            <span class="sf-method-plus" aria-hidden="true">+</span>
+                        </summary>
+                        <div class="sf-method-content">
+                            <p>{{ $detail }}</p>
+                            @if(!empty($tags))
+                                <div class="sf-method-tags" aria-label="Method characteristics">
+                                    @foreach($tags as $tag)
+                                        <span class="sf-method-tag">{{ $tag }}</span>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+                    </details>
                 @endforeach
             </div>
         </section>
 
         <section class="sf-commerce-section sf-commerce-bulk-grid" id="bulk-orders" aria-labelledby="bulk-heading">
             <div class="sf-commerce-bulk-card">
-                <img src="/storefront/business/uniform.png" alt="A coordinated team wearing custom branded polo shirts" width="1254" height="1254" loading="lazy">
-                <div class="sf-commerce-bulk-copy"><p class="sf-commerce-eyebrow">BUILT FOR BUSINESSES &amp; TEAMS</p><h2 id="bulk-heading">Bulk custom apparel made simple.</h2><p>Uniforms. Events. Promotions. Team apparel.<br>Build a consistent look for your people. Start with a garment, then review sizes, quantities and customization options.</p><div class="sf-commerce-actions">
-                    @if(!empty($site['support_email']))
-                        <a class="sf-commerce-button" href="mailto:{{ $site['support_email'] }}?subject=Bulk%20apparel%20quote">Get a Quote <x-storefront.icon name="arrow" /></a>
-                    @else
-                        <a class="sf-commerce-button" href="{{ route('storefront.categories.index') }}">Choose Bulk Apparel <x-storefront.icon name="arrow" /></a>
-                    @endif
-                    <a class="sf-commerce-button sf-commerce-button-outline" href="{{ route('storefront.how-it-works') }}">Plan Your Order</a>
-                </div><div class="sf-commerce-bulk-notes"><span><x-storefront.icon name="shirt" />Garment options</span><span><x-storefront.icon name="artwork" />Your artwork</span><span><x-storefront.icon name="truck" />Order tracking</span></div></div>
+                <img src="/storefront/business/bulk-team.webp" alt="A coordinated corporate team wearing custom branded polo shirts" width="1024" height="1024" loading="lazy">
+                <div class="sf-commerce-bulk-copy">
+                    <p class="sf-commerce-eyebrow">BUILT FOR BUSINESSES &amp; TEAMS</p>
+                    <h2 id="bulk-heading">Bulk custom apparel made simple.</h2>
+                    <p>Uniforms. Events. Promotions. Team apparel.<br>Build a consistent look for your people. Start with a garment, then review sizes, quantities and customization options.</p>
+                    <div class="sf-commerce-actions">
+                        @if(!empty($site['support_email']))
+                            <a class="sf-commerce-button" href="mailto:{{ $site['support_email'] }}?subject=Bulk%20apparel%20quote">Get a Quote <x-storefront.icon name="arrow" /></a>
+                        @else
+                            <a class="sf-commerce-button" href="{{ route('storefront.categories.index') }}">Choose Bulk Apparel <x-storefront.icon name="arrow" /></a>
+                        @endif
+                        <a class="sf-commerce-button sf-commerce-button-outline" href="{{ route('storefront.how-it-works') }}">Plan Your Order</a>
+                    </div>
+                    <div class="sf-commerce-bulk-notes">
+                        <span><x-storefront.icon name="shirt" />Garment options</span>
+                        <span><x-storefront.icon name="artwork" />Your artwork</span>
+                        <span><x-storefront.icon name="truck" />Order tracking</span>
+                    </div>
+                </div>
             </div>
-            <aside class="sf-commerce-small-order"><div><h3>Need a smaller order?<br>We’ve got you covered.</h3><p>Find a style for your next idea, personal project or growing brand.</p><a class="sf-commerce-button sf-commerce-button-outline" href="{{ route('storefront.categories.index') }}">Shop Now <x-storefront.icon name="arrow" /></a></div><img src="/storefront/business/tee.png" alt="Black Okina Craft t-shirt design concept" width="1254" height="1254" loading="lazy"></aside>
+            <aside class="sf-commerce-small-order">
+                <div>
+                    <h3>Need a smaller order?<br>We’ve got you covered.</h3>
+                    <p>Find a style for your next idea, personal project or growing brand.</p>
+                    <a class="sf-commerce-button sf-commerce-button-outline" href="{{ route('storefront.categories.index') }}">Shop Now <x-storefront.icon name="arrow" /></a>
+                </div>
+                <img src="/storefront/business/small-order.webp" alt="Folded custom branded black t-shirt with screen-printed art" width="1024" height="1024" loading="lazy">
+            </aside>
         </section>
 
         <section class="sf-commerce-process" aria-labelledby="process-heading">
-            <div class="sf-commerce-process-inner"><p class="sf-commerce-eyebrow">OUR PROCESS</p><h2 id="process-heading">From your idea to your team.</h2><p>Simple. Considered. Personal.</p><ol>@foreach($process as [$icon, $heading, $copy])<li><x-storefront.icon :name="$icon" /><div><span>{{ $loop->iteration }}</span><strong>{{ $heading }}</strong><small>{{ $copy }}</small></div></li>@endforeach</ol></div><div class="sf-commerce-process-mark" aria-hidden="true">OKINA<span>CRAFT</span><p>APPAREL FOR A<br>BRIGHTER TOMORROW.</p></div>
+            <div class="sf-commerce-process-inner">
+                <p class="sf-commerce-eyebrow">OUR PROCESS</p>
+                <h2 id="process-heading">From your idea to your team.</h2>
+                <p>Simple. Considered. Personal.</p>
+                <ol>
+                    @foreach($process as [$icon, $heading, $copy])
+                        <li>
+                            <x-storefront.icon :name="$icon" />
+                            <div>
+                                <span>{{ $loop->iteration }}</span>
+                                <strong>{{ $heading }}</strong>
+                                <small>{{ $copy }}</small>
+                            </div>
+                        </li>
+                    @endforeach
+                </ol>
+            </div>
+            <div class="sf-commerce-process-mark" aria-hidden="true">
+                OKINA<span>CRAFT</span>
+                <p>APPAREL FOR A<br>BRIGHTER TOMORROW.</p>
+            </div>
         </section>
     </div>
 </x-layouts.storefront>
