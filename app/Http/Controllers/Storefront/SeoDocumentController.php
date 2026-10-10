@@ -28,6 +28,7 @@ class SeoDocumentController extends Controller
             'Disallow: /checkout',
             'Disallow: /order-confirmation',
             'Disallow: /track-order',
+            'Disallow: /lp/',
             'Sitemap: '.route('storefront.sitemap'),
             '',
         ]);

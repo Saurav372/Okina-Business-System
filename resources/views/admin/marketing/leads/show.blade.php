@@ -47,16 +47,34 @@
                         <p class="text-xs text-neutral-500 uppercase tracking-wider font-semibold">Phone / WhatsApp</p>
                         <p class="text-base font-mono font-bold text-neutral-900 mt-1">{{ $lead->phone }}</p>
                     </div>
+                    @if($lead->email)
+                        <div>
+                            <p class="text-xs text-neutral-500 uppercase tracking-wider font-semibold">Email Address</p>
+                            <p class="text-sm font-semibold text-neutral-900 mt-1"><a href="mailto:{{ $lead->email }}" class="text-blue-600 hover:underline">{{ $lead->email }}</a></p>
+                        </div>
+                    @endif
+                    @if($lead->business_type)
+                        <div>
+                            <p class="text-xs text-neutral-500 uppercase tracking-wider font-semibold">Business Type</p>
+                            <p class="text-sm font-semibold text-neutral-900 mt-1">{{ $lead->business_type }}</p>
+                        </div>
+                    @endif
                     <div>
-                        <p class="text-xs text-neutral-500 uppercase tracking-wider font-semibold">Apparel Product Type</p>
+                        <p class="text-xs text-neutral-500 uppercase tracking-wider font-semibold">Printing / Product Type</p>
                         <p class="text-sm font-semibold text-neutral-900 mt-1">{{ $lead->product_type ?: 'Not specified' }}</p>
                     </div>
                     <div>
                         <p class="text-xs text-neutral-500 uppercase tracking-wider font-semibold">Quantity Range</p>
                         <p class="text-sm font-semibold text-neutral-900 mt-1">{{ $lead->quantity_range ?: '50-100 pcs' }}</p>
                     </div>
+                    @if($lead->design_readiness)
+                        <div>
+                            <p class="text-xs text-neutral-500 uppercase tracking-wider font-semibold">Design Readiness</p>
+                            <p class="text-sm font-semibold text-neutral-900 mt-1">{{ $lead->design_readiness }}</p>
+                        </div>
+                    @endif
                     <div>
-                        <p class="text-xs text-neutral-500 uppercase tracking-wider font-semibold">Target Delivery Date</p>
+                        <p class="text-xs text-neutral-500 uppercase tracking-wider font-semibold">Target Delivery / Timeline</p>
                         <p class="text-sm font-semibold text-neutral-900 mt-1">{{ $lead->delivery_date ?: 'Standard Delivery' }}</p>
                     </div>
                     <div>

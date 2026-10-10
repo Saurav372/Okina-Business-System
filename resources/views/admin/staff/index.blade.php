@@ -32,9 +32,19 @@
         }
     }">
         @if(session('status'))
-            <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold shadow-xs flex items-center gap-2">
-                <x-icons.lucide name="lucide-check-circle" class="w-4 h-4 text-emerald-600" />
-                <span>{{ session('status') }}</span>
+            <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold shadow-xs flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                    <x-icons.lucide name="lucide-check-circle" class="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>{{ session('status') }}</span>
+                </div>
+                @if(session('invitation_url'))
+                    <div x-data="{ copied: false }" class="flex items-center gap-2">
+                        <button type="button" @click="navigator.clipboard.writeText('{{ session('invitation_url') }}'); copied = true; setTimeout(() => copied = false, 2500)" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-xs">
+                            <x-icons.lucide name="lucide-copy" class="w-3.5 h-3.5" />
+                            <span x-text="copied ? 'Copied Link!' : 'Copy Activation Link'"></span>
+                        </button>
+                    </div>
+                @endif
             </div>
         @endif
 

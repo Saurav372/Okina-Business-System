@@ -29,8 +29,8 @@ class MarketingTrackingService
     public function getPixelConfig(): array
     {
         return MarketingTrackingSetting::getSetting('meta_pixel', [
-            'enabled' => false,
-            'pixel_id' => '',
+            'enabled' => true,
+            'pixel_id' => '1983890512310174',
             'test_event_code' => '',
             'events' => [
                 'PageView' => true,

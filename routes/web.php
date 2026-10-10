@@ -63,9 +63,12 @@ use App\Http\Controllers\Storefront\OrderStatusController;
 use App\Http\Controllers\Storefront\SeoDocumentController;
 use Illuminate\Support\Facades\Route;
 
-// Meta Ads & B2B Lead-Gen Landing Page
+// Meta Ads & B2B Lead-Gen Landing Pages
 Route::get('/lp/custom-t-shirts', [LandingPageController::class, 'index'])->name('landing.custom-t-shirts');
 Route::post('/lp/quote-request', [LandingPageController::class, 'storeQuote'])->name('landing.quote-request');
+Route::get('/lp/bulk-printing', [LandingPageController::class, 'bulkPrinting'])->name('landing.bulk-printing');
+Route::get('/lp/bulk-printing/thank-you', [LandingPageController::class, 'bulkPrintingThankYou'])->name('landing.bulk-printing.thank-you');
+Route::post('/lp/bulk-printing/quote', [LandingPageController::class, 'storeBulkPrintingLead'])->name('landing.bulk-printing.quote');
 
 Route::get('/', [StorefrontCatalogController::class, 'home'])->name('storefront.home');
 Route::get('/categories', [StorefrontCatalogController::class, 'categories'])->name('storefront.categories.index');

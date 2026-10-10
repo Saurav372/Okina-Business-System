@@ -19,14 +19,33 @@ class LandingPageAdminController extends Controller
     {
         Gate::authorize('landing_pages.view');
 
-        // Ensure default landing page exists
+        // Ensure default landing pages exist
         LandingPage::firstOrCreate(
             ['slug' => 'custom-t-shirts'],
             LandingPage::defaultContentFor('custom-t-shirts')
         );
 
+        LandingPage::firstOrCreate(
+            ['slug' => 'bulk-printing'],
+            [
+                'title' => 'Get Bulk Printing for Your Business',
+                'status' => 'published',
+                'published_at' => now(),
+            ]
+        );
+
         $pages = LandingPage::query()->latest()->get()->map(function ($page) {
-            $page->leads_count = LandingLead::query()->where('source', 'LIKE', "%{$page->slug}%")->orWhere('source', 'meta')->count();
+            $page->leads_count = LandingLead::query()
+                ->where(function ($q) use ($page) {
+                    $q->where('source', 'LIKE', "%{$page->slug}%")
+                        ->orWhere('page_url', 'LIKE', "%{$page->slug}%");
+                    if ($page->slug === 'custom-t-shirts') {
+                        $q->orWhere('source', 'meta');
+                    }
+                    if ($page->slug === 'bulk-printing') {
+                        $q->orWhere('source', 'okina-craft-landing-page');
+                    }
+                })->count();
             $page->views_count = MarketingEvent::query()->where('landing_page_slug', $page->slug)->where('event_name', 'LandingPageView')->count();
             return $page;
         });

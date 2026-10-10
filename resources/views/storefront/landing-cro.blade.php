@@ -16,12 +16,8 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Custom T-Shirts &amp; Branded Apparel for Businesses · {{ $companyName }}">
     <meta name="twitter:description" content="Company uniforms, event T-shirts, team apparel and custom merchandise with printing or embroidery. Bulk-order support with Pan-India delivery.">
-    <meta name="twitter:image" content="{{ asset('storefront/custom/hero-apparel.jpg') }}">
-    @if(request()->has('source') || request()->has('utm_source'))
-        <meta name="robots" content="noindex, follow">
-    @else
-        <meta name="robots" content="index, follow">
-    @endif
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+    <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">

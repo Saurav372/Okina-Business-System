@@ -28,7 +28,9 @@ class LandingLeadAdminController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
                     ->orWhere('product_type', 'like', "%{$search}%")
+                    ->orWhere('business_type', 'like', "%{$search}%")
                     ->orWhere('city', 'like', "%{$search}%");
             });
         }
@@ -135,8 +137,11 @@ class LandingLeadAdminController extends Controller
                 'ID',
                 'Name',
                 'Phone',
+                'Email',
+                'Business Type',
                 'Product Type',
                 'Quantity Range',
+                'Design Readiness',
                 'Delivery Date',
                 'City',
                 'Status',
@@ -155,8 +160,11 @@ class LandingLeadAdminController extends Controller
                     $lead->id,
                     $lead->name,
                     $lead->phone,
+                    $lead->email,
+                    $lead->business_type,
                     $lead->product_type,
                     $lead->quantity_range,
+                    $lead->design_readiness,
                     $lead->delivery_date,
                     $lead->city,
                     $lead->status,

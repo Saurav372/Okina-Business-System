@@ -32,9 +32,11 @@
     @if($structuredData)
         <script type="application/ld+json">{!! json_encode($structuredData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
     @endif
+    {!! app(\App\Services\MarketingTrackingService::class)->renderHeadTags(isLandingPage: false) !!}
     @vite(['resources/css/storefront.css', 'resources/js/storefront.js'])
 </head>
 <body data-page="{{ $page }}">
+    {!! app(\App\Services\MarketingTrackingService::class)->renderBodyTags(isLandingPage: false) !!}
     <a class="sf-skip-link" href="#main-content">Skip to main content</a>
     <x-storefront.header :site="$site" :categories="$navigationCategories" :cart-count="$cartCount" />
     <main id="main-content" tabindex="-1">{{ $slot }}</main>

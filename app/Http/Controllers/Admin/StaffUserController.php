@@ -159,7 +159,8 @@ class StaffUserController extends Controller
         ]));
 
         return redirect()->route('admin.staff.index')
-            ->with('status', "An invitation has been sent to {$createdUser->email}.");
+            ->with('status', "An invitation has been sent to {$createdUser->email}.")
+            ->with('invitation_url', $invitationUrl);
     }
 
     /**
@@ -408,7 +409,8 @@ class StaffUserController extends Controller
         ]));
 
         return redirect()->route('admin.staff.index')
-            ->with('status', "An invitation has been sent to {$staff->email}.");
+            ->with('status', "An invitation has been sent to {$staff->email}.")
+            ->with('invitation_url', $invitationUrl);
     }
 
     /**
